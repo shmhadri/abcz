@@ -1,23 +1,953 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-    <title>Leaderboard</title>
+    <meta charset="UTF-8" />
+    <title>لوحة الشرف | Leaderboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <style>
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
+        :root {
+            --bg: #020617;
+            --bg-soft: #0f172a;
+            --card: #020617;
+            --card-soft: #0b1120;
+            --accent: #38bdf8;
+            --accent-strong: #0ea5e9;
+            --accent-soft: rgba(56, 189, 248, 0.18);
+            --gold: #facc15;
+            --silver: #e5e7eb;
+            --bronze: #f97316;
+            --text: #e5e7eb;
+            --text-soft: #9ca3af;
+            --border: rgba(148, 163, 184, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Cairo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #1e293b 0, #020617 50%, #000 100%);
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: clamp(24px, 5vw, 32px);
+        }
+
+        .page-header p {
+            margin: 0;
+            color: var(--text-soft);
+            font-size: 14px;
+        }
+
+        .leaderboard-shell {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.85));
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: 0 24px 70px rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            backdrop-filter: blur(18px);
+        }
+
+        /* شريط الأدوات العلوي: بحث + فلاتر + إحصائيات + أزرار تصدير */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .left-tools,
+        .right-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .left-tools {
+            flex: 1 1 260px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1 1 180px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 34px 10px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-soft);
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
+            background: rgba(15, 23, 42, 1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--text-soft);
+            pointer-events: none;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-select {
+            min-width: 130px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-soft);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .filter-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
+        }
+
+        .stats {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .stat-pill {
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            font-size: 12px;
+            color: var(--text-soft);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .stat-pill strong {
+            color: var(--accent-strong);
+            font-weight: 600;
+        }
+
+        .export-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn {
+            border-radius: 999px;
+            border: 1px solid rgba(56, 189, 248, 0.5);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--accent-strong);
+            font-size: 12px;
+            padding: 7px 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+        }
+
+        .btn span {
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: rgba(56, 189, 248, 0.12);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-cert {
+            border-color: rgba(250, 204, 21, 0.7);
+            color: #facc15;
+        }
+
+        .btn-cert:hover {
+            background: rgba(250, 204, 21, 0.12);
+            box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.4);
+        }
+
+        /* الجدول */
+        .table-wrapper {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: radial-gradient(circle at top, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.88));
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(90deg, rgba(15, 23, 42, 0.98), rgba(30, 64, 175, 0.9));
+        }
+
+        th, td {
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: right;
+            color: #e5e7eb;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        tbody tr:nth-child(even) td {
+            background: rgba(15, 23, 42, 0.94);
+        }
+
+        tbody tr:nth-child(odd) td {
+            background: rgba(15, 23, 42, 0.88);
+        }
+
+        tbody tr:hover td {
+            background: rgba(30, 64, 175, 0.4);
+        }
+
+        td {
+            border-bottom: 1px solid rgba(15, 23, 42, 0.9);
+        }
+
+        .rank-cell {
+            width: 80px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .rank-badge {
+            min-width: 30px;
+            height: 24px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+        }
+
+        .medal {
+            font-size: 16px;
+        }
+
+        .gold .rank-badge {
+            background: rgba(250, 204, 21, 0.16);
+            border-color: rgba(250, 204, 21, 0.8);
+            color: var(--gold);
+        }
+
+        .silver .rank-badge {
+            background: rgba(148, 163, 184, 0.18);
+            border-color: rgba(209, 213, 219, 0.9);
+            color: var(--silver);
+        }
+
+        .bronze .rank-badge {
+            background: rgba(248, 113, 113, 0.12);
+            border-color: rgba(248, 113, 113, 0.8);
+            color: var(--bronze);
+        }
+
+        .name-cell {
+            font-weight: 500;
+        }
+
+        .class-cell,
+        .school-cell {
+            font-size: 13px;
+            color: var(--text-soft);
+        }
+
+        .score-cell {
+            text-align: left;
+            direction: ltr;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 16px;
+            color: var(--text-soft);
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .leaderboard-shell {
+                padding: 14px;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .left-tools,
+            .right-tools {
+                justify-content: space-between;
+            }
+
+            th, td {
+                font-size: 13px;
+                padding: 8px 10px;
+            }
+
+            .rank-cell {
+                width: 70px;
+            }
+        }
+
+        /* تحسين عرض الطباعة (PDF) لصفحة النتائج */
+        @media print {
+            body {
+                background: #fff;
+                color: #000;
+                padding: 0;
+            }
+            .leaderboard-shell {
+                box-shadow: none;
+                border: none;
+                border-radius: 0;
+            }
+            .toolbar,
+            .page-header p {
+                display: none !important;
+            }
+            .table-wrapper {
+                border: 1px solid #000;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Leaderboard</h1>
-    <table>
-    <tr><th>Student</th><th>Total Score</th></tr>
-    {% for r in rows %}
-    <tr>
-      <td>{{ r.name }}</td>
-      <td>{{ r.total }}</td>
-    </tr>
-    {% endfor %}
-    </table>
+
+    <div class="page-header">
+        <h1>🏆 لوحة الشرف للطلاب</h1>
+        <p>ترتيب آلي حسب أعلى إجمالي درجات، مع فلاتر حسب الصف والمدرسة وشهادات لكل طالب.</p>
+    </div>
+
+    <div class="leaderboard-shell">
+        <!-- شريط الأدوات -->
+        <div class="toolbar">
+            <!-- يسار: بحث + فلاتر -->
+            <div class="left-tools">
+                <div class="search-box">
+                    <input
+                        id="searchInput"
+                        type="text"
+                        placeholder="ابحث باسم الطالب..."
+                        autocomplete="off"
+                    />
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div class="filters">
+                    <select id="classFilter" class="filter-select">
+                        <option value="">كل الصفوف</option>
+                    </select>
+
+                    <select id="schoolFilter" class="filter-select">
+                        <option value="">كل المدارس</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- يمين: إحصائيات + أزرار تصدير -->
+            <div class="right-tools">
+                <div class="stats">
+                    <div class="stat-pill">
+                        👨‍🎓 عدد الطلاب:
+                        <strong id="studentsCount">0</strong>
+                    </div>
+                    <div class="stat-pill">
+                        ⭐ أعلى درجة:
+                        <strong id="topScore">0</strong>
+                    </div>
+                </div>
+
+                <div class="export-buttons">
+                    <button class="btn" type="button" onclick="exportVisibleToCSV()">
+                        <span>📥</span> تنزيل Excel
+                    </button>
+                    <button class="btn" type="button" onclick="printTable()">
+                        <span>🖨️</span> طباعة / PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- الجدول -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الترتيب</th>
+                        <th>اسم الطالب</th>
+                        <th>الصف</th>
+                        <th>المدرسة</th>
+                        <th>إجمالي النقاط</th>
+                        <th>الشهادة</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    {% for r in rows %}
+                    <tr class="student-row"
+                        data-name="{{ r.name }}"
+                        data-score="{{ r.total|default:0 }}"
+                        data-class="{{ r.class_name|default_if_none:'' }}"
+                        data-school="{{ r.school_name|default_if_none:'' }}">
+                        <td class="rank-cell">
+                            <span class="rank-badge">-</span>
+                            <span class="medal"></span>
+                        </td>
+                        <td class="name-cell">{{ r.name }}</td>
+                        <td class="class-cell">
+                            {{ r.class_name }}
+                        </td>
+                        <td class="school-cell">
+                            {{ r.school_name }}
+                        </td>
+                        <td class="score-cell">{{ r.total }}</td>
+                        <td>
+                            <button type="button" class="btn btn-cert" onclick="openCertificateForRow(this)">
+                                <span>🎓</span> طباعة شهادة
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div id="noResults" class="no-results" style="display:none;">
+                لا توجد نتائج مطابقة للبحث / الفلاتر الحالية.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const bodyEl = document.getElementById("leaderboardBody");
+        const rowEls = Array.from(bodyEl.querySelectorAll(".student-row"));
+        const studentsCountEl = document.getElementById("studentsCount");
+        const topScoreEl = document.getElementById("topScore");
+        const searchInput = document.getElementById("searchInput");
+        const noResultsEl = document.getElementById("noResults");
+        const classFilter = document.getElementById("classFilter");
+        const schoolFilter = document.getElementById("schoolFilter");
+
+        // ترتيب الصفوف + إضافة ميداليات + إحصائيات عامة
+        function sortAndRank() {
+            const rows = [...rowEls];
+
+            rows.sort((a, b) => {
+                const scoreA = parseInt(a.dataset.score || "0", 10);
+                const scoreB = parseInt(b.dataset.score || "0", 10);
+                return scoreB - scoreA;
+            });
+
+            rows.forEach((row, index) => {
+                const rank = index + 1;
+                const rankBadge = row.querySelector(".rank-badge");
+                const medalSpan = row.querySelector(".medal");
+
+                row.classList.remove("gold", "silver", "bronze");
+                medalSpan.textContent = "";
+
+                // حفظ الترتيب في data-rank لاستخدامه في الشهادة
+                row.dataset.rank = rank.toString();
+                rankBadge.textContent = "#" + rank;
+
+                if (index === 0) {
+                    row.classList.add("gold");
+                    medalSpan.textContent = "🥇";
+                } else if (index === 1) {
+                    row.classList.add("silver");
+                    medalSpan.textContent = "🥈";
+                } else if (index === 2) {
+                    row.classList.add("bronze");
+                    medalSpan.textContent = "🥉";
+                }
+
+                bodyEl.appendChild(row);
+            });
+
+            const scores = rows.map(r => parseInt(r.dataset.score || "0", 10));
+            const topScore = scores.length ? Math.max(...scores) : 0;
+            studentsCountEl.textContent = rows.length.toString();
+            topScoreEl.textContent = topScore.toString();
+
+            populateFilterOptions(rows);
+        }
+
+        // تعبئة خيارات الفلاتر من البيانات الفعلية
+        function populateFilterOptions(rows) {
+            const classes = new Set();
+            const schools = new Set();
+
+            rows.forEach(row => {
+                const cls = (row.dataset.class || "").trim();
+                const sch = (row.dataset.school || "").trim();
+
+                if (cls) classes.add(cls);
+                if (sch) schools.add(sch);
+            });
+
+            while (classFilter.options.length > 1) {
+                classFilter.remove(1);
+            }
+            while (schoolFilter.options.length > 1) {
+                schoolFilter.remove(1);
+            }
+
+            Array.from(classes).sort().forEach(cls => {
+                const opt = document.createElement("option");
+                opt.value = cls;
+                opt.textContent = "صف: " + cls;
+                classFilter.appendChild(opt);
+            });
+
+            Array.from(schools).sort().forEach(sch => {
+                const opt = document.createElement("option");
+                opt.value = sch;
+                opt.textContent = "مدرسة: " + sch;
+                schoolFilter.appendChild(opt);
+            });
+        }
+
+        // فلترة حسب الاسم + الصف + المدرسة
+        function applyFilter() {
+            const query = (searchInput.value || "").trim().toLowerCase();
+            const classVal = classFilter.value;
+            const schoolVal = schoolFilter.value;
+            let visibleCount = 0;
+
+            rowEls.forEach(row => {
+                const nameCell = row.querySelector(".name-cell");
+                const nameText = (nameCell?.textContent || "").toLowerCase();
+
+                const rowClass = (row.dataset.class || "").trim();
+                const rowSchool = (row.dataset.school || "").trim();
+
+                let match = true;
+
+                if (query && !nameText.includes(query)) {
+                    match = false;
+                }
+                if (classVal && rowClass !== classVal) {
+                    match = false;
+                }
+                if (schoolVal && rowSchool !== schoolVal) {
+                    match = false;
+                }
+
+                row.style.display = match ? "" : "none";
+                if (match) visibleCount++;
+            });
+
+            noResultsEl.style.display = visibleCount === 0 ? "block" : "none";
+        }
+
+        // تصدير الصفوف الظاهرة حالياً إلى CSV (Excel)
+        function exportVisibleToCSV() {
+            const visibleRows = Array.from(bodyEl.querySelectorAll(".student-row"))
+                .filter(r => r.style.display !== "none");
+
+            if (!visibleRows.length) {
+                alert("لا توجد بيانات ظاهرة للتصدير.");
+                return;
+            }
+
+            const header = [
+                "الترتيب",
+                "اسم الطالب",
+                "الصف",
+                "المدرسة",
+                "إجمالي النقاط"
+            ];
+
+            const lines = [];
+            lines.push(header.join(","));
+
+            visibleRows.forEach(row => {
+                const rankText = row.querySelector(".rank-badge")?.textContent || "";
+                const nameText = row.querySelector(".name-cell")?.textContent || "";
+                const classText = row.querySelector(".class-cell")?.textContent || "";
+                const schoolText = row.querySelector(".school-cell")?.textContent || "";
+                const scoreText = row.querySelector(".score-cell")?.textContent || "";
+
+                const clean = (val) =>
+                    '"' + String(val).replace(/"/g, '""') + '"';
+
+                lines.push([
+                    clean(rankText),
+                    clean(nameText),
+                    clean(classText),
+                    clean(schoolText),
+                    clean(scoreText)
+                ].join(","));
+            });
+
+            const csvContent = lines.join("\r\n");
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "leaderboard.csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // طباعة الجدول / حفظ كـ PDF
+        function printTable() {
+            window.print();
+        }
+
+        // --- إنشاء شهادة لطالب معيّن ---
+        function openCertificateForRow(buttonEl) {
+            const row = buttonEl.closest(".student-row");
+            if (!row) return;
+
+            const name = row.dataset.name || (row.querySelector(".name-cell")?.textContent || "").trim();
+            const cls = (row.dataset.class || "").trim();
+            const school = (row.dataset.school || "").trim();
+            const score = row.dataset.score || (row.querySelector(".score-cell")?.textContent || "").trim();
+            const rank = row.dataset.rank || "";
+
+            openCertificateWindow({ name, cls, school, score, rank });
+        }
+
+        // نافذة الشهادة بطباعة جميلة
+        function openCertificateWindow({ name, cls, school, score, rank }) {
+            const win = window.open("", "_blank", "width=1000,height=700");
+            if (!win) {
+                alert("يرجى السماح بفتح النوافذ المنبثقة (Popups) لطباعة الشهادة.");
+                return;
+            }
+
+            const today = new Date();
+            const dateStr = today.toLocaleDateString("ar-SA", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            });
+
+            const doc = win.document;
+
+            doc.open();
+            doc.write(`
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<title>شهادة تفوّق - ${name}</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: "Cairo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #1e293b 0, #020617 40%, #000 100%);
+        color: #0f172a;
+    }
+    .page-wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+    }
+    .certificate {
+        width: 100%;
+        max-width: 900px;
+        aspect-ratio: 4/3;
+        background: #f9fafb;
+        border-radius: 24px;
+        padding: 32px 40px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 18px 60px rgba(15,23,42,0.45);
+        border: 4px double #e5e7eb;
+    }
+    .certificate::before {
+        content: "";
+        position: absolute;
+        inset: 18px;
+        border-radius: 18px;
+        border: 2px solid rgba(250, 204, 21, 0.8);
+        pointer-events: none;
+    }
+    .top-ribbon {
+        position: absolute;
+        inset-inline: 0;
+        top: 22px;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+    }
+    .top-ribbon span {
+        background: linear-gradient(90deg, #0f172a, #1d4ed8, #0f172a);
+        color: #f9fafb;
+        padding: 6px 26px;
+        border-radius: 999px;
+        font-size: 13px;
+        letter-spacing: 1px;
+    }
+    .cert-header {
+        text-align: center;
+        margin-top: 40px;
+        margin-bottom: 18px;
+    }
+    .cert-title-ar {
+        font-size: 32px;
+        font-weight: 800;
+        color: #111827;
+        margin: 0;
+    }
+    .cert-title-en {
+        font-size: 16px;
+        color: #4b5563;
+        margin: 4px 0 0;
+    }
+    .medal-badge {
+        position: absolute;
+        top: 52px;
+        inset-inline-start: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        font-size: 14px;
+        color: #92400e;
+    }
+    .medal-circle {
+        width: 52px;
+        height: 52px;
+        border-radius: 999px;
+        border: 3px solid #facc15;
+        background: radial-gradient(circle at 30% 20%, #fef3c7, #facc15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+    .body-text {
+        text-align: center;
+        margin-top: 10px;
+        padding-inline: 30px;
+        color: #374151;
+    }
+    .body-text p {
+        margin: 6px 0;
+        font-size: 16px;
+    }
+    .student-name {
+        font-size: 30px;
+        font-weight: 800;
+        color: #111827;
+        margin: 14px 0 6px;
+    }
+    .highlight-box {
+        margin: 18px auto 8px;
+        max-width: 480px;
+        display: flex;
+        justify-content: space-around;
+        gap: 8px;
+        font-size: 14px;
+        color: #111827;
+    }
+    .highlight-box div {
+        background: #fefce8;
+        border-radius: 999px;
+        padding: 6px 16px;
+        border: 1px solid #facc15;
+    }
+    .meta-row {
+        margin-top: 12px;
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        font-size: 14px;
+        color: #4b5563;
+    }
+    .sign-row {
+        position: absolute;
+        inset-inline: 40px;
+        bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #4b5563;
+    }
+    .sign-block {
+        text-align: center;
+        min-width: 160px;
+    }
+    .sign-line {
+        margin-top: 32px;
+        border-top: 1px solid #9ca3af;
+        padding-top: 4px;
+    }
+    .logo-mark {
+        position: absolute;
+        inset-inline-end: 40px;
+        top: 52px;
+        text-align: center;
+        font-size: 12px;
+        color: #6b7280;
+    }
+    .logo-circle {
+        width: 44px;
+        height: 44px;
+        margin: 0 auto 4px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 20%, #bfdbfe, #1d4ed8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #eff6ff;
+        font-weight: 700;
+        font-size: 18px;
+    }
+    @media print {
+        body {
+            background: #fff;
+        }
+        .certificate {
+            box-shadow: none;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+    <div class="certificate">
+        <div class="top-ribbon">
+            <span>منظومة التعلّم والتميّز الأكاديمي</span>
+        </div>
+
+        <div class="medal-badge">
+            <div class="medal-circle">🎓</div>
+            <div>ترتيب: ${rank || "-"}</div>
+        </div>
+
+        <div class="logo-mark">
+            <div class="logo-circle">ED</div>
+            <div>Academic League</div>
+        </div>
+
+        <div class="cert-header">
+            <h1 class="cert-title-ar">شهادة تفوّق وتميّز</h1>
+            <div class="cert-title-en">Certificate of Excellence</div>
+        </div>
+
+        <div class="body-text">
+            <p>تمنح هذه الشهادة للطالبة / الطالب:</p>
+            <div class="student-name">${name}</div>
+            <p>تقديرًا لاجتهاده / اجتهادها وحصوله / حصولها على مرتبة متقدّمة</p>
+            <p>في لوحة الشرف ضمن منظومة التعلّم.</p>
+        </div>
+
+        <div class="highlight-box">
+            <div>الصف: ${cls || "—"}</div>
+            <div>المدرسة: ${school || "—"}</div>
+            <div>الدرجة: ${score || "—"}</div>
+        </div>
+
+        <div class="meta-row">
+            <div>التاريخ: ${dateStr}</div>
+        </div>
+
+        <div class="sign-row">
+            <div class="sign-block">
+                <div>________________________</div>
+                <div>توقيع المعلمة / المعلم</div>
+            </div>
+            <div class="sign-block">
+                <div>________________________</div>
+                <div>ختم المدرسة</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // فتح نافذة الطباعة مباشرة ليسهّل حفظ الشهادة
+    window.onload = function() {
+        window.print();
+    };
+</script>
+</body>
+</html>
+            `);
+            doc.close();
+        }
+
+        // ربط الأحداث
+        searchInput.addEventListener("input", applyFilter);
+        classFilter.addEventListener("change", applyFilter);
+        schoolFilter.addEventListener("change", applyFilter);
+
+        // تنفيذ الترتيب والتهيئة عند تحميل الصفحة
+        sortAndRank();
+        applyFilter();
+
+        // جعل الدوال متاحة للأزرار
+        window.exportVisibleToCSV = exportVisibleToCSV;
+        window.printTable = printTable;
+        window.openCertificateForRow = openCertificateForRow;
+    </script>
 </body>
 </html>

@@ -2,23 +2,167 @@
 <html>
 <head>
     <style>
-        body {
-            text-align:center;
-            font-family:Arial;
+        @page {
+            size: A4 landscape;
+            margin: 0;
         }
-        .box {
-            border: 6px solid goldenrod;
-            padding:40px;
-            margin:40px;
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background: #fff;
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            box-sizing: border-box;
+            position: relative;
+            background: linear-gradient(135deg, #fff 0%, #f0f9ff 100%);
+        }
+        .border-pattern {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border: 5px double #4361ee;
+            border-radius: 20px;
+            z-index: 1;
+        }
+        .corner-decoration {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: #4361ee;
+            z-index: 2;
+        }
+        .top-left { top: 20px; left: 20px; border-radius: 15px 0 50px 0; }
+        .top-right { top: 20px; right: 20px; border-radius: 0 15px 0 50px; }
+        .bottom-left { bottom: 20px; left: 20px; border-radius: 0 50px 0 15px; }
+        .bottom-right { bottom: 20px; right: 20px; border-radius: 50px 0 15px 0; }
+        
+        .content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding-top: 60px;
+        }
+        .header {
+            font-size: 48px;
+            color: #4361ee;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+        .sub-header {
+            font-size: 24px;
+            color: #f72585;
+            margin-bottom: 40px;
+        }
+        .presented-to {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .student-name {
+            font-size: 60px;
+            color: #333;
+            font-weight: bold;
+            border-bottom: 3px solid #4361ee;
+            display: inline-block;
+            padding: 0 40px 10px;
+            margin-bottom: 30px;
+            font-family: 'Times New Roman', serif;
+        }
+        .achievement-text {
+            font-size: 22px;
+            color: #555;
+            margin-bottom: 50px;
+            line-height: 1.5;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .footer {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 60px;
+        }
+        .signature-line {
+            width: 250px;
+            border-top: 2px solid #333;
+            padding-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .badge {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 120px;
+            background: #f72585;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 0 10px rgba(247, 37, 133, 0.2);
+        }
+        .stars {
+            color: #ffd700;
+            font-size: 40px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h1>Certificate of Achievement</h1>
-        <h2>{{ name }}</h2>
-        <p>Has mastered all English letters A–Z</p>
-        <p>Date: {{ date }}</p>
+    <div class="container">
+        <div class="border-pattern"></div>
+        <div class="corner-decoration top-left"></div>
+        <div class="corner-decoration top-right"></div>
+        <div class="corner-decoration bottom-left"></div>
+        <div class="corner-decoration bottom-right"></div>
+        
+        <div class="content">
+            <div class="header">Certificate of Completion</div>
+            <div class="sub-header">Phonics Game Lab Master</div>
+            
+            <div class="stars">★★★★★</div>
+            
+            <div class="presented-to">This certificate is proudly presented to</div>
+            <div class="student-name">{{ name }}</div>
+            
+            <div class="achievement-text">
+                For successfully mastering all the letters of the English alphabet!
+                <br>
+                You have shown great dedication, learning skills, and enthusiasm.
+                <br>
+                You are now a Reading Hero!
+            </div>
+            
+            <div class="badge">
+                OFFICIAL<br>AWARD
+            </div>
+            
+            <table style="width: 100%; margin-top: 50px;">
+                <tr>
+                    <td align="center">
+                        <div class="signature-line">{{ date }}</div>
+                        <div>Date</div>
+                    </td>
+                    <td align="center">
+                        <div class="signature-line">Phonics Game Lab</div>
+                        <div>Instructor</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
 </body>
 </html>

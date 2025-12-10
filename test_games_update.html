@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>تحديث الألعاب المطلوبة</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            direction: rtl; 
+            text-align: center; 
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .games-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .game-item {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4ade80;
+        }
+        .game-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .required-badge {
+            background: #10b981;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 تحديث الألعاب المطلوبة</h1>
+        <p>تم تحديث قائمة الألعاب المطلوبة لإنهاء الحرف بنجاح!</p>
+        
+        <h2>الألعاب المطلوبة الجديدة:</h2>
+        <div class="games-list">
+            <div class="game-item">
+                <div class="required-badge">مطلوب</div>
+                <div class="game-icon">🔤</div>
+                <div>لعبة المطابقة</div>
+            </div>
+            <div class="game-item">
+                <div class="required-badge">مطلوب</div>
+                <div class="game-icon">🎈</div>
+                <div>لعبة البالونات</div>
+            </div>
+            <div class="game-item">
+                <div class="required-badge">مطلوب</div>
+                <div class="game-icon">🧠</div>
+                <div>لعبة الذاكرة</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: rgba(16, 185, 129, 0.2); border-radius: 10px;">
+            <h3>✅ التحديث مكتمل!</h3>
+            <p>الآن يجب على الطلاب إنهاء هذه الألعاب الثلاث فقط:</p>
+            <ul style="text-align: right; max-width: 300px; margin: 0 auto;">
+                <li>لعبة المطابقة (تطابق الحروف مع الصور)</li>
+                <li>لعبة البالونات (اضغط على البالونات الصحيحة)</li>
+                <li>لعبة الذاكرة (اقلب الكروت وابحث عن المتطابقات)</li>
+            </ul>
+            <p style="margin-top: 20px;"><strong>+ الحصول على 14 نقطة أو أكثر في التمارين</strong></p>
+        </div>
+    </div>
+</body>
+</html>
