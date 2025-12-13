@@ -2826,6 +2826,141 @@
     <!-- Scroll to Top Button -->
     <button class="scroll-top" id="scrollTop">↑</button>
 
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#" class="footer-link">
+                    <i class="fab fa-telegram"></i> تليجرام
+                </a>
+                <a href="https://wa.me/966551561955" target="_blank" class="footer-link">
+                    <i class="fab fa-whatsapp"></i> واتساب
+                </a>
+                <button id="privacyPolicyBtn" class="footer-link-btn">
+                    <i class="fas fa-shield-alt"></i> سياسة الخصوصية
+                </button>
+            </div>
+            <div class="footer-copyright">
+                <p>© 2025 Phonics Game Lab. جميع الحقوق محفوظة.</p>
+                <p class="developer-credit">تم التطوير بواسطة <span style="color: var(--accent);">shmhadri</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal" id="privacyModal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title">سياسة الخصوصية</h2>
+                <button class="modal-close" id="closePrivacyModal">✕</button>
+            </div>
+            <div class="modal-body" style="line-height: 1.8; color: var(--text); text-align: right;">
+                <h3 style="color: var(--primary);">مقدمة</h3>
+                <p>نحن في Phonics Game Lab نولي اهتماماً كبيراً لخصوصية زوارنا، وخاصة الأطفال. توضح هذه السياسة كيفية تعاملنا مع المعلومات.</p>
+                
+                <h4 style="color: var(--secondary); margin-top: 15px;">البيانات التي نجمعها</h4>
+                <p>نحن لا نجمع أي بيانات شخصية حساسة. البيانات التي قد يتم تخزينها تشمل:</p>
+                <ul>
+                    <li>تقدم الطالب في الألعاب (النجوم، الحروف المنجزة) ويتم تخزينها محلياً على جهازك.</li>
+                    <li>الاسم الذي تدخله للشهادة (يستخدم فقط لتوليد الشهادة).</li>
+                </ul>
+
+                <h4 style="color: var(--success); margin-top: 15px;">استخدام الميكروفون</h4>
+                <p>يطلب الموقع إذن الوصول للميكروفون فقط لغرض تقييم نطق الحروف. لا يتم تسجيل أو تخزين أي أصوات على خوادمنا.</p>
+
+                <h4 style="color: var(--warning); margin-top: 15px;">تواصل معنا</h4>
+                <p>لأي استفسارات، يمكنك التواصل معنا عبر الواتساب: <a href="https://wa.me/966551561955" style="color: var(--primary);">0551561955</a></p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .app-footer {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 30px 20px;
+            margin-top: 40px;
+            text-align: center;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-link, .footer-link-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-family: inherit;
+            padding: 10px 20px;
+            border-radius: 50px;
+            background-color: var(--surface-light);
+            box-shadow: var(--shadow-light);
+        }
+
+        .footer-link:hover, .footer-link-btn:hover {
+            color: var(--primary);
+            background-color: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .footer-copyright {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .developer-credit {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const privacyBtn = document.getElementById('privacyPolicyBtn');
+            const privacyModal = document.getElementById('privacyModal');
+            const closePrivacyBtn = document.getElementById('closePrivacyModal');
+
+            if (privacyBtn && privacyModal && closePrivacyBtn) {
+                privacyBtn.addEventListener('click', () => {
+                    privacyModal.style.display = 'flex';
+                });
+
+                closePrivacyBtn.addEventListener('click', () => {
+                    privacyModal.style.display = 'none';
+                });
+
+                privacyModal.addEventListener('click', (e) => {
+                    if (e.target === privacyModal) {
+                        privacyModal.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+
     <script>
         // بيانات التطبيق
         const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
