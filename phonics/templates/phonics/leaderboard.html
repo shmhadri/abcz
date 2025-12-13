@@ -327,26 +327,60 @@
 
         @media (max-width: 768px) {
             .leaderboard-shell {
-                padding: 14px;
+                padding: 10px;
+                margin: 10px;
             }
 
             .toolbar {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 15px;
             }
 
             .left-tools,
             .right-tools {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .filter-select {
+                width: 100%;
+            }
+            
+            .stats {
                 justify-content: space-between;
+            }
+            
+            .export-buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                min-width: 600px;
             }
 
             th, td {
                 font-size: 13px;
-                padding: 8px 10px;
+                padding: 10px;
             }
 
             .rank-cell {
-                width: 70px;
+                width: 60px;
             }
         }
 
@@ -936,18 +970,38 @@
         }
 
         // ربط الأحداث
-        searchInput.addEventListener("input", applyFilter);
-        classFilter.addEventListener("change", applyFilter);
-        schoolFilter.addEventListener("change", applyFilter);
+        function setupEventListeners() {
+            searchInput.addEventListener("input", applyFilter);
+            classFilter.addEventListener("change", applyFilter);
+            schoolFilter.addEventListener("change", applyFilter);
+        }
 
-        // تنفيذ الترتيب والتهيئة عند تحميل الصفحة
-        sortAndRank();
-        applyFilter();
+        // جعل الدوال متاحة للأزرار في النطاق العام
+        function exposeGlobalFunctions() {
+            window.exportVisibleToCSV = exportVisibleToCSV;
+            window.printTable = printTable;
+            window.openCertificateForRow = openCertificateForRow;
+        }
 
-        // جعل الدوال متاحة للأزرار
-        window.exportVisibleToCSV = exportVisibleToCSV;
-        window.printTable = printTable;
-        window.openCertificateForRow = openCertificateForRow;
+        // --- نقطة الدخول الرئيسية ---
+        function initializeLeaderboard() {
+            if (!bodyEl || !rowEls.length) {
+                console.warn("Leaderboard body or rows not found. No data to display.");
+                noResultsEl.textContent = "لا توجد بيانات لعرضها حالياً.";
+                noResultsEl.style.display = "block";
+                studentsCountEl.textContent = "0";
+                topScoreEl.textContent = "0";
+                return;
+            }
+
+            sortAndRank();
+            setupEventListeners();
+            exposeGlobalFunctions();
+            applyFilter(); // قم بالتصفية الأولية بعد الترتيب
+        }
+
+        // تأكد من تشغيل الشيفرة بعد تحميل كامل محتوى الصفحة
+        document.addEventListener("DOMContentLoaded", initializeLeaderboard);
     </script>
 </body>
 </html>

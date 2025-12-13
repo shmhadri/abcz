@@ -270,17 +270,18 @@
             position: absolute;
             top: 120%;
             right: 0;
-            width: 220px;
+            width: 240px;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            padding: 8px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 10px;
             display: none;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
             z-index: 1001;
-            animation: slideDown 0.2s ease;
+            animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: top right;
         }
 
         .dropdown-menu.active {
@@ -288,31 +289,40 @@
         }
 
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .menu-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 10px 15px;
-            border-radius: 8px;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
             color: var(--text);
             text-decoration: none;
             font-size: 14px;
             font-weight: 600;
-            transition: background 0.2s;
-            border: none;
-            background: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            background: transparent;
             width: 100%;
-            text-align: left;
+            text-align: right; /* RTL support */
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
 
         .menu-item:hover {
             background: var(--surface-light);
             color: var(--primary);
+            transform: translateX(-5px);
+            border-color: var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .menu-item:active {
+            transform: translateX(-2px) scale(0.98);
         }
 
         .menu-item i {
@@ -465,7 +475,14 @@
 
         @media (max-width: 900px) {
             .main-content {
-                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .main-content > * {
+                width: 100%;
+                display: block !important; /* Ensure no section is hidden */
             }
         }
 
@@ -2050,7 +2067,7 @@
             }
 
             .words-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
             }
 
             .writing-box {
@@ -2178,6 +2195,69 @@
             0% { top: -20px; transform: rotate(0deg); }
             100% { top: 100vh; transform: rotate(720deg); }
         }
+
+        /* Mobile Optimizations */
+        @media (max-width: 600px) {
+            .app-header {
+                padding: 10px 15px;
+            }
+            
+            .logo-text h1 {
+                font-size: 16px;
+            }
+            
+            .logo-text p {
+                font-size: 0.9rem !important;
+            }
+            
+            .main-content {
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .panel {
+                padding: 15px;
+            }
+            
+            .game-area {
+                height: 60vh; /* Dynamic height for mobile games */
+                max-height: 400px;
+            }
+            
+            .control-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+                margin: 10px;
+            }
+            
+            .letters-nav {
+                padding: 10px;
+            }
+            
+            .letter-tab {
+                min-width: 40px;
+                height: 40px;
+                font-size: 14px;
+            }
+            
+            /* Improve touch targets */
+            button, .btn, .letter-tab, .game-card {
+                cursor: pointer;
+                touch-action: manipulation;
+            }
+            
+            /* Prevent text selection during games */
+            .game-modal {
+                user-select: none;
+                -webkit-user-select: none;
+            }
+        }
     </style>
 </head>
 <body data-phonics-user-id="" data-phonics-user-email="">
@@ -2187,8 +2267,8 @@
             <div class="logo-section">
                 <div class="logo">PGL</div>
                 <div class="logo-text">
-                    <h1>Phonics Game Lab</h1>
-                    <p style="font-family: 'Amiri', serif; font-size: 1.1rem; color: var(--primary);">مبادرة مدرسة القصادية الثانية</p>
+                    <h1 style="font-size: 1.2rem; margin-bottom: 2px;">Phonics Game Lab</h1>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">مبادرة التعلم باللعب (الحروف الإنجليزية) - تأسيس - تمارين وأوراق عمل</p>
                 </div>
             </div>
 
@@ -2270,21 +2350,49 @@
                 <button class="modal-close" id="closeInstructionsModal">✕</button>
             </div>
             <div class="modal-body" style="line-height: 1.8; color: var(--text);">
-                <h3 style="color: var(--primary); margin-bottom: 15px;">مرحباً بك في معمل الصوتيات! 🌟</h3>
-                <p>هذا الموقع مصمم لمساعدتك على تعلم الحروف الإنجليزية ونطقها وكتابتها بشكل صحيح وممتع.</p>
-                
-                <div style="margin: 20px 0; background: var(--surface-light); padding: 15px; border-radius: 10px;">
-                    <h4 style="margin-bottom: 10px;">كيف أستخدم الموقع؟</h4>
-                    <ul style="list-style: none; padding: 0;">
-                        <li style="margin-bottom: 10px;">🔹 <strong>تعلم الحرف:</strong> استمع إلى نطق الحرف وشاهد طريقة كتابته.</li>
-                        <li style="margin-bottom: 10px;">🔹 <strong>الكلمات:</strong> تعلم كلمات جديدة تبدأ بالحرف مع صور توضيحية.</li>
-                        <li style="margin-bottom: 10px;">🔹 <strong>التمارين:</strong> تدرب على الكتابة واختبر معلوماتك في الاختبار القصير.</li>
-                        <li style="margin-bottom: 10px;">🔹 <strong>الألعاب:</strong> العب ألعاباً ممتعة لتعزيز تعلمك بعد الانتهاء من التمارين.</li>
-                        <li style="margin-bottom: 10px;">🔹 <strong>الشهادة:</strong> أكمل جميع الحروف للحصول على شهادة إتمام رسمية! 🎓</li>
-                    </ul>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">🎓</div>
+                    <h3 style="color: var(--primary); margin-bottom: 5px;">مرحباً بك في رحلة التعلم الممتعة!</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">دليلك السريع لاستخدام منصة Phonics Game Lab</p>
                 </div>
                 
-                <p style="font-weight: bold; text-align: center; color: var(--success);">نتمنى لك رحلة تعليمية ممتعة ومفيدة!</p>
+                <div style="display: grid; gap: 15px;">
+                    <div style="background: var(--surface-light); padding: 15px; border-radius: 12px; border-right: 4px solid var(--primary);">
+                        <h4 style="margin-bottom: 5px; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">1</span>
+                            اختر الحرف
+                        </h4>
+                        <p style="font-size: 0.9rem; margin: 0;">ابدأ باختيار حرف من القائمة. كل حرف هو بوابة لعالم جديد من الكلمات والأصوات.</p>
+                    </div>
+
+                    <div style="background: var(--surface-light); padding: 15px; border-radius: 12px; border-right: 4px solid var(--secondary);">
+                        <h4 style="margin-bottom: 5px; color: var(--secondary); display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--secondary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">2</span>
+                            استمع وشاهد
+                        </h4>
+                        <p style="font-size: 0.9rem; margin: 0;">استمع للنطق الصحيح (بريطاني/أمريكي)، شاهد طريقة الكتابة، وتعلم كلمات جديدة مع الصور.</p>
+                    </div>
+
+                    <div style="background: var(--surface-light); padding: 15px; border-radius: 12px; border-right: 4px solid var(--success);">
+                        <h4 style="margin-bottom: 5px; color: var(--success); display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--success); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">3</span>
+                            العب وتعلم
+                        </h4>
+                        <p style="font-size: 0.9rem; margin: 0;">بعد تعلم الحرف، اضغط على زر <strong>"إنهاء الحرف"</strong> لفتح الألعاب الممتعة (الذاكرة، المطابقة، البحث عن الكلمات).</p>
+                    </div>
+
+                    <div style="background: var(--surface-light); padding: 15px; border-radius: 12px; border-right: 4px solid var(--warning);">
+                        <h4 style="margin-bottom: 5px; color: var(--warning); display: flex; align-items: center; gap: 8px;">
+                            <span style="background: var(--warning); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">4</span>
+                            اجمع النقاط والشهادات
+                        </h4>
+                        <p style="font-size: 0.9rem; margin: 0;">كلما لعبت أكثر، جمعت نقاطاً أكثر! أكمل جميع الحروف لتحصل على شهادة إتمام مميزة.</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <p style="font-weight: bold; color: var(--primary);">هل أنت مستعد؟ لنبدأ المغامرة! 🚀</p>
+                </div>
             </div>
         </div>
     </div>
@@ -2482,7 +2590,7 @@
                     <button class="btn btn-secondary" id="prevLetter">
                         <span>⬅️</span> الحرف السابق
                     </button>
-                    <button class="btn btn-primary" id="finishLetter">
+                    <button class="btn btn-primary" id="finishLetter" style="touch-action: manipulation; z-index: 100; position: relative;">
                         <span>✅</span> إنهاء الحرف
                     </button>
                 </div>
@@ -3257,7 +3365,8 @@
                 this.setupLetterJumpMenu();
                 
                 if (this.studentName) {
-                    document.getElementById('studentName').value = this.studentName;
+                    const nameInput = document.getElementById('studentName');
+                    if (nameInput) nameInput.value = this.studentName;
                 }
                 
                 if (this.completedLetters.length === LETTERS.length) {
@@ -3271,6 +3380,23 @@
                 
                 this.soundManager.initialize();
                 this.disableCopyPaste();
+
+                // Mobile Audio Unlock & Resize Handling
+                const unlockAudio = () => {
+                    if (this.soundManager.audioContext && this.soundManager.audioContext.state === 'suspended') {
+                        this.soundManager.audioContext.resume();
+                    }
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        this.audioContext.resume();
+                    }
+                    document.removeEventListener('touchstart', unlockAudio);
+                    document.removeEventListener('click', unlockAudio);
+                };
+                document.addEventListener('touchstart', unlockAudio, { passive: true });
+                document.addEventListener('click', unlockAudio);
+
+                // Initial resize
+                if (this.handleResize) this.handleResize();
             }
 
             resolveCurrentUserIdentifier() {
@@ -3668,11 +3794,18 @@
                     }
                     // NEW: Ensure exercises structure exists for existing letter records
                     if (!progress.letters[letter].exercises) {
-                        progress.letters[letter].exercises = {
-                            writing: { capital: {}, small: {} },
-                            words: {},
-                            quiz: { answers: {}, score: 0, completed: false }
-                        };
+                        progress.letters[letter].exercises = {};
+                    }
+                    
+                    // Ensure deep properties exist
+                    if (!progress.letters[letter].exercises.writing) {
+                        progress.letters[letter].exercises.writing = { capital: {}, small: {} };
+                    }
+                    if (!progress.letters[letter].exercises.words) {
+                        progress.letters[letter].exercises.words = {};
+                    }
+                    if (!progress.letters[letter].exercises.quiz) {
+                        progress.letters[letter].exercises.quiz = { answers: {}, score: 0, completed: false };
                     }
                 }
 
@@ -3932,7 +4065,20 @@
                 this.letterInfoBtn.addEventListener('click', () => this.showLetterInfo());
                 this.resetLetterBtn.addEventListener('click', () => this.resetLetter());
                 this.prevLetterBtn.addEventListener('click', () => this.previousLetter());
-                this.finishLetterBtn.addEventListener('click', () => this.finishLetter());
+                
+                // Robust Finish Letter Button Handler
+                const handleFinishLetter = (e) => {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    this.finishLetter();
+                };
+
+                this.finishLetterBtn.addEventListener('click', handleFinishLetter);
+                this.finishLetterBtn.addEventListener('touchstart', handleFinishLetter, { passive: false });
+                this.finishLetterBtn.addEventListener('touchend', (e) => e.preventDefault(), { passive: false }); // Prevent ghost clicks
+                
                 this.themeToggle.addEventListener('click', () => this.toggleTheme());
                 
                 // Mobile Menu Events
@@ -4107,6 +4253,15 @@
                         this.startGame(gameType);
                     }
                 });
+                
+                this.gamesGrid.addEventListener('touchstart', (e) => {
+                    const gameCard = e.target.closest('.game-card');
+                    if (gameCard && !gameCard.classList.contains('locked')) {
+                        e.preventDefault();
+                        const gameType = gameCard.dataset.game;
+                        this.startGame(gameType);
+                    }
+                }, { passive: false });
                 
                 this.quizNextBtn.addEventListener('click', () => this.nextQuizQuestion());
                 
@@ -4534,88 +4689,95 @@
             }
             
             loadLetter(index) {
-                const letter = LETTERS[index];
-                if (!letter) return;
+                try {
+                    const letter = LETTERS[index];
+                    if (!letter) return;
 
-                if (index !== 0 && !this.isLetterUnlocked(letter)) {
-                    this.showToast('عذرًا، هذا الحرف مغلق. يجب إنهاء الحرف السابق أولًا.', 3000);
-                    this.soundManager.playSound('error');
-                    return;
+                    if (index !== 0 && !this.isLetterUnlocked(letter)) {
+                        this.showToast('عذرًا، هذا الحرف مغلق. يجب إنهاء الحرف السابق أولًا.', 3000);
+                        this.soundManager.playSound('error');
+                        return;
+                    }
+
+                    this.currentLetterIndex = index;
+                    this.progress.currentLetter = letter;
+                    
+                    const letterProgress = this.ensureLetterRecord(letter);
+                    const staticLetterData = LETTER_DATA[letter];
+
+                    if (!staticLetterData || !staticLetterData.words) {
+                        console.error(`No static data or words found for letter: ${letter}`);
+                        if (this.wordsGrid) this.wordsGrid.innerHTML = '<p>لا توجد بيانات لهذا الحرف.</p>';
+                        if (this.capitalWriting) this.capitalWriting.innerHTML = '';
+                        if (this.smallWriting) this.smallWriting.innerHTML = '';
+                        if (this.wordWritingList) this.wordWritingList.innerHTML = '';
+                        if (this.quizQuestion) this.quizQuestion.innerHTML = 'لا توجد أسئلة متاحة.';
+                        if (this.quizOptions) this.quizOptions.innerHTML = '';
+                        return;
+                    }
+
+                    this.quizScore = letterProgress.exercises.quiz.score || 0;
+                    this.quizCompletedFlag = letterProgress.exercises.quiz.completed || false;
+                    
+                    // Calculate start index based on answered questions
+                    const answeredCount = Object.keys(letterProgress.exercises.quiz.answers || {}).length;
+                    this.currentQuizIndex = this.quizCompletedFlag ? staticLetterData.quiz.length : answeredCount;
+                    
+                    this.updateUIForLetter(letter, staticLetterData.words);
+                    this.renderWritingBoxes(letter);
+                    this.renderWordWriting(letter, staticLetterData.words);
+                    this.renderQuiz(staticLetterData.quiz);
+                    
+                    this.updateAndCommitScores();
+                    this.updateProgress();
+                    this.renderLettersNav();
+                    this.renderAchievements();
+                } catch (error) {
+                    console.error("Error loading letter:", error);
+                    this.showToast("حدث خطأ أثناء تحميل الحرف", 3000);
                 }
-
-                this.currentLetterIndex = index;
-                this.progress.currentLetter = letter;
-                
-                const letterProgress = this.ensureLetterRecord(letter);
-                const staticLetterData = LETTER_DATA[letter];
-
-                if (!staticLetterData || !staticLetterData.words) {
-                    console.error(`No static data or words found for letter: ${letter}`);
-                    this.wordsGrid.innerHTML = '<p>لا توجد بيانات لهذا الحرف.</p>';
-                    this.capitalWriting.innerHTML = '';
-                    this.smallWriting.innerHTML = '';
-                    this.wordWritingList.innerHTML = '';
-                    this.quizQuestion.innerHTML = 'لا توجد أسئلة متاحة.';
-                    this.quizOptions.innerHTML = '';
-                    return;
-                }
-
-                this.quizScore = letterProgress.exercises.quiz.score || 0;
-                this.quizCompletedFlag = letterProgress.exercises.quiz.completed || false;
-                
-                // Calculate start index based on answered questions
-                const answeredCount = Object.keys(letterProgress.exercises.quiz.answers || {}).length;
-                this.currentQuizIndex = this.quizCompletedFlag ? staticLetterData.quiz.length : answeredCount;
-                
-                this.updateUIForLetter(letter, staticLetterData.words);
-                this.renderWritingBoxes(letter);
-                this.renderWordWriting(letter, staticLetterData.words);
-                this.renderQuiz(staticLetterData.quiz);
-                
-                this.updateAndCommitScores();
-                this.updateProgress();
-                this.renderLettersNav();
-                this.renderAchievements();
             }
 
             updateUIForLetter(letter, words) {
-                this.currentLetterEl.textContent = letter;
-                this.letterUpperEl.textContent = letter.toUpperCase();
-                this.letterLowerEl.textContent = letter.toLowerCase();
-                this.letterForWordsEl.textContent = letter;
+                if (this.currentLetterEl) this.currentLetterEl.textContent = letter;
+                if (this.letterUpperEl) this.letterUpperEl.textContent = letter.toUpperCase();
+                if (this.letterLowerEl) this.letterLowerEl.textContent = letter.toLowerCase();
+                if (this.letterForWordsEl) this.letterForWordsEl.textContent = letter;
                 
                 // إضافة زر تحميل ورقة العمل
-                const headerContainer = this.currentLetterEl.parentElement;
-                let downloadBtn = headerContainer.querySelector('.download-worksheet-btn');
-                
-                if (!downloadBtn) {
-                    downloadBtn = document.createElement('button');
-                    downloadBtn.className = 'download-worksheet-btn';
-                    downloadBtn.innerHTML = '<i class="fas fa-file-pdf"></i> ورقة عمل';
-                    downloadBtn.style.cssText = `
-                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-                        color: white;
-                        border: none;
-                        padding: 8px 15px;
-                        border-radius: 20px;
-                        font-size: 14px;
-                        cursor: pointer;
-                        margin-right: 15px;
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 8px;
-                        box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
-                        transition: transform 0.2s;
-                    `;
-                    downloadBtn.onmouseover = () => downloadBtn.style.transform = 'scale(1.05)';
-                    downloadBtn.onmouseout = () => downloadBtn.style.transform = 'scale(1)';
+                if (this.currentLetterEl && this.currentLetterEl.parentElement) {
+                    const headerContainer = this.currentLetterEl.parentElement;
+                    let downloadBtn = headerContainer.querySelector('.download-worksheet-btn');
                     
-                    // إدراج الزر بجانب العنوان
-                    this.currentLetterEl.parentElement.appendChild(downloadBtn);
+                    if (!downloadBtn) {
+                        downloadBtn = document.createElement('button');
+                        downloadBtn.className = 'download-worksheet-btn';
+                        downloadBtn.innerHTML = '<i class="fas fa-file-pdf"></i> ورقة عمل';
+                        downloadBtn.style.cssText = `
+                            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                            color: white;
+                            border: none;
+                            padding: 8px 15px;
+                            border-radius: 20px;
+                            font-size: 14px;
+                            cursor: pointer;
+                            margin-right: 15px;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 8px;
+                            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
+                            transition: transform 0.2s;
+                        `;
+                        downloadBtn.onmouseover = () => downloadBtn.style.transform = 'scale(1.05)';
+                        downloadBtn.onmouseout = () => downloadBtn.style.transform = 'scale(1)';
+                        
+                        // إدراج الزر بجانب العنوان
+                        this.currentLetterEl.parentElement.appendChild(downloadBtn);
+                    }
+                    
+                    // تحديث حدث النقر للزر
+                    downloadBtn.onclick = () => this.generateWorksheet(letter);
                 }
-                
-                // تحديث حدث النقر للزر
-                downloadBtn.onclick = () => this.generateWorksheet(letter);
 
                 this.renderWordsGrid(words);
             }
@@ -4832,6 +4994,7 @@
             }
 
             renderWordsGrid(words) {
+                if (!this.wordsGrid) return;
                 this.wordsGrid.innerHTML = '';
                 if (!words || words.length === 0) {
                     this.wordsGrid.innerHTML = '<p>لا توجد كلمات لهذا الحرف.</p>';
@@ -4871,6 +5034,7 @@
             }
 
             renderWritingBoxes(letter) {
+                if (!this.capitalWriting || !this.smallWriting) return;
                 this.capitalWriting.innerHTML = '';
                 this.smallWriting.innerHTML = '';
                 const letterProgress = this.ensureLetterRecord(letter);
@@ -4961,6 +5125,7 @@
             }
 
             renderWordWriting(letter, words) {
+                if (!this.wordWritingList) return;
                 this.wordWritingList.innerHTML = '';
                 if (!words || words.length === 0) return;
 
@@ -5056,14 +5221,15 @@
             }
 
             renderQuiz(quizData) {
+                if (!this.quizQuestion || !this.quizOptions) return;
                 if (!quizData || quizData.length === 0) {
                     this.quizQuestion.innerHTML = 'لا توجد أسئلة متاحة.';
                     this.quizOptions.innerHTML = '';
-                    this.quizNavigation.style.display = 'none';
+                    if (this.quizNavigation) this.quizNavigation.style.display = 'none';
                     return;
                 }
 
-                this.quizNavigation.style.display = 'flex';
+                if (this.quizNavigation) this.quizNavigation.style.display = 'flex';
                 
                 if (this.currentQuizIndex >= quizData.length) {
                     this.showQuizResults();
@@ -5709,76 +5875,14 @@
                     this.soundManager.playSound('success'); 
                     this.launchBalloonsCelebration();
 
-                    const gameNames = {
-                        'match': 'لعبة المطابقة',
-                        'balloons': 'لعبة البالونات',
-                        'memory': 'لعبة الذاكرة'
-                    };
-                    
-                    const missingNamesList = missingGames.map(g => 
-                        `<li style="margin: 10px 0; font-size: 18px;">🔹 ${gameNames[g] || g}</li>`
-                    ).join('');
+                    // تحديث نصوص نافذة الألعاب لتكون تحفيزية
+                    this.motivationTitle.textContent = "أنت بطل حقيقي! 🦸‍♂️";
+                    this.motivationSubtitle.textContent = "أحسنت! الآن وقت المرح والألعاب! 🎮";
+                    this.motivationQuote.textContent = "أكمل الألعاب المطلوبة لتصبح محترفاً وتنتقل للحرف التالي!";
 
-                    // عرض نافذة تحفيزية بدلاً من التوست
-                    this.gameModal.style.display = 'flex';
-                    const modalContent = this.gameModal.querySelector('.game-modal-content');
-                    
-                    modalContent.innerHTML = `
-                        <div style="text-align: center; padding: 20px; animation: fadeIn 0.5s ease;">
-                            <div style="font-size: 70px; margin-bottom: 15px; animation: bounce 2s infinite;">🦸‍♂️</div>
-                            <h2 style="
-                                color: #4f46e5; 
-                                font-size: 32px; 
-                                margin-bottom: 15px; 
-                                font-weight: 900;
-                                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-                            ">أنت بطل حقيقي!</h2>
-                            
-                            <p style="color: #475569; font-size: 20px; margin-bottom: 20px; line-height: 1.6;">
-                                لنلعب ونمرح قليلاً قبل الانتقال للحرف التالي! 🎮<br>
-                                <span style="color: #059669; font-weight: bold;">هناك 3 ألعاب مطلوبة لتصبح محترفاً:</span>
-                            </p>
-
-                            <div style="
-                                background: #f0fdf4; 
-                                border: 2px solid #86efac; 
-                                border-radius: 15px; 
-                                padding: 20px; 
-                                margin: 20px 0;
-                                text-align: right;
-                                display: inline-block;
-                                min-width: 300px;
-                            ">
-                                <ul style="list-style: none; padding: 0; margin: 0; color: #166534; font-weight: bold;">
-                                    ${missingNamesList}
-                                </ul>
-                            </div>
-
-                            <p style="color: #64748b; font-size: 16px; margin-top: 10px;">
-                                ✨ ويمكنك لعب باقي الألعاب لزيادة نقاطك إذا أردت!
-                            </p>
-                            
-                            <button id="goToGamesBtn" style="
-                                margin-top: 25px;
-                                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-                                color: white;
-                                border: none;
-                                padding: 15px 40px;
-                                font-size: 22px;
-                                font-weight: bold;
-                                border-radius: 50px;
-                                cursor: pointer;
-                                box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-                                transition: transform 0.2s;
-                                animation: pulse 2s infinite;
-                            ">هيا نلعب! 🚀</button>
-                        </div>
-                    `;
-
-                    document.getElementById('goToGamesBtn').addEventListener('click', () => {
-                        this.gameModal.style.display = 'none';
-                        this.showGames();
-                    });
+                    // الانتقال فوراً لقائمة الألعاب
+                    this.showGameSelection();
+                    this.showToast('اختر لعبة للبدء! 🚀', 3000, 'success');
 
                     return;
                 }
@@ -5984,6 +6088,20 @@
                 // Remove event listeners
                 this.removeAllGameEventListeners();
                 
+                // Remove resize listener
+                if (this.resizeHandler) {
+                    window.removeEventListener('resize', this.resizeHandler);
+                    this.resizeHandler = null;
+                }
+                
+                // Remove hidden input if exists
+                if (this.hiddenInput) {
+                    if (this.hiddenInput.parentNode) {
+                        this.hiddenInput.parentNode.removeChild(this.hiddenInput);
+                    }
+                    this.hiddenInput = null;
+                }
+                
                 // Reset celebration flags
                 this.isCelebrating = false;
                 this.isMiniCelebrating = false;
@@ -6040,6 +6158,10 @@
                 
                 this.updateGameStats();
                 this.setupGameControls();
+                
+                // Add resize listener
+                this.resizeHandler = this.handleResize.bind(this);
+                window.addEventListener('resize', this.resizeHandler);
                 
                 const instructions = {
                     'carRace': '🏎️ تحكم في السيارة باستخدام الأسهم أو اللمس. اجمع الحروف الصحيحة (A و a) وتجنب الحروف الخاطئة!',
@@ -6106,6 +6228,21 @@
                 }
                 
                 this.accuracyEl.textContent = `${this.gameStats.accuracy}%`;
+            }
+            
+            handleResize() {
+                if (this.gameCanvas && this.gameCanvas.parentElement) {
+                    const container = this.gameCanvas.parentElement;
+                    this.gameCanvas.width = container.clientWidth;
+                    this.gameCanvas.height = container.clientHeight;
+                }
+
+                // Add mobile class for CSS targeting
+                if (window.innerWidth <= 900) {
+                    document.body.classList.add('mobile-view');
+                } else {
+                    document.body.classList.remove('mobile-view');
+                }
             }
             
             initGame(gameType) {
@@ -6260,6 +6397,10 @@
                     // تحريك السيارة
                     if (this.touchControls.left) car.move('left');
                     if (this.touchControls.right) car.move('right');
+                    
+                    // Ensure car stays within bounds (for resize)
+                    if (car.x > canvas.width - car.width) car.x = canvas.width - car.width;
+                    
                     car.draw();
 
                     // إدارة العناصر
@@ -6468,6 +6609,9 @@
                     
                     if (this.touchControls.left) racket.move('left');
                     if (this.touchControls.right) racket.move('right');
+                    
+                    // Ensure racket stays within bounds
+                    if (racket.x > canvas.width - racket.width) racket.x = canvas.width - racket.width;
                     
                     ball.update();
                     ball.draw();
@@ -6700,6 +6844,10 @@
                 const gameLoop = () => {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
+                    // Re-center cannon on resize
+                    cannon.x = canvas.width / 2;
+                    cannon.y = canvas.height - 50;
+                    
                     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
                     gradient.addColorStop(0, '#4cc9f0');
                     gradient.addColorStop(1, '#3a0ca3');
@@ -6778,6 +6926,18 @@
                 };
                 
                 canvas.addEventListener('click', clickHandler);
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const rect = canvas.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    const mouseX = touch.clientX - rect.left;
+                    const mouseY = touch.clientY - rect.top;
+                    
+                    balloons.forEach(balloon => {
+                        balloon.checkClick(mouseX, mouseY);
+                    });
+                }, { passive: false });
+
                 this.currentClickHandler = clickHandler;
                 
                 const gameLoop = () => {
@@ -6908,6 +7068,9 @@
                         
                         this.y -= this.speed;
                         
+                        // Handle resize
+                        if (this.x > canvas.width) this.x = Math.random() * canvas.width;
+                        
                         if (this.y < -this.radius) {
                             const index = balloons.indexOf(this);
                             if (index > -1) {
@@ -6953,6 +7116,38 @@
             initTypingGame(ctx, canvas) {
                 const currentLetter = LETTERS[this.currentLetterIndex];
                 const app = this;
+                
+                // Mobile keyboard support
+                const hiddenInput = document.createElement('input');
+                hiddenInput.style.position = 'absolute';
+                hiddenInput.style.opacity = '0';
+                hiddenInput.style.top = '-1000px';
+                // Prevent zooming on focus by setting font size
+                hiddenInput.style.fontSize = '16px';
+                document.body.appendChild(hiddenInput);
+                this.hiddenInput = hiddenInput;
+                
+                const focusInput = (e) => {
+                    // Don't prevent default on click, otherwise focus might not work
+                    hiddenInput.focus();
+                };
+                
+                canvas.addEventListener('click', focusInput);
+                canvas.addEventListener('touchstart', (e) => {
+                    // e.preventDefault(); // Don't prevent default here, we need focus
+                    hiddenInput.focus();
+                }, { passive: true });
+                
+                hiddenInput.addEventListener('input', (e) => {
+                    if (e.data) {
+                        const key = e.data.toLowerCase();
+                        // Call keyHandler logic
+                        if (this.currentKeyHandler) {
+                            this.currentKeyHandler({ key: key });
+                        }
+                        hiddenInput.value = '';
+                    }
+                });
                 
                 const fallingLetters = [];
                 const letterSpeed = 1;
@@ -7035,6 +7230,9 @@
                     fallingLetters.forEach((fallingLetter, index) => {
                         fallingLetter.y += fallingLetter.speed;
                         
+                        // Handle resize
+                        if (fallingLetter.x > canvas.width - 30) fallingLetter.x = canvas.width - 30;
+                        
                         if (fallingLetter.y > canvas.height - 50 && !fallingLetter.completed) {
                             app.gameStats.totalAttempts++;
                             fallingLetters.splice(index, 1);
@@ -7090,11 +7288,14 @@
                 const app = this;
                 
                 const cards = [];
-                const cardWidth = 80;
-                const cardHeight = 100;
                 const padding = 10;
                 const cols = 4;
                 const rows = 3;
+                
+                // Dynamic card size
+                let availableWidth = canvas.width - (cols + 1) * padding;
+                let cardWidth = Math.min(80, availableWidth / cols);
+                let cardHeight = cardWidth * 1.25;
                 
                 const cardData = [];
                 const letters = [currentLetter, currentLetter.toLowerCase()];
@@ -7125,6 +7326,8 @@
                         if (index >= cardData.length) break;
                         
                         cards.push({
+                            col: j, // Store column for resize
+                            row: i, // Store row for resize
                             x: j * (cardWidth + padding) + (canvas.width - (cols * (cardWidth + padding) - padding)) / 2,
                             y: i * (cardHeight + padding) + 50,
                             width: cardWidth,
@@ -7229,10 +7432,32 @@
                 };
                 
                 canvas.addEventListener('click', clickHandler);
+                
+                // Touch support for Memory Game
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    // Simulate click
+                    clickHandler({ clientX: touch.clientX, clientY: touch.clientY });
+                }, { passive: false });
+
                 this.currentClickHandler = clickHandler;
                 
                 const gameLoop = () => {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Recalculate positions on resize
+                    let availableWidth = canvas.width - (cols + 1) * padding;
+                    cardWidth = Math.min(80, availableWidth / cols);
+                    cardHeight = cardWidth * 1.25;
+                    
+                    const startX = (canvas.width - (cols * (cardWidth + padding) - padding)) / 2;
+                    cards.forEach(card => {
+                        card.width = cardWidth;
+                        card.height = cardHeight;
+                        card.x = card.col * (cardWidth + padding) + startX;
+                        card.y = card.row * (cardHeight + padding) + 50;
+                    });
                     
                     ctx.fillStyle = '#f8fafc';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -7448,6 +7673,24 @@
                 canvas.addEventListener('mousemove', mouseMoveHandler);
                 canvas.addEventListener('mouseup', mouseUpHandler);
                 
+                // Touch support
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    mouseDownHandler({ clientX: touch.clientX, clientY: touch.clientY });
+                }, { passive: false });
+                
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    mouseMoveHandler({ clientX: touch.clientX, clientY: touch.clientY });
+                }, { passive: false });
+                
+                canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    mouseUpHandler({});
+                }, { passive: false });
+
                 this.currentMouseHandlers = {
                     mousedown: mouseDownHandler,
                     mousemove: mouseMoveHandler,
@@ -7456,6 +7699,18 @@
                 
                 const gameLoop = () => {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Responsive Layout
+                    const isMobile = canvas.width < 600;
+                    const availableWidth = isMobile ? canvas.width - 20 : (canvas.width * 0.6);
+                    const newCellSize = Math.min(35, availableWidth / gridSize);
+                    const newGridOffsetX = isMobile ? (canvas.width - (gridSize * newCellSize)) / 2 : 20;
+                    
+                    cells.forEach(cell => {
+                        cell.size = newCellSize;
+                        cell.x = cell.col * newCellSize + newGridOffsetX;
+                        cell.y = cell.row * newCellSize + gridOffsetY;
+                    });
                     
                     // Background
                     ctx.fillStyle = '#f8fafc';
@@ -7471,9 +7726,17 @@
                     // Draw Grid
                     cells.forEach(cell => cell.draw());
                     
-                    // Draw Word List on the Right
-                    const listX = gridOffsetX + (gridSize * cellSize) + 40;
-                    const listY = 80;
+                    // Draw Word List
+                    // Reuse variables from above or recalculate if needed, but don't redeclare const
+                    
+                    let listX, listY;
+                    if (isMobile) {
+                         listX = 20;
+                         listY = gridOffsetY + (gridSize * newCellSize) + 40;
+                    } else {
+                         listX = newGridOffsetX + (gridSize * newCellSize) + 40;
+                         listY = 80;
+                    }
                     
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'top';
@@ -7635,14 +7898,22 @@
                 const words = [];
                 const matches = [];
                 
+                // Responsive layout calculation
+                const isMobile = canvas.width < 600;
+                const letterWidth = isMobile ? 40 : Math.min(50, canvas.width * 0.15);
+                const wordWidth = isMobile ? canvas.width * 0.5 : Math.min(150, canvas.width * 0.45);
+                
+                const letterX = isMobile ? 10 : canvas.width * 0.1;
+                const wordX = isMobile ? canvas.width - wordWidth - 10 : canvas.width * 0.5;
+                
                 for (let i = 0; i < 6; i++) {
                     letters.push({
                         id: i,
                         letter: i % 2 === 0 ? currentLetter : currentLetter.toLowerCase(),
-                        x: 100,
-                        y: 100 + i * 60,
-                        width: 50,
-                        height: 50,
+                        x: letterX,
+                        y: 100 + i * (isMobile ? 50 : 60),
+                        width: letterWidth,
+                        height: isMobile ? 40 : 50,
                         dragging: false,
                         matched: false,
                         draw: function() {
@@ -7650,7 +7921,7 @@
                             ctx.fillRect(this.x, this.y, this.width, this.height);
                             
                             ctx.fillStyle = 'white';
-                            ctx.font = 'bold 30px Arial';
+                            ctx.font = isMobile ? 'bold 24px Arial' : 'bold 30px Arial';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
                             ctx.fillText(this.letter, this.x + this.width/2, this.y + this.height/2);
@@ -7668,32 +7939,35 @@
                             id: i,
                             word: wordData.word,
                             translation: wordData.translation,
-                            x: canvas.width - 200,
-                            y: 100 + i * 60,
-                            width: 150,
-                            height: 50,
+                            x: wordX,
+                            y: 100 + i * (isMobile ? 50 : 60),
+                            width: wordWidth,
+                            height: isMobile ? 40 : 50,
                             matched: false,
                             draw: function() {
                                 ctx.fillStyle = this.matched ? '#4ade80' : '#f59e0b';
                                 ctx.fillRect(this.x, this.y, this.width, this.height);
                                 
                                 ctx.fillStyle = 'white';
-                                ctx.font = 'bold 18px Arial';
+                                ctx.font = isMobile ? 'bold 16px Arial' : 'bold 18px Arial';
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
                                 
-                                const lines = this.wrapText(ctx, this.word, this.width - 20);
+                                const lines = this.wrapText(ctx, this.word, this.width - 10);
                                 lines.forEach((line, idx) => {
                                     ctx.fillText(
                                         line,
                                         this.x + this.width/2,
-                                        this.y + this.height/2 + (idx - (lines.length-1)/2) * 20
+                                        this.y + this.height/2 + (idx - (lines.length-1)/2) * (isMobile ? 16 : 20)
                                     );
                                 });
                                 
-                                ctx.fillStyle = '#cbd5e1';
-                                ctx.font = '12px Arial';
-                                ctx.fillText(this.translation, this.x + this.width/2, this.y + this.height + 15);
+                                // Hide translation on very small screens if matched to save space, or keep it small
+                                if (!isMobile || !this.matched) {
+                                    ctx.fillStyle = '#cbd5e1';
+                                    ctx.font = isMobile ? '10px Arial' : '12px Arial';
+                                    ctx.fillText(this.translation, this.x + this.width/2, this.y + this.height + (isMobile ? 10 : 15));
+                                }
                             },
                             wrapText: function(ctx, text, maxWidth) {
                                 const words = text.split(' ');
@@ -7814,6 +8088,24 @@
                 canvas.addEventListener('mousemove', mouseMoveHandler);
                 canvas.addEventListener('mouseup', mouseUpHandler);
                 
+                // Touch support
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    mouseDownHandler({ clientX: touch.clientX, clientY: touch.clientY });
+                }, { passive: false });
+                
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    mouseMoveHandler({ clientX: touch.clientX, clientY: touch.clientY });
+                }, { passive: false });
+                
+                canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    mouseUpHandler({});
+                }, { passive: false });
+
                 this.currentMouseHandlers = {
                     mousedown: mouseDownHandler,
                     mousemove: mouseMoveHandler,
@@ -7823,6 +8115,32 @@
                 const gameLoop = () => {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
+                    // Responsive update
+                    const letterX = canvas.width * 0.1;
+                    const letterWidth = Math.min(50, canvas.width * 0.15);
+                    const wordX = canvas.width * 0.5;
+                    const wordWidth = Math.min(150, canvas.width * 0.45);
+                    
+                    letters.forEach(letter => {
+                        if (!letter.dragging && !letter.matched) {
+                            letter.x = letterX;
+                            letter.width = letterWidth;
+                        } else if (letter.matched) {
+                            // Keep matched letters relative to words
+                            // We need to find the matched word to position correctly, 
+                            // but simpler is to just let them stay where they were placed relative to the word
+                            // If word moves, letter should move too.
+                            // But we don't have a link back to the word easily here without searching.
+                            // For now, let's just update width.
+                            letter.width = letterWidth;
+                        }
+                    });
+                    
+                    words.forEach(word => {
+                        word.x = wordX;
+                        word.width = wordWidth;
+                    });
+
                     ctx.fillStyle = '#f8fafc';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                     
@@ -7962,25 +8280,35 @@
                     'match': [
                         'أحسنت! أنت بطل الحروف 💪',
                         'رائع! دماغك يلمع ذكاء ✨',
-                        'ممتاز! ذاكرتك قوية جداً! 🧠'
+                        'ممتاز! ذاكرتك قوية جداً! 🧠',
+                        'عمل مدهش! أنت تتقن المطابقة! 🌟'
                     ],
                     'balloons': [
                         'عظيم! سرعتك مذهلة! ⚡',
                         'برافو! انتباهك رائع! 🎯',
-                        'هائل! تركيزك مدهش! 🎆'
+                        'هائل! تركيزك مدهش! 🎆',
+                        'أنت سريع جداً! استمر هكذا! 🚀'
                     ],
                     'racket': [
                         'ممتاز! دقتك وتركيزك رائعين! 🏸',
                         'رائع! لعب متقن! 🏆',
-                        'أحسنت! مهاراتك تتطور! ⭐'
+                        'أحسنت! مهاراتك تتطور! ⭐',
+                        'أنت لاعب محترف! 🎾'
                     ],
                     'memory': [
                         'عبقري! ذاكرتك قوية جداً! 🧠',
-                        'رائع! تذكر بشكل ممتاز! ✨'
+                        'رائع! تذكر بشكل ممتاز! ✨',
+                        'ما شاء الله! ذاكرة حديدية! 💎',
+                        'أنت ذكي جداً! 🎓'
+                    ],
+                    'wordsearch': [
+                        'أحسنت! عيناك كالصقر! 🦅',
+                        'رائع! وجدت كل الكلمات! 🔍',
+                        'ممتاز! قوة ملاحظة عالية! 👀'
                     ]
                 };
                 
-                const gameMessages = messages[gameName] || ['أحسنت! استمر في التقدم! 🎉'];
+                const gameMessages = messages[gameName] || ['أحسنت! استمر في التقدم! 🎉', 'عمل رائع! 🌟', 'أنت مبدع! ✨'];
                 const randomMessage = gameMessages[Math.floor(Math.random() * gameMessages.length)];
                 
                 this.showToast(randomMessage, 4000, 'success');
@@ -8021,7 +8349,10 @@
                     "أداء مذهل! استمر في التألق! ✨",
                     "رائع! أنت تتقدم بسرعة! 🚀",
                     "ممتاز! ذكاؤك يبهرنا! 💡",
-                    "عمل رائع! المستقبل بانتظارك! 🎓"
+                    "عمل رائع! المستقبل بانتظارك! 🎓",
+                    "أنت نجم ساطع في سماء العلم! ⭐",
+                    "إنجاز رائع! نحن فخورون بك! 🏆",
+                    "ذكاء خارق! استمر في الإبداع! 🧠"
                 ];
                 const randomMsg = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
 
