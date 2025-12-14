@@ -500,6 +500,27 @@
             background: rgba(30, 41, 59, 0.95);
         }
 
+        /* Improved Touch Targets for Mobile */
+        @media (max-width: 768px) {
+            .btn, .modal-btn, .control-btn {
+                min-height: 48px; /* Recommended touch target size */
+                min-width: 48px;
+                padding: 12px 20px;
+                font-size: 16px;
+            }
+            
+            .game-controls {
+                gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .game-controls .btn {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+
         .panel-header {
             display: flex;
             justify-content: space-between;
@@ -4206,7 +4227,14 @@
                 this.playLetterBtn.addEventListener('click', () => this.speakLetter());
                 this.letterInfoBtn.addEventListener('click', () => this.showLetterInfo());
                 this.resetLetterBtn.addEventListener('click', () => this.resetLetter());
-                this.prevLetterBtn.addEventListener('click', () => this.previousLetter());
+                
+                // Improved Previous Letter Button (Touch Support)
+                const handlePrevLetter = (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    this.previousLetter();
+                };
+                this.prevLetterBtn.addEventListener('click', handlePrevLetter);
+                this.prevLetterBtn.addEventListener('touchstart', handlePrevLetter, { passive: false });
                 
                 // Robust Finish Letter Button Handler
                 const handleFinishLetter = (e) => {
@@ -4370,23 +4398,78 @@
                 });
 
                 this.closeMotivationBtn.addEventListener('click', () => this.motivationModal.style.display = 'none');
-                this.closeGameBtn.addEventListener('click', () => this.closeGame());
+                
+                // Improved Close Game Button (Returns to Selection)
+                const handleCloseGame = (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    this.backToGames();
+                };
+                this.closeGameBtn.addEventListener('click', handleCloseGame);
+                this.closeGameBtn.addEventListener('touchstart', handleCloseGame, { passive: false });
+
                 this.closeWinBtn.addEventListener('click', () => this.winModal.style.display = 'none');
-                this.nextLetterBtn.addEventListener('click', () => this.nextLetter());
+                
+                // Improved Next Letter Button
+                const handleNextLetter = (e) => {
+                    // Prevent default only if it's a touch event to avoid double firing, 
+                    // but ensure the logic runs.
+                    if (e.type === 'touchstart') {
+                        e.preventDefault(); // Prevent mouse emulation
+                        this.nextLetter();
+                    } else {
+                        this.nextLetter();
+                    }
+                };
+                // Remove old listeners first to be safe (though not strictly necessary if replacing)
+                this.nextLetterBtn.removeEventListener('click', handleNextLetter);
+                this.nextLetterBtn.removeEventListener('touchstart', handleNextLetter);
+                
+                this.nextLetterBtn.addEventListener('click', handleNextLetter);
+                this.nextLetterBtn.addEventListener('touchstart', handleNextLetter, { passive: false });
+
                 this.playGamesBtn.addEventListener('click', () => this.showGames());
                 this.closeCertificateBtn.addEventListener('click', () => this.certificateModal.style.display = 'none');
                 this.printCertificateBtn.addEventListener('click', () => this.printCertificate());
                 this.emailCertificateBtn.addEventListener('click', () => this.sendCertificateEmail());
                 this.whatsappCertificateBtn.addEventListener('click', () => this.sendCertificateWhatsApp());
-                this.restartGameBtn.addEventListener('click', () => this.restartGame());
-                this.pauseGameBtn.addEventListener('click', () => this.togglePause());
-                this.backToSelectionBtn.addEventListener('click', () => this.backToGames());
+                
+                // Improved Game Control Buttons (Touch Support)
+                const handleRestart = (e) => { 
+                    if (e.type === 'touchstart') e.preventDefault();
+                    this.restartGame(); 
+                };
+                const handlePause = (e) => { 
+                    if (e.type === 'touchstart') e.preventDefault();
+                    this.togglePause(); 
+                };
+                const handleBackToGames = (e) => { 
+                    if (e.type === 'touchstart') e.preventDefault();
+                    this.backToGames(); 
+                };
+
+                this.restartGameBtn.addEventListener('click', handleRestart);
+                this.restartGameBtn.addEventListener('touchstart', handleRestart, { passive: false });
+                
+                this.pauseGameBtn.addEventListener('click', handlePause);
+                this.pauseGameBtn.addEventListener('touchstart', handlePause, { passive: false });
+                
+                this.backToSelectionBtn.addEventListener('click', handleBackToGames);
+                this.backToSelectionBtn.addEventListener('touchstart', handleBackToGames, { passive: false });
+                
                 this.playAgainBtn.addEventListener('click', () => this.playAgain());
-                this.backToGamesBtn.addEventListener('click', () => this.backToGames());
+                
+                this.backToGamesBtn.addEventListener('click', handleBackToGames);
+                this.backToGamesBtn.addEventListener('touchstart', handleBackToGames, { passive: false });
+                
                 this.winNextLetterBtn.addEventListener('click', () => {
                     this.winModal.style.display = 'none';
                     this.nextLetter();
                 });
+                this.winNextLetterBtn.addEventListener('touchstart', (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    this.winModal.style.display = 'none';
+                    this.nextLetter();
+                }, { passive: false });
                 
                 this.gamesGrid.addEventListener('click', (e) => {
                     const gameCard = e.target.closest('.game-card');
@@ -4765,6 +4848,12 @@
                     this.loadLetter(index);
                     return;
                 }
+
+                // إذا كان الحرف مفتوحاً بالفعل، اسمح بالدخول مباشرة
+                if (this.isLetterUnlocked(letter)) {
+                    this.loadLetter(index);
+                    return;
+                }
                 
                 // التحقق من أن الحرف السابق مكتمل
                 const prevLetter = LETTERS[index - 1];
@@ -4774,12 +4863,10 @@
                     return;
                 }
                 
-                // إذا كان الحرف السابق مكتملاً، فتح الحرف الحالي إذا لم يكن مفتوحاً
-                if (!this.isLetterUnlocked(letter)) {
-                    this.unlockLetter(letter);
-                    this.renderLettersNav();
-                    this.setupLetterJumpMenu();
-                }
+                // إذا كان الحرف السابق مكتملاً، فتح الحرف الحالي
+                this.unlockLetter(letter);
+                this.renderLettersNav();
+                this.setupLetterJumpMenu();
                 
                 this.loadLetter(index);
             }
@@ -6012,31 +6099,33 @@
                 }
 
                 const missingGames = this.getMissingRequiredGames(currentLetter);
-                if (missingGames.length > 0) {
-                    // تشغيل صوت التصفيق والاحتفال
-                    this.soundManager.playSound('success'); 
-                    this.launchBalloonsCelebration();
+                
+                // تشغيل صوت التصفيق والاحتفال دائماً عند إنهاء التمارين
+                this.soundManager.playSound('success'); 
+                this.launchBalloonsCelebration();
 
+                if (missingGames.length > 0) {
                     // تحديث نصوص نافذة الألعاب لتكون تحفيزية
                     this.motivationTitle.textContent = "أنت بطل حقيقي! 🦸‍♂️";
                     this.motivationSubtitle.textContent = "أحسنت! الآن وقت المرح والألعاب! 🎮";
                     this.motivationQuote.textContent = "أكمل الألعاب المطلوبة لتصبح محترفاً وتنتقل للحرف التالي!";
-
-                    // الانتقال فوراً لقائمة الألعاب
-                    this.showGameSelection();
-                    this.showToast('اختر لعبة للبدء! 🚀', 3000, 'success');
-
-                    return;
+                } else {
+                    // إذا تم إنهاء كل شيء
+                    if (!latestEntry.completed) {
+                        this.markLetterCompleted(currentLetter);
+                        this.renderLettersNav();
+                        this.renderAchievements();
+                    }
+                    this.unlockNextLetter(currentLetter);
+                    
+                    this.motivationTitle.textContent = "إنجاز مذهل! 🌟";
+                    this.motivationSubtitle.textContent = "لقد أتممت جميع المهام لهذا الحرف!";
+                    this.motivationQuote.textContent = "يمكنك اللعب مرة أخرى أو الانتقال للحرف التالي.";
                 }
 
-                if (!latestEntry.completed) {
-                    this.markLetterCompleted(currentLetter);
-                    this.renderLettersNav();
-                    this.renderAchievements();
-                }
-
-                this.launchBalloonsCelebration();
-                this.unlockNextLetter(currentLetter);
+                // الانتقال فوراً لقائمة الألعاب دائماً
+                this.showGameSelection();
+                this.showToast('اختر لعبة للبدء أو انتقل للحرف التالي! 🚀', 3000, 'success');
             }
             
             showMotivationModal(totalScore) {
@@ -6161,6 +6250,22 @@
                         card.classList.remove('completed');
                     }
                 });
+
+                // تحديث زر الحرف التالي
+                const nextLetterBtn = document.getElementById('nextLetter');
+                const allRequiredGamesDone = this.requiredGames.every(game => passedGames.includes(game));
+                
+                if (allRequiredGamesDone) {
+                    nextLetterBtn.style.opacity = '1';
+                    nextLetterBtn.style.cursor = 'pointer';
+                    nextLetterBtn.innerHTML = '<span>➡️</span> الحرف التالي';
+                    nextLetterBtn.title = "انتقل للحرف التالي";
+                } else {
+                    nextLetterBtn.style.opacity = '0.5';
+                    nextLetterBtn.style.cursor = 'not-allowed';
+                    nextLetterBtn.innerHTML = '<span>🔒</span> الحرف التالي';
+                    nextLetterBtn.title = "أكمل الألعاب المطلوبة أولاً";
+                }
             }
             
             nextLetter() {
@@ -6168,7 +6273,29 @@
                 
                 const nextIndex = this.currentLetterIndex + 1;
                 if (nextIndex < LETTERS.length) {
-                    this.goToLetter(LETTERS[nextIndex]);
+                    const currentLetter = LETTERS[this.currentLetterIndex];
+                    const nextLetter = LETTERS[nextIndex];
+                    
+                    // التحقق من إكمال الألعاب المطلوبة لفتح الحرف التالي
+                    const entry = this.ensureLetterRecord(currentLetter);
+                    const games = entry.games || {};
+                    
+                    // تحديد الألعاب المتبقية
+                    const missingGames = this.requiredGames.filter(game => games[game] !== true);
+                    
+                    if (missingGames.length > 0) {
+                        // تحضير رسالة مفصلة بالألعاب الناقصة
+                        const missingNames = missingGames.map(g => this.getGameName(g)).join(' و ');
+                        
+                        // إذا لم تكتمل الألعاب، أظهر رسالة وأعد فتح النافذة
+                        this.showToast(`عذراً! يجب إكمال الألعاب التالية أولاً: ${missingNames}`, 5000, 'error');
+                        this.showGameSelection();
+                        return;
+                    }
+                    
+                    // إذا اكتملت الشروط
+                    this.unlockLetter(nextLetter);
+                    this.goToLetter(nextLetter);
                 } else {
                     this.showCertificate();
                 }
@@ -6536,6 +6663,11 @@
                 // حلقة اللعبة
                 const gameLoop = () => {
                     if (!app.gameRunning) return;
+                    
+                    if (app.isPaused) {
+                        this.gameAnimationFrame = requestAnimationFrame(gameLoop);
+                        return;
+                    }
 
                     // حساب الوقت
                     const now = Date.now();
@@ -6708,6 +6840,14 @@
                         if (direction === 'right' && this.x < canvas.width - this.width) {
                             this.x += this.speed;
                         }
+                    },
+                    updatePosition: function() {
+                        // Update Y position in case of resize
+                        this.y = canvas.height - 30;
+                        // Ensure X is within bounds
+                        if (this.x > canvas.width - this.width) {
+                            this.x = canvas.width - this.width;
+                        }
                     }
                 };
                 
@@ -6754,9 +6894,13 @@
                         
                         if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) {
                             this.speedX = -this.speedX;
+                            // Keep ball inside
+                            if (this.x - this.radius < 0) this.x = this.radius;
+                            if (this.x + this.radius > canvas.width) this.x = canvas.width - this.radius;
                         }
                         if (this.y - this.radius < 0) {
                             this.speedY = -this.speedY;
+                            this.y = this.radius;
                         }
                         
                         if (this.y + this.radius > racket.y &&
@@ -6821,6 +6965,13 @@
                 };
                 
                 const gameLoop = () => {
+                    if (!app.gameRunning) return; // Stop loop if game not running
+                    
+                    if (app.isPaused) {
+                        this.gameAnimationFrame = requestAnimationFrame(gameLoop);
+                        return;
+                    }
+
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
                     ctx.fillStyle = '#1e293b';
@@ -6835,6 +6986,9 @@
                     ctx.stroke();
                     ctx.setLineDash([]);
                     
+                    // Update racket position for resize
+                    racket.updatePosition();
+
                     if (this.touchControls.left) racket.move('left');
                     if (this.touchControls.right) racket.move('right');
                     
@@ -7087,6 +7241,13 @@
                 }, { passive: false });
 
                 const gameLoop = () => {
+                    if (!app.gameRunning) return;
+                    
+                    if (app.isPaused) {
+                        this.gameAnimationFrame = requestAnimationFrame(gameLoop);
+                        return;
+                    }
+
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
                     // Re-center cannon on resize (only Y)
@@ -7201,6 +7362,11 @@
                 
                 const gameLoop = () => {
                     if (!this.gameRunning || this.isGameEnding) {
+                        return;
+                    }
+                    
+                    if (this.isPaused) {
+                        this.gameAnimationFrame = requestAnimationFrame(gameLoop);
                         return;
                     }
                     
@@ -7382,8 +7548,12 @@
                                 app.gameScoreEl.textContent = parseInt(app.gameScoreEl.textContent) + 10 + (extraPopped * 5);
                                 app.soundManager.playSound('success');
                                 
-                                // Game continues until timer ends (60 seconds)
-                                // Win condition handled by timer in game loop
+                                // Win condition: 16 correct pops
+                                if (app.gameStats.successCount >= 16) {
+                                    app.showWinGame();
+                                    app.showToast('🎉 أحسنت! لقد فجرت 16 بالوناً صحيحاً!', 3000, 'success');
+                                    return true;
+                                }
                             } else {
                                 app.gameStats.totalAttempts++;
                                 app.gameScoreEl.textContent = Math.max(0, parseInt(app.gameScoreEl.textContent) - 5);
@@ -7513,7 +7683,13 @@
                 this.currentKeyHandler = keyHandler;
                 
                 const gameLoop = () => {
+                    if (!app.gameRunning) return;
                     if (!gameActive) return;
+                    
+                    if (app.isPaused) {
+                        this.gameAnimationFrame = requestAnimationFrame(gameLoop);
+                        return;
+                    }
                     
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
@@ -7745,6 +7921,13 @@
                 this.currentClickHandler = clickHandler;
                 
                 const gameLoop = () => {
+                    if (!app.gameRunning) return;
+                    
+                    if (app.isPaused) {
+                        this.gameAnimationFrame = requestAnimationFrame(gameLoop);
+                        return;
+                    }
+
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
                     // Recalculate positions on resize
@@ -8002,6 +8185,13 @@
                 };
                 
                 const gameLoop = () => {
+                    if (!app.gameRunning) return;
+                    
+                    if (app.isPaused) {
+                        this.gameAnimationFrame = requestAnimationFrame(gameLoop);
+                        return;
+                    }
+
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
                     // Force Side-by-Side Layout (Responsive)
@@ -8435,6 +8625,13 @@
                 };
                 
                 const gameLoop = () => {
+                    if (!app.gameRunning) return;
+                    
+                    if (app.isPaused) {
+                        this.gameAnimationFrame = requestAnimationFrame(gameLoop);
+                        return;
+                    }
+
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
                     // Responsive update
@@ -8839,9 +9036,10 @@
             }
             
             restartGame() {
+                const gameToRestart = this.currentGame;
                 this.closeGame();
                 setTimeout(() => {
-                    this.startGame(this.currentGame);
+                    this.startGame(gameToRestart);
                 }, 100);
             }
             
