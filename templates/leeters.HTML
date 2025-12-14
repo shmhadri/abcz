@@ -2984,41 +2984,43 @@
                         const voices = window.speechSynthesis.getVoices();
                         
                         // Priority 1: Specific high-quality British Male voices
-                        // Google UK English Male, Microsoft George, Daniel (Apple), Microsoft Ryan
                         const preferredNames = [
                             'Google UK English Male', 
                             'Microsoft George', 
-                            'Microsoft Ryan Online (Natural) - English (United Kingdom)',
+                            'Microsoft Ryan',
                             'Daniel',
-                            'Arthur'
+                            'Arthur',
+                            'Gordon',
+                            'Aaron'
                         ];
                         
+                        // Try to find exact matches first
                         this.britishVoices = voices.filter(voice => 
                             preferredNames.some(name => voice.name.includes(name))
                         );
 
-                        // Priority 2: Any British Male voice
+                        // Priority 2: Any English Male voice (GB preferred)
                         if (this.britishVoices.length === 0) {
                             this.britishVoices = voices.filter(voice => 
-                                (voice.lang === 'en-GB' || voice.lang === 'en_GB') && 
-                                (voice.name.toLowerCase().includes('male') || voice.name.toLowerCase().includes('uk'))
+                                (voice.lang.includes('GB') || voice.lang.includes('UK')) && 
+                                voice.name.toLowerCase().includes('male')
+                            );
+                        }
+
+                        // Priority 3: Any English Male voice
+                        if (this.britishVoices.length === 0) {
+                            this.britishVoices = voices.filter(voice => 
+                                voice.lang.includes('en') && 
+                                voice.name.toLowerCase().includes('male')
                             );
                         }
                         
-                        // Priority 3: Any British voice
+                        // Priority 4: Any British voice
                         if (this.britishVoices.length === 0) {
                             this.britishVoices = voices.filter(voice => 
-                                voice.lang.startsWith('en-GB') || 
-                                voice.name.toLowerCase().includes('british') ||
-                                voice.name.toLowerCase().includes('uk')
-                            );
-                        }
-                        
-                        // Priority 4: Fallback to any English Male voice
-                        if (this.britishVoices.length === 0) {
-                            this.britishVoices = voices.filter(voice => 
-                                voice.lang.startsWith('en') && 
-                                (voice.name.toLowerCase().includes('male'))
+                                voice.lang.includes('GB') || 
+                                voice.name.includes('UK') || 
+                                voice.name.includes('British')
                             );
                         }
                         
@@ -3112,6 +3114,11 @@
                     case 'win':
                         frequency = [523.25, 659.25, 783.99, 1046.50];
                         duration = 0.8;
+                        break;
+                    case 'applause':
+                        // Fanfare sequence
+                        frequency = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
+                        duration = 1.5;
                         break;
                     case 'fireworks':
                         frequency = [392, 523.25, 659.25, 784];
@@ -6428,8 +6435,9 @@
                 const currentLetter = LETTERS[this.currentLetterIndex];
                 const app = this;
                 
-                // إظهار أزرار التحكم باللمس
+                // إظهار أزرار التحكم باللمس دائماً للألعاب التي تتطلب تحكم
                 this.touchControlsEl.style.display = 'flex';
+                canvas.style.touchAction = 'none'; // Prevent scrolling
 
                 // إعدادات اللعبة
                 const gameDuration = 60; // 60 ثانية
@@ -6438,14 +6446,14 @@
                 
                 // السيارة
                 const car = {
-                    x: canvas.width / 2 - 25,
-                    y: canvas.height - 100,
-                    width: 50,
-                    height: 80,
+                    x: canvas.width / 2 - 35,
+                    y: canvas.height - 120,
+                    width: 70,
+                    height: 110,
                     speed: 7, // زيادة السرعة قليلاً
                     emoji: '🏎️',
                     draw: function() {
-                        ctx.font = '60px Arial';
+                        ctx.font = '90px Arial';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         ctx.fillText(this.emoji, this.x + this.width/2, this.y + this.height/2);
@@ -6459,6 +6467,19 @@
                         }
                     }
                 };
+
+                // Touch Control for Car
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const rect = canvas.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    const touchX = touch.clientX - rect.left;
+                    
+                    car.x = touchX - car.width / 2;
+                    
+                    if (car.x < 0) car.x = 0;
+                    if (car.x > canvas.width - car.width) car.x = canvas.width - car.width;
+                }, { passive: false });
                 
                 // العناصر المتساقطة (حروف وعوائق)
                 const items = [];
@@ -6494,6 +6515,22 @@
                         }
                     }
                     items.push(item);
+                };
+                
+                // Explosion Effect
+                const explosions = [];
+                const createExplosion = (x, y, color) => {
+                    for (let i = 0; i < 15; i++) {
+                        explosions.push({
+                            x: x,
+                            y: y,
+                            vx: (Math.random() - 0.5) * 15,
+                            vy: (Math.random() - 0.5) * 15,
+                            life: 1.0,
+                            color: color,
+                            size: Math.random() * 5 + 2
+                        });
+                    }
                 };
 
                 // حلقة اللعبة
@@ -6539,7 +6576,7 @@
                     car.draw();
 
                     // إدارة العناصر
-                    if (Math.random() < 0.05) spawnItem(); // معدل ظهور العناصر
+                    if (Math.random() < 0.08) spawnItem(); // Increased spawn rate (was 0.05)
 
                     for (let i = items.length - 1; i >= 0; i--) {
                         let item = items[i];
@@ -6571,10 +6608,15 @@
                             
                             item.isCollected = true;
                             
+                            // Explosion Effect
+                            createExplosion(item.x + item.width/2, item.y + item.height/2, item.type === 'obstacle' ? '#ef4444' : '#fbbf24');
+
                             if (item.type === 'obstacle') {
                                 app.soundManager.playSound('error');
                                 app.gameScoreEl.textContent = Math.max(0, parseInt(app.gameScoreEl.textContent) - 5);
                                 // تأثير اهتزاز أو وميض يمكن إضافته هنا
+                                canvas.style.transform = 'translateX(5px)';
+                                setTimeout(() => canvas.style.transform = 'none', 100);
                             } else if (item.type === 'letter') {
                                 if (item.isCorrect) {
                                     app.soundManager.playSound('success');
@@ -6587,11 +6629,33 @@
                                 app.gameStats.totalAttempts++;
                                 app.updateGameStats();
                             }
+                            
+                            items.splice(i, 1);
+                            continue;
                         }
 
                         // حذف العناصر خارج الشاشة
                         if (item.y > canvas.height) {
                             items.splice(i, 1);
+                        }
+                    }
+
+                    // Update and draw explosions
+                    for (let i = explosions.length - 1; i >= 0; i--) {
+                        let p = explosions[i];
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.life -= 0.05;
+                        
+                        if (p.life <= 0) {
+                            explosions.splice(i, 1);
+                        } else {
+                            ctx.globalAlpha = p.life;
+                            ctx.fillStyle = p.color;
+                            ctx.beginPath();
+                            ctx.arc(p.x, p.y, p.size || 3, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.globalAlpha = 1.0;
                         }
                     }
                     
@@ -6620,12 +6684,16 @@
                 const currentLetter = LETTERS[this.currentLetterIndex];
                 const app = this;
                 
+                // إظهار أزرار التحكم باللمس
+                this.touchControlsEl.style.display = 'flex';
+                canvas.style.touchAction = 'none';
+
                 const racket = {
                     x: canvas.width / 2 - 50,
                     y: canvas.height - 30,
                     width: 100,
                     height: 20,
-                    speed: 8,
+                    speed: 12, // Increased speed for better button response
                     color: '#f72585',
                     draw: function() {
                         ctx.fillStyle = this.color;
@@ -6643,14 +6711,29 @@
                     }
                 };
                 
+                // Touch Control for Racket
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const rect = canvas.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    const touchX = touch.clientX - rect.left;
+                    
+                    // Center racket on touch
+                    racket.x = touchX - racket.width / 2;
+                    
+                    // Bounds check
+                    if (racket.x < 0) racket.x = 0;
+                    if (racket.x > canvas.width - racket.width) racket.x = canvas.width - racket.width;
+                }, { passive: false });
+                
                 let drops = 0; // Counter for dropped balls
 
                 const ball = {
                     x: canvas.width / 2,
                     y: canvas.height / 2,
                     radius: 25, // Increased size
-                    speedX: 3,
-                    speedY: 3,
+                    speedX: 4, // Start slightly faster
+                    speedY: 4, // Start slightly faster
                     letter: `${currentLetter}${currentLetter.toLowerCase()}`,
                     color: '#4361ee',
                     draw: function() {
@@ -6681,7 +6764,16 @@
                             this.x + this.radius > racket.x &&
                             this.x - this.radius < racket.x + racket.width) {
                             
-                            this.speedY = -Math.abs(this.speedY);
+                            // Increase speed progressively on hit
+                            const speedMultiplier = 1.1;
+                            this.speedY = -Math.abs(this.speedY) * speedMultiplier;
+                            this.speedX = this.speedX * speedMultiplier;
+                            
+                            // Cap max speed
+                            const maxSpeed = 15;
+                            if (Math.abs(this.speedY) > maxSpeed) this.speedY = maxSpeed * Math.sign(this.speedY);
+                            if (Math.abs(this.speedX) > maxSpeed) this.speedX = maxSpeed * Math.sign(this.speedX);
+
                             const isCorrect = this.letter.includes(currentLetter) || this.letter.includes(currentLetter.toLowerCase());
                             
                             if (isCorrect) {
@@ -6717,8 +6809,9 @@
 
                             this.x = canvas.width / 2;
                             this.y = canvas.height / 2;
-                            this.speedX = 3 * (Math.random() > 0.5 ? 1 : -1);
-                            this.speedY = 3;
+                            // Reset speed on drop, but keep it challenging
+                            this.speedX = 4 * (Math.random() > 0.5 ? 1 : -1);
+                            this.speedY = 4;
                             app.gameStats.totalAttempts++;
                             app.updateGameStats();
                             app.soundManager.playSound('error');
@@ -6777,31 +6870,31 @@
             initShootingGame(ctx, canvas) {
                 const currentLetter = LETTERS[this.currentLetterIndex];
                 const app = this;
+
+                // إظهار أزرار التحكم باللمس دائماً
+                this.touchControlsEl.style.display = 'flex';
+                canvas.style.touchAction = 'none'; // Prevent scrolling
                 
                 const cannon = {
                     x: canvas.width / 2,
                     y: canvas.height - 50,
                     width: 60,
                     height: 30,
-                    angle: 0,
-                    speed: 0.05,
                     draw: function() {
                         ctx.save();
                         ctx.translate(this.x, this.y);
-                        ctx.rotate(this.angle);
                         
                         ctx.fillStyle = '#8b5a2b';
                         ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
                         
                         ctx.fillStyle = '#1e293b';
-                        ctx.fillRect(this.width/2 - 10, -5, 30, 10);
+                        ctx.fillRect(-5, -this.height/2 - 10, 10, 10); // Nozzle pointing up
                         
                         ctx.restore();
                     },
                     update: function() {
-                        if (app.touchControls.left) this.angle -= 0.05;
-                        if (app.touchControls.right) this.angle += 0.05;
-                        this.angle = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.angle));
+                        if (app.touchControls.left && this.x > this.width/2) this.x -= 5;
+                        if (app.touchControls.right && this.x < canvas.width - this.width/2) this.x += 5;
                     }
                 };
                 
@@ -6866,11 +6959,10 @@
                 
                 const shoot = () => {
                     const bullet = {
-                        x: cannon.x + Math.sin(cannon.angle) * 40,
-                        y: cannon.y - Math.cos(cannon.angle) * 40,
+                        x: cannon.x,
+                        y: cannon.y - cannon.height/2 - 10,
                         radius: 5,
                         speed: 8,
-                        angle: cannon.angle,
                         color: '⭐',
                         draw: function() {
                             ctx.fillStyle = '#f59e0b';
@@ -6880,8 +6972,7 @@
                             ctx.fillText(this.color, this.x, this.y);
                         },
                         update: function() {
-                            this.x += Math.sin(this.angle) * this.speed;
-                            this.y -= Math.cos(this.angle) * this.speed;
+                            this.y -= this.speed; // Move straight up
                             
                             for (let i = fishes.length - 1; i >= 0; i--) {
                                 const fish = fishes[i];
@@ -6976,11 +7067,29 @@
                     app.soundManager.playSound('click');
                 };
                 
+                // Touch Controls
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const rect = canvas.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    const touchX = touch.clientX - rect.left;
+                    
+                    cannon.x = touchX;
+                    
+                    if (cannon.x < cannon.width/2) cannon.x = cannon.width/2;
+                    if (cannon.x > canvas.width - cannon.width/2) cannon.x = canvas.width - cannon.width/2;
+                }, { passive: false });
+
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    // Fire on tap
+                    shoot();
+                }, { passive: false });
+
                 const gameLoop = () => {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
-                    // Re-center cannon on resize
-                    cannon.x = canvas.width / 2;
+                    // Re-center cannon on resize (only Y)
                     cannon.y = canvas.height - 50;
                     
                     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -7045,8 +7154,17 @@
                 const currentLetter = LETTERS[this.currentLetterIndex];
                 const app = this;
                 
+                // Responsive configuration
+                const isMobile = canvas.width < 600;
+                const balloonCount = isMobile ? 15 : 20;
+                
+                // Timer Setup
+                const gameDuration = 60; // 60 seconds
+                let timeLeft = gameDuration;
+                let lastTime = Date.now();
+                
                 const balloons = [];
-                for (let i = 0; i < 20; i++) {
+                for (let i = 0; i < balloonCount; i++) {
                     this.addNewBalloon(balloons, canvas, currentLetter);
                 }
                 
@@ -7055,22 +7173,28 @@
                     const mouseX = e.clientX - rect.left;
                     const mouseY = e.clientY - rect.top;
                     
-                    balloons.forEach(balloon => {
-                        balloon.checkClick(mouseX, mouseY);
-                    });
+                    // Iterate backwards to handle overlapping balloons (top one first)
+                    for (let i = balloons.length - 1; i >= 0; i--) {
+                        if (balloons[i].checkClick(mouseX, mouseY)) {
+                            break; // Stop after clicking one balloon
+                        }
+                    }
                 };
                 
                 canvas.addEventListener('click', clickHandler);
                 canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     const rect = canvas.getBoundingClientRect();
-                    const touch = e.touches[0];
+                    // Use changedTouches for better touch handling
+                    const touch = e.changedTouches[0] || e.touches[0];
                     const mouseX = touch.clientX - rect.left;
                     const mouseY = touch.clientY - rect.top;
                     
-                    balloons.forEach(balloon => {
-                        balloon.checkClick(mouseX, mouseY);
-                    });
+                    for (let i = balloons.length - 1; i >= 0; i--) {
+                        if (balloons[i].checkClick(mouseX, mouseY)) {
+                            break;
+                        }
+                    }
                 }, { passive: false });
 
                 this.currentClickHandler = clickHandler;
@@ -7081,12 +7205,26 @@
                     }
                     
                     try {
+                        // Timer Logic
+                        const now = Date.now();
+                        if (now - lastTime >= 1000) {
+                            timeLeft--;
+                            lastTime = now;
+                            app.gameTimerEl.textContent = timeLeft;
+                        }
+
+                        if (timeLeft <= 0) {
+                            app.showWinGame();
+                            app.showToast('🎉 انتهى الوقت! أحسنت!', 3000, 'success');
+                            return;
+                        }
+
                         // Apply FPS limiting
-                        const now = performance.now();
-                        const deltaTime = now - this.lastFrameTime;
+                        const perfNow = performance.now();
+                        const deltaTime = perfNow - this.lastFrameTime;
                         
                         if (deltaTime >= this.frameInterval) {
-                            this.lastFrameTime = now - (deltaTime % this.frameInterval);
+                            this.lastFrameTime = perfNow - (deltaTime % this.frameInterval);
                             
                             ctx.clearRect(0, 0, canvas.width, canvas.height);
                             
@@ -7097,10 +7235,10 @@
                             ctx.fillRect(0, 0, canvas.width, canvas.height);
                             
                             // Reduced cloud animation frequency for performance
-                            if (Math.floor(now / 200) % 2 === 0) {
+                            if (Math.floor(perfNow / 200) % 2 === 0) {
                                 ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
                                 for (let i = 0; i < 2; i++) {
-                                    const x = (now/1000 * 15 + i * 120) % (canvas.width + 200) - 100;
+                                    const x = (perfNow/1000 * 15 + i * 120) % (canvas.width + 200) - 100;
                                     ctx.beginPath();
                                     ctx.arc(x, 100 + i * 40, 30, 0, Math.PI * 2);
                                     ctx.arc(x + 25, 90 + i * 40, 25, 0, Math.PI * 2);
@@ -7138,11 +7276,15 @@
                 const colors = ['#f72585', '#4361ee', '#4cc9f0', '#4ade80', '#f59e0b'];
                 
                 const app = this; // Capture this context
+                
+                // Responsive size
+                const isMobile = canvas.width < 600;
+                const baseRadius = isMobile ? 35 : 25;
 
                 balloons.push({
                     x: Math.random() * canvas.width,
                     y: canvas.height + Math.random() * 100,
-                    radius: 20 + Math.random() * 20,
+                    radius: baseRadius + Math.random() * 20,
                     speed: 2 + Math.random() * 3,
                     color: colors[Math.floor(Math.random() * colors.length)],
                     letter: letter,
@@ -7183,7 +7325,7 @@
                         ctx.stroke();
                         
                         ctx.fillStyle = 'white';
-                        ctx.font = `bold 20px Arial`;
+                        ctx.font = `bold ${Math.floor(this.radius * 0.8)}px Arial`;
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         ctx.fillText(this.letter, this.x, this.y);
@@ -7221,19 +7363,27 @@
                         const dy = mouseY - this.y;
                         const distance = Math.sqrt(dx * dx + dy * dy);
                         
-                        if (distance < this.radius) {
+                        // Increased hit area slightly (radius * 1.2) for better touch
+                        if (distance < this.radius * 1.2) {
                             this.popped = true;
                             
                             if (this.isCorrect) {
-                                app.gameStats.successCount++;
+                                // Chain Reaction: Pop all balloons with the same letter
+                                let extraPopped = 0;
+                                balloons.forEach(b => {
+                                    if (!b.popped && b.letter === this.letter && b !== this) {
+                                        b.popped = true;
+                                        extraPopped++;
+                                    }
+                                });
+                                
+                                app.gameStats.successCount += (1 + extraPopped);
                                 app.gameStats.totalAttempts++;
-                                app.gameScoreEl.textContent = parseInt(app.gameScoreEl.textContent) + 10;
+                                app.gameScoreEl.textContent = parseInt(app.gameScoreEl.textContent) + 10 + (extraPopped * 5);
                                 app.soundManager.playSound('success');
                                 
-                                if (app.gameStats.successCount >= 10) {
-                                    app.showWinGame();
-                                    return true;
-                                }
+                                // Game continues until timer ends (60 seconds)
+                                // Win condition handled by timer in game loop
                             } else {
                                 app.gameStats.totalAttempts++;
                                 app.gameScoreEl.textContent = Math.max(0, parseInt(app.gameScoreEl.textContent) - 5);
@@ -7285,21 +7435,35 @@
                 });
                 
                 const fallingLetters = [];
-                const letterSpeed = 1;
+                const letterSpeed = 0.5; // Slower speed (was 1)
                 let currentInput = '';
                 let gameActive = true;
                 
                 const createLetter = () => {
                     const isCorrect = Math.random() > 0.5;
-                    const letter = isCorrect ? 
-                        (Math.random() > 0.5 ? currentLetter : currentLetter.toLowerCase()) : 
-                        LETTERS[Math.floor(Math.random() * LETTERS.length)];
+                    const letterData = LETTER_DATA[currentLetter];
+                    
+                    let content;
+                    let isWord = false;
+
+                    if (Math.random() > 0.6 && letterData.words.length > 0) {
+                        // Spawn a word
+                        const wordObj = letterData.words[Math.floor(Math.random() * letterData.words.length)];
+                        content = wordObj.word;
+                        isWord = true;
+                    } else {
+                        // Spawn a letter
+                        content = isCorrect ? 
+                            (Math.random() > 0.5 ? currentLetter : currentLetter.toLowerCase()) : 
+                            LETTERS[Math.floor(Math.random() * LETTERS.length)];
+                    }
                     
                     fallingLetters.push({
-                        letter: letter,
+                        content: content,
+                        isWord: isWord,
                         x: Math.random() * (canvas.width - 100) + 50,
                         y: -50,
-                        speed: letterSpeed + Math.random() * 1,
+                        speed: (letterSpeed + Math.random() * 0.5), // Slower variation
                         typed: '',
                         completed: false
                     });
@@ -7311,27 +7475,35 @@
                     if (!gameActive) return;
                     
                     if (e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
-                        currentInput = e.key.toLowerCase();
+                        const char = e.key.toLowerCase();
                         app.soundManager.playSound('click');
                         
+                        // Check all falling items
                         for (let i = fallingLetters.length - 1; i >= 0; i--) {
-                            const fallingLetter = fallingLetters[i];
-                            if (!fallingLetter.completed && 
-                                currentInput === fallingLetter.letter.toLowerCase()) {
-                                fallingLetter.completed = true;
-                                fallingLetter.typed = currentInput;
-                                app.gameStats.successCount++;
-                                app.gameStats.totalAttempts++;
-                                app.gameScoreEl.textContent = parseInt(app.gameScoreEl.textContent) + 10;
-                                app.soundManager.playSound('success');
-                                currentInput = '';
-                                app.updateGameStats();
+                            const item = fallingLetters[i];
+                            if (item.completed) continue;
+
+                            const target = item.content.toLowerCase();
+                            const nextCharIndex = item.typed.length;
+                            
+                            if (target[nextCharIndex] === char) {
+                                item.typed += char;
                                 
-                                // Win condition: 10 correct types
-                                if (app.gameStats.successCount >= 10) {
-                                    app.showWinGame();
+                                if (item.typed === target) {
+                                    item.completed = true;
+                                    app.gameStats.successCount++;
+                                    app.gameStats.totalAttempts++;
+                                    app.gameScoreEl.textContent = parseInt(app.gameScoreEl.textContent) + (item.isWord ? 20 : 10);
+                                    app.soundManager.playSound('success');
+                                    app.updateGameStats();
+                                    
+                                    // Win condition: 10 correct types
+                                    if (app.gameStats.successCount >= 10) {
+                                        app.showWinGame();
+                                    }
                                 }
-                                break;
+                                // Only process one correct keystroke per frame to avoid ambiguity if multiple same letters
+                                break; 
                             }
                         }
                     }
@@ -7356,59 +7528,53 @@
                     
                     ctx.fillStyle = '#cbd5e1';
                     ctx.font = '16px Arial';
-                    ctx.fillText('اكتب الحرف الذي يظهر قبل وصوله للأسفل!', canvas.width/2, 40);
+                    ctx.fillText('اكتب الكلمات أو الحروف قبل وصولها للأسفل!', canvas.width/2, 40);
                     
-                    ctx.fillStyle = '#4cc9f0';
-                    ctx.font = 'bold 20px Arial';
-                    ctx.fillText(`الإدخال: ${currentInput}`, canvas.width/2, 70);
-                    
-                    fallingLetters.forEach((fallingLetter, index) => {
-                        fallingLetter.y += fallingLetter.speed;
+                    fallingLetters.forEach((item, index) => {
+                        item.y += item.speed;
                         
                         // Handle resize
-                        if (fallingLetter.x > canvas.width - 30) fallingLetter.x = canvas.width - 30;
+                        if (item.x > canvas.width - 50) item.x = canvas.width - 50;
                         
-                        if (fallingLetter.y > canvas.height - 50 && !fallingLetter.completed) {
+                        if (item.y > canvas.height - 50 && !item.completed) {
                             app.gameStats.totalAttempts++;
                             fallingLetters.splice(index, 1);
                             app.updateGameStats();
                             app.soundManager.playSound('error');
                         }
                         
-                        if (fallingLetter.y > canvas.height) {
+                        if (item.y > canvas.height) {
                             fallingLetters.splice(index, 1);
                         }
                         
-                        const gradient = ctx.createLinearGradient(
-                            fallingLetter.x - 30, fallingLetter.y,
-                            fallingLetter.x + 30, fallingLetter.y + 30
-                        );
-                        
-                        if (fallingLetter.completed) {
-                            gradient.addColorStop(0, '#4ade80');
-                            gradient.addColorStop(1, '#22c55e');
-                        } else {
-                            gradient.addColorStop(0, '#f72585');
-                            gradient.addColorStop(1, '#4361ee');
-                        }
-                        
-                        ctx.fillStyle = gradient;
-                        ctx.font = 'bold 32px Arial';
+                        // Draw
+                        ctx.font = item.isWord ? 'bold 24px Arial' : 'bold 32px Arial';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
-                        ctx.fillText(fallingLetter.letter, fallingLetter.x, fallingLetter.y);
                         
-                        if (fallingLetter.typed) {
+                        // Base text (faded)
+                        ctx.fillStyle = item.completed ? '#22c55e' : '#f472b6';
+                        ctx.fillText(item.content, item.x, item.y);
+                        
+                        // Typed part (highlighted)
+                        if (item.typed.length > 0) {
+                            const typedPart = item.content.substring(0, item.typed.length);
                             ctx.fillStyle = '#4cc9f0';
-                            ctx.fillText(
-                                fallingLetter.typed,
-                                fallingLetter.x,
-                                fallingLetter.y
-                            );
+                            // Simple overlay for typed part (centered alignment makes exact overlay tricky without measuring)
+                            // For simplicity in canvas centered text, we can just redraw the whole thing in a different color if fully typed,
+                            // or measure width. Let's try measuring.
+                            const totalWidth = ctx.measureText(item.content).width;
+                            const typedWidth = ctx.measureText(typedPart).width;
+                            const startX = item.x - totalWidth / 2;
+                            
+                            ctx.textAlign = 'left';
+                            ctx.fillText(typedPart, startX, item.y);
+                            ctx.textAlign = 'center'; // Reset
                         }
                     });
                     
-                    if (Math.random() < 0.015 && fallingLetters.length < 8) {
+                    // Increased spawn rate (0.03 instead of 0.015)
+                    if (Math.random() < 0.03 && fallingLetters.length < 12) {
                         createLetter();
                     }
                     
@@ -7705,10 +7871,12 @@
                                 ctx.strokeRect(this.x, this.y, this.size, this.size);
                                 
                                 ctx.fillStyle = '#1e293b';
-                                ctx.font = 'bold 20px Arial';
+                                // Dynamic font size based on cell size
+                                const fontSize = Math.floor(this.size * 0.6);
+                                ctx.font = `bold ${fontSize}px Arial`;
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
-                                ctx.fillText(this.letter, this.x + this.size/2, this.y + this.size/2);
+                                ctx.fillText(this.letter, this.x + this.size/2, this.y + this.size/2 + 2);
                             },
                             contains: function(x, y) {
                                 return x >= this.x && x <= this.x + this.size &&
@@ -7823,7 +7991,8 @@
                 
                 canvas.addEventListener('touchend', (e) => {
                     e.preventDefault();
-                    mouseUpHandler({});
+                    const touch = e.changedTouches[0];
+                    mouseUpHandler({ clientX: touch.clientX, clientY: touch.clientY });
                 }, { passive: false });
 
                 this.currentMouseHandlers = {
@@ -7835,11 +8004,24 @@
                 const gameLoop = () => {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
-                    // Responsive Layout
-                    const isMobile = canvas.width < 600;
-                    const availableWidth = isMobile ? canvas.width - 20 : (canvas.width * 0.6);
-                    const newCellSize = Math.min(35, availableWidth / gridSize);
-                    const newGridOffsetX = isMobile ? (canvas.width - (gridSize * newCellSize)) / 2 : 20;
+                    // Force Side-by-Side Layout (Responsive)
+                    const totalWidth = canvas.width;
+                    const totalHeight = canvas.height;
+                    
+                    // Maximize Grid Area
+                    // Grid takes up to 75% of width, leaving 25% for list
+                    const gridWidthRatio = 0.75; 
+                    const availableGridWidth = (totalWidth * gridWidthRatio) - 10;
+                    const availableGridHeight = totalHeight - gridOffsetY - 10;
+                    
+                    // Calculate optimal cell size to fit in available space
+                    let newCellSize = Math.min(availableGridWidth / gridSize, availableGridHeight / gridSize);
+                    
+                    // Cap max size but allow it to be quite large (e.g. 60px)
+                    newCellSize = Math.min(60, Math.max(25, newCellSize));
+                    
+                    // Center grid vertically if needed, or fixed top offset
+                    const newGridOffsetX = 10;
                     
                     cells.forEach(cell => {
                         cell.size = newCellSize;
@@ -7853,7 +8035,7 @@
                     
                     // Title
                     ctx.fillStyle = '#1e293b';
-                    ctx.font = 'bold 24px Arial';
+                    ctx.font = `bold ${Math.max(16, totalWidth / 25)}px Arial`;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'top';
                     ctx.fillText(`لعبة البحث عن الكلمات - الحرف ${currentLetter}`, canvas.width/2, 10);
@@ -7861,63 +8043,67 @@
                     // Draw Grid
                     cells.forEach(cell => cell.draw());
                     
-                    // Draw Word List
-                    // Reuse variables from above or recalculate if needed, but don't redeclare const
-                    
-                    let listX, listY;
-                    if (isMobile) {
-                         listX = 20;
-                         listY = gridOffsetY + (gridSize * newCellSize) + 40;
-                    } else {
-                         listX = newGridOffsetX + (gridSize * newCellSize) + 40;
-                         listY = 80;
-                    }
+                    // Draw Word List (Right Side)
+                    const listX = newGridOffsetX + (gridSize * newCellSize) + 15;
+                    const listY = gridOffsetY;
                     
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'top';
                     
                     ctx.fillStyle = '#334155';
-                    ctx.font = 'bold 18px Arial';
+                    ctx.font = `bold ${Math.max(12, totalWidth / 35)}px Arial`;
                     ctx.fillText('الكلمات المطلوبة:', listX, listY - 30);
                     
+                    const itemHeight = Math.max(30, newCellSize * 0.8); // Scale item height with cell size
+                    
                     placedWords.forEach((word, i) => {
-                        const yPos = listY + i * 40;
+                        const yPos = listY + i * itemHeight;
                         
-                        // Checkbox/Status
-                        ctx.font = '20px Arial';
+                        // Icon (Purple Square like screenshot)
+                        const iconSize = Math.max(12, itemHeight * 0.5);
+                        
                         if (word.found) {
+                            // Green Check
                             ctx.fillStyle = '#22c55e';
-                            ctx.fillText('✅', listX, yPos);
-                            
-                            // Word (Strikethrough effect simulated)
-                            ctx.fillStyle = '#94a3b8';
-                            ctx.font = 'bold 16px Arial';
-                            ctx.fillText(word.word, listX + 30, yPos + 2);
-                            
-                            // Draw line through
-                            const textWidth = ctx.measureText(word.word).width;
-                            ctx.fillRect(listX + 30, yPos + 12, textWidth, 2);
-                            
+                            ctx.font = `${iconSize}px Arial`;
+                            ctx.fillText('✅', listX, yPos + (itemHeight - iconSize)/2);
                         } else {
-                            ctx.fillStyle = '#cbd5e1';
-                            ctx.fillText('⬜', listX, yPos);
+                            // Purple Square
+                            ctx.fillStyle = '#d8b4fe'; // Light purple
+                            ctx.fillRect(listX, yPos + (itemHeight - iconSize)/2, iconSize, iconSize);
                             
-                            ctx.fillStyle = '#1e293b';
-                            ctx.font = 'bold 16px Arial';
-                            ctx.fillText(word.word, listX + 30, yPos + 2);
+                            // Inner shadow effect
+                            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                            ctx.fillRect(listX, yPos + (itemHeight - iconSize)/2 + iconSize/2, iconSize, iconSize/2);
                         }
                         
-                        // Translation
-                        ctx.fillStyle = '#64748b';
-                        ctx.font = '14px Arial';
-                        ctx.fillText(word.translation, listX + 150, yPos + 4);
+                        // Word Text
+                        const textX = listX + iconSize + 8;
+                        // Dynamic font size for list items
+                        const fontSize = Math.max(12, Math.min(20, (totalWidth - listX) / 8)); 
+                        
+                        if (word.found) {
+                            ctx.fillStyle = '#94a3b8';
+                            ctx.font = `bold ${fontSize}px Arial`;
+                            ctx.fillText(word.word, textX, yPos + itemHeight/2 - fontSize/2);
+                            
+                            // Strikethrough
+                            const textWidth = ctx.measureText(word.word).width;
+                            ctx.fillRect(textX, yPos + itemHeight/2, textWidth, 2);
+                        } else {
+                            ctx.fillStyle = '#1e293b';
+                            ctx.font = `bold ${fontSize}px Arial`;
+                            ctx.fillText(word.word, textX, yPos + itemHeight/2 - fontSize/2);
+                        }
                     });
                     
                     // Progress
                     ctx.fillStyle = '#f72585';
-                    ctx.font = 'bold 16px Arial';
+                    ctx.font = `bold ${Math.max(12, totalWidth / 35)}px Arial`;
                     ctx.textAlign = 'center';
-                    ctx.fillText(`الكلمات: ${foundWordsCount}/${placedWords.length}`, listX + 80, listY + placedWords.length * 40 + 20);
+                    // Center progress under the list
+                    const listCenter = listX + (totalWidth - listX) / 2;
+                    ctx.fillText(`الكلمات: ${foundWordsCount}/${placedWords.length}`, listCenter, listY + placedWords.length * itemHeight + 20);
                     
                     this.gameAnimationFrame = requestAnimationFrame(gameLoop);
                 };
@@ -8238,7 +8424,8 @@
                 
                 canvas.addEventListener('touchend', (e) => {
                     e.preventDefault();
-                    mouseUpHandler({});
+                    const touch = e.changedTouches[0];
+                    mouseUpHandler({ clientX: touch.clientX, clientY: touch.clientY });
                 }, { passive: false });
 
                 this.currentMouseHandlers = {
@@ -8465,7 +8652,7 @@
                 
                 // Launch celebration
                 this.launchBalloonsCelebration();
-                this.soundManager.playSound('success');
+                this.soundManager.playSound('applause');
 
                 // Prepare Victory Screen Content
                 const gameNames = {
