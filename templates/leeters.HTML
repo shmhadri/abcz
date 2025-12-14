@@ -63,6 +63,13 @@
             user-select: none;
         }
 
+        /* Touch feedback for buttons */
+        button:active, .btn-touch-active {
+            transform: scale(0.95);
+            opacity: 0.8;
+            transition: transform 0.1s;
+        }
+
         input, textarea {
             -webkit-user-select: text;
             -moz-user-select: text;
@@ -4224,6 +4231,22 @@
             }
             
             bindEvents() {
+                // Global Touch Feedback for all buttons (Static & Dynamic)
+                document.body.addEventListener('touchstart', (e) => {
+                    const btn = e.target.closest('button');
+                    if (btn && !btn.disabled) btn.classList.add('btn-touch-active');
+                }, {passive: true});
+
+                document.body.addEventListener('touchend', (e) => {
+                    const btn = e.target.closest('button');
+                    if (btn) btn.classList.remove('btn-touch-active');
+                }, {passive: true});
+
+                document.body.addEventListener('touchcancel', (e) => {
+                    const btn = e.target.closest('button');
+                    if (btn) btn.classList.remove('btn-touch-active');
+                }, {passive: true});
+
                 this.playLetterBtn.addEventListener('click', () => this.speakLetter());
                 this.letterInfoBtn.addEventListener('click', () => this.showLetterInfo());
                 this.resetLetterBtn.addEventListener('click', () => this.resetLetter());
@@ -8194,29 +8217,42 @@
 
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
-                    // Force Side-by-Side Layout (Responsive)
+                    // Responsive Layout Calculation
                     const totalWidth = canvas.width;
                     const totalHeight = canvas.height;
+                    const isMobile = totalWidth < 600; // Mobile breakpoint
                     
-                    // Maximize Grid Area
-                    // Grid takes up to 75% of width, leaving 25% for list
-                    const gridWidthRatio = 0.75; 
-                    const availableGridWidth = (totalWidth * gridWidthRatio) - 10;
-                    const availableGridHeight = totalHeight - gridOffsetY - 10;
+                    let newCellSize, newGridOffsetX, gridOffsetY_Dynamic;
                     
-                    // Calculate optimal cell size to fit in available space
-                    let newCellSize = Math.min(availableGridWidth / gridSize, availableGridHeight / gridSize);
-                    
-                    // Cap max size but allow it to be quite large (e.g. 60px)
-                    newCellSize = Math.min(60, Math.max(25, newCellSize));
-                    
-                    // Center grid vertically if needed, or fixed top offset
-                    const newGridOffsetX = 10;
+                    if (isMobile) {
+                        // Mobile Layout: Grid on top, List below
+                        // Grid takes full width minus padding
+                        const availableGridWidth = totalWidth - 20;
+                        // Grid takes about 60% of height
+                        const availableGridHeight = totalHeight * 0.6;
+                        
+                        newCellSize = Math.min(availableGridWidth / gridSize, availableGridHeight / gridSize);
+                        newCellSize = Math.min(40, Math.max(20, newCellSize)); // Cap size
+                        
+                        newGridOffsetX = (totalWidth - (gridSize * newCellSize)) / 2;
+                        gridOffsetY_Dynamic = 50; // Space for title
+                    } else {
+                        // Desktop Layout: Side-by-Side
+                        const gridWidthRatio = 0.75; 
+                        const availableGridWidth = (totalWidth * gridWidthRatio) - 10;
+                        const availableGridHeight = totalHeight - gridOffsetY - 10;
+                        
+                        newCellSize = Math.min(availableGridWidth / gridSize, availableGridHeight / gridSize);
+                        newCellSize = Math.min(60, Math.max(25, newCellSize));
+                        
+                        newGridOffsetX = 10;
+                        gridOffsetY_Dynamic = gridOffsetY;
+                    }
                     
                     cells.forEach(cell => {
                         cell.size = newCellSize;
                         cell.x = cell.col * newCellSize + newGridOffsetX;
-                        cell.y = cell.row * newCellSize + gridOffsetY;
+                        cell.y = cell.row * newCellSize + gridOffsetY_Dynamic;
                     });
                     
                     // Background
@@ -8233,67 +8269,109 @@
                     // Draw Grid
                     cells.forEach(cell => cell.draw());
                     
-                    // Draw Word List (Right Side)
-                    const listX = newGridOffsetX + (gridSize * newCellSize) + 15;
-                    const listY = gridOffsetY;
+                    // Draw Word List
+                    let listX, listY;
                     
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'top';
-                    
-                    ctx.fillStyle = '#334155';
-                    ctx.font = `bold ${Math.max(12, totalWidth / 35)}px Arial`;
-                    ctx.fillText('الكلمات المطلوبة:', listX, listY - 30);
-                    
-                    const itemHeight = Math.max(30, newCellSize * 0.8); // Scale item height with cell size
-                    
-                    placedWords.forEach((word, i) => {
-                        const yPos = listY + i * itemHeight;
+                    if (isMobile) {
+                        // List below grid
+                        listX = 20;
+                        listY = gridOffsetY_Dynamic + (gridSize * newCellSize) + 20;
                         
-                        // Icon (Purple Square like screenshot)
-                        const iconSize = Math.max(12, itemHeight * 0.5);
+                        ctx.textAlign = 'right'; // RTL for list
+                        ctx.textBaseline = 'top';
+                        ctx.fillStyle = '#334155';
+                        ctx.font = 'bold 16px Arial';
+                        ctx.fillText('الكلمات المطلوبة:', totalWidth - 20, listY);
                         
-                        if (word.found) {
-                            // Green Check
-                            ctx.fillStyle = '#22c55e';
-                            ctx.font = `${iconSize}px Arial`;
-                            ctx.fillText('✅', listX, yPos + (itemHeight - iconSize)/2);
-                        } else {
-                            // Purple Square
-                            ctx.fillStyle = '#d8b4fe'; // Light purple
-                            ctx.fillRect(listX, yPos + (itemHeight - iconSize)/2, iconSize, iconSize);
+                        // Draw words in a grid-like flow or columns if possible, or just a list
+                        // For simplicity on mobile, let's do 2 columns
+                        const colWidth = (totalWidth - 40) / 2;
+                        const itemHeight = 25;
+                        
+                        placedWords.forEach((word, i) => {
+                            const col = i % 2;
+                            const row = Math.floor(i / 2);
+                            const xPos = totalWidth - 20 - (col * colWidth); // RTL flow
+                            const yPos = listY + 30 + (row * itemHeight);
                             
-                            // Inner shadow effect
-                            ctx.fillStyle = 'rgba(0,0,0,0.1)';
-                            ctx.fillRect(listX, yPos + (itemHeight - iconSize)/2 + iconSize/2, iconSize, iconSize/2);
-                        }
-                        
-                        // Word Text
-                        const textX = listX + iconSize + 8;
-                        // Dynamic font size for list items
-                        const fontSize = Math.max(12, Math.min(20, (totalWidth - listX) / 8)); 
-                        
-                        if (word.found) {
-                            ctx.fillStyle = '#94a3b8';
-                            ctx.font = `bold ${fontSize}px Arial`;
-                            ctx.fillText(word.word, textX, yPos + itemHeight/2 - fontSize/2);
+                            // Draw logic similar to desktop but adjusted
+                            const iconSize = 12;
+                            const textX = xPos - iconSize - 5;
                             
-                            // Strikethrough
-                            const textWidth = ctx.measureText(word.word).width;
-                            ctx.fillRect(textX, yPos + itemHeight/2, textWidth, 2);
-                        } else {
-                            ctx.fillStyle = '#1e293b';
-                            ctx.font = `bold ${fontSize}px Arial`;
-                            ctx.fillText(word.word, textX, yPos + itemHeight/2 - fontSize/2);
-                        }
-                    });
-                    
-                    // Progress
-                    ctx.fillStyle = '#f72585';
-                    ctx.font = `bold ${Math.max(12, totalWidth / 35)}px Arial`;
-                    ctx.textAlign = 'center';
-                    // Center progress under the list
-                    const listCenter = listX + (totalWidth - listX) / 2;
-                    ctx.fillText(`الكلمات: ${foundWordsCount}/${placedWords.length}`, listCenter, listY + placedWords.length * itemHeight + 20);
+                            if (word.found) {
+                                ctx.fillStyle = '#22c55e';
+                                ctx.fillText('✅', xPos, yPos);
+                            } else {
+                                ctx.fillStyle = '#d8b4fe';
+                                ctx.fillRect(xPos - iconSize, yPos, iconSize, iconSize);
+                            }
+                            
+                            ctx.textAlign = 'right';
+                            if (word.found) {
+                                ctx.fillStyle = '#94a3b8';
+                                ctx.font = 'bold 14px Arial';
+                                ctx.fillText(word.word, textX, yPos);
+                                const textWidth = ctx.measureText(word.word).width;
+                                ctx.fillRect(textX - textWidth, yPos + 8, textWidth, 2);
+                            } else {
+                                ctx.fillStyle = '#1e293b';
+                                ctx.font = 'bold 14px Arial';
+                                ctx.fillText(word.word, textX, yPos);
+                            }
+                        });
+                        
+                    } else {
+                        // Desktop List (Right Side)
+                        listX = newGridOffsetX + (gridSize * newCellSize) + 15;
+                        listY = gridOffsetY_Dynamic;
+                        
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'top';
+                        
+                        ctx.fillStyle = '#334155';
+                        ctx.font = `bold ${Math.max(12, totalWidth / 35)}px Arial`;
+                        ctx.fillText('الكلمات المطلوبة:', listX, listY - 30);
+                        
+                        const itemHeight = Math.max(30, newCellSize * 0.8);
+                        
+                        placedWords.forEach((word, i) => {
+                            const yPos = listY + i * itemHeight;
+                            const iconSize = Math.max(12, itemHeight * 0.5);
+                            
+                            if (word.found) {
+                                ctx.fillStyle = '#22c55e';
+                                ctx.font = `${iconSize}px Arial`;
+                                ctx.fillText('✅', listX, yPos + (itemHeight - iconSize)/2);
+                            } else {
+                                ctx.fillStyle = '#d8b4fe';
+                                ctx.fillRect(listX, yPos + (itemHeight - iconSize)/2, iconSize, iconSize);
+                                ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                                ctx.fillRect(listX, yPos + (itemHeight - iconSize)/2 + iconSize/2, iconSize, iconSize/2);
+                            }
+                            
+                            const textX = listX + iconSize + 8;
+                            const fontSize = Math.max(12, Math.min(20, (totalWidth - listX) / 8)); 
+                            
+                            if (word.found) {
+                                ctx.fillStyle = '#94a3b8';
+                                ctx.font = `bold ${fontSize}px Arial`;
+                                ctx.fillText(word.word, textX, yPos + itemHeight/2 - fontSize/2);
+                                const textWidth = ctx.measureText(word.word).width;
+                                ctx.fillRect(textX, yPos + itemHeight/2, textWidth, 2);
+                            } else {
+                                ctx.fillStyle = '#1e293b';
+                                ctx.font = `bold ${fontSize}px Arial`;
+                                ctx.fillText(word.word, textX, yPos + itemHeight/2 - fontSize/2);
+                            }
+                        });
+                        
+                        // Progress
+                        ctx.fillStyle = '#f72585';
+                        ctx.font = `bold ${Math.max(12, totalWidth / 35)}px Arial`;
+                        ctx.textAlign = 'center';
+                        const listCenter = listX + (totalWidth - listX) / 2;
+                        ctx.fillText(`الكلمات: ${foundWordsCount}/${placedWords.length}`, listCenter, listY + placedWords.length * itemHeight + 20);
+                    }
                     
                     this.gameAnimationFrame = requestAnimationFrame(gameLoop);
                 };
