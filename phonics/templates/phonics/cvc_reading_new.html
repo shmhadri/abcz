@@ -1,0 +1,495 @@
+{% extends "leeters.HTML" %}
+{% load static %}
+
+{% block title %}تدريب قراءة CVC{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    :root {
+        --primary-color: #4a90e2;
+        --secondary-color: #50e3c2;
+        --success-color: #7ed321;
+        --danger-color: #d0021b;
+        --light-color: #f5f7fa;
+        --dark-color: #4a4a4a;
+        --white-color: #ffffff;
+        --border-radius: 15px;
+        --shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    .cvc-main-container {
+        max-width: 950px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: var(--white-color);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        text-align: center;
+        font-family: 'Cairo', sans-serif;
+    }
+
+    .cvc-header h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .cvc-header p {
+        font-size: 1.1rem;
+        color: var(--dark-color);
+        margin-bottom: 2rem;
+    }
+
+    .nav-pills .nav-link {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--dark-color);
+        background-color: var(--light-color);
+        margin: 0 5px;
+        border-radius: 50px;
+        padding: 10px 25px;
+        transition: all 0.3s ease;
+    }
+
+    .nav-pills .nav-link.active {
+        background-color: var(--primary-color);
+        color: var(--white-color);
+        box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+    }
+
+    .tab-content {
+        margin-top: 2.5rem;
+    }
+
+    .card-container {
+        display: none;
+        animation: fadeIn 0.5s;
+    }
+    .card-container.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .item-card {
+        background: var(--light-color);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .item-image {
+        width: 220px;
+        height: 220px;
+        object-fit: cover;
+        border-radius: var(--border-radius);
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow);
+    }
+
+    .item-text {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+    }
+    
+    .sentence-text {
+        font-size: 2.8rem;
+    }
+
+    .item-translation {
+        font-size: 1.2rem;
+        color: #777;
+        margin-top: -0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .action-buttons button {
+        font-size: 1.8rem;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        margin: 0 15px;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .action-buttons button:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    #speak-btn { background-color: var(--primary-color); color: var(--white-color); }
+    #mic-btn { background-color: var(--success-color); color: var(--white-color); }
+    #mic-btn.recording {
+        background-color: var(--danger-color);
+        animation: pulse-red 1.5s infinite;
+    }
+
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(208, 2, 27, 0.7); }
+        70% { box-shadow: 0 0 0 25px rgba(208, 2, 27, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(208, 2, 27, 0); }
+    }
+
+    .nav-buttons button, #start-challenge-btn {
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 12px 30px;
+        border-radius: 50px;
+        border: 2px solid var(--primary-color);
+        background: transparent;
+        color: var(--primary-color);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 1.5rem 0.5rem 0;
+    }
+    .nav-buttons button:hover, #start-challenge-btn:hover {
+        background: var(--primary-color);
+        color: var(--white-color);
+    }
+    #start-challenge-btn {
+        background: var(--primary-color);
+        color: var(--white-color);
+        font-size: 1.3rem;
+    }
+
+    .progress-wrapper {
+        margin: 1rem 0;
+    }
+    .progress {
+        height: 25px;
+        border-radius: 50px;
+        background-color: #e9ecef;
+    }
+    .progress-bar {
+        background-color: var(--success-color);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .timer-display {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--danger-color);
+        margin-bottom: 1rem;
+    }
+
+    #feedback-area {
+        margin-top: 1.5rem;
+        font-size: 1.3rem;
+        font-weight: 600;
+        min-height: 30px;
+    }
+</style>
+
+<div class="cvc-main-container">
+    <div class="cvc-header">
+        <h2><i class="fas fa-bullhorn"></i> تدريب نطق الكلمات والجمل</h2>
+        <p>طور مهاراتك في القراءة والنطق بطريقة ممتعة وتفاعلية!</p>
+    </div>
+
+    <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pills-words-tab" data-bs-toggle="pill" data-bs-target="#pills-words" type="button" role="tab">
+                <i class="fas fa-image"></i> كلمات CVC
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-sentences-tab" data-bs-toggle="pill" data-bs-target="#pills-sentences" type="button" role="tab">
+                <i class="fas fa-file-invoice"></i> جمل CVC
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="pills-tabContent">
+        <!-- CVC Words Panel -->
+        <div class="tab-pane fade show active" id="pills-words" role="tabpanel">
+            <div id="words-card-container"></div>
+            <div class="progress-wrapper">
+                <div class="progress">
+                    <div id="words-progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button id="prev-word-btn" style="display: none;">&larr; السابق</button>
+                <button id="next-word-btn" style="display: none;">التالي &rarr;</button>
+            </div>
+        </div>
+
+        <!-- CVC Sentences Panel -->
+        <div class="tab-pane fade" id="pills-sentences" role="tabpanel">
+            <button id="start-challenge-btn">🚀 ابدأ تحدي قراءة الجمل</button>
+            <div id="sentences-challenge-area" style="display: none;">
+                <div class="timer-display" id="sentence-timer"></div>
+                <div id="sentences-card-container"></div>
+                <div class="progress-wrapper">
+                    <div class="progress">
+                        <div id="sentences-progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                </div>
+                <div class="nav-buttons">
+                    <button id="prev-sentence-btn" style="display: none;">&larr; السابق</button>
+                    <button id="next-sentence-btn" style="display: none;">التالي &rarr;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="feedback-area"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- DOM Elements ---
+    const elements = {
+        words: {
+            container: document.getElementById('words-card-container'),
+            progressBar: document.getElementById('words-progress-bar'),
+            prevBtn: document.getElementById('prev-word-btn'),
+            nextBtn: document.getElementById('next-word-btn'),
+            tab: document.getElementById('pills-words-tab'),
+        },
+        sentences: {
+            container: document.getElementById('sentences-card-container'),
+            progressBar: document.getElementById('sentences-progress-bar'),
+            prevBtn: document.getElementById('prev-sentence-btn'),
+            nextBtn: document.getElementById('next-sentence-btn'),
+            tab: document.getElementById('pills-sentences-tab'),
+            startBtn: document.getElementById('start-challenge-btn'),
+            challengeArea: document.getElementById('sentences-challenge-area'),
+            timer: document.getElementById('sentence-timer'),
+        },
+        feedbackArea: document.getElementById('feedback-area'),
+    };
+
+    // --- State ---
+    const state = {
+        words: [],
+        sentences: [],
+        currentWordIndex: 0,
+        currentSentenceIndex: 0,
+        mediaRecorder: null,
+        audioChunks: [],
+        sentenceTimerInterval: null,
+    };
+
+    // --- API ---
+    const api = {
+        fetchData: async (endpoint) => {
+            try {
+                const response = await fetch(endpoint);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error(`Failed to fetch from ${endpoint}:`, error);
+                elements.feedbackArea.innerHTML = `<span style="color:var(--danger-color)">فشل تحميل البيانات. يرجى المحاولة مرة أخرى.</span>`;
+                return null;
+            }
+        },
+        checkPronunciation: async (audioBlob, targetText) => {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.wav');
+            formData.append('word', targetText);
+            
+            elements.feedbackArea.innerHTML = '<i>... يتم تحليل النطق ...</i>';
+
+            try {
+                const response = await fetch(`/api/check-cvc-pronunciation/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Pronunciation check failed:', error);
+                elements.feedbackArea.textContent = 'عفواً، حدث خطأ أثناء التحقق من النطق.';
+                return null;
+            }
+        }
+    };
+
+    // --- UI Update Functions ---
+    const ui = {
+        renderCard: (type, index) => {
+            const isWord = type === 'words';
+            const data = isWord ? state.words[index] : state.sentences[index];
+            const container = isWord ? elements.words.container : elements.sentences.container;
+            
+            if (!data) return;
+
+            container.innerHTML = `
+                <div class="item-card" data-id="${data.id}">
+                    ${isWord ? `<img src="${data.image_url || 'https://via.placeholder.com/220'}" alt="${data.word}" class="item-image">` : ''}
+                    <div class="item-text ${isWord ? '' : 'sentence-text'}">${isWord ? data.word : data.sentence}</div>
+                    <div class="item-translation">${isWord ? data.arabic_meaning : data.arabic_translation}</div>
+                    <div class="action-buttons">
+                        <button id="speak-btn" title="استمع للنطق الصحيح"><i class="fas fa-volume-up"></i></button>
+                        <button id="mic-btn" title="سجل نطقك"><i class="fas fa-microphone"></i></button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('speak-btn').onclick = () => helpers.speak(isWord ? data.word : data.sentence);
+            document.getElementById('mic-btn').onclick = (e) => handlers.record(e.currentTarget, isWord ? data.word : data.sentence, type);
+            
+            ui.updateProgress(type);
+        },
+        updateProgress: (type) => {
+            const isWord = type === 'words';
+            const total = isWord ? state.words.length : state.sentences.length;
+            const current = isWord ? state.currentWordIndex : state.currentSentenceIndex;
+            const progressBar = isWord ? elements.words.progressBar : elements.sentences.progressBar;
+            
+            if (total === 0) return;
+            
+            const percentage = Math.round(((current + 1) / total) * 100);
+            progressBar.style.width = `${percentage}%`;
+            progressBar.textContent = `${percentage}%`;
+            progressBar.setAttribute('aria-valuenow', percentage);
+        },
+        showFeedback: (result) => {
+            if (!result) return;
+            if (result.correct) {
+                elements.feedbackArea.innerHTML = `<span style="color:var(--success-color)"><i class="fas fa-check-circle"></i> ${result.message} (الدقة: ${result.accuracy}%)</span>`;
+            } else {
+                elements.feedbackArea.innerHTML = `<span style="color:var(--danger-color)"><i class="fas fa-times-circle"></i> ${result.message}</span>`;
+            }
+        },
+        startSentenceTimer: (duration) => {
+            clearInterval(state.sentenceTimerInterval);
+            let timeLeft = duration;
+            elements.sentences.timer.textContent = `⏳ ${timeLeft} ثانية`;
+            state.sentenceTimerInterval = setInterval(() => {
+                timeLeft--;
+                elements.sentences.timer.textContent = `⏳ ${timeLeft} ثانية`;
+                if (timeLeft <= 0) {
+                    clearInterval(state.sentenceTimerInterval);
+                    elements.sentences.timer.textContent = "⏰ انتهى الوقت!";
+                    if (state.currentSentenceIndex < state.sentences.length - 1) {
+                        setTimeout(() => {
+                            state.currentSentenceIndex++;
+                            ui.renderCard('sentences', state.currentSentenceIndex);
+                        }, 1500);
+                    }
+                }
+            }, 1000);
+        }
+    };
+
+    // --- Event Handlers ---
+    const handlers = {
+        navigate: (type, direction) => {
+            const isWord = type === 'words';
+            let currentIndex = isWord ? 'currentWordIndex' : 'currentSentenceIndex';
+            const dataArray = isWord ? state.words : state.sentences;
+
+            state[currentIndex] += direction;
+
+            if (state[currentIndex] < 0) state[currentIndex] = 0;
+            if (state[currentIndex] >= dataArray.length) state[currentIndex] = dataArray.length - 1;
+
+            ui.renderCard(type, state[currentIndex]);
+        },
+        record: (micButton, targetText, type) => {
+            if (state.mediaRecorder && state.mediaRecorder.state === 'recording') {
+                state.mediaRecorder.stop();
+                micButton.classList.remove('recording');
+                micButton.innerHTML = '<i class="fas fa-microphone"></i>';
+            } else {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        state.mediaRecorder = new MediaRecorder(stream);
+                        state.mediaRecorder.start();
+                        state.audioChunks = [];
+                        micButton.classList.add('recording');
+                        micButton.innerHTML = '<i class="fas fa-stop"></i>';
+
+                        state.mediaRecorder.addEventListener('dataavailable', e => state.audioChunks.push(e.data));
+                        state.mediaRecorder.addEventListener('stop', async () => {
+                            const audioBlob = new Blob(state.audioChunks);
+                            const result = await api.checkPronunciation(audioBlob, targetText);
+                            ui.showFeedback(result);
+                            stream.getTracks().forEach(track => track.stop());
+
+                            if (result && result.correct) {
+                                setTimeout(() => {
+                                    const isWord = type === 'words';
+                                    const dataArray = isWord ? state.words : state.sentences;
+                                    let currentIndex = isWord ? 'currentWordIndex' : 'currentSentenceIndex';
+                                    if (state[currentIndex] < dataArray.length - 1) {
+                                        state[currentIndex]++;
+                                        ui.renderCard(type, state[currentIndex]);
+                                    }
+                                }, 2000);
+                            }
+                        });
+                    }).catch(err => {
+                        console.error("Error getting user media:", err);
+                        elements.feedbackArea.textContent = "لا يمكن الوصول إلى الميكروفون.";
+                    });
+            }
+        },
+        startChallenge: async () => {
+            elements.sentences.startBtn.style.display = 'none';
+            elements.sentences.challengeArea.style.display = 'block';
+            
+            const data = await api.fetchData('/api/cvc-sentences/');
+            if (data && data.sentences) {
+                state.sentences = data.sentences;
+                if (state.sentences.length > 0) {
+                    state.currentSentenceIndex = 0;
+                    ui.renderCard('sentences', state.currentSentenceIndex);
+                    elements.sentences.prevBtn.style.display = 'inline-block';
+                    elements.sentences.nextBtn.style.display = 'inline-block';
+                } else {
+                    elements.sentences.container.innerHTML = "<p>لا توجد جمل متاحة حالياً.</p>";
+                }
+            }
+        }
+    };
+
+    // --- Helper Functions ---
+    const helpers = {
+        speak: (text) => {
+            speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            speechSynthesis.speak(utterance);
+        }
+    };
+
+    // --- Initialization ---
+    const init = async () => {
+        // Setup event listeners
+        elements.words.prevBtn.onclick = () => handlers.navigate('words', -1);
+        elements.words.nextBtn.onclick = () => handlers.navigate('words', 1);
+        elements.sentences.prevBtn.onclick = () => handlers.navigate('sentences', -1);
+        elements.sentences.nextBtn.onclick = () => handlers.navigate('sentences', 1);
+        elements.sentences.startBtn.onclick = handlers.startChallenge;
+
+        // Fetch initial data for words tab
+        const data = await api.fetchData('/api/cvc-words/');
+        if (data && data.words) {
+            state.words = data.words;
+            if (state.words.length > 0) {
+                ui.renderCard('words', state.currentWordIndex);
+                elements.words.prevBtn.style.display = 'inline-block';
+                elements.words.nextBtn.style.display = 'inline-block';
+            } else {
+                elements.words.container.innerHTML = "<p>لا توجد كلمات متاحة حالياً.</p>";
+            }
+        }
+    };
+
+    init();
+});
+</script>
+{% endblock %}

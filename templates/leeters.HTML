@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>منصة ألعاب الحروف الإنجليزية - Phonics Game Lab</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' fill='%234361ee' rx='6'/><text x='16' y='22' fill='white' font-size='18' font-weight='bold' text-anchor='middle' font-family='Arial'>A</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -64,10 +66,20 @@
         }
 
         /* Touch feedback for buttons */
-        button:active, .btn-touch-active {
-            transform: scale(0.95);
-            opacity: 0.8;
-            transition: transform 0.1s;
+        button:active, .btn-touch-active, .control-btn:active, .game-card:active {
+            transform: scale(0.92);
+            transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy effect */
+        }
+
+        /* Animation for buttons */
+        @keyframes buttonPop {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-animate {
+            animation: buttonPop 0.3s ease-out;
         }
 
         input, textarea {
@@ -164,6 +176,7 @@
             font-size: 18px;
             margin: 0;
             background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
@@ -652,6 +665,32 @@
         .btn:active {
             transform: translateY(0);
         }
+
+        .btn-special-animation {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            background: linear-gradient(135deg, #f72585, #b5179e);
+            box-shadow: 0 4px 15px rgba(247, 37, 133, 0.4);
+        }
+
+        .btn-special-animation::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.8s ease;
+        }
+
+        .btn-special-animation:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
 
         /* Words Grid */
         .words-section {
@@ -1262,11 +1301,84 @@
         }
 
         /* New Game Styles */
+        .games-container-wrapper {
+            position: relative;
+            margin-top: 20px;
+        }
+        
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            padding: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+        
+        .games-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .games-grid::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .games-grid::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+        
+        /* Scroll Arrows for Mobile */
+        .games-scroll-arrows {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .scroll-arrow {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-light);
+        }
+        
+        .scroll-arrow:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow);
+        }
+        
+        .scroll-arrow:active {
+            transform: scale(0.9);
+        }
+        
+        .scroll-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        @media (min-width: 769px) {
+            .games-scroll-arrows {
+                display: none;
+            }
+            .games-grid {
+                max-height: none;
+                overflow-y: visible;
+            }
         }
 
         .game-card {
@@ -1281,6 +1393,12 @@
             transition: all 0.3s ease;
             cursor: pointer;
             user-select: none;
+            position: relative;
+            /* Require intentional touch/click */
+            touch-action: manipulation;
+            /* Minimum touch target size for accessibility */
+            min-height: 120px;
+            min-width: 120px;
         }
 
         .night-mode .game-card {
@@ -2347,6 +2465,9 @@
                         <button class="menu-item" id="viewCertificate">
                             <i class="fas fa-certificate"></i> الشهادة
                         </button>
+                        <button class="menu-item" onclick="window.location.href='/cvc-reading/'">
+                            <i class="fas fa-book-reader"></i> قراءة CVC
+                        </button>
                         
                         <div class="menu-divider"></div>
                         
@@ -2642,42 +2763,55 @@
                 "من جد وجد، ومن زرع حصد. استمر في التقدم!"
             </div>
             
+            
             <!-- Games Grid -->
-            <div class="games-grid" id="gamesGrid">
-                <div class="game-card" data-game="carRace">
-                    <div class="game-icon">🏎️</div>
-                    <div class="game-name">سباق السيارات</div>
+            <div class="games-container-wrapper">
+                <div class="games-grid" id="gamesGrid">
+                    <div class="game-card" data-game="carRace">
+                        <div class="game-icon">🏎️</div>
+                        <div class="game-name">سباق السيارات</div>
+                    </div>
+                    <div class="game-card" data-game="racket">
+                        <div class="game-icon">🎾</div>
+                        <div class="game-name">لعبة المضرب</div>
+                    </div>
+                    <div class="game-card" data-game="shooting">
+                        <div class="game-icon">🎯</div>
+                        <div class="game-name">اصطياد الحرف</div>
+                    </div>
+                    <div class="game-card" data-game="balloons">
+                        <div class="mandatory-badge">مطلوب</div>
+                        <div class="game-icon">🎈</div>
+                        <div class="game-name">لعبة البالونات</div>
+                    </div>
+                    <div class="game-card" data-game="memory">
+                        <div class="mandatory-badge">مطلوب</div>
+                        <div class="game-icon">🧠</div>
+                        <div class="game-name">لعبة الذاكرة</div>
+                    </div>
+                    <div class="game-card" data-game="wordsearch">
+                        <div class="game-icon">🔍</div>
+                        <div class="game-name">لعبة البحث</div>
+                    </div>
+                    <div class="game-card" data-game="typing">
+                        <div class="game-icon">⌨️</div>
+                        <div class="game-name">الكتابة السريعة</div>
+                    </div>
+                    <div class="game-card" data-game="match">
+                        <div class="mandatory-badge">مطلوب</div>
+                        <div class="game-icon">🔤</div>
+                        <div class="game-name">لعبة المطابقة</div>
+                    </div>
                 </div>
-                <div class="game-card" data-game="racket">
-                    <div class="game-icon">🎾</div>
-                    <div class="game-name">لعبة المضرب</div>
-                </div>
-                <div class="game-card" data-game="shooting">
-                    <div class="game-icon">🎯</div>
-                    <div class="game-name">اصطياد الحرف</div>
-                </div>
-                <div class="game-card" data-game="balloons">
-                    <div class="mandatory-badge">مطلوب</div>
-                    <div class="game-icon">🎈</div>
-                    <div class="game-name">لعبة البالونات</div>
-                </div>
-                <div class="game-card" data-game="memory">
-                    <div class="mandatory-badge">مطلوب</div>
-                    <div class="game-icon">🧠</div>
-                    <div class="game-name">لعبة الذاكرة</div>
-                </div>
-                <div class="game-card" data-game="wordsearch">
-                    <div class="game-icon">🔍</div>
-                    <div class="game-name">لعبة البحث</div>
-                </div>
-                <div class="game-card" data-game="typing">
-                    <div class="game-icon">⌨️</div>
-                    <div class="game-name">الكتابة السريعة</div>
-                </div>
-                <div class="game-card" data-game="match">
-                    <div class="mandatory-badge">مطلوب</div>
-                    <div class="game-icon">🔤</div>
-                    <div class="game-name">لعبة المطابقة</div>
+                
+                <!-- Scroll Arrows for Mobile -->
+                <div class="games-scroll-arrows">
+                    <button class="scroll-arrow" id="scrollUpBtn" title="تمرير لأعلى">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                    <button class="scroll-arrow" id="scrollDownBtn" title="تمرير لأسفل">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
                 </div>
             </div>
             
@@ -4502,14 +4636,8 @@
                     }
                 });
                 
-                this.gamesGrid.addEventListener('touchstart', (e) => {
-                    const gameCard = e.target.closest('.game-card');
-                    if (gameCard && !gameCard.classList.contains('locked')) {
-                        e.preventDefault();
-                        const gameType = gameCard.dataset.game;
-                        this.startGame(gameType);
-                    }
-                }, { passive: false });
+                // Removed touchstart listener to allow scrolling on mobile
+                // The click event above handles interaction correctly after tap
                 
                 this.quizNextBtn.addEventListener('click', () => this.nextQuizQuestion());
                 
@@ -4753,47 +4881,34 @@
                 controlButtons.forEach(btn => {
                     const action = btn.dataset.action;
                     
-                    btn.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
+                    const activate = (e) => {
+                        if (e.cancelable) e.preventDefault();
                         this.touchControls[action] = true;
-                        btn.style.transform = 'scale(0.95)';
+                        btn.classList.add('btn-touch-active');
+                        // Add a small vibration if supported
+                        if (navigator.vibrate) navigator.vibrate(10);
                         this.soundManager.playSound('click');
-                    });
-                    
-                    btn.addEventListener('touchend', (e) => {
-                        e.preventDefault();
+                    };
+
+                    const deactivate = (e) => {
+                        if (e.cancelable) e.preventDefault();
                         this.touchControls[action] = false;
-                        btn.style.transform = 'scale(1)';
-                    });
+                        btn.classList.remove('btn-touch-active');
+                    };
                     
-                    btn.addEventListener('touchcancel', (e) => {
-                        e.preventDefault();
-                        this.touchControls[action] = false;
-                        btn.style.transform = 'scale(1)';
-                    });
+                    btn.addEventListener('touchstart', activate, { passive: false });
+                    btn.addEventListener('touchend', deactivate, { passive: false });
+                    btn.addEventListener('touchcancel', deactivate, { passive: false });
                     
-                    btn.addEventListener('mousedown', (e) => {
-                        e.preventDefault();
-                        this.touchControls[action] = true;
-                        btn.style.transform = 'scale(0.95)';
-                        this.soundManager.playSound('click');
-                    });
-                    
-                    btn.addEventListener('mouseup', (e) => {
-                        e.preventDefault();
-                        this.touchControls[action] = false;
-                        btn.style.transform = 'scale(1)';
-                    });
-                    
-                    btn.addEventListener('mouseleave', (e) => {
-                        e.preventDefault();
-                        this.touchControls[action] = false;
-                        btn.style.transform = 'scale(1)';
-                    });
+                    btn.addEventListener('mousedown', activate);
+                    btn.addEventListener('mouseup', deactivate);
+                    btn.addEventListener('mouseleave', deactivate);
                 });
                 
+                // Check for touch support but allow fallback
                 if (!('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
-                    this.touchControlsEl.style.display = 'none';
+                    // Optional: Hide on non-touch devices if desired, but keeping for hybrid
+                    // this.touchControlsEl.style.display = 'none';
                 }
             }
             
@@ -5679,14 +5794,21 @@
                 }, duration);
             }
             
-            async speakLetter(letter, isCapital = false) {
+            async speakLetter(letter = null, isCapital = null) {
                 if (!this.soundEnabled) return;
                 
+                const targetLetter = letter || this.progress.currentLetter;
+                if (!targetLetter) return;
+
                 // نطق الحرف مع وصف نوعه
-                if (isCapital) {
-                    await this.soundManager.speak(`Capital ${letter}`);
+                if (isCapital === true) {
+                    await this.soundManager.speak(`Capital ${targetLetter}`);
+                } else if (isCapital === false) {
+                    await this.soundManager.speak(`Small ${targetLetter}`);
                 } else {
-                    await this.soundManager.speak(`Small ${letter}`);
+                    // في حال عدم التحديد (زر الاستماع الرئيسي)
+                    // ينطق الحرف فقط بتفخيم
+                    await this.soundManager.speak(`Letter ${targetLetter}`);
                 }
             }
             
@@ -9293,6 +9415,79 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             new PhonicsGameLab();
+            
+            // Setup scroll arrows for games grid
+            const gamesGrid = document.getElementById('gamesGrid');
+            const scrollUpBtn = document.getElementById('scrollUpBtn');
+            const scrollDownBtn = document.getElementById('scrollDownBtn');
+            
+            if (gamesGrid && scrollUpBtn && scrollDownBtn) {
+                // Scroll up
+                scrollUpBtn.addEventListener('click', () => {
+                    gamesGrid.scrollBy({
+                        top: -150, // Scroll up by 150px
+                        behavior: 'smooth'
+                    });
+                });
+                
+                // Scroll down
+                scrollDownBtn.addEventListener('click', () => {
+                    gamesGrid.scrollBy({
+                        top: 150, // Scroll down by 150px
+                        behavior: 'smooth'
+                    });
+                });
+                
+                // Update button states based on scroll position
+                const updateScrollButtons = () => {
+                    const scrollTop = gamesGrid.scrollTop;
+                    const scrollHeight = gamesGrid.scrollHeight;
+                    const clientHeight = gamesGrid.clientHeight;
+                    
+                    // Disable scroll up if at top
+                    scrollUpBtn.disabled = scrollTop <= 0;
+                    
+                    // Disable scroll down if at bottom
+                    scrollDownBtn.disabled = scrollTop + clientHeight >= scrollHeight - 5;
+                };
+                
+                // Initial check
+                updateScrollButtons();
+                
+                // Update on scroll
+                gamesGrid.addEventListener('scroll', updateScrollButtons);
+                
+                // Update on resize
+                window.addEventListener('resize', updateScrollButtons);
+            }
+            
+            // Improve game card click detection - prevent accidental taps
+            document.querySelectorAll('.game-card').forEach(card => {
+                let touchStartTime = 0;
+                let touchStartY = 0;
+                
+                card.addEventListener('touchstart', (e) => {
+                    touchStartTime = Date.now();
+                    touchStartY = e.touches[0].clientY;
+                }, { passive: true });
+                
+                card.addEventListener('touchend', (e) => {
+                    const touchDuration = Date.now() - touchStartTime;
+                    const touchEndY = e.changedTouches[0].clientY;
+                    const touchMoveDistance = Math.abs(touchEndY - touchStartY);
+                    
+                    // Only trigger if:
+                    // 1. Touch duration is reasonable (not too quick)
+                    // 2. Touch didn't move much (not a scroll)
+                    if (touchDuration > 50 && touchDuration < 500 && touchMoveDistance < 10) {
+                        // Valid tap - the default click handler will fire
+                    } else {
+                        // Invalid tap - prevent click
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }, { passive: false });
+            });
         });
     </script>
 <script>

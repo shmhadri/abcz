@@ -137,3 +137,276 @@ class LetterProgress(models.Model):
 
         # تحديث ملخص الطالب
         self.student.recalculate_progress()
+
+
+# ============================================
+# نماذج CVC Words Reading System
+# ============================================
+
+class CVCWord(models.Model):
+    """
+    كلمة CVC (Consonant-Vowel-Consonant) مثل CAT, DOG, PEN
+    """
+    word = models.CharField(
+        "الكلمة",
+        max_length=10,
+        unique=True
+    )
+    arabic_meaning = models.CharField(
+        "المعنى بالعربي",
+        max_length=100
+    )
+    image_url = models.URLField(
+        "رابط الصورة",
+        max_length=500,
+        blank=True,
+        help_text="رابط صورة توضيحية للكلمة"
+    )
+    emoji = models.CharField(
+        "الرمز التعبيري",
+        max_length=10,
+        blank=True,
+        default="🎯",
+        help_text="رمز تعبيري يمثل الكلمة"
+    )
+    category = models.CharField(
+        "التصنيف",
+        max_length=50,
+        blank=True,
+        help_text="مثل: animals, food, objects"
+    )
+    
+    # ✨ NEW: Word Family and Vowel Sound fields
+    word_family = models.CharField(
+        "عائلة الكلمة",
+        max_length=10,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text="مثل: at, an, ig, og - النهاية المشتركة"
+    )
+    vowel_sound = models.CharField(
+        "صوت حرف العلة",
+        max_length=5,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text="مثل: a, e, i, o, u"
+    )
+    
+    difficulty_level = models.PositiveSmallIntegerField(
+        "مستوى الصعوبة",
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="1=سهل جداً، 5=صعب"
+    )
+    order = models.PositiveIntegerField(
+        "الترتيب",
+        default=0,
+        help_text="ترتيب ظهور الكلمة"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "كلمة CVC"
+        verbose_name_plural = "كلمات CVC"
+        ordering = ["order", "word"]
+        indexes = [
+            models.Index(fields=['word_family']),
+            models.Index(fields=['vowel_sound']),
+            models.Index(fields=['difficulty_level']),
+        ]
+
+    def __str__(self):
+        return f"{self.word} ({self.arabic_meaning})"
+
+
+class CVCSentence(models.Model):
+    """
+    جملة مكونة من كلمات CVC وضمائر
+    """
+    sentence = models.TextField(
+        "الجملة الإنجليزية",
+        help_text="مثل: The cat sat on the mat."
+    )
+    arabic_translation = models.TextField(
+        "الترجمة العربية"
+    )
+    difficulty = models.PositiveSmallIntegerField(
+        "مستوى الصعوبة",
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    time_limit = models.PositiveIntegerField(
+        "الحد الزمني بالثواني",
+        default=30,
+        help_text="الوقت المخصص لقراءة الجملة"
+    )
+    category = models.CharField(
+        "التصنيف",
+        max_length=50,
+        default='cvc',
+        help_text="مثل: cvc, pronouns"
+    )
+    quiz_data = models.JSONField(
+        "بيانات الاختبار",
+        blank=True, 
+        null=True,
+        help_text="سؤال يظهر بعد الجملة"
+    )
+    emoji = models.CharField(
+        "الرمز التعبيري",
+        max_length=10,
+        blank=True,
+        default="📝",
+        help_text="رمز تعبيري للجملة"
+    )
+    order = models.PositiveIntegerField(
+        "الترتيب",
+        default=0
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "جملة CVC"
+        verbose_name_plural = "جمل CVC"
+        ordering = ["order", "difficulty"]
+
+    def __str__(self):
+        return self.sentence[:50]
+
+
+class CVCStory(models.Model):
+    """
+    قصة قصيرة للأطفال مكونة من كلمات CVC
+    """
+    title = models.CharField(
+        "عنوان القصة",
+        max_length=200
+    )
+    content = models.TextField(
+        "محتوى القصة بالإنجليزية",
+        help_text="القصة بكلمات CVC بسيطة"
+    )
+    arabic_explanation = models.TextField(
+        "الشرح بالعربي",
+        help_text="ترجمة أو شرح القصة للأطفال"
+    )
+    image_url = models.URLField(
+        "رابط صورة القصة",
+        max_length=500,
+        blank=True
+    )
+    quiz_data = models.JSONField(
+        "بيانات الاختبار",
+        blank=True, 
+        null=True,
+        help_text="JSON structure for questions: [{'question': '...', 'options': ['...'], 'correct': 0, 'feedback_ar': '...'}, ...]"
+    )
+    difficulty = models.PositiveSmallIntegerField(
+        "مستوى الصعوبة",
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    order = models.PositiveIntegerField(
+        "الترتيب",
+        default=0
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "قصة CVC"
+        verbose_name_plural = "قصص CVC"
+        ordering = ["order", "difficulty"]
+
+    def __str__(self):
+        return self.title
+
+
+class CVCProgress(models.Model):
+    """
+    تتبع تقدم الطالب في قراءة كلمات وجمل CVC
+    """
+    student = models.OneToOneField(
+        Student,
+        on_delete=models.CASCADE,
+        related_name="cvc_progress",
+        verbose_name="الطالب"
+    )
+    
+    # إحصائيات الكلمات
+    words_completed = models.PositiveIntegerField(
+        "عدد الكلمات المكتملة",
+        default=0
+    )
+    words_total_score = models.PositiveIntegerField(
+        "مجموع نقاط الكلمات",
+        default=0
+    )
+    
+    # إحصائيات الجمل
+    sentences_completed = models.PositiveIntegerField(
+        "عدد الجمل المكتملة",
+        default=0
+    )
+    sentences_total_score = models.PositiveIntegerField(
+        "مجموع نقاط الجمل",
+        default=0
+    )
+    best_reading_time = models.FloatField(
+        "أفضل وقت قراءة (ثواني)",
+        null=True,
+        blank=True
+    )
+    
+    # إحصائيات القصص
+    stories_completed = models.PositiveIntegerField(
+        "عدد القصص المكتملة",
+        default=0
+    )
+    
+    # إجمالي
+    total_score = models.PositiveIntegerField(
+        "المجموع الكلي",
+        default=0
+    )
+    
+    last_activity = models.DateTimeField(
+        "آخر نشاط",
+        auto_now=True
+    )
+    created_at = models.DateTimeField(
+        "تاريخ البدء",
+        auto_now_add=True
+    )
+
+    class Meta:
+        verbose_name = "تقدم CVC"
+        verbose_name_plural = "تقدم CVC"
+
+    def __str__(self):
+        return f"{self.student.name} - CVC Progress"
+
+    def update_word_score(self, points):
+        """تحديث نقاط الكلمات"""
+        self.words_completed += 1
+        self.words_total_score += points
+        self.total_score += points
+        self.save()
+
+    def update_sentence_score(self, points, reading_time):
+        """تحديث نقاط الجمل"""
+        self.sentences_completed += 1
+        self.sentences_total_score += points
+        self.total_score += points
+        
+        # تحديث أفضل وقت
+        if self.best_reading_time is None or reading_time < self.best_reading_time:
+            self.best_reading_time = reading_time
+        
+        self.save()
+
+    def mark_story_complete(self):
+        """تحديد قصة كمكتملة"""
+        self.stories_completed += 1
+        self.save()

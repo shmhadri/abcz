@@ -1,9 +1,24 @@
-*.pyc
+# Python cache
 __pycache__/
+*.pyc
+
+# Local DB (dev only)
 db.sqlite3
+
+# Virtual env
 .venv/
+venv/
+ENV/
+env/
+
+# Environment variables
 .env
+
+# OS generated files
 .DS_Store
+Thumbs.db
+
+# Django
 media/
 staticfiles/
 *.log

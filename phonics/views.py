@@ -76,3 +76,177 @@ def leaderboard(request):
     ).order_by("-total")
 
     return render(request, "phonics/leaderboard.html", {"rows": data})
+
+def letter_data_api(request, letter):
+    from .models import Word, QuizQuestion
+
+    words = Word.objects.filter(letter=letter.upper())
+    quiz_questions = QuizQuestion.objects.filter(letter=letter.upper())
+
+    data = {
+        "letter": letter.upper(),
+        "words": [
+            {"word": w.word, "arabic": w.arabic, "emoji": w.emoji} for w in words
+        ],
+        "quiz": [
+            {
+                "question": q.question,
+                "options": q.options,
+                "correct_answer": q.correct_answer,
+            }
+            for q in quiz_questions
+        ],
+    }
+    return JsonResponse(data)
+
+
+# ============================================
+# CVC Words Reading Views
+# ============================================
+
+def cvc_reading_view(request):
+    """
+    الصفحة الرئيسية لقراءة كلمات وجمل CVC
+    """
+    # التحقق من إتمام جميع الحروف (اختياري - يمكن التحقق في JavaScript)
+    return render(request, "phonics/cvc_reading.html")
+
+
+@csrf_exempt
+def get_cvc_words_api(request):
+    """
+    API لجلب قائمة كلمات CVC
+    """
+    from .models import CVCWord
+    
+    words = CVCWord.objects.all().order_by('order')
+    data = {
+        'words': [
+            {
+                'id': w.id,
+                'word': w.word,
+                'arabic_meaning': w.arabic_meaning,
+                'image_url': w.image_url,
+                'emoji': w.emoji,
+                'category': w.category,
+                'word_family': w.word_family,
+                'vowel_sound': w.vowel_sound,
+                'difficulty_level': w.difficulty_level
+            }
+            for w in words
+        ]
+    }
+    return JsonResponse(data)
+
+
+@csrf_exempt
+def get_cvc_sentences_api(request):
+    """
+    API لجلب قائمة جمل CVC
+    """
+    from .models import CVCSentence
+    
+    sentences = CVCSentence.objects.all().order_by('order', 'difficulty')
+    data = [
+        {
+            'id': s.id,
+            'sentence': s.sentence,
+            'arabic_translation': s.arabic_translation,
+            'difficulty': s.difficulty,
+            'time_limit': s.time_limit,
+            'category': s.category,
+            'quiz_data': s.quiz_data,
+            'emoji': s.emoji
+        }
+        for s in sentences
+    ]
+    
+    return JsonResponse({'sentences': data})
+
+
+@csrf_exempt
+def get_cvc_stories_api(request):
+    """
+    API لجلب قائمة قصص CVC
+    """
+    from .models import CVCStory
+    
+    stories = CVCStory.objects.all().order_by('order', 'difficulty')
+    data = [
+        {
+            'id': s.id,
+            'title': s.title,
+            'content': s.content,
+            'arabic_explanation': s.arabic_explanation,
+            'image_url': s.image_url,
+            'quiz_data': s.quiz_data,
+            'difficulty': s.difficulty
+        }
+        for s in stories
+    ]
+    
+    return JsonResponse({'stories': data})
+
+
+@csrf_exempt
+def save_cvc_progress_api(request):
+    """
+    API لحفظ تقدم الطالب في CVC
+    """
+    from .models import CVCProgress
+    
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=400)
+    
+    data = json.loads(request.body.decode('utf-8'))
+    student_name = data.get('student')
+    progress_type = data.get('type')  # 'word', 'sentence', 'story'
+    points = int(data.get('points', 0))
+    reading_time = data.get('reading_time', None)
+    
+    # الحصول على الطالب أو إنشاؤه
+    student, _ = Student.objects.get_or_create(name=student_name)
+    
+    # الحصول على تقدم CVC أو إنشاؤه
+    cvc_progress, created = CVCProgress.objects.get_or_create(student=student)
+    
+    # تحديث التقدم حسب النوع
+    if progress_type == 'word':
+        cvc_progress.update_word_score(points)
+    elif progress_type == 'sentence' and reading_time is not None:
+        cvc_progress.update_sentence_score(points, float(reading_time))
+    elif progress_type == 'story':
+        cvc_progress.mark_story_complete()
+    
+    return JsonResponse({
+        'status': 'ok',
+        'total_score': cvc_progress.total_score,
+        'words_completed': cvc_progress.words_completed,
+        'sentences_completed': cvc_progress.sentences_completed,
+        'stories_completed': cvc_progress.stories_completed
+    })
+
+
+@csrf_exempt
+def check_cvc_pronunciation(request):
+    """
+    API للتحقق من نطق كلمة CVC
+    ملاحظة: حالياً يرجع نتائج تجريبية. لاحقاً يمكن ربطه بـ Speech Recognition API
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=400)
+    
+    # في المستقبل: استخدام Google Speech-to-Text أو Whisper
+    # حالياً: نتائج تجريبية
+    target_word = request.POST.get('word', '').upper()
+    
+    # محاكاة التحقق
+    accuracy = 85  # يمكن استخدام speech recognition لاحقاً
+    is_correct = True
+    
+    return JsonResponse({
+        'word': target_word,
+        'accuracy': accuracy,
+        'correct': is_correct,
+        'message': 'رائع! نطق ممتاز' if accuracy >= 80 else 'جيد، حاول مرة أخرى'
+    })
