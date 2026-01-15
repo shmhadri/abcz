@@ -1394,8 +1394,8 @@
             cursor: pointer;
             user-select: none;
             position: relative;
-            /* Require intentional touch/click */
-            touch-action: manipulation;
+            /* السماح بالتمرير العمودي فقط لمنع فتح اللعبة عند التمرير */
+            touch-action: pan-y;
             /* Minimum touch target size for accessibility */
             min-height: 120px;
             min-width: 120px;
@@ -4076,9 +4076,16 @@
             }
 
             ensureLetterRecordWithProgress(progress, letter) {
+                // Ensure letters object exists
+                if (!progress || typeof progress !== 'object') {
+                    console.error('Invalid progress object');
+                    return null;
+                }
                 if (!progress.letters) {
                     progress.letters = {};
                 }
+                
+                // Initialize if missing
                 if (!progress.letters[letter]) {
                     progress.letters[letter] = {
                         unlocked: letter === 'A',
@@ -4092,33 +4099,30 @@
                             quiz: { answers: {}, score: 0, completed: false }
                         }
                     };
-                } else {
-                    if (!progress.letters[letter].games) {
-                        progress.letters[letter].games = { match: false, balloons: false, memory: false };
-                    }
-                    // NEW: Ensure exercises structure exists for existing letter records
-                    if (!progress.letters[letter].exercises) {
-                        progress.letters[letter].exercises = {};
-                    }
-                    
-                    // Ensure deep properties exist
-                    if (!progress.letters[letter].exercises.writing) {
-                        progress.letters[letter].exercises.writing = { capital: {}, small: {} };
-                    }
-                    if (!progress.letters[letter].exercises.words) {
-                        progress.letters[letter].exercises.words = {};
-                    }
-                    if (!progress.letters[letter].exercises.quiz) {
-                        progress.letters[letter].exercises.quiz = { answers: {}, score: 0, completed: false };
-                    }
+                }
+                
+                const record = progress.letters[letter];
+                
+                // Repair structure for existing records - DEEP CHECK
+                if (!record.games) record.games = { match: false, balloons: false, memory: false };
+                if (!record.exercises) record.exercises = {};
+                
+                if (!record.exercises.writing) record.exercises.writing = { capital: {}, small: {} };
+                if (!record.exercises.writing.capital) record.exercises.writing.capital = {};
+                if (!record.exercises.writing.small) record.exercises.writing.small = {};
+                
+                if (!record.exercises.words) record.exercises.words = {};
+                
+                if (!record.exercises.quiz) record.exercises.quiz = { answers: {}, score: 0, completed: false };
+                if (!record.exercises.quiz.answers) record.exercises.quiz.answers = {};
+                
+                // Fix legacy field name if present
+                if (record.games.matching === true && record.games.match !== true) {
+                    record.games.match = true;
+                    delete record.games.matching;
                 }
 
-                if (progress.letters[letter].games.matching === true && progress.letters[letter].games.match !== true) {
-                    progress.letters[letter].games.match = true;
-                }
-                delete progress.letters[letter].games.matching;
-
-                return progress.letters[letter];
+                return record;
             }
 
             saveProgressState() {
@@ -4628,16 +4632,98 @@
                     this.nextLetter();
                 }, { passive: false });
                 
-                this.gamesGrid.addEventListener('click', (e) => {
+                // معالج ذكي للمس يميز بين التمرير والنقر
+                let touchStartY = 0;
+                let touchStartX = 0;
+                let touchStartTime = 0;
+                let isTouchScrolling = false;
+
+                this.gamesGrid.addEventListener('touchstart', (e) => {
                     const gameCard = e.target.closest('.game-card');
                     if (gameCard && !gameCard.classList.contains('locked')) {
-                        const gameType = gameCard.dataset.game;
-                        this.startGame(gameType);
+                        const touch = e.touches[0];
+                        touchStartY = touch.clientY;
+                        touchStartX = touch.clientX;
+                        touchStartTime = Date.now();
+                        isTouchScrolling = false;
+                    }
+                }, { passive: true });
+
+                this.gamesGrid.addEventListener('touchmove', (e) => {
+                    const gameCard = e.target.closest('.game-card');
+                    if (gameCard && !gameCard.classList.contains('locked')) {
+                        const touch = e.touches[0];
+                        const deltaY = Math.abs(touch.clientY - touchStartY);
+                        const deltaX = Math.abs(touch.clientX - touchStartX);
+                        
+                        // إذا تحرك المستخدم أكثر من 10 بكسل، فهو يمرر وليس ينقر
+                        if (deltaY > 10 || deltaX > 10) {
+                            isTouchScrolling = true;
+                        }
+                    }
+                }, { passive: true });
+
+                this.gamesGrid.addEventListener('touchend', (e) => {
+                    const gameCard = e.target.closest('.game-card');
+                    if (gameCard && !gameCard.classList.contains('locked')) {
+                        const touch = e.changedTouches[0];
+                        const deltaY = Math.abs(touch.clientY - touchStartY);
+                        const deltaX = Math.abs(touch.clientX - touchStartX);
+                        const deltaTime = Date.now() - touchStartTime;
+                        
+                        // فتح اللعبة فقط إذا:
+                        // 1. الحركة أقل من 10 بكسل (ليس تمرير)
+                        // 2. الوقت أقل من 300ms (نقرة سريعة)
+                        // 3. لم يتم اكتشاف تمرير أثناء الحركة
+                        if (!isTouchScrolling && deltaY < 10 && deltaX < 10 && deltaTime < 300) {
+                            e.preventDefault();
+                            const gameType = gameCard.dataset.game;
+                            this.startGame(gameType);
+                        }
+                    }
+                }, { passive: false });
+                
+                // معالج احتياطي للفأرة على الكمبيوتر
+                this.gamesGrid.addEventListener('click', (e) => {
+                    // تحقق من أنه ليس جهاز لمس
+                    if (e.pointerType === 'mouse' || !('ontouchstart' in window)) {
+                        const gameCard = e.target.closest('.game-card');
+                        if (gameCard && !gameCard.classList.contains('locked')) {
+                            const gameType = gameCard.dataset.game;
+                            this.startGame(gameType);
+                        }
                     }
                 });
                 
-                // Removed touchstart listener to allow scrolling on mobile
-                // The click event above handles interaction correctly after tap
+                // معالج أزرار التمرير للألعاب
+                const scrollUpBtn = document.getElementById('scrollUpBtn');
+                const scrollDownBtn = document.getElementById('scrollDownBtn');
+                
+                if (scrollUpBtn) {
+                    scrollUpBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.gamesGrid.scrollBy({ top: -150, behavior: 'smooth' });
+                    });
+                    scrollUpBtn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.gamesGrid.scrollBy({ top: -150, behavior: 'smooth' });
+                    }, { passive: false });
+                }
+                
+                if (scrollDownBtn) {
+                    scrollDownBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.gamesGrid.scrollBy({ top: 150, behavior: 'smooth' });
+                    });
+                    scrollDownBtn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.gamesGrid.scrollBy({ top: 150, behavior: 'smooth' });
+                    }, { passive: false });
+                }
                 
                 this.quizNextBtn.addEventListener('click', () => this.nextQuizQuestion());
                 
@@ -5058,7 +5144,10 @@
             loadLetter(index) {
                 try {
                     const letter = LETTERS[index];
-                    if (!letter) return;
+                    if (!letter) {
+                        console.error('Invalid letter index:', index);
+                        return;
+                    }
 
                     if (index !== 0 && !this.isLetterUnlocked(letter)) {
                         this.showToast('عذرًا، هذا الحرف مغلق. يجب إنهاء الحرف السابق أولًا.', 3000);
@@ -5069,31 +5158,34 @@
                     this.currentLetterIndex = index;
                     this.progress.currentLetter = letter;
                     
+                    // Critical: Ensure record is robust
                     const letterProgress = this.ensureLetterRecord(letter);
+                    if (!letterProgress) throw new Error('Failed to ensure letter record');
+
                     const staticLetterData = LETTER_DATA[letter];
 
                     if (!staticLetterData || !staticLetterData.words) {
                         console.error(`No static data or words found for letter: ${letter}`);
-                        if (this.wordsGrid) this.wordsGrid.innerHTML = '<p>لا توجد بيانات لهذا الحرف.</p>';
-                        if (this.capitalWriting) this.capitalWriting.innerHTML = '';
-                        if (this.smallWriting) this.smallWriting.innerHTML = '';
-                        if (this.wordWritingList) this.wordWritingList.innerHTML = '';
-                        if (this.quizQuestion) this.quizQuestion.innerHTML = 'لا توجد أسئلة متاحة.';
-                        if (this.quizOptions) this.quizOptions.innerHTML = '';
+                        this.showToast('لا توجد بيانات لهذا الحرف', 3000, 'error');
                         return;
                     }
 
-                    this.quizScore = letterProgress.exercises.quiz.score || 0;
-                    this.quizCompletedFlag = letterProgress.exercises.quiz.completed || false;
+                    // Safe usage of properties with fallbacks
+                    this.quizScore = (letterProgress.exercises && letterProgress.exercises.quiz && letterProgress.exercises.quiz.score) || 0;
+                    this.quizCompletedFlag = (letterProgress.exercises && letterProgress.exercises.quiz && letterProgress.exercises.quiz.completed) || false;
                     
-                    // Calculate start index based on answered questions
-                    const answeredCount = Object.keys(letterProgress.exercises.quiz.answers || {}).length;
-                    this.currentQuizIndex = this.quizCompletedFlag ? staticLetterData.quiz.length : answeredCount;
+                    const answers = (letterProgress.exercises && letterProgress.exercises.quiz && letterProgress.exercises.quiz.answers) || {};
+                    const answeredCount = Object.keys(answers).length;
                     
-                    this.updateUIForLetter(letter, staticLetterData.words);
-                    this.renderWritingBoxes(letter);
-                    this.renderWordWriting(letter, staticLetterData.words);
-                    this.renderQuiz(staticLetterData.quiz);
+                    // Safe quiz length check
+                    const quizLength = (staticLetterData.quiz && Array.isArray(staticLetterData.quiz)) ? staticLetterData.quiz.length : 0;
+                    this.currentQuizIndex = this.quizCompletedFlag ? quizLength : answeredCount;
+                    
+                    // Render Steps with individual error handling ensures one failure doesn't break the whole page
+                    try { this.updateUIForLetter(letter, staticLetterData.words); } catch(e) { console.error('Error updating UI', e); }
+                    try { this.renderWritingBoxes(letter); } catch(e) { console.error('Error rendering writing', e); }
+                    try { this.renderWordWriting(letter, staticLetterData.words); } catch(e) { console.error('Error rendering words', e); }
+                    try { this.renderQuiz(staticLetterData.quiz); } catch(e) { console.error('Error rendering quiz', e); }
                     
                     this.updateAndCommitScores();
                     this.updateProgress();
@@ -5101,7 +5193,9 @@
                     this.renderAchievements();
                 } catch (error) {
                     console.error("Error loading letter:", error);
-                    this.showToast("حدث خطأ أثناء تحميل الحرف", 3000);
+                    // Show more specific error to user if possible, otherwise generic
+                    const msg = error.message || "Unknown error";
+                    this.showToast(`حدث خطأ أثناء تحميل الحرف: ${msg}`, 5000, 'error');
                 }
             }
 

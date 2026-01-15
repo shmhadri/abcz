@@ -290,5 +290,5 @@ Sam closes his eyes and goes to sleep. 😴''',
     print(f"\n🎉 تم إنشاء {created_count} قصة جديدة!")
     print(f"📚 إجمالي القصص في قاعدة البيانات: {CVCStory.objects.count()}")
 
-if __name__ == '__main__':
+if __name__ == '__main__':ِِ
     create_stories()
