@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from .models import Student, LetterProgress
+from .models import Student, LetterProgress, TopGoalUnit
+import random
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.http import JsonResponse, HttpResponse
@@ -250,3 +251,39 @@ def check_cvc_pronunciation(request):
         'correct': is_correct,
         'message': 'رائع! نطق ممتاز' if accuracy >= 80 else 'جيد، حاول مرة أخرى'
     })
+
+def top_goal_view(request):
+    """
+    عرض صفحة Top Goal 6 Unit 1 (التي هي Unit 5 في الكتاب)
+    """
+    # نفترض أننا نستخدم الوحدة رقم 1 للصف السادس (كما طلب المستخدم)
+    # أو نبحث عن الوحدة التي أنشأناها بالعنوان
+    unit = TopGoalUnit.objects.filter(grade="Top Goal 6").first()
+    
+    if not unit:
+        # Fallback if DB not populated yet
+        return render(request, "phonics/top_goal_6_unit_1.html", {"error": "Unit not found. Please run population script."})
+
+    vocab = unit.vocabularies.all().order_by('order')
+    sentences = unit.sentences.all().order_by('order')
+    quizzes = unit.quizzes.all().order_by('order')
+    
+    # Serialize quizzes for JS
+    quizzes_json = []
+    for q in quizzes:
+        quizzes_json.append({
+            'id': q.id,
+            'question': q.question_text,
+            'options': q.options,
+            'correct': q.correct_answer,
+            'explanation': q.explanation_ar
+        })
+    
+    context = {
+        'unit': unit,
+        'vocab': vocab,
+        'sentences': sentences,
+        'quizzes': quizzes,
+        'quizzes_json': json.dumps(quizzes_json)
+    }
+    return render(request, "phonics/top_goal_6_unit_1.html", context)

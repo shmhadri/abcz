@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('top-goal-6-unit-1/', views.top_goal_view, name='top_goal_unit_1'),
     path('api/save-progress/', views.save_progress, name='save_progress'),
     path('api/speech/', views.speech_check, name='speech_check'),
     path('certificate/<int:student_id>/', views.generate_certificate, name='generate_certificate'),

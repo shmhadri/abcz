@@ -410,3 +410,92 @@ class CVCProgress(models.Model):
         """تحديد قصة كمكتملة"""
         self.stories_completed += 1
         self.save()
+
+
+# ============================================
+# Top Goal 5 & 6 Models
+# ============================================
+
+class TopGoalUnit(models.Model):
+    """
+    يمثل وحدة دراسية (مثلاً Unit 5: Let's watch a movie!)
+    """
+    title = models.CharField("عنوان الوحدة", max_length=200)
+    subtitle = models.CharField("عنوان فرعي", max_length=200, blank=True)
+    description = models.TextField("وصف الوحدة", blank=True)
+    grade = models.CharField("الصف", max_length=50, default="Top Goal 6") # user said Top Goal 6
+    unit_number = models.IntegerField("رقم الوحدة", default=1)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.grade} - {self.title}"
+
+class TopGoalVocabulary(models.Model):
+    """
+    كلمات ومفردات الوحدة (Movie Genres etc)
+    """
+    unit = models.ForeignKey(TopGoalUnit, related_name='vocabularies', on_delete=models.CASCADE)
+    word = models.CharField("الكلمة/المصطلح", max_length=100)
+    arabic_meaning = models.CharField("المعنى بالعربي", max_length=100)
+    emoji = models.CharField("الرمز التعبيري", max_length=20, blank=True)
+    image_url = models.URLField("رابط الصورة", max_length=500, blank=True)
+    audio_file = models.FileField("ملف الصوت", upload_to='topgoal/audio/', blank=True, null=True)
+    
+    # Example sentence for context
+    example_sentence = models.TextField("جملة مثال", blank=True)
+    
+    order = models.PositiveIntegerField("الترتيب", default=0)
+
+    class Meta:
+        verbose_name = "مفردات Top Goal"
+        verbose_name_plural = "مفردات Top Goal"
+        ordering = ['order']
+
+    def __str__(self):
+        return self.word
+
+class TopGoalSentence(models.Model):
+    """
+    جمل للقراءة والممارسة
+    """
+    unit = models.ForeignKey(TopGoalUnit, related_name='sentences', on_delete=models.CASCADE)
+    english_text = models.TextField("النص الإنجليزي")
+    arabic_translation = models.TextField("الترجمة العربية")
+    audio_file = models.FileField("ملف الصوت", upload_to='topgoal/audio/', blank=True, null=True)
+    speaker_name = models.CharField("اسم المتحدث", max_length=50, blank=True, help_text="مثلاً: Speaker 1")
+    
+    order = models.PositiveIntegerField("الترتيب", default=0)
+
+    class Meta:
+        verbose_name = "جمل Top Goal"
+        verbose_name_plural = "جمل Top Goal"
+        ordering = ['order']
+
+    def __str__(self):
+        return self.english_text[:50]
+
+class TopGoalQuiz(models.Model):
+    """
+    أسئلة واختبارات
+    """
+    unit = models.ForeignKey(TopGoalUnit, related_name='quizzes', on_delete=models.CASCADE)
+    question_text = models.TextField("نص السؤال")
+    question_type = models.CharField("نوع السؤال", max_length=20, choices=[('mcq', 'اختيار من متعدد'), ('tf', 'صواب/خطأ')], default='mcq')
+    
+    # Store options as JSON ['option1', 'option2', ...]
+    options = models.JSONField("الخيارات", default=list)
+    correct_answer = models.CharField("الإجابة الصحيحة", max_length=200)
+    
+    explanation_ar = models.TextField("شرح الإجابة بالعربي", blank=True)
+    
+    order = models.PositiveIntegerField("الترتيب", default=0)
+
+    class Meta:
+        verbose_name = "اختبار Top Goal"
+        verbose_name_plural = "اختبارات Top Goal"
+        ordering = ['order']
+
+    def __str__(self):
+        return self.question_text[:50]
+
