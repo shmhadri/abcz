@@ -144,7 +144,7 @@ USE_TZ = True
 # ملفات الستاتيك
 # ==========================
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
 # مكان تجميع ملفات الستاتيك في الإنتاج (Render)
 STATIC_ROOT = BASE_DIR / "staticfiles"
