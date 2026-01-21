@@ -69,7 +69,7 @@ def generate_certificate(request, student_id):
     return response
 
 def index(request):
-    return render(request, "leeters.HTML")
+    return render(request, "letters.html")
 
 def leaderboard(request):
     data = Student.objects.all().annotate(
