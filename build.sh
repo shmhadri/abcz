@@ -14,4 +14,7 @@ python manage.py migrate
 echo "📚 Populating CVC data..."
 python manage.py populate_all_cvc
 
+echo "🥅 Populating Top Goal data..."
+python manage.py populate_topgoal_unit5
+
 echo "✅ Build completed successfully!"
