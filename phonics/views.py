@@ -11,7 +11,9 @@ from __future__ import annotations
 import json
 from datetime import datetime
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.db import models, transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -29,6 +31,57 @@ from .models import (
     CVCStory,
     CVCProgress,
 )
+
+
+# ============================================
+# AUTO-SEED FOR RENDER (No Shell Required)
+# ============================================
+
+def ensure_seed_data():
+    """
+    Auto-populate database on first request if empty.
+    Works on Render Free tier without shell/pre-deploy access.
+    
+    This runs ONCE when the first API call is made and database is empty.
+    Safe to call multiple times - checks if data exists first.
+    """
+    # Skip during tests
+    if getattr(settings, "DISABLE_AUTO_SEED", False):
+        return
+    
+    # Check if data already exists (fast query)
+    try:
+        has_words = CVCWord.objects.exists()
+        has_sentences = CVCSentence.objects.exists()
+        
+        # If we have data, no need to seed
+        if has_words and has_sentences:
+            return
+        
+        print("🌱 Database is empty. Auto-seeding...")
+        
+        # Use transaction for safety
+        with transaction.atomic():
+            # Populate CVC data
+            if not has_words or not has_sentences:
+                print("📚 Populating CVC data...")
+                call_command("populate_all_cvc")
+            
+            # Populate Top Goal data (optional - won't fail if command doesn't exist)
+            try:
+                has_topgoal = TopGoalUnit.objects.exists()
+                if not has_topgoal:
+                    print("🥅 Populating Top Goal data...")
+                    call_command("populate_topgoal_unit5")
+            except Exception as e:
+                print(f"⚠️ Top Goal population skipped: {e}")
+        
+        print("✅ Auto-seed completed successfully!")
+        
+    except Exception as e:
+        # Log error but don't crash the app
+        print(f"❌ Auto-seed failed: {e}")
+        # Continue anyway - let the app show "no data" message
 
 
 # ============================================
@@ -271,6 +324,9 @@ def get_cvc_words_api(request):
     Returns JSON words.
     IMPORTANT: Avoid `.only()` to prevent 500 if fields differ from expectations.
     """
+    # Auto-seed if database is empty (Render Free tier solution)
+    ensure_seed_data()
+    
     try:
         qs = CVCWord.objects.all()
         # إذا عندك حقل order رتب، وإلا تجاهله
@@ -302,6 +358,9 @@ def get_cvc_words_api(request):
 
 @require_GET
 def get_cvc_sentences_api(request):
+    # Auto-seed if database is empty
+    ensure_seed_data()
+    
     try:
         qs = CVCSentence.objects.all()
         if "order" in [f.name for f in CVCSentence._meta.get_fields()]:
@@ -330,6 +389,9 @@ def get_cvc_sentences_api(request):
 
 @require_GET
 def get_cvc_stories_api(request):
+    # Auto-seed if database is empty
+    ensure_seed_data()
+    
     try:
         qs = CVCStory.objects.all()
         if "order" in [f.name for f in CVCStory._meta.get_fields()]:
@@ -438,6 +500,9 @@ def top_goal_view(request):
     """
     Top Goal 6 Unit 1
     """
+    # Auto-seed if database is empty
+    ensure_seed_data()
+    
     try:
         unit = (
             TopGoalUnit.objects.filter(grade="Top Goal 6")
