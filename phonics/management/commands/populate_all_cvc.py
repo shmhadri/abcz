@@ -1,5 +1,6 @@
 """
 Django management command to populate all CVC data (Words, Sentences, Stories)
+⚠️ PRODUCTION-SAFE: Uses get_or_create instead of delete + create
 Usage: python manage.py populate_all_cvc
 """
 
@@ -8,19 +9,38 @@ from phonics.models import CVCWord, CVCSentence, CVCStory
 
 
 class Command(BaseCommand):
-    help = 'Populate database with all CVC data (Words, Sentences, Stories)'
+    help = 'Populate database with all CVC data (Words, Sentences, Stories) - IDEMPOTENT & PRODUCTION-SAFE'
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--force-reset',
+            action='store_true',
+            help='⚠️ WARNING: Delete all existing data and recreate (DANGEROUS in production!)',
+        )
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.WARNING('🚀 بدء إضافة جميع بيانات CVC...'))
+        force_reset = options.get('force_reset', False)
+        
+        if force_reset:
+            self.stdout.write(self.style.WARNING('⚠️  --force-reset flag detected!'))
+            self.stdout.write(self.style.ERROR('🚨 This will DELETE all existing CVC data!'))
+            confirm = input('Type "DELETE ALL DATA" to confirm: ')
+            if confirm != 'DELETE ALL DATA':
+                self.stdout.write(self.style.ERROR('❌ Aborted. No data was deleted.'))
+                return
+            
+            self.stdout.write(self.style.WARNING('🗑️  Deleting all CVC data...'))
+            CVCWord.objects.all().delete()
+            CVCSentence.objects.all().delete()
+            CVCStory.objects.all().delete()
+            self.stdout.write(self.style.SUCCESS('✅ All CVC data deleted'))
+        
+        self.stdout.write(self.style.SUCCESS('🚀 Starting CVC data population (IDEMPOTENT MODE)...'))
         
         # ============================================
-        # 1. إضافة الكلمات CVC Words
+        # 1. إضافة الكلمات CVC Words (IDEMPOTENT)
         # ============================================
-        self.stdout.write(self.style.SUCCESS('\n📚 إضافة كلمات CVC...'))
-        
-        old_words = CVCWord.objects.count()
-        CVCWord.objects.all().delete()
-        self.stdout.write(f'✅ تم حذف {old_words} كلمة قديمة')
+        self.stdout.write(self.style.SUCCESS('\n📚 Populating CVC Words (using get_or_create)...'))
         
         words_data = [
             # -at family
@@ -77,28 +97,33 @@ class Command(BaseCommand):
             {"word": "SIT", "arabic": "يجلس", "category": "verbs", "difficulty": 1, "order": 35, "emoji": "🪑", "word_family": "it", "vowel": "i"},
         ]
         
+        created_words = 0
+        existing_words = 0
+        
         for word_data in words_data:
-            CVCWord.objects.create(
+            word, created = CVCWord.objects.get_or_create(
                 word=word_data["word"],
-                arabic_meaning=word_data["arabic"],
-                category=word_data["category"],
-                difficulty_level=word_data["difficulty"],
-                order=word_data["order"],
-                emoji=word_data["emoji"],
-                word_family=word_data["word_family"],
-                vowel_sound=word_data["vowel"]
+                defaults={
+                    'arabic_meaning': word_data["arabic"],
+                    'category': word_data["category"],
+                    'difficulty_level': word_data["difficulty"],
+                    'order': word_data["order"],
+                    'emoji': word_data["emoji"],
+                    'word_family': word_data["word_family"],
+                    'vowel_sound': word_data["vowel"]
+                }
             )
+            if created:
+                created_words += 1
+            else:
+                existing_words += 1
         
-        self.stdout.write(self.style.SUCCESS(f'✅ تم إضافة {len(words_data)} كلمة CVC'))
+        self.stdout.write(self.style.SUCCESS(f'✅ Words: {created_words} created, {existing_words} already existed'))
         
         # ============================================
-        # 2. إضافة الجمل CVC Sentences
+        # 2. إضافة الجمل CVC Sentences (IDEMPOTENT)
         # ============================================
-        self.stdout.write(self.style.SUCCESS('\n📝 إضافة جمل CVC...'))
-        
-        old_sentences = CVCSentence.objects.count()
-        CVCSentence.objects.all().delete()
-        self.stdout.write(f'✅ تم حذف {old_sentences} جملة قديمة')
+        self.stdout.write(self.style.SUCCESS('\n📝 Populating CVC Sentences (using get_or_create)...'))
         
         sentences_data = [
             {"sentence": "The cat sat on the mat.", "arabic": "القطة جلست على السجادة.", "difficulty": 1, "time": 30, "order": 1, "emoji": "🐱", "category": "cvc"},
@@ -113,27 +138,32 @@ class Command(BaseCommand):
             {"sentence": "I run in the sun for fun.", "arabic": "أركض تحت الشمس للمرح.", "difficulty": 2, "time": 30, "order": 10, "emoji": "🏃", "category": "cvc"},
         ]
         
+        created_sentences = 0
+        existing_sentences = 0
+        
         for sent_data in sentences_data:
-            CVCSentence.objects.create(
+            sentence, created = CVCSentence.objects.get_or_create(
                 sentence=sent_data["sentence"],
-                arabic_translation=sent_data["arabic"],
-                difficulty=sent_data["difficulty"],
-                time_limit=sent_data["time"],
-                order=sent_data["order"],
-                emoji=sent_data["emoji"],
-                category=sent_data["category"]
+                defaults={
+                    'arabic_translation': sent_data["arabic"],
+                    'difficulty': sent_data["difficulty"],
+                    'time_limit': sent_data["time"],
+                    'order': sent_data["order"],
+                    'emoji': sent_data["emoji"],
+                    'category': sent_data["category"]
+                }
             )
+            if created:
+                created_sentences += 1
+            else:
+                existing_sentences += 1
         
-        self.stdout.write(self.style.SUCCESS(f'✅ تم إضافة {len(sentences_data)} جملة CVC'))
+        self.stdout.write(self.style.SUCCESS(f'✅ Sentences: {created_sentences} created, {existing_sentences} already existed'))
         
         # ============================================
-        # 3. إضافة القصص CVC Stories
+        # 3. إضافة القصص CVC Stories (IDEMPOTENT)
         # ============================================
-        self.stdout.write(self.style.SUCCESS('\n📖 إضافة قصص CVC...'))
-        
-        old_stories = CVCStory.objects.count()
-        CVCStory.objects.all().delete()
-        self.stdout.write(f'✅ تم حذف {old_stories} قصة قديمة')
+        self.stdout.write(self.style.SUCCESS('\n📖 Populating CVC Stories (using get_or_create)...'))
         
         stories_data = [
             {
@@ -215,23 +245,34 @@ Max is happy! He wags his tail. 🐕''',
             },
         ]
         
-        for story_data in stories_data:
-            CVCStory.objects.create(
-                title=story_data['title'],
-                content=story_data['content'],
-                arabic_explanation=story_data['arabic_explanation'],
-                image_url=story_data['image_url'],
-                quiz_data=story_data['quiz_data'],
-                difficulty=story_data['difficulty'],
-                order=story_data['order']
-            )
+        created_stories = 0
+        existing_stories = 0
         
-        self.stdout.write(self.style.SUCCESS(f'✅ تم إضافة {len(stories_data)} قصة CVC'))
+        for story_data in stories_data:
+            story, created = CVCStory.objects.get_or_create(
+                title=story_data['title'],
+                defaults={
+                    'content': story_data['content'],
+                    'arabic_explanation': story_data['arabic_explanation'],
+                    'image_url': story_data['image_url'],
+                    'quiz_data': story_data['quiz_data'],
+                    'difficulty': story_data['difficulty'],
+                    'order': story_data['order']
+                }
+            )
+            if created:
+                created_stories += 1
+            else:
+                existing_stories += 1
+        
+        self.stdout.write(self.style.SUCCESS(f'✅ Stories: {created_stories} created, {existing_stories} already existed'))
         
         # النتيجة النهائية
-        self.stdout.write(self.style.SUCCESS('\n' + '='*50))
-        self.stdout.write(self.style.SUCCESS('🎉 تم إضافة جميع بيانات CVC بنجاح!'))
-        self.stdout.write(self.style.SUCCESS(f'📚 إجمالي الكلمات: {CVCWord.objects.count()}'))
-        self.stdout.write(self.style.SUCCESS(f'📝 إجمالي الجمل: {CVCSentence.objects.count()}'))
-        self.stdout.write(self.style.SUCCESS(f'📖 إجمالي القصص: {CVCStory.objects.count()}'))
-        self.stdout.write(self.style.SUCCESS('='*50))
+        self.stdout.write(self.style.SUCCESS('\n' + '='*60))
+        self.stdout.write(self.style.SUCCESS('🎉 CVC data population completed successfully!'))
+        self.stdout.write(self.style.SUCCESS(f'📚 Total Words: {CVCWord.objects.count()}'))
+        self.stdout.write(self.style.SUCCESS(f'📝 Total Sentences: {CVCSentence.objects.count()}'))
+        self.stdout.write(self.style.SUCCESS(f'📖 Total Stories: {CVCStory.objects.count()}'))
+        self.stdout.write(self.style.SUCCESS('='*60))
+        self.stdout.write(self.style.SUCCESS('\n✅ PRODUCTION-SAFE: Existing data was preserved'))
+        self.stdout.write(self.style.SUCCESS('💡 To force reset all data, use: --force-reset flag'))
