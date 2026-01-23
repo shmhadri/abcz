@@ -19,6 +19,15 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        # ============================================
+        # IDEMPOTENT CHECK - Skip if data exists
+        # ============================================
+        if not options.get('force_reset', False):
+            if CVCWord.objects.exists() or CVCSentence.objects.exists() or CVCStory.objects.exists():
+                self.stdout.write(self.style.WARNING('✅ CVC data already exists. Skipping populate (safe).'))
+                self.stdout.write(self.style.SUCCESS(f'📊 Current counts: Words={CVCWord.objects.count()}, Sentences={CVCSentence.objects.count()}, Stories={CVCStory.objects.count()}'))
+                return
+        
         force_reset = options.get('force_reset', False)
         
         if force_reset:

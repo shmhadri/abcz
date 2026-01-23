@@ -2,9 +2,19 @@ from django.core.management.base import BaseCommand
 from phonics.models import TopGoalUnit, TopGoalVocabulary, TopGoalSentence, TopGoalQuiz
 
 class Command(BaseCommand):
-    help = 'Populates the database with Top Goal 6 Unit 1 (Unit 5) content'
+    help = 'Populates the database with Top Goal 6 Unit 1 (Unit 5) content - IDEMPOTENT'
 
     def handle(self, *args, **kwargs):
+        # ============================================
+        # IDEMPOTENT CHECK - Skip if data exists
+        # ============================================
+        if TopGoalUnit.objects.filter(grade="Top Goal 6").exists():
+            self.stdout.write(self.style.WARNING('✅ Top Goal data already exists. Skipping populate (safe).'))
+            unit_count = TopGoalUnit.objects.count()
+            vocab_count = TopGoalVocabulary.objects.count()
+            self.stdout.write(self.style.SUCCESS(f'📊 Current counts: Units={unit_count}, Vocabulary={vocab_count}'))
+            return
+        
         self.stdout.write('Populating Top Goal content...')
 
         # 1. Create Unit
