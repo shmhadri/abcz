@@ -2447,15 +2447,15 @@
                         <button class="menu-item" id="profileBtn">
                             <i class="fas fa-sign-in-alt"></i> تسجيل الدخول / الملف الشخصي
                         </button>
-                        <button class="menu-item" onclick="window.location.href='/phonics/leaderboard/'">
+                        <a href="{% url 'leaderboard' %}" class="menu-item" style="text-decoration:none;">
                             <i class="fas fa-trophy"></i> لوحة المتصدرين
-                        </button>
+                        </a>
 
                         <div class="menu-divider"></div>
 
-                        <button class="menu-item" onclick="window.location.href='{% url 'top_goal_unit_1' %}'" style="color: #7209b7; font-weight: bold;">
+                        <a href="{% url 'top_goal_unit_1' %}" class="menu-item" style="text-decoration:none; color: #7209b7; font-weight: bold;">
                             <i class="fas fa-film"></i> توب قول 6 - الوحدة 1
-                        </button>
+                        </a>
                         
                         <div class="menu-divider"></div>
                         
@@ -2471,9 +2471,9 @@
                         <button class="menu-item" id="viewCertificate">
                             <i class="fas fa-certificate"></i> الشهادة
                         </button>
-                        <button class="menu-item" onclick="window.location.href='/cvc-reading/'">
+                        <a href="{% url 'cvc_reading' %}" class="menu-item" style="text-decoration:none;">
                             <i class="fas fa-book-reader"></i> قراءة CVC
-                        </button>
+                        </a>
                         
                         <div class="menu-divider"></div>
                         
