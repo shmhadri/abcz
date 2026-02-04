@@ -887,7 +887,7 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="btn-audio" onclick="speakText('${s.audio}')">
+                        <button class="btn-audio" onclick="speak('${s.audio}')">
                             🔊 Listen
                         </button>
                         <button class="btn-mic" onclick="practicePronunciation('${s.audio}', ${s.id})">
@@ -944,15 +944,44 @@
         }
 
         // Speech Functions
-        function speakText(text) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 0.9;
-                utterance.pitch = 1.1;
-                utterance.volume = 1.0;
-                window.speechSynthesis.speak(utterance);
+        // Audio Context & Fallbacks
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        let voices = [];
+        const loadVoices = () => {
+            voices = window.speechSynthesis.getVoices();
+        };
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices(); // Initial load
+
+        window.speak = function(text, rate = 1) {
+            if (!window.speechSynthesis) {
+                console.error("Browser does not support TTS.");
+                return;
             }
-        }
+            
+            // Cancel previous
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-GB'; // British English
+            utterance.volume = 1.0; 
+            
+            // Attempt to find a British English voice
+            if (voices.length === 0) voices = window.speechSynthesis.getVoices();
+            const britishVoice = voices.find(v => v.lang === 'en-GB') || 
+                                 voices.find(v => v.lang.startsWith('en-') && v.name.includes('UK')) ||
+                                 voices.find(v => v.lang.startsWith('en-') && v.name.includes('British')) ||
+                                 voices.find(v => v.lang.startsWith('en'));
+            if (britishVoice) {
+                utterance.voice = britishVoice;
+            }
+            
+            // Use optimized rate (0.95 default)
+            utterance.rate = rate === 1 ? 0.95 : rate;
+            
+            window.speechSynthesis.speak(utterance);
+        };
 
         function practicePronunciation(text, id) {
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -1113,7 +1142,7 @@
         function renderCommentsScale() {
             const container = document.getElementById('comments-scale');
             container.innerHTML = commentsScale.map((c, i) => `
-                <div style="flex: 1; text-align: center; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="speakText('${c.text}')">
+                <div style="flex: 1; text-align: center; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="speak('${c.text}')">
                     <div style="font-size: 3rem; margin-bottom: 10px;">${c.emoji}</div>
                     <div style="background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                         <p style="font-size: 1.3rem; font-weight: 700; color: var(--dark); margin-bottom: 5px;">${c.text}</p>
@@ -1145,7 +1174,7 @@
                         <p style="font-family: 'Tajawal'; font-size: 1.3rem; color: #000; font-weight: 700; margin-top: 8px;">${conv.answerAr}</p>
                     </div>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="btn-audio" onclick="speakText('${conv.q}. ${conv.answer}')">🔊 Listen</button>
+                        <button class="btn-audio" onclick="speak('${conv.q}. ${conv.answer}')">🔊 Listen</button>
                         <button class="btn-mic" onclick="practicePronunciation('${conv.q}', ${i})">🎤 Practice</button>
                     </div>
                 </div>
@@ -1185,7 +1214,7 @@
                                         <div style="font-family: 'Tajawal'; font-size: 1.3rem; color: #000; font-weight: 700; margin-top: 5px;">${p.verbAr}</div>
                                     </td>
                                     <td style="padding: 20px; text-align: center;">
-                                        <button class="btn-audio" style="padding: 10px 20px; font-size: 1.5rem;" onclick="speakText('${p.pronoun} ${p.verb}')">🔊</button>
+                                        <button class="btn-audio" style="padding: 10px 20px; font-size: 1.5rem;" onclick="speak('${p.pronoun} ${p.verb}')">🔊</button>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -1226,7 +1255,7 @@
                             <p class="sentence-text">${v.sentence}</p>
                             <p class="sentence-arabic">${v.sentenceAr}</p>
                             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
-                                <button class="btn-audio" onclick="speakText('${v.sentence}')">🔊 Listen</button>
+                                <button class="btn-audio" onclick="speak('${v.sentence}')">🔊 Listen</button>
                                 <button class="btn-mic" onclick="practicePronunciation('${v.past}', ${i})">🎤 Say It</button>
                             </div>
                         </div>
@@ -1367,7 +1396,7 @@
                 showCelebration("You Found the Star! 🌟", "وجدت النجمة!");
                 playSound('success');
             } else {
-                speakText(cell);
+                speak(cell);
                 playSound('error');
             }
         }

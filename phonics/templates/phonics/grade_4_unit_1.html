@@ -988,11 +988,44 @@
             }
         }
 
-        function speak(text) {
-            const utter = new SpeechSynthesisUtterance(text);
-            utter.lang = 'en-GB';
-            window.speechSynthesis.speak(utter);
-        }
+        // Audio Context & Fallbacks
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        let voices = [];
+        const loadVoices = () => {
+            voices = window.speechSynthesis.getVoices();
+        };
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices(); // Initial load
+
+        window.speak = function(text, rate = 1) {
+            if (!window.speechSynthesis) {
+                console.error("Browser does not support TTS.");
+                return;
+            }
+            
+            // Cancel previous
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-GB'; // British English
+            utterance.volume = 1.0; 
+            
+            // Attempt to find a British English voice
+            if (voices.length === 0) voices = window.speechSynthesis.getVoices();
+            const britishVoice = voices.find(v => v.lang === 'en-GB') || 
+                                 voices.find(v => v.lang.startsWith('en-') && v.name.includes('UK')) ||
+                                 voices.find(v => v.lang.startsWith('en-') && v.name.includes('British')) ||
+                                 voices.find(v => v.lang.startsWith('en'));
+            if (britishVoice) {
+                utterance.voice = britishVoice;
+            }
+            
+            // Use optimized rate (0.95 default)
+            utterance.rate = rate === 1 ? 0.95 : rate;
+            
+            window.speechSynthesis.speak(utterance);
+        };
 
         // --- LESSON 2 LOGIC (Grammar) ---
         function checkGrammar(btn, ans) {
