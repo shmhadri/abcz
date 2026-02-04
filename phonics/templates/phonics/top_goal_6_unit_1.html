@@ -2574,22 +2574,54 @@
             voiceRate = parseFloat(document.getElementById('voice-select').value);
         };
 
-        // Override speak to use rate
-        const originalSpeak = window.speak || function(text) {
+        // Audio Context & Fallbacks
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Robust TTS Function
+        let voices = [];
+        window.speechSynthesis.onvoiceschanged = () => {
+             voices = window.speechSynthesis.getVoices();
+        };
+
+        window.speak = function(text, rate = 1) {
+             if (!window.speechSynthesis) {
+                 console.error("Browser does not support TTS.");
+                 return;
+             }
+             
+             // Cancel previous
+             window.speechSynthesis.cancel();
+             
              const utterance = new SpeechSynthesisUtterance(text);
-             utterance.lang = 'en-US';
-             utterance.rate = voiceRate;
+             utterance.lang = 'en-GB'; // British English
+             utterance.volume = 1.0; // أعلى مستوى صوت
+             
+             // Attempt to find a British English voice
+             if (voices.length === 0) voices = window.speechSynthesis.getVoices();
+             const britishVoice = voices.find(v => v.lang === 'en-GB') || 
+                                  voices.find(v => v.lang.startsWith('en-') && v.name.includes('UK')) ||
+                                  voices.find(v => v.lang.startsWith('en-') && v.name.includes('British')) ||
+                                  voices.find(v => v.lang.startsWith('en'));
+             if (britishVoice) {
+                 utterance.voice = britishVoice;
+                 console.log('Using voice:', britishVoice.name);
+             }
+             
+             // Use global rate if not provided, or argument (optimized for faster response)
+             const globalRate = typeof voiceRate !== 'undefined' ? voiceRate : 0.95;
+             utterance.rate = rate !== 1 ? rate : globalRate;
+             
              window.speechSynthesis.speak(utterance);
         };
         
-        // If speak is already defined (it is mostly in main.js or implicit), we redefine it or hook into it.
-        // Assuming speak function exists or will be simple:
-        window.speak = function(text) {
-             window.speechSynthesis.cancel();
-             const utterance = new SpeechSynthesisUtterance(text);
-             utterance.lang = 'en-US'; // Default to US English
-             utterance.rate = voiceRate;
-             window.speechSynthesis.speak(utterance);
+        // Missing playSound shim
+        window.playSound = function(type) {
+             console.log("Playing sound:", type);
+             // Optional: Use TTS as fallback for success/error if no files
+             // if (type === 'success') new Audio('/static/sounds/success.mp3').play().catch(() => {});
+             // if (type === 'error') new Audio('/static/sounds/error.mp3').play().catch(() => {});
+             
+             // For now, logging prevents crash. The user asked about *words* (TTS).
         };
 
         window.checkTF = function(idx, isTrue, btn) {

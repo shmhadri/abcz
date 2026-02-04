@@ -2486,9 +2486,7 @@
             background: #0f172a;
             border-color: rgba(255,255,255,.12);
         }
-                max-width: none; /* Full width on mobile */
-            }
-        }
+
     </style>
 </head>
 <body data-phonics-user-id="" data-phonics-user-email="">
@@ -3209,13 +3207,14 @@
                 if (!window.speechSynthesis || !this.isSpeakingEnabled) return;
                 
                 return new Promise((resolve) => {
+                    // Cancel immediately for faster response
                     if (this.isSpeaking) {
                         window.speechSynthesis.cancel();
                     }
                     
                     const utterance = new SpeechSynthesisUtterance(text);
                     utterance.lang = lang;
-                    utterance.rate = 0.85; // سرعة متوسطة للوضوح
+                    utterance.rate = 0.95; // سرعة محسّنة للوضوح والسرعة
                     utterance.pitch = 1.0; // نبرة طبيعية
                     utterance.volume = 1.0; // أعلى مستوى صوت
                     
@@ -3252,9 +3251,8 @@
                         resolve();
                     };
                     
-                    setTimeout(() => {
-                        window.speechSynthesis.speak(utterance);
-                    }, 50);
+                    // استجابة فورية - بدون تأخير
+                    window.speechSynthesis.speak(utterance);
                 });
             }
             
@@ -3327,6 +3325,15 @@
                 }
             }
         }
+
+        // إنشاء مدير الصوت العالمي
+        const soundManager = new BritishSoundManager();
+        soundManager.initialize();
+
+        // دالة عامة للنطق بالإنجليزية البريطانية
+        window.speak = function(text,rate = 1) {
+            soundManager.speak(text, 'en-GB');
+        };
 
         // بيانات الحروف والكلمات المحسنة
         const LETTER_DATA = {};
@@ -9635,7 +9642,7 @@ function sendAudioToServer(blob, letter){
         <!-- Floating Button -->
         <button id="ai-btn" class="ai-float-btn" onclick="toggleAI()">
             <!-- New colorful robot image -->
-            <img src="https://img.freepik.com/free-vector/cute-robot-mascot-logo-cartoon-character-illustration_138676-2067.jpg" alt="AI" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="AI" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
             <span class="pulse-ring"></span>
         </button>
 
@@ -9643,8 +9650,8 @@ function sendAudioToServer(blob, letter){
         <div id="ai-chat-box" class="ai-chat-box">
             <div class="ai-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 35px; height: 35px; background: white; border-radius: 50%; overflow: hidden;">
-                        <img src="https://img.freepik.com/free-vector/cute-robot-mascot-logo-cartoon-character-illustration_138676-2067.jpg" style="width: 100%; height: 100%; object-fit: cover;">
+                    <div style="width: 35px; height: 35px; background: white; border-radius: 50%; overflow: hidden; padding: 2px;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <span>المساعد الذكي</span>
                 </div>
@@ -9915,72 +9922,7 @@ function sendAudioToServer(blob, letter){
             return "سؤال جميل! 😊<br>يمكنك تجربة الدروس الموجودة في الصفحة، أو سؤالي عن 'كيف أستخدم الموقع' أو 'أين درس الحيوانات'.";
         }
     </script>
-        // Menu Toggle Logic - Definitive Fix
-        document.addEventListener('DOMContentLoaded', () => {
-            const userMenuBtn = document.getElementById('userMenuBtn');
-            const mobileMenuBtn = document.getElementById('mobileMenuBtn'); // Using ID as per line 2460
-            const menu = document.getElementById('userDropdown');
-            const menuOverlay = document.getElementById('menuOverlay');
 
-            function toggleMenu(e) {
-                if (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                
-                // Toggle Show Class
-                const isNowShown = menu.classList.toggle('show');
-                
-                // Handle Overlay
-                if (menuOverlay) {
-                    if (isNowShown) {
-                        menuOverlay.classList.add('active');
-                        document.body.style.overflow = 'hidden';
-                    } else {
-                        menuOverlay.classList.remove('active');
-                        document.body.style.overflow = '';
-                    }
-                }
-            }
-
-            function closeMenu() {
-                menu.classList.remove('show');
-                if (menuOverlay) {
-                    menuOverlay.classList.remove('active');
-                }
-                document.body.style.overflow = '';
-            }
-
-            // Bind Events
-            if (userMenuBtn) userMenuBtn.addEventListener('click', toggleMenu);
-            if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMenu);
-
-            // Close on outside click
-            document.addEventListener('click', (e) => {
-                const target = e.target;
-                const isClickInsideMenu = menu.contains(target);
-                const isClickOnUserBtn = userMenuBtn && userMenuBtn.contains(target);
-                const isClickOnMobileBtn = mobileMenuBtn && mobileMenuBtn.contains(target);
-
-                if (!isClickInsideMenu && !isClickOnUserBtn && !isClickOnMobileBtn) {
-                    closeMenu();
-                }
-            });
-
-            // Prevent closing when clicking inside menu
-            menu.addEventListener('click', (e) => {
-                // Allow links/buttons to work, but don't close unless it's a specific close action
-                // For now, let's stop propagation so the document click doesn't catch it
-                // e.stopPropagation(); 
-                // Actually, we usually WANT links to close the menu.
-            });
-            
-            // Explicit Close Buttons inside menu
-            menu.querySelectorAll('a, button.menu-item').forEach(item => {
-                item.addEventListener('click', closeMenu);
-            });
-        });
-    </script>
     <div class="dropdown-menu" id="userDropdown">
         <button class="menu-item mobile-only" id="closeMenuBtn" style="display: none; color: var(--text-secondary);">
             <i class="fas fa-arrow-right"></i> رجوع
