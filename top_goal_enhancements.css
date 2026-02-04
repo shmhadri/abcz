@@ -1,0 +1,119 @@
+/* --- Lesson 2 Enhancements --- */
+
+/* Exercise 1: Read and Circle */
+.circle-btn {
+    transition: all 0.3s ease;
+    background: white;
+    border: 2px solid #cbd5e1;
+    color: #1e293b;
+    font-weight: 600;
+}
+.circle-btn:hover:not(:disabled) {
+    border-color: #7209b7;
+    background: #fdf4ff;
+    transform: translateY(-2px);
+}
+.circle-btn.selected {
+    border-color: #7209b7;
+    background: #fdf4ff;
+    box-shadow: 0 0 0 3px rgba(114, 9, 183, 0.2);
+}
+.circle-btn.correct {
+    border-color: #10b981 !important;
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+}
+.circle-btn.wrong {
+    border-color: #ef4444 !important;
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+}
+.circle-btn:disabled {
+    cursor: default;
+    opacity: 0.8;
+}
+
+/* Exercise 2: Sentence Builder */
+.word-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: white;
+    border: 2px solid #7209b7;
+    color: #7209b7;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.word-chip:hover {
+    background: #7209b7;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(114, 9, 183, 0.2);
+}
+.word-chip:active {
+    transform: translateY(0);
+}
+.word-chip.in-answer {
+    background: #7209b7;
+    color: white;
+    border-color: #7209b7;
+}
+
+.answer-zone {
+    min-height: 60px;
+    transition: all 0.3s ease;
+}
+.answer-zone:empty::before {
+    content: 'Click words to build sentence...';
+    color: #94a3b8;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+/* Exercise 3: MCQ */
+.mcq-btn {
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    color: #334155;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+.mcq-btn:hover:not(:disabled) {
+    border-color: #7209b7;
+    background: #f8fafc;
+}
+.mcq-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+/* Feedback Animations */
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.alert {
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+    font-weight: 600;
+}
+.alert.success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+.alert.warning {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #ef4444;
+}

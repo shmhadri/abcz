@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <title>Galaxy Letters - Planet A</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+        /* =========================
+           إعدادات عامة و ألوان
+        ========================== */
+        :root {
+            --bg: #020617;
+            --bg-soft: #02091b;
+            --card: #020617;
+            --card-soft: #0b1220;
+            --accent: #38bdf8;
+            --accent-strong: #0ea5e9;
+            --accent-soft: rgba(56, 189, 248, 0.16);
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #eab308;
+            --text: #e5e7eb;
+            --text-soft: #9ca3af;
+            --border: #1e293b;
+            --radius-lg: 22px;
+            --radius-xl: 28px;
+            --shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.78);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                sans-serif;
+            background: radial-gradient(circle at top, #1d2333 0, #020617 55%, #000 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+        }
+
+        .app-shell {
+            max-width: 1100px;
+            width: 100%;
+            margin: 12px;
+            border-radius: 24px;
+            background: radial-gradient(circle at top, #111827 0, #020617 65%);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* خلفية نجوم بسيطة */
+        .stars {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(148, 163, 184, 0.35) 0, transparent 35%),
+                radial-gradient(circle at 80% 30%, rgba(56, 189, 248, 0.28) 0, transparent 45%),
+                radial-gradient(circle at 30% 80%, rgba(55, 65, 81, 0.45) 0, transparent 45%);
+            opacity: 0.22;
+            mix-blend-mode: screen;
+        }
+
+        header.app-header {
+            position: relative;
+            z-index: 1;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            backdrop-filter: blur(14px);
+            background: linear-gradient(
+                to right,
+                rgba(15, 23, 42, 0.9),
+                rgba(15, 23, 42, 0.7),
+                rgba(15, 23, 42, 0.9)
+            );
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            background: radial-gradient(circle, #38bdf8, #0f172a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #0f172a;
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.7);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-text span:first-child {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #e5e7eb;
+        }
+
+        .brand-text span:last-child {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+
+        .badge {
+            border-radius: 999px;
+            padding: 4px 10px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .energy-bar {
+            height: 6px;
+            width: 100px;
+            border-radius: 999px;
+            background: #020617;
+            overflow: hidden;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+        }
+
+        .energy-bar-inner {
+            width: 40%;
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #a3e635);
+        }
+
+        main.app-main {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            display: flex;
+            padding: 14px;
+            gap: 12px;
+        }
+
+        /* شريط جانبي بسيط */
+        .sidebar {
+            width: 220px;
+            border-radius: 20px;
+            background: radial-gradient(circle at top, #020617, #020617);
+            border: 1px solid rgba(30, 64, 175, 0.5);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-soft);
+        }
+
+        .nav-btn {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: linear-gradient(
+                135deg,
+                rgba(15, 23, 42, 0.92),
+                rgba(15, 23, 42, 0.85)
+            );
+            color: var(--text-soft);
+            font-size: 12px;
+            text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            cursor: pointer;
+            transition: 0.18s ease;
+        }
+
+        .nav-btn span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn.active,
+        .nav-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent-strong);
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.25);
+        }
+
+        .nav-btn-icon {
+            opacity: 0.85;
+        }
+
+        /* محتوى الشاشات */
+        .content-area {
+            flex: 1;
+            border-radius: 22px;
+            background: radial-gradient(circle at top, #020617, #020617);
+            border: 1px solid rgba(30, 64, 175, 0.52);
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+            height: 100%;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .screen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .screen-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .screen-subtitle {
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+
+        .tag {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            color: var(--text-soft);
+        }
+
+        .pill {
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            color: var(--text-soft);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* بطاقات */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .card {
+            border-radius: var(--radius-lg);
+            padding: 14px;
+            background: radial-gradient(circle at top left, #020617, #020617);
+            border: 1px solid rgba(51, 65, 85, 0.9);
+            box-shadow: 0 14px 40px rgba(15, 23, 42, 0.7);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+
+        .primary-btn,
+        .ghost-btn {
+            border-radius: 999px;
+            border: none;
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, #0ea5e9, #22c55e);
+            color: #020617;
+            font-weight: 600;
+            box-shadow: 0 12px 30px rgba(56, 189, 248, 0.4);
+        }
+
+        .primary-btn:hover {
+            filter: brightness(1.08);
+        }
+
+        .ghost-btn {
+            background: transparent;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            color: var(--text-soft);
+        }
+
+        /* شاشة المقدمة */
+        .intro-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+            gap: 16px;
+            height: calc(100% - 10px);
+        }
+
+        .intro-letter {
+            border-radius: var(--radius-xl);
+            border: 1px solid rgba(56, 189, 248, 0.5);
+            background: radial-gradient(circle at top, #020617, #020617);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .intro-letter-main {
+            font-size: 72px;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            text-shadow: 0 0 30px rgba(56, 189, 248, 0.8);
+        }
+
+        .intro-letter-small {
+            font-size: 44px;
+            opacity: 0.85;
+        }
+
+        .intro-orbit {
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            border-radius: 999px;
+            border: 1px dashed rgba(56, 189, 248, 0.35);
+            animation: spin 12s linear infinite;
+        }
+
+        .intro-orbit::before {
+            content: "🍎";
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 26px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .intro-info {
+            border-radius: var(--radius-xl);
+            border: 1px solid rgba(55, 65, 81, 0.8);
+            background: radial-gradient(circle at top left, #020617, #020617);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .intro-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .intro-label {
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+
+        .intro-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .example-word {
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: radial-gradient(circle at top, rgba(15, 23, 42, 0.85), #020617);
+        }
+
+        .example-emoji {
+            font-size: 28px;
+        }
+
+        .example-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .example-en {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .example-ar {
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .chip {
+            padding: 3px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        /* لعبة صيد الحرف */
+        .catch-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: calc(100% - 6px);
+        }
+
+        .catch-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .catch-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .catch-letter {
+            border-radius: 18px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: radial-gradient(circle at top, #0b1120, #020617);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            transition: 0.14s ease;
+            user-select: none;
+        }
+
+        .catch-letter.correct {
+            border-color: var(--accent);
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.5);
+            transform: translateY(-2px) scale(1.04);
+        }
+
+        .catch-letter.wrong {
+            border-color: var(--danger);
+            animation: shake 0.2s linear;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            50% { transform: translateX(3px); }
+            75% { transform: translateX(-2px); }
+            100% { transform: translateX(0); }
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+
+        /* لعبة الكلمات */
+        .word-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+        }
+
+        .word-main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+            gap: 12px;
+        }
+
+        .word-card {
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: radial-gradient(circle at top left, #020617, #020617);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .word-big {
+            font-size: 26px;
+            letter-spacing: 0.08em;
+            text-align: center;
+        }
+
+        .word-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .word-option {
+            padding: 7px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            font-size: 13px;
+            cursor: pointer;
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-soft);
+        }
+
+        .word-option.correct {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.12);
+            color: #bbf7d0;
+        }
+
+        .word-option.wrong {
+            border-color: var(--danger);
+            background: rgba(248, 113, 113, 0.1);
+            color: #fecaca;
+        }
+
+        /* كتابة الحرف (محاكاة) */
+        .writing-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+            gap: 16px;
+            height: 100%;
+        }
+
+        .writing-board {
+            border-radius: var(--radius-xl);
+            border: 1px solid rgba(30, 64, 175, 0.8);
+            background: radial-gradient(circle at top, #020617, #020617);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .writing-letter {
+            font-size: 84px;
+            font-weight: 900;
+            opacity: 0.18;
+        }
+
+        .writing-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .writing-instructions {
+            border-radius: var(--radius-lg);
+            border: 1px dashed rgba(148, 163, 184, 0.7);
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+
+        .writing-side {
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: radial-gradient(circle at top left, #020617, #020617);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .counter {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        /* الاختبار */
+        .quiz-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+        }
+
+        .quiz-card {
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: radial-gradient(circle at top left, #020617, #020617);
+            padding: 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quiz-q-text {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .quiz-option {
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            padding: 6px 10px;
+            font-size: 13px;
+            cursor: pointer;
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.16);
+        }
+
+        .quiz-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-soft);
+        }
+
+        /* شاشة المكافأة */
+        .reward-layout {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reward-card {
+            border-radius: 26px;
+            padding: 18px;
+            background: radial-gradient(circle at top, #0b1120, #020617);
+            border: 1px solid rgba(56, 189, 248, 0.7);
+            box-shadow: 0 18px 50px rgba(8, 47, 73, 0.9);
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+        }
+
+        .reward-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .reward-sub {
+            font-size: 13px;
+            color: var(--text-soft);
+            margin-bottom: 10px;
+        }
+
+        .reward-letter {
+            font-size: 54px;
+            text-shadow: 0 0 28px rgba(56, 189, 248, 0.9);
+            margin-bottom: 8px;
+        }
+
+        .reward-name {
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--text-soft);
+        }
+
+        .reward-name span {
+            color: var(--accent-strong);
+            font-weight: 700;
+        }
+
+        input.player-name-input {
+            margin-top: 6px;
+            width: 100%;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            background: rgba(15, 23, 42, 0.9);
+            padding: 6px 10px;
+            font-size: 13px;
+            color: var(--text);
+        }
+
+        input.player-name-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+        }
+
+        /* تجاوبية */
+        @media (max-width: 860px) {
+            main.app-main {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+            }
+            .content-area {
+                min-height: 540px;
+            }
+            .intro-layout,
+            .word-main,
+            .writing-layout {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+    <div class="stars" aria-hidden="true"></div>
+
+    <!-- رأس التطبيق -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-logo">A</div>
+            <div class="brand-text">
+                <span>Galaxy Letters</span>
+                <span>Planet A • مجرّة الحروف</span>
+            </div>
+        </div>
+
+        <div class="player-info">
+            <div class="badge">
+                👤
+                <span id="playerNameLabel">طالب جديد</span>
+            </div>
+            <div class="badge">
+                ⭐ نقاط الكوكب:
+                <strong id="planetScoreLabel">0</strong>
+            </div>
+            <div class="energy-bar" aria-label="Progress">
+                <div id="energyBarInner" class="energy-bar-inner"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- الجسم الرئيسي -->
+    <main class="app-main">
+        <!-- شريط جانبي للتنقل بين شاشات كوكب A -->
+        <aside class="sidebar">
+            <div class="sidebar-title">مراحل كوكب A</div>
+
+            <button class="nav-btn active" data-target="screen-hub">
+                <span>🏠 مركز الكوكب</span>
+                <span class="nav-btn-icon">›</span>
+            </button>
+
+            <button class="nav-btn" data-target="screen-intro">
+                <span>🚪 بوابة الكوكب</span>
+                <span class="nav-btn-icon">A</span>
+            </button>
+
+            <button class="nav-btn" data-target="screen-catch">
+                <span>🎣 لعبة صيد الحرف</span>
+                <span class="nav-btn-icon">A/a</span>
+            </button>
+
+            <button class="nav-btn" data-target="screen-words">
+                <span>🧩 لعبة كلمات A</span>
+                <span class="nav-btn-icon">🍎</span>
+            </button>
+
+            <button class="nav-btn" data-target="screen-writing">
+                <span>✍️ تدريب كتابة A</span>
+                <span class="nav-btn-icon">✏️</span>
+            </button>
+
+            <button class="nav-btn" data-target="screen-quiz">
+                <span>❓ اختبار صغير</span>
+                <span class="nav-btn-icon">🎓</span>
+            </button>
+
+            <button class="nav-btn" data-target="screen-reward">
+                <span>🎉 بطاقة البطل</span>
+                <span class="nav-btn-icon">⭐</span>
+            </button>
+        </aside>
+
+        <!-- مساحة الشاشات -->
+        <section class="content-area" id="screensRoot">
+            <!-- شاشة مركز الكوكب -->
+            <div class="screen active" id="screen-hub">
+                <div class="screen-header">
+                    <div>
+                        <div class="screen-title">كوكب A – مركز المغامرة</div>
+                        <div class="screen-subtitle">
+                            اختر المرحلة التي تريدها، وأكمل 100٪ لتفتح الكوكب التالي.
+                        </div>
+                    </div>
+                    <div class="pill">
+                        🪽 Aero • حارس الحرف A
+                    </div>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">🚪 بوابة الكوكب</div>
+                            <span class="tag" id="status-intro">قيد الانتظار</span>
+                        </div>
+                        <div class="card-body">
+                            تعرّف على شكل الحرف A/a وصوته مع التفاحة 🍎.
+                            <br />
+                            <button class="primary-btn" data-jump="screen-intro">
+                                ابدأ المقدمة
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">🎣 لعبة صيد الحرف</div>
+                            <span class="tag" id="status-catch">مقفلة جزئياً</span>
+                        </div>
+                        <div class="card-body">
+                            اضغط فقط على A و a بين الحروف الأخرى لتحصل على طاقة الكوكب.
+                            <br />
+                            <button class="ghost-btn" data-jump="screen-catch">
+                                ابدأ لعبة الصيد
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">🧩 لعبة كلمات A</div>
+                            <span class="tag" id="status-words">مقفلة جزئياً</span>
+                        </div>
+                        <div class="card-body">
+                            أكمل الكلمات الناقصة بحرف A، مع صور ونطق.
+                            <br />
+                            <button class="ghost-btn" data-jump="screen-words">
+                                ابدأ لعبة الكلمات
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">✍️ تدريب الكتابة</div>
+                            <span class="tag" id="status-writing">0 / 10 مرات</span>
+                        </div>
+                        <div class="card-body">
+                            درّب يدك على كتابة A و a عشر مرات للحصول على شارة المؤلف.
+                            <br />
+                            <button class="ghost-btn" data-jump="screen-writing">
+                                ابدأ التدريب
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">❓ اختبار صغير</div>
+                            <span class="tag" id="status-quiz">لم يبدأ بعد</span>
+                        </div>
+                        <div class="card-body">
+                            6 أسئلة سريعة للتأكد من تمييز الصوت والشكل والكلمات.
+                            <br />
+                            <button class="ghost-btn" data-jump="screen-quiz">
+                                ابدأ الاختبار
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">🎉 بطاقة البطل</div>
+                            <span class="tag" id="status-reward">ستُفتح بعد الإتقان</span>
+                        </div>
+                        <div class="card-body">
+                            عند إتقان الكوكب تحصل على بطاقة بطل كوكب A وشهادة شرفية.
+                            <br />
+                            <button class="ghost-btn" data-jump="screen-reward">
+                                عرض البطاقة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- شاشة المقدمة -->
+            <div class="screen" id="screen-intro">
+                <div class="screen-header">
+                    <div>
+                        <div class="screen-title">🚪 بوابة كوكب A</div>
+                        <div class="screen-subtitle">
+                            تعرّف على شكل الحرف وصوته مع مثال Apple.
+                        </div>
+                    </div>
+                    <div class="pill">
+                        🎧 صوت الحرف /æ/
+                    </div>
+                </div>
+
+                <div class="intro-layout">
+                    <div class="intro-letter">
+                        <div class="intro-orbit"></div>
+                        <div class="intro-letter-main">A</div>
+                        <div class="intro-letter-small">a</div>
+                        <button class="primary-btn" id="btnPlayLetterSound">
+                            🔊 استمع لصوت A
+                        </button>
+                        <small style="font-size: 11px; color: var(--text-soft);">
+                            جرّب أن تقول بصوت واضح: “Aaaa”
+                        </small>
+                    </div>
+
+                    <div class="intro-info">
+                        <div class="intro-row">
+                            <div>
+                                <div class="intro-label">شكل الحرف</div>
+                                <div class="intro-value">A / a</div>
+                            </div>
+                            <div>
+                                <div class="intro-label">اسم الكوكب</div>
+                                <div class="intro-value" style="font-size: 14px;">
+                                    Planet A – كوكب التفاحة 🍎
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="example-word">
+                            <div class="example-emoji">🍎</div>
+                            <div class="example-text">
+                                <div class="example-en">Apple</div>
+                                <div class="example-ar">تفاحة – تبدأ بحرف A</div>
+                                <button class="ghost-btn" id="btnPlayWordApple">
+                                    🔊 استمع لكلمة Apple
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="intro-label">كلمات على حرف A:</div>
+                            <div class="chip-row">
+                                <span class="chip">Apple</span>
+                                <span class="chip">Ant</span>
+                                <span class="chip">Airplane</span>
+                                <span class="chip">Alligator</span>
+                                <span class="chip">Arrow</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="intro-label">ماذا سنتعلّم في كوكب A؟</div>
+                            <ul style="margin-top: 4px; font-size: 12px; color: var(--text-soft); padding-right: 18px;">
+                                <li>تمييز شكل A و a.</li>
+                                <li>حفظ الصوت الأساسي /æ/.</li>
+                                <li>ربط الحرف بعشر كلمات وصور.</li>
+                                <li>اللعب، الكتابة، ثم الاختبار الصغير.</li>
+                            </ul>
+                        </div>
+
+                        <div style="margin-top: auto;">
+                            <button class="primary-btn" data-jump="screen-catch">
+                                🎣 ابدأ لعبة صيد الحرف
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- لعبة صيد الحرف -->
+            <div class="screen" id="screen-catch">
+                <div class="screen-header">
+                    <div>
+                        <div class="screen-title">🎣 لعبة صيد الحرف A / a</div>
+                        <div class="screen-subtitle">
+                            اضغط فقط على الحرف A أو a بين باقي الحروف لتجمع طاقة الكوكب.
+                        </div>
+                    </div>
+                    <div class="pill">
+                        ✅ صحيحة: <span id="catchCorrectCount">0</span> / 10
+                    </div>
+                </div>
+
+                <div class="catch-layout">
+                    <div class="catch-top">
+                        <div class="status-text" id="catchStatusText">
+                            ابحث عن A / a بين الحروف.
+                        </div>
+                        <button class="ghost-btn" id="btnCatchReset">إعادة توليد الحروف</button>
+                    </div>
+
+                    <div class="catch-grid" id="catchGrid">
+                        <!-- الحروف تتولد عبر جافاسكربت -->
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <small class="status-text">
+                            تلميح: بعد جمع 10 حروف صحيحة يمكنك الانتقال للعبة الكلمات.
+                        </small>
+                        <button class="primary-btn" id="btnGoWordsFromCatch" disabled>
+                            🧩 انتقل للعبة الكلمات
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- لعبة الكلمات -->
+            <div class="screen" id="screen-words">
+                <div class="screen-header">
+                    <div>
+                        <div class="screen-title">🧩 لعبة كلمات الحرف A</div>
+                        <div class="screen-subtitle">
+                            أكمل الكلمات الناقصة بحرف A في البداية أو الوسط أو النهاية.
+                        </div>
+                    </div>
+                    <div class="pill">
+                        🧠 كلمة رقم <span id="wordRoundIndex">1</span> / 5
+                    </div>
+                </div>
+
+                <div class="word-layout">
+                    <div class="word-main">
+                        <div class="word-card">
+                            <div class="intro-label">الكلمة الناقصة:</div>
+                            <div class="word-big" id="wordPuzzleText">_pple</div>
+                            <div class="chip-row" id="wordHintArea">
+                                <!-- تلميح: صورة/وصف -->
+                            </div>
+                        </div>
+
+                        <div class="word-card">
+                            <div class="intro-label">اختر الحرف الصحيح:</div>
+                            <div class="word-options" id="wordOptions">
+                                <!-- خيارات الحروف -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="status-text" id="wordStatusText">
+                            اختر الحرف الذي يكمل الكلمة.
+                        </div>
+                        <button class="primary-btn" id="btnNextWord">
+                            التالي
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- كتابة الحرف (محاكاة) -->
+            <div class="screen" id="screen-writing">
+                <div class="screen-header">
+                    <div>
+                        <div class="screen-title">✍️ تدريب كتابة الحرف A / a</div>
+                        <div class="screen-subtitle">
+                            جرّب كتابة الحرف A و a على ورقة، ثم عدّد محاولاتك هنا.
+                        </div>
+                    </div>
+                    <div class="pill">
+                        🧮 مرات الكتابة: <span id="writingCount">0</span> / 10
+                    </div>
+                </div>
+
+                <div class="writing-layout">
+                    <div class="writing-board">
+                        <div class="writing-letter">A a</div>
+                        <div class="writing-overlay">
+                            <div class="writing-instructions">
+                                ✏️ <strong>نشاط واقعي:</strong> اطلب من الطالب أن يكتب A / a على الورقة،
+                                ثم اضغط "تمت الكتابة" لكل محاولة ليشعر بالتقدّم.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="writing-side">
+                        <div class="counter" id="writingCounterText">
+                            جاهز لبدء الكتابة!
+                        </div>
+                        <div class="status-text">
+                            الهدف التربوي: ربط العين واليد والذاكرة الحركية لتثبيت شكل الحرف.
+                        </div>
+                        <button class="primary-btn" id="btnWritingIncrement">
+                            ✅ تمت كتابة الحرف مرة
+                        </button>
+                        <button class="ghost-btn" id="btnWritingReset">
+                            إعادة العدّاد
+                        </button>
+
+                        <div class="status-text" style="margin-top: 6px;">
+                            عند الوصول إلى 10 مرات ستحصل على شارة:
+                            <strong>Master Writer – A</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- اختبار صغير -->
+            <div class="screen" id="screen-quiz">
+                <div class="screen-header">
+                    <div>
+                        <div class="screen-title">❓ الاختبار الصغير – كوكب A</div>
+                        <div class="screen-subtitle">
+                            6 أسئلة لقياس تمييزك للصوت والشكل والكلمات على حرف A.
+                        </div>
+                    </div>
+                    <div class="pill">
+                        سؤال <span id="quizIndexLabel">1</span> / 6
+                    </div>
+                </div>
+
+                <div class="quiz-layout">
+                    <div class="quiz-card">
+                        <div class="quiz-q-text" id="quizQuestionText"></div>
+                        <div class="quiz-options" id="quizOptionsContainer"></div>
+                        <div class="quiz-footer">
+                            <span id="quizHelperText">
+                                اختر إجابة واحدة ثم اضغط "التالي".
+                            </span>
+                            <button class="primary-btn" id="btnQuizNext">
+                                التالي
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="status-text" id="quizScoreText">
+                        لم يبدأ التصحيح بعد.
+                    </div>
+                </div>
+            </div>
+
+            <!-- بطاقة البطل -->
+            <div class="screen" id="screen-reward">
+                <div class="reward-layout">
+                    <div class="reward-card">
+                        <div class="reward-letter">A</div>
+                        <div class="reward-title">بطل كوكب A</div>
+                        <div class="reward-sub">
+                            تهانينا! عند إكمال اللعب والكتابة والاختبار، تصبح حارس كوكب A
+                            في مجرّة الحروف.
+                        </div>
+
+                        <div class="reward-name">
+                            اسم البطل:
+                            <span id="heroNamePreview">طالب جديد</span>
+                        </div>
+                        <input
+                            type="text"
+                            class="player-name-input"
+                            id="playerNameInput"
+                            placeholder="اكتب اسم الطالب لطباعته في الشهادة"
+                        />
+
+                        <div style="margin-top: 12px;">
+                            <button class="primary-btn" data-jump="screen-hub">
+                                🔁 العودة إلى مركز الكوكب
+                            </button>
+                        </div>
+
+                        <div style="margin-top: 10px; font-size: 11px; color: var(--text-soft);">
+                            عند تعميم النظام على بقية الحروف، سيتم فتح كوكب B بعد تحقيق
+                            درجة ≥ 14 / 20 في الاختبار، وكتابة الحرف 10 مرات.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    // ===============================================================
+    //  🧠 منطق واجهات كوكب A – بدون مكتبات خارجية
+    //  - إدارة الحالة (state)
+    //  - التنقل بين الشاشات
+    //  - اللعب البسيط
+    // ===============================================================
+
+    // حالة الكوكب A
+    const state = {
+        playerName: "طالب جديد",
+        planetScore: 0,
+        progressPercent: 0,
+        // حالة لعبة الصيد
+        catchCorrect: 0,
+        catchTarget: 10,
+        // لعبة الكلمات
+        wordIndex: 0,
+        wordScore: 0,
+        // الكتابة
+        writingCount: 0,
+        writingTarget: 10,
+        // الاختبار
+        quizIndex: 0,
+        quizScore: 0,
+        quizFinished: false,
+    };
+
+    // عناصر واجهة عامة
+    const screens = document.querySelectorAll(".screen");
+    const navButtons = document.querySelectorAll(".nav-btn");
+    const planetScoreLabel = document.getElementById("planetScoreLabel");
+    const energyBarInner = document.getElementById("energyBarInner");
+    const playerNameLabel = document.getElementById("playerNameLabel");
+    const heroNamePreview = document.getElementById("heroNamePreview");
+    const playerNameInput = document.getElementById("playerNameInput");
+
+    // =========================
+    //  دوال مساعدة عامة
+    // =========================
+
+    // تغيير الشاشة المعروضة
+    function showScreen(id) {
+        screens.forEach((scr) => {
+            scr.classList.toggle("active", scr.id === id);
+        });
+        navButtons.forEach((btn) => {
+            const target = btn.getAttribute("data-target");
+            btn.classList.toggle("active", target === id);
+        });
+    }
+
+    // تحديث شريط الطاقة والنقاط
+    function updatePlanetMeta() {
+        planetScoreLabel.textContent = state.planetScore;
+        const capped = Math.max(0, Math.min(100, state.progressPercent));
+        energyBarInner.style.width = capped + "%";
+        playerNameLabel.textContent = state.playerName;
+        heroNamePreview.textContent = state.playerName;
+    }
+
+    // منح نقاط مع تحديث التقدّم
+    function awardPoints(amount, reason = "") {
+        state.planetScore += amount;
+        // تقدير بسيط للتقدم
+        state.progressPercent = Math.min(100, state.progressPercent + amount / 3);
+        updatePlanetMeta();
+    }
+
+    // تشغيل نطق بسيط باستخدام SpeechSynthesis
+    function speak(text, lang = "en-US") {
+        try {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            // محاولة اختيار صوت إنجليزي مناسب
+            const voices = window.speechSynthesis.getVoices();
+            const enVoices = voices.filter((v) => v.lang.startsWith("en"));
+            if (enVoices.length > 0) utterance.voice = enVoices[0];
+            window.speechSynthesis.speak(utterance);
+        } catch (err) {
+            console.warn("Speech synthesis not available:", err);
+        }
+    }
+
+    // =========================
+    //  ربط أزرار التنقل
+    // =========================
+
+    // من الشريط الجانبي
+    navButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const target = btn.getAttribute("data-target");
+            if (target) showScreen(target);
+        });
+    });
+
+    // من الأزرار الداخلية (data-jump)
+    document.querySelectorAll("[data-jump]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const target = btn.getAttribute("data-jump");
+            if (target) showScreen(target);
+        });
+    });
+
+    // =========================
+    //  شاشة المقدمة – صوت الحرف وكلمة Apple
+    // =========================
+    const btnPlayLetterSound = document.getElementById("btnPlayLetterSound");
+    const btnPlayWordApple = document.getElementById("btnPlayWordApple");
+
+    if (btnPlayLetterSound) {
+        btnPlayLetterSound.addEventListener("click", () => {
+            speak("A, æ", "en-US");
+            awardPoints(2, "Intro letter sound");
+            document.getElementById("status-intro").textContent = "تمت الزيارة ✅";
+        });
+    }
+
+    if (btnPlayWordApple) {
+        btnPlayWordApple.addEventListener("click", () => {
+            speak("Apple", "en-US");
+            awardPoints(1, "Intro word");
+        });
+    }
+
+    // =========================
+    //  لعبة صيد الحرف
+    // =========================
+    const catchGrid = document.getElementById("catchGrid");
+    const catchCorrectCountEl = document.getElementById("catchCorrectCount");
+    const catchStatusText = document.getElementById("catchStatusText");
+    const btnCatchReset = document.getElementById("btnCatchReset");
+    const btnGoWordsFromCatch = document.getElementById("btnGoWordsFromCatch");
+
+    const LETTERS_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    function generateCatchGrid() {
+        if (!catchGrid) return;
+        catchGrid.innerHTML = "";
+        // إعادة العدّاد في حال إعادة التوليد
+        state.catchCorrect = 0;
+        catchCorrectCountEl.textContent = state.catchCorrect;
+        catchStatusText.textContent = "ابحث عن A / a بين الحروف.";
+        btnGoWordsFromCatch.disabled = true;
+
+        // توليد 16 حرف في الشبكة
+        for (let i = 0; i < 16; i++) {
+            const cell = document.createElement("button");
+            cell.type = "button";
+            cell.className = "catch-letter";
+            cell.setAttribute("aria-label", "Letter cell");
+
+            // احتمال بسيط أن يكون الحرف A أو a
+            const isA = Math.random() < 0.35;
+            const letter = isA
+                ? Math.random() < 0.5
+                    ? "A"
+                    : "a"
+                : LETTERS_POOL[Math.floor(Math.random() * LETTERS_POOL.length)];
+            cell.textContent = letter;
+
+            cell.addEventListener("click", () => {
+                const val = cell.textContent;
+                if (val === "A" || val === "a") {
+                    if (!cell.classList.contains("correct")) {
+                        cell.classList.add("correct");
+                        state.catchCorrect++;
+                        catchCorrectCountEl.textContent = state.catchCorrect;
+                        speak(val === "A" ? "A" : "a", "en-US");
+                        if (state.catchCorrect >= state.catchTarget) {
+                            catchStatusText.textContent =
+                                "رائع! جمعت 10 حروف صحيحة. يمكنك الانتقال للعبة الكلمات.";
+                            btnGoWordsFromCatch.disabled = false;
+                            awardPoints(5, "Catch game completed");
+                            document.getElementById("status-catch").textContent =
+                                "اكتملت ✅";
+                        }
+                    }
+                } else {
+                    cell.classList.add("wrong");
+                    setTimeout(() => cell.classList.remove("wrong"), 220);
+                    catchStatusText.textContent =
+                        "هذا ليس A أو a، حاول اختيار الحروف الصحيحة فقط.";
+                }
+            });
+
+            catchGrid.appendChild(cell);
+        }
+    }
+
+    if (btnCatchReset) {
+        btnCatchReset.addEventListener("click", generateCatchGrid);
+    }
+
+    if (btnGoWordsFromCatch) {
+        btnGoWordsFromCatch.addEventListener("click", () => {
+            showScreen("screen-words");
+        });
+    }
+
+    // توليد أولي
+    generateCatchGrid();
+
+    // =========================
+    //  لعبة الكلمات
+    // =========================
+    const wordPuzzleText = document.getElementById("wordPuzzleText");
+    const wordOptions = document.getElementById("wordOptions");
+    const wordStatusText = document.getElementById("wordStatusText");
+    const wordRoundIndex = document.getElementById("wordRoundIndex");
+    const btnNextWord = document.getElementById("btnNextWord");
+    const wordHintArea = document.getElementById("wordHintArea");
+
+    const WORD_ROUNDS = [
+        {
+            puzzle: "_pple",
+            correct: "A",
+            emoji: "🍎",
+            translation: "تفاحة",
+            options: ["A", "E", "O", "B"],
+        },
+        {
+            puzzle: "C_t",
+            correct: "a",
+            emoji: "🐱",
+            translation: "قطة",
+            options: ["a", "e", "i", "o"],
+        },
+        {
+            puzzle: "B_nana",
+            correct: "a",
+            emoji: "🍌",
+            translation: "موزة",
+            options: ["a", "e", "u", "o"],
+        },
+        {
+            puzzle: "_nt",
+            correct: "A",
+            emoji: "🐜",
+            translation: "نملة",
+            options: ["A", "B", "C", "D"],
+        },
+        {
+            puzzle: "M_p",
+            correct: "a",
+            emoji: "🗺️",
+            translation: "خريطة",
+            options: ["a", "e", "i", "o"],
+        },
+    ];
+
+    let selectedWordOption = null;
+
+    function renderWordRound() {
+        const round = WORD_ROUNDS[state.wordIndex];
+        if (!round || !wordPuzzleText) return;
+        wordPuzzleText.textContent = round.puzzle;
+        wordRoundIndex.textContent = state.wordIndex + 1;
+        wordStatusText.textContent = "اختر الحرف الذي يكمل الكلمة.";
+        selectedWordOption = null;
+        wordOptions.innerHTML = "";
+        wordHintArea.innerHTML = "";
+
+        const hintChip = document.createElement("span");
+        hintChip.className = "chip";
+        hintChip.textContent = `${round.emoji} ${round.translation}`;
+        wordHintArea.appendChild(hintChip);
+
+        round.options.forEach((opt) => {
+            const btn = document.createElement("button");
+            btn.className = "word-option";
+            btn.type = "button";
+            btn.textContent = opt;
+            btn.addEventListener("click", () => {
+                selectedWordOption = opt;
+                document
+                    .querySelectorAll(".word-option")
+                    .forEach((o) => o.classList.remove("correct", "wrong"));
+                if (opt === round.correct) {
+                    btn.classList.add("correct");
+                    wordStatusText.textContent = "إجابة صحيحة! ممتاز 👏";
+                } else {
+                    btn.classList.add("wrong");
+                    wordStatusText.textContent =
+                        "ليست صحيحة، جرّب خياراً آخر قبل الانتقال.";
+                }
+            });
+            wordOptions.appendChild(btn);
+        });
+    }
+
+    if (btnNextWord) {
+        btnNextWord.addEventListener("click", () => {
+            const round = WORD_ROUNDS[state.wordIndex];
+            if (!round) return;
+
+            if (!selectedWordOption) {
+                wordStatusText.textContent =
+                    "اختر حرفاً أولاً قبل الانتقال للسؤال التالي.";
+                return;
+            }
+
+            if (selectedWordOption === round.correct) {
+                state.wordScore += 2;
+                awardPoints(2, "Word round correct");
+            }
+
+            state.wordIndex++;
+            if (state.wordIndex >= WORD_ROUNDS.length) {
+                wordStatusText.textContent =
+                    "انتهت لعبة الكلمات! يمكنك الانتقال لتدريب الكتابة.";
+                document.getElementById("status-words").textContent = "اكتملت ✅";
+                btnNextWord.disabled = true;
+            } else {
+                renderWordRound();
+            }
+        });
+    }
+
+    renderWordRound();
+
+    // =========================
+    //  تدريب الكتابة (محاكاة)
+    // =========================
+    const writingCountEl = document.getElementById("writingCount");
+    const writingCounterText = document.getElementById("writingCounterText");
+    const btnWritingIncrement = document.getElementById("btnWritingIncrement");
+    const btnWritingReset = document.getElementById("btnWritingReset");
+    const statusWritingTag = document.getElementById("status-writing");
+
+    function updateWritingUI() {
+        writingCountEl.textContent = state.writingCount;
+        writingCounterText.textContent = `مرات الكتابة الحالية: ${state.writingCount} / ${state.writingTarget}`;
+        statusWritingTag.textContent = `${state.writingCount} / ${state.writingTarget} مرات`;
+        if (state.writingCount >= state.writingTarget) {
+            writingCounterText.textContent =
+                "أحسنت! وصلت إلى 10 مرات. حصلت على شارة Master Writer – A.";
+            statusWritingTag.textContent = "اكتملت ✅";
+        }
+    }
+
+    if (btnWritingIncrement) {
+        btnWritingIncrement.addEventListener("click", () => {
+            if (state.writingCount < state.writingTarget) {
+                state.writingCount++;
+                awardPoints(1, "Writing practice");
+                updateWritingUI();
+            }
+        });
+    }
+
+    if (btnWritingReset) {
+        btnWritingReset.addEventListener("click", () => {
+            state.writingCount = 0;
+            updateWritingUI();
+        });
+    }
+
+    updateWritingUI();
+
+    // =========================
+    //  الاختبار الصغير (6 أسئلة)
+    // =========================
+    const QUIZ_QUESTIONS = [
+        {
+            text: 'أي كلمة تبدأ بحرف A؟',
+            options: ['Dog', 'Sun', 'Apple'],
+            correctIndex: 2,
+        },
+        {
+            text: 'أي من هذه الحروف هو A كبير؟',
+            options: ['a', 'A', 'e'],
+            correctIndex: 1,
+        },
+        {
+            text: 'أي كلمة تحتوي على A في الوسط؟',
+            options: ['Cat', 'Bee', 'Run'],
+            correctIndex: 0,
+        },
+        {
+            text: 'أي كلمة تحتوي على A في النهاية؟',
+            options: ['Sofa', 'Pen', 'Book'],
+            correctIndex: 0,
+        },
+        {
+            text: 'الصوت /æ/ يظهر في أي كلمة؟',
+            options: ['Cat', 'Tree', 'Moon'],
+            correctIndex: 0,
+        },
+        {
+            text: 'اختر الكلمة التي لا تحتوي على A:',
+            options: ['Dog', 'Map', 'Hat'],
+            correctIndex: 0,
+        },
+    ];
+
+    const quizQuestionText = document.getElementById("quizQuestionText");
+    const quizOptionsContainer = document.getElementById("quizOptionsContainer");
+    const quizIndexLabel = document.getElementById("quizIndexLabel");
+    const quizHelperText = document.getElementById("quizHelperText");
+    const quizScoreText = document.getElementById("quizScoreText");
+    const btnQuizNext = document.getElementById("btnQuizNext");
+    const statusQuizTag = document.getElementById("status-quiz");
+    const statusRewardTag = document.getElementById("status-reward");
+
+    let quizSelectedIndex = null;
+
+    function renderQuizQuestion() {
+        const q = QUIZ_QUESTIONS[state.quizIndex];
+        if (!q) return;
+        quizIndexLabel.textContent = state.quizIndex + 1;
+        quizQuestionText.textContent = q.text;
+        quizOptionsContainer.innerHTML = "";
+        quizSelectedIndex = null;
+        quizHelperText.textContent = "اختر إجابة واحدة ثم اضغط \"التالي\".";
+
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "quiz-option";
+            btn.textContent = opt;
+            btn.addEventListener("click", () => {
+                quizSelectedIndex = idx;
+                document
+                    .querySelectorAll(".quiz-option")
+                    .forEach((o) => o.classList.remove("selected"));
+                btn.classList.add("selected");
+            });
+            quizOptionsContainer.appendChild(btn);
+        });
+    }
+
+    if (btnQuizNext) {
+        btnQuizNext.addEventListener("click", () => {
+            if (state.quizFinished) {
+                quizHelperText.textContent =
+                    "انتهى الاختبار، يمكنك مراجعة النتيجة أو تغيير الإجابات بإعادة التحميل.";
+                return;
+            }
+            if (quizSelectedIndex === null) {
+                quizHelperText.textContent = "اختر إجابة أولاً قبل الانتقال.";
+                return;
+            }
+            const q = QUIZ_QUESTIONS[state.quizIndex];
+            // درجة 3 نقاط لكل سؤال، و 2 أسئلة لها وزن إضافي لو حاب تطوّر لاحقاً
+            if (quizSelectedIndex === q.correctIndex) {
+                state.quizScore += 3;
+                awardPoints(2, "Quiz correct");
+            }
+            state.quizIndex++;
+            if (state.quizIndex >= QUIZ_QUESTIONS.length) {
+                state.quizFinished = true;
+                const total = state.quizScore;
+                const passed = total >= 14;
+                quizScoreText.textContent = `نتيجتك في اختبار الكوكب A: ${total} / 18 (شرط النجاح الرسمي لاحقاً 14 / 20). ${
+                    passed
+                        ? "ممتاز! يمكنك اعتبار الكوكب شبه مكتمل."
+                        : "حاول مرة أخرى لرفع نتيجتك."
+                }`;
+                statusQuizTag.textContent = passed ? "اجتاز ✅" : "تم – أعد المحاولة";
+                if (passed) {
+                    statusRewardTag.textContent = "متاح ✅";
+                    awardPoints(5, "Quiz passed");
+                }
+                btnQuizNext.disabled = true;
+            } else {
+                renderQuizQuestion();
+            }
+        });
+    }
+
+    renderQuizQuestion();
+
+    // =========================
+    //  اسم اللاعب (للبطاقة)
+    // =========================
+    if (playerNameInput) {
+        playerNameInput.addEventListener("input", () => {
+            state.playerName = playerNameInput.value.trim() || "طالب جديد";
+            updatePlanetMeta();
+        });
+    }
+
+    // تهيئة أولية
+    updatePlanetMeta();
+</script>
+</body>
+</html>

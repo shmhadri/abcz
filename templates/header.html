@@ -1,0 +1,493 @@
+<style>
+    /* Header Styles */
+    .app-header {
+        padding: 15px 25px;
+        background: rgba(255, 255, 255, 0.95);
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        font-family: 'Tajawal', sans-serif;
+    }
+
+    .night-mode .app-header {
+        background: rgba(30, 41, 59, 0.95);
+        border-bottom-color: #475569;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-decoration: none;
+    }
+
+    .logo {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4361ee, #4895ef);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .logo-text h1 {
+        font-size: 1.2rem;
+        margin: 0;
+        color: #1a237e;
+        font-weight: 800;
+    }
+
+    .night-mode .logo-text h1 {
+        color: #f1f5f9;
+    }
+
+    .logo-text p {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .vision-logo {
+        height: 50px;
+        width: auto;
+        margin-right: 15px;
+        border-left: 1px solid #e2e8f0;
+        padding-left: 15px;
+    }
+
+    .night-mode .vision-logo {
+        filter: brightness(0) invert(1);
+        border-left-color: #475569;
+    }
+
+    /* Navigation */
+    .nav-menu {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .nav-item {
+        position: relative;
+    }
+
+    .nav-link {
+        color: #1e293b;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .night-mode .nav-link {
+        color: #f1f5f9;
+    }
+
+    .nav-link:hover {
+        background-color: #f1f5f9;
+        color: #4361ee;
+    }
+
+    .night-mode .nav-link:hover {
+        background-color: #334155;
+        color: #4895ef;
+    }
+
+    /* Dropdown */
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0; /* Align left by default for LTR, but we are RTL */
+        right: 0; /* For RTL alignment */
+        left: auto;
+        background-color: white;
+        min-width: 200px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        padding: 8px;
+        z-index: 9999; /* High z-index as requested */
+        animation: slideDown 0.2s ease-out;
+        border: 1px solid #e2e8f0;
+    }
+
+    .night-mode .dropdown-content {
+        background-color: #1e293b;
+        border-color: #475569;
+    }
+
+    .nav-item:hover .dropdown-content {
+        display: block;
+    }
+
+    /* Mobile Menu Button */
+    .mobile-menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #1e293b;
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    .night-mode .mobile-menu-btn {
+        color: #f1f5f9;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) { /* Adjusted breakpoint */
+        .mobile-menu-btn {
+            display: block;
+        }
+
+        .nav-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-top: 1px solid #e2e8f0;
+            z-index: 9998;
+        }
+
+        .night-mode .nav-menu {
+            background-color: #1e293b;
+            border-top-color: #475569;
+        }
+
+        .nav-menu.active {
+            display: flex;
+        }
+
+        .nav-item {
+            width: 100%;
+        }
+
+        .dropdown-content {
+            position: static;
+            box-shadow: none;
+            border: none;
+            padding-left: 20px;
+            display: none;
+            animation: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .nav-item.active .dropdown-content {
+            display: block;
+        }
+
+        .vision-logo {
+            height: 40px;
+            margin-right: 10px;
+            padding-left: 10px;
+        }
+        
+        .logo-text h1 {
+            font-size: 1rem;
+        }
+    }
+    
+    @media print {
+        .app-header {
+            display: none !important;
+        }
+    }
+
+    /* --- Top Goal Animated Button --- */
+    .top-goal-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #7209b7, #f72585, #4cc9f0);
+        background-size: 200% 200%;
+        border-radius: 25px;
+        text-decoration: none;
+        color: white;
+        font-weight: 700;
+        box-shadow: 0 4px 20px rgba(247, 37, 133, 0.4);
+        transition: all 0.4s ease;
+        animation: gradientShift 3s ease infinite, pulse 1.5s ease-in-out infinite;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .top-goal-btn::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+    }
+
+    .top-goal-btn i {
+        font-size: 1.5rem;
+        z-index: 1;
+    }
+
+    .btn-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        z-index: 1;
+    }
+
+    .btn-title {
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .btn-subtitle {
+        font-size: 0.75rem;
+        opacity: 0.95;
+        font-family: 'Tajawal', sans-serif;
+        font-weight: 600;
+    }
+
+    .top-goal-btn:hover {
+        transform: scale(1.08) translateY(-2px);
+        box-shadow: 0 8px 30px rgba(247, 37, 133, 0.6);
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 4px 20px rgba(247, 37, 133, 0.4);
+        }
+        50% {
+            box-shadow: 0 4px 30px rgba(247, 37, 133, 0.7);
+        }
+    }
+
+    @keyframes gradientShift {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%) translateY(-100%) rotate(45deg);
+        }
+        100% {
+            transform: translateX(100%) translateY(100%) rotate(45deg);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .top-goal-btn {
+            padding: 8px 14px;
+            gap: 6px;
+        }
+        
+        .top-goal-btn i {
+            font-size: 1.2rem;
+        }
+        
+        .btn-title {
+            font-size: 0.8rem;
+        }
+        
+        .btn-subtitle {
+            font-size: 0.6rem;
+        }
+    }
+</style>
+
+<header class="app-header">
+    <div class="header-left">
+        <img src="https://cdn.vision2030.gov.sa/media/rc0b2jd0/vision-2030-logo.svg" alt="Vision 2030" class="vision-logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/ar/thumb/b/bb/Saudi_Vision_2030_logo.svg/1200px-Saudi_Vision_2030_logo.svg.png'">
+        
+        <a href="/" class="logo-section">
+            <div class="logo">PGL</div>
+            <div class="logo-text">
+                <h1>منصة ألعاب الحروف</h1>
+                <p>Phonics Game Lab</p>
+            </div>
+        </a>
+    </div>
+
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <nav class="nav-menu" id="navMenu">
+        <div class="nav-item">
+            <a href="/" class="nav-link">
+                <i class="fas fa-home"></i> الرئيسية
+            </a>
+        </div>
+
+        <div class="nav-item">
+            <a href="#" class="nav-link" id="certificateLink">
+                <i class="fas fa-certificate"></i> الشهادة
+            </a>
+        </div>
+
+        <div class="nav-item">
+            <a href="#" class="nav-link" onclick="toggleDropdown(event)">
+                <i class="fas fa-gamepad"></i> الألعاب <i class="fas fa-chevron-down" style="font-size: 0.8em;"></i>
+            </a>
+            <div class="dropdown-content">
+                <a href="/#letters-section" class="dropdown-item">
+                    <i class="fas fa-font"></i> تعلم الحروف
+                </a>
+                <a href="/#games-section" class="dropdown-item">
+                    <i class="fas fa-puzzle-piece"></i> التمارين
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-item">
+            <a href="#" class="nav-link" onclick="toggleDropdown(event)">
+                <i class="fas fa-cog"></i> الإعدادات <i class="fas fa-chevron-down" style="font-size: 0.8em;"></i>
+            </a>
+            <div class="dropdown-content">
+                <a href="#" class="dropdown-item" id="resetProgress">
+                    <i class="fas fa-undo"></i> إعادة التقدم
+                </a>
+                <a href="#" class="dropdown-item" id="toggleSound">
+                    <i class="fas fa-volume-up"></i> الصوت
+                </a>
+                <a href="#" class="dropdown-item" id="testMicrophone">
+                    <i class="fas fa-microphone"></i> اختبار المايك
+                </a>
+                <a href="#" class="dropdown-item" onclick="toggleNightMode(); return false;">
+                    <i class="fas fa-moon"></i> الوضع الليلي
+                </a>
+            </div>
+        </div>
+
+        <!-- Top Goal Animated Button Dropdown -->
+        <div class="nav-item">
+            <a href="#" class="top-goal-btn" onclick="toggleDropdown(event)">
+                <i class="fas fa-layer-group"></i>
+                <div class="btn-text">
+                    <span class="btn-title">Top Goal</span>
+                    <span class="btn-subtitle">Select Grade</span>
+                </div>
+                <!-- Angle down icon -->
+                <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-left: 8px; opacity: 0.8;"></i>
+            </a>
+            <div class="dropdown-content" style="min-width: 220px;">
+                <a href="/top-goal-6-unit-1/" class="dropdown-item" style="padding: 12px 15px;">
+                    <i class="fas fa-star" style="color: #f72585;"></i>
+                    <div style="display:inline-flex; flex-direction:column; margin-left:8px;">
+                        <span style="font-weight:bold; color:#1e293b;">Top Goal 6</span>
+                        <span style="font-size:0.75rem; color:#64748b;">Unit 1: Back to School</span>
+                    </div>
+                </a>
+                <a href="/grade-4-unit-1/" class="dropdown-item" style="padding: 12px 15px;">
+                    <i class="fas fa-tree" style="color: #10b981;"></i>
+                    <div style="display:inline-flex; flex-direction:column; margin-left:8px;">
+                        <span style="font-weight:bold; color:#1e293b;">Grade 4 (رابعة)</span>
+                        <span style="font-size:0.75rem; color:#64748b;">Unit 1: Outdoor Fun</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="student-info nav-item" style="display: flex; align-items: center; gap: 10px; position: relative;">
+        <div class="student-name" id="studentProfileBtn" style="cursor: pointer; background: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 5px;">
+            <span>👤</span>
+            <span id="studentNameDisplay">تسجيل الدخول</span>
+            <i class="fas fa-chevron-down" style="font-size: 0.8em; margin-right: 5px;"></i>
+        </div>
+        
+        <div class="dropdown-content" style="right: 0; left: auto; min-width: 250px; padding: 15px;">
+            <div id="profileDropdownContent">
+                <!-- Content will be injected by JS -->
+                <div id="guestContent">
+                    <p style="margin-bottom: 10px; font-size: 0.9rem; color: #64748b;">سجل دخولك لحفظ تقدمك</p>
+                    <button id="headerLoginBtn" class="btn" style="width: 100%; background: #4361ee; color: white; padding: 8px; border-radius: 8px; border: none; cursor: pointer;">
+                        <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                    </button>
+                </div>
+                
+                <div id="userContent" style="display: none;">
+                    <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px;">
+                        <div style="font-weight: bold; color: #1e293b; font-size: 1.1rem;" id="dropdownName"></div>
+                        <div style="color: #64748b; font-size: 0.9rem;" id="dropdownSchool"></div>
+                    </div>
+                    <a href="#" id="headerEditProfileBtn" style="display: block; padding: 8px 0; color: #4361ee; text-decoration: none;">
+                        <i class="fas fa-user-edit"></i> تعديل الملف الشخصي
+                    </a>
+                    <a href="#" id="headerLogoutBtn" style="display: block; padding: 8px 0; color: #ef4444; text-decoration: none; border-top: 1px solid #e2e8f0; margin-top: 5px;">
+                        <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<script>
+    function toggleMobileMenu() {
+        const nav = document.getElementById('navMenu');
+        nav.classList.toggle('active');
+    }
+
+    function toggleDropdown(e) {
+        if (window.innerWidth <= 768) {
+            e.preventDefault();
+            const item = e.target.closest('.nav-item');
+            item.classList.toggle('active');
+        }
+    }
+
+    // Night Mode Toggle Logic (if not already present in main script)
+    function toggleNightMode() {
+        document.body.classList.toggle('night-mode');
+        const isNight = document.body.classList.contains('night-mode');
+        localStorage.setItem('nightMode', isNight);
+    }
+
+    // Initialize Night Mode
+    if (localStorage.getItem('nightMode') === 'true') {
+        document.body.classList.add('night-mode');
+    }
+</script>

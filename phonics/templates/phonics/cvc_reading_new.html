@@ -1,10 +1,11 @@
-{% extends "leeters.HTML" %}
+{% extends "letters.html" %}
 {% load static %}
 
 {% block title %}تدريب قراءة CVC{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 <style>
     :root {
         --primary-color: #4a90e2;
@@ -59,17 +60,7 @@
         box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
     }
 
-    .tab-content {
-        margin-top: 2.5rem;
-    }
-
-    .card-container {
-        display: none;
-        animation: fadeIn 0.5s;
-    }
-    .card-container.active {
-        display: block;
-    }
+    .tab-content { margin-top: 2.5rem; }
 
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
@@ -81,6 +72,7 @@
         border-radius: var(--border-radius);
         padding: 2rem;
         margin-bottom: 1.5rem;
+        animation: fadeIn 0.35s ease;
     }
 
     .item-image {
@@ -96,16 +88,15 @@
         font-size: 3.5rem;
         font-weight: 700;
         color: var(--dark-color);
+        line-height: 1.2;
     }
-    
-    .sentence-text {
-        font-size: 2.8rem;
-    }
+
+    .sentence-text { font-size: 2.8rem; }
 
     .item-translation {
         font-size: 1.2rem;
         color: #777;
-        margin-top: -0.5rem;
+        margin-top: 0.5rem;
         margin-bottom: 1.5rem;
     }
 
@@ -125,9 +116,9 @@
         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     }
 
-    #speak-btn { background-color: var(--primary-color); color: var(--white-color); }
-    #mic-btn { background-color: var(--success-color); color: var(--white-color); }
-    #mic-btn.recording {
+    .btn-speak { background-color: var(--primary-color); color: var(--white-color); }
+    .btn-mic { background-color: var(--success-color); color: var(--white-color); }
+    .btn-mic.recording {
         background-color: var(--danger-color);
         animation: pulse-red 1.5s infinite;
     }
@@ -154,19 +145,25 @@
         background: var(--primary-color);
         color: var(--white-color);
     }
+    .nav-buttons button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
     #start-challenge-btn {
         background: var(--primary-color);
         color: var(--white-color);
         font-size: 1.3rem;
     }
 
-    .progress-wrapper {
-        margin: 1rem 0;
-    }
+    .progress-wrapper { margin: 1rem 0; }
     .progress {
         height: 25px;
         border-radius: 50px;
         background-color: #e9ecef;
+        overflow: hidden;
     }
     .progress-bar {
         background-color: var(--success-color);
@@ -185,9 +182,12 @@
         margin-top: 1.5rem;
         font-size: 1.3rem;
         font-weight: 600;
-        min-height: 30px;
+        min-height: 34px;
     }
 </style>
+
+{# CSRF: خيار 1 (مضمون) #}
+<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 
 <div class="cvc-main-container">
     <div class="cvc-header">
@@ -212,60 +212,67 @@
         <!-- CVC Words Panel -->
         <div class="tab-pane fade show active" id="pills-words" role="tabpanel">
             <div id="words-card-container"></div>
+
             <div class="progress-wrapper">
                 <div class="progress">
-                    <div id="words-progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    <div id="words-progress-bar" class="progress-bar" role="progressbar"
+                         style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
                 </div>
             </div>
+
             <div class="nav-buttons">
-                <button id="prev-word-btn" style="display: none;">&larr; السابق</button>
-                <button id="next-word-btn" style="display: none;">التالي &rarr;</button>
+                <button id="prev-word-btn" disabled>&larr; السابق</button>
+                <button id="next-word-btn" disabled>التالي &rarr;</button>
             </div>
         </div>
 
         <!-- CVC Sentences Panel -->
         <div class="tab-pane fade" id="pills-sentences" role="tabpanel">
             <button id="start-challenge-btn">🚀 ابدأ تحدي قراءة الجمل</button>
+
             <div id="sentences-challenge-area" style="display: none;">
                 <div class="timer-display" id="sentence-timer"></div>
                 <div id="sentences-card-container"></div>
+
                 <div class="progress-wrapper">
                     <div class="progress">
-                        <div id="sentences-progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        <div id="sentences-progress-bar" class="progress-bar" role="progressbar"
+                             style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
                     </div>
                 </div>
+
                 <div class="nav-buttons">
-                    <button id="prev-sentence-btn" style="display: none;">&larr; السابق</button>
-                    <button id="next-sentence-btn" style="display: none;">التالي &rarr;</button>
+                    <button id="prev-sentence-btn" disabled>&larr; السابق</button>
+                    <button id="next-sentence-btn" disabled>التالي &rarr;</button>
                 </div>
             </div>
         </div>
     </div>
+
     <div id="feedback-area"></div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
-    const elements = {
+    const el = {
         words: {
             container: document.getElementById('words-card-container'),
             progressBar: document.getElementById('words-progress-bar'),
             prevBtn: document.getElementById('prev-word-btn'),
             nextBtn: document.getElementById('next-word-btn'),
-            tab: document.getElementById('pills-words-tab'),
         },
         sentences: {
             container: document.getElementById('sentences-card-container'),
             progressBar: document.getElementById('sentences-progress-bar'),
             prevBtn: document.getElementById('prev-sentence-btn'),
             nextBtn: document.getElementById('next-sentence-btn'),
-            tab: document.getElementById('pills-sentences-tab'),
             startBtn: document.getElementById('start-challenge-btn'),
             challengeArea: document.getElementById('sentences-challenge-area'),
             timer: document.getElementById('sentence-timer'),
         },
-        feedbackArea: document.getElementById('feedback-area'),
+        feedback: document.getElementById('feedback-area'),
+        csrfHidden: document.getElementById('csrf-token'),
     };
 
     // --- State ---
@@ -277,219 +284,301 @@ document.addEventListener('DOMContentLoaded', function() {
         mediaRecorder: null,
         audioChunks: [],
         sentenceTimerInterval: null,
+        isRecording: false,
     };
+
+    // --- Security helpers (CSRF) ---
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+    }
+    function getCsrfToken() {
+        // الأفضل: input المخفي
+        const fromHidden = (el.csrfHidden && el.csrfHidden.value) ? el.csrfHidden.value : '';
+        return fromHidden || getCookie('csrftoken');
+    }
 
     // --- API ---
     const api = {
-        fetchData: async (endpoint) => {
+        fetchJSON: async (endpoint) => {
             try {
-                const response = await fetch(endpoint);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return await response.json();
-            } catch (error) {
-                console.error(`Failed to fetch from ${endpoint}:`, error);
-                elements.feedbackArea.innerHTML = `<span style="color:var(--danger-color)">فشل تحميل البيانات. يرجى المحاولة مرة أخرى.</span>`;
+                const res = await fetch(endpoint, { credentials: 'same-origin' });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return await res.json();
+            } catch (err) {
+                console.error(`Fetch failed (${endpoint}):`, err);
+                el.feedback.innerHTML = `<span style="color:var(--danger-color)">فشل تحميل البيانات. تأكد من الـ API ثم أعد المحاولة.</span>`;
                 return null;
             }
         },
         checkPronunciation: async (audioBlob, targetText) => {
             const formData = new FormData();
-            formData.append('audio', audioBlob, 'recording.wav');
+
+            const mime = audioBlob.type || 'audio/webm';
+            const ext = mime.includes('ogg') ? 'ogg' : (mime.includes('webm') ? 'webm' : 'bin');
+            formData.append('audio', audioBlob, `recording.${ext}`);
             formData.append('word', targetText);
-            
-            elements.feedbackArea.innerHTML = '<i>... يتم تحليل النطق ...</i>';
+
+            el.feedback.innerHTML = '<i>... يتم تحليل النطق ...</i>';
 
             try {
-                const response = await fetch(`/api/check-cvc-pronunciation/`, {
+                const res = await fetch('/api/check-cvc-pronunciation/', {
                     method: 'POST',
                     body: formData,
-                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRFToken': getCsrfToken(),
+                    },
                 });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return await response.json();
-            } catch (error) {
-                console.error('Pronunciation check failed:', error);
-                elements.feedbackArea.textContent = 'عفواً، حدث خطأ أثناء التحقق من النطق.';
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return await res.json();
+            } catch (err) {
+                console.error('Pronunciation check failed:', err);
+                el.feedback.textContent = 'عفواً، حدث خطأ أثناء التحقق من النطق.';
                 return null;
             }
         }
     };
 
-    // --- UI Update Functions ---
+    // --- UI ---
     const ui = {
-        renderCard: (type, index) => {
+        setNavDisabled: (type) => {
             const isWord = type === 'words';
-            const data = isWord ? state.words[index] : state.sentences[index];
-            const container = isWord ? elements.words.container : elements.sentences.container;
-            
-            if (!data) return;
+            const list = isWord ? state.words : state.sentences;
+            const idx = isWord ? state.currentWordIndex : state.currentSentenceIndex;
 
-            container.innerHTML = `
-                <div class="item-card" data-id="${data.id}">
-                    ${isWord ? `<img src="${data.image_url || 'https://via.placeholder.com/220'}" alt="${data.word}" class="item-image">` : ''}
-                    <div class="item-text ${isWord ? '' : 'sentence-text'}">${isWord ? data.word : data.sentence}</div>
-                    <div class="item-translation">${isWord ? data.arabic_meaning : data.arabic_translation}</div>
-                    <div class="action-buttons">
-                        <button id="speak-btn" title="استمع للنطق الصحيح"><i class="fas fa-volume-up"></i></button>
-                        <button id="mic-btn" title="سجل نطقك"><i class="fas fa-microphone"></i></button>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('speak-btn').onclick = () => helpers.speak(isWord ? data.word : data.sentence);
-            document.getElementById('mic-btn').onclick = (e) => handlers.record(e.currentTarget, isWord ? data.word : data.sentence, type);
-            
-            ui.updateProgress(type);
+            const prevBtn = isWord ? el.words.prevBtn : el.sentences.prevBtn;
+            const nextBtn = isWord ? el.words.nextBtn : el.sentences.nextBtn;
+
+            prevBtn.disabled = (idx <= 0);
+            nextBtn.disabled = (idx >= list.length - 1);
         },
         updateProgress: (type) => {
             const isWord = type === 'words';
             const total = isWord ? state.words.length : state.sentences.length;
             const current = isWord ? state.currentWordIndex : state.currentSentenceIndex;
-            const progressBar = isWord ? elements.words.progressBar : elements.sentences.progressBar;
-            
-            if (total === 0) return;
-            
-            const percentage = Math.round(((current + 1) / total) * 100);
-            progressBar.style.width = `${percentage}%`;
-            progressBar.textContent = `${percentage}%`;
-            progressBar.setAttribute('aria-valuenow', percentage);
+            const bar = isWord ? el.words.progressBar : el.sentences.progressBar;
+
+            if (!total) return;
+            const pct = Math.round(((current + 1) / total) * 100);
+            bar.style.width = `${pct}%`;
+            bar.textContent = `${pct}%`;
+            bar.setAttribute('aria-valuenow', pct);
         },
         showFeedback: (result) => {
             if (!result) return;
+
             if (result.correct) {
-                elements.feedbackArea.innerHTML = `<span style="color:var(--success-color)"><i class="fas fa-check-circle"></i> ${result.message} (الدقة: ${result.accuracy}%)</span>`;
+                const acc = (typeof result.accuracy === 'number') ? result.accuracy : null;
+                el.feedback.innerHTML =
+                    `<span style="color:var(--success-color)"><i class="fas fa-check-circle"></i> ${result.message}${acc !== null ? ` (الدقة: ${acc}%)` : ''}</span>`;
             } else {
-                elements.feedbackArea.innerHTML = `<span style="color:var(--danger-color)"><i class="fas fa-times-circle"></i> ${result.message}</span>`;
+                el.feedback.innerHTML =
+                    `<span style="color:var(--danger-color)"><i class="fas fa-times-circle"></i> ${result.message}</span>`;
             }
         },
-        startSentenceTimer: (duration) => {
+        renderCard: (type) => {
+            const isWord = type === 'words';
+            const idx = isWord ? state.currentWordIndex : state.currentSentenceIndex;
+            const data = isWord ? state.words[idx] : state.sentences[idx];
+            const container = isWord ? el.words.container : el.sentences.container;
+
+            if (!data) {
+                container.innerHTML = `<p>لا توجد بيانات.</p>`;
+                return;
+            }
+
+            const text = isWord ? (data.word || '') : (data.sentence || '');
+            const ar = isWord ? (data.arabic_meaning || '') : (data.arabic_translation || '');
+            const img = data.image_url || 'https://via.placeholder.com/220';
+
+            container.innerHTML = `
+                <div class="item-card" data-id="${data.id || ''}">
+                    ${isWord ? `<img src="${img}" alt="${text}" class="item-image">` : ''}
+                    <div class="item-text ${isWord ? '' : 'sentence-text'}">${text}</div>
+                    <div class="item-translation">${ar}</div>
+                    <div class="action-buttons">
+                        <button class="btn-speak" type="button" title="استمع للنطق الصحيح">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <button class="btn-mic" type="button" title="سجل نطقك">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // bind events safely via querySelector within the new card
+            const speakBtn = container.querySelector('.btn-speak');
+            const micBtn = container.querySelector('.btn-mic');
+
+            speakBtn.addEventListener('click', () => helpers.speak(text));
+            micBtn.addEventListener('click', () => handlers.toggleRecord(micBtn, text, type));
+
+            ui.updateProgress(type);
+            ui.setNavDisabled(type);
+        },
+        startSentenceTimer: (durationSec) => {
             clearInterval(state.sentenceTimerInterval);
-            let timeLeft = duration;
-            elements.sentences.timer.textContent = `⏳ ${timeLeft} ثانية`;
+            let timeLeft = durationSec;
+
+            el.sentences.timer.textContent = `⏳ ${timeLeft} ثانية`;
             state.sentenceTimerInterval = setInterval(() => {
                 timeLeft--;
-                elements.sentences.timer.textContent = `⏳ ${timeLeft} ثانية`;
+                el.sentences.timer.textContent = `⏳ ${timeLeft} ثانية`;
+
                 if (timeLeft <= 0) {
                     clearInterval(state.sentenceTimerInterval);
-                    elements.sentences.timer.textContent = "⏰ انتهى الوقت!";
+                    el.sentences.timer.textContent = "⏰ انتهى الوقت!";
+
+                    // auto next
                     if (state.currentSentenceIndex < state.sentences.length - 1) {
                         setTimeout(() => {
                             state.currentSentenceIndex++;
-                            ui.renderCard('sentences', state.currentSentenceIndex);
-                        }, 1500);
+                            ui.renderCard('sentences');
+                            ui.startSentenceTimer(durationSec);
+                        }, 900);
                     }
                 }
             }, 1000);
         }
     };
 
-    // --- Event Handlers ---
-    const handlers = {
-        navigate: (type, direction) => {
-            const isWord = type === 'words';
-            let currentIndex = isWord ? 'currentWordIndex' : 'currentSentenceIndex';
-            const dataArray = isWord ? state.words : state.sentences;
-
-            state[currentIndex] += direction;
-
-            if (state[currentIndex] < 0) state[currentIndex] = 0;
-            if (state[currentIndex] >= dataArray.length) state[currentIndex] = dataArray.length - 1;
-
-            ui.renderCard(type, state[currentIndex]);
+    // --- Helpers ---
+    const helpers = {
+        speak: (text) => {
+            if (!text) return;
+            if (!('speechSynthesis' in window)) {
+                el.feedback.textContent = 'ميزة النطق غير مدعومة في هذا المتصفح.';
+                return;
+            }
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US';
+            u.rate = 0.9;
+            speechSynthesis.speak(u);
         },
-        record: (micButton, targetText, type) => {
-            if (state.mediaRecorder && state.mediaRecorder.state === 'recording') {
+        goNextIfCorrect: (type) => {
+            const isWord = type === 'words';
+            const list = isWord ? state.words : state.sentences;
+            const key = isWord ? 'currentWordIndex' : 'currentSentenceIndex';
+
+            if (state[key] < list.length - 1) {
+                state[key]++;
+                ui.renderCard(type);
+            }
+        }
+    };
+
+    // --- Handlers ---
+    const handlers = {
+        navigate: (type, dir) => {
+            const isWord = type === 'words';
+            const list = isWord ? state.words : state.sentences;
+            const key = isWord ? 'currentWordIndex' : 'currentSentenceIndex';
+
+            state[key] = Math.min(Math.max(state[key] + dir, 0), Math.max(list.length - 1, 0));
+            ui.renderCard(type);
+        },
+
+        toggleRecord: async (micBtn, targetText, type) => {
+            // stop
+            if (state.mediaRecorder && state.isRecording) {
                 state.mediaRecorder.stop();
-                micButton.classList.remove('recording');
-                micButton.innerHTML = '<i class="fas fa-microphone"></i>';
-            } else {
-                navigator.mediaDevices.getUserMedia({ audio: true })
-                    .then(stream => {
-                        state.mediaRecorder = new MediaRecorder(stream);
-                        state.mediaRecorder.start();
-                        state.audioChunks = [];
-                        micButton.classList.add('recording');
-                        micButton.innerHTML = '<i class="fas fa-stop"></i>';
+                return;
+            }
 
-                        state.mediaRecorder.addEventListener('dataavailable', e => state.audioChunks.push(e.data));
-                        state.mediaRecorder.addEventListener('stop', async () => {
-                            const audioBlob = new Blob(state.audioChunks);
-                            const result = await api.checkPronunciation(audioBlob, targetText);
-                            ui.showFeedback(result);
-                            stream.getTracks().forEach(track => track.stop());
+            // start
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                el.feedback.textContent = "لا يمكن الوصول إلى الميكروفون (المتصفح لا يدعم).";
+                return;
+            }
 
-                            if (result && result.correct) {
-                                setTimeout(() => {
-                                    const isWord = type === 'words';
-                                    const dataArray = isWord ? state.words : state.sentences;
-                                    let currentIndex = isWord ? 'currentWordIndex' : 'currentSentenceIndex';
-                                    if (state[currentIndex] < dataArray.length - 1) {
-                                        state[currentIndex]++;
-                                        ui.renderCard(type, state[currentIndex]);
-                                    }
-                                }, 2000);
-                            }
-                        });
-                    }).catch(err => {
-                        console.error("Error getting user media:", err);
-                        elements.feedbackArea.textContent = "لا يمكن الوصول إلى الميكروفون.";
-                    });
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                state.audioChunks = [];
+
+                const recorder = new MediaRecorder(stream);
+                state.mediaRecorder = recorder;
+                state.isRecording = true;
+
+                micBtn.classList.add('recording');
+                micBtn.innerHTML = '<i class="fas fa-stop"></i>';
+
+                recorder.addEventListener('dataavailable', (e) => {
+                    if (e.data && e.data.size > 0) state.audioChunks.push(e.data);
+                });
+
+                recorder.addEventListener('stop', async () => {
+                    state.isRecording = false;
+
+                    micBtn.classList.remove('recording');
+                    micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+
+                    const mime = recorder.mimeType || 'audio/webm';
+                    const audioBlob = new Blob(state.audioChunks, { type: mime });
+
+                    // stop tracks for privacy + performance
+                    stream.getTracks().forEach(t => t.stop());
+
+                    const result = await api.checkPronunciation(audioBlob, targetText);
+                    ui.showFeedback(result);
+
+                    if (result && result.correct) {
+                        setTimeout(() => helpers.goNextIfCorrect(type), 1200);
+                    }
+                });
+
+                recorder.start();
+            } catch (err) {
+                console.error("Error getting user media:", err);
+                el.feedback.textContent = "لا يمكن الوصول إلى الميكروفون. تأكد من السماح بالوصول.";
             }
         },
+
         startChallenge: async () => {
-            elements.sentences.startBtn.style.display = 'none';
-            elements.sentences.challengeArea.style.display = 'block';
-            
-            const data = await api.fetchData('/api/cvc-sentences/');
-            if (data && data.sentences) {
+            el.sentences.startBtn.style.display = 'none';
+            el.sentences.challengeArea.style.display = 'block';
+            el.feedback.textContent = '';
+
+            const data = await api.fetchJSON('/api/cvc-sentences/');
+            if (data && Array.isArray(data.sentences)) {
                 state.sentences = data.sentences;
+
                 if (state.sentences.length > 0) {
                     state.currentSentenceIndex = 0;
-                    ui.renderCard('sentences', state.currentSentenceIndex);
-                    elements.sentences.prevBtn.style.display = 'inline-block';
-                    elements.sentences.nextBtn.style.display = 'inline-block';
+                    ui.renderCard('sentences');
+                    // مؤقت لكل جملة (تقدر تغيره)
+                    ui.startSentenceTimer(20);
                 } else {
-                    elements.sentences.container.innerHTML = "<p>لا توجد جمل متاحة حالياً.</p>";
+                    el.sentences.container.innerHTML = "<p>لا توجد جمل متاحة حالياً.</p>";
                 }
             }
         }
     };
 
-    // --- Helper Functions ---
-    const helpers = {
-        speak: (text) => {
-            speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.9;
-            speechSynthesis.speak(utterance);
-        }
-    };
+    // --- Init ---
+    (async function init() {
+        el.words.prevBtn.addEventListener('click', () => handlers.navigate('words', -1));
+        el.words.nextBtn.addEventListener('click', () => handlers.navigate('words', 1));
+        el.sentences.prevBtn.addEventListener('click', () => handlers.navigate('sentences', -1));
+        el.sentences.nextBtn.addEventListener('click', () => handlers.navigate('sentences', 1));
+        el.sentences.startBtn.addEventListener('click', handlers.startChallenge);
 
-    // --- Initialization ---
-    const init = async () => {
-        // Setup event listeners
-        elements.words.prevBtn.onclick = () => handlers.navigate('words', -1);
-        elements.words.nextBtn.onclick = () => handlers.navigate('words', 1);
-        elements.sentences.prevBtn.onclick = () => handlers.navigate('sentences', -1);
-        elements.sentences.nextBtn.onclick = () => handlers.navigate('sentences', 1);
-        elements.sentences.startBtn.onclick = handlers.startChallenge;
-
-        // Fetch initial data for words tab
-        const data = await api.fetchData('/api/cvc-words/');
-        if (data && data.words) {
+        const data = await api.fetchJSON('/api/cvc-words/');
+        if (data && Array.isArray(data.words)) {
             state.words = data.words;
+
             if (state.words.length > 0) {
-                ui.renderCard('words', state.currentWordIndex);
-                elements.words.prevBtn.style.display = 'inline-block';
-                elements.words.nextBtn.style.display = 'inline-block';
+                state.currentWordIndex = 0;
+                ui.renderCard('words');
             } else {
-                elements.words.container.innerHTML = "<p>لا توجد كلمات متاحة حالياً.</p>";
+                el.words.container.innerHTML = "<p>لا توجد كلمات متاحة حالياً.</p>";
             }
         }
-    };
-
-    init();
+    })();
 });
 </script>
 {% endblock %}

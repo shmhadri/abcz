@@ -2456,6 +2456,15 @@
                         <a href="{% url 'top_goal_unit_1' %}" class="menu-item" style="text-decoration:none; color: #7209b7; font-weight: bold;">
                             <i class="fas fa-film"></i> توب قول 6 - الوحدة 1
                         </a>
+                        <a href="{% url 'grade_2_unit_1' %}" class="menu-item" style="text-decoration:none; color: #ff6b6b; font-weight: bold;">
+                            <i class="fas fa-paw"></i> ثاني ابتدائي - الوحدة 1
+                        </a>
+                        <a href="{% url 'grade_3_unit_1' %}" class="menu-item" style="text-decoration:none; color: #2196f3; font-weight: bold;">
+                            <i class="fas fa-book-open"></i> ثالث الوحده الاولى
+                        </a>
+                        <a href="{% url 'grade_4_unit_1' %}" class="menu-item" style="text-decoration:none; color: #10b981; font-weight: bold;">
+                            <i class="fas fa-tree"></i> رابع الوحده الاولى
+                        </a>
                         
                         <div class="menu-divider"></div>
                         
@@ -5193,15 +5202,21 @@
                     try { this.renderWordWriting(letter, staticLetterData.words); } catch(e) { console.error('Error rendering words', e); }
                     try { this.renderQuiz(staticLetterData.quiz); } catch(e) { console.error('Error rendering quiz', e); }
                     
-                    this.updateAndCommitScores();
-                    this.updateProgress();
-                    this.renderLettersNav();
-                    this.renderAchievements();
+                    try { this.updateAndCommitScores(); } catch(e) { console.error('Error updating scores', e); }
+                    try { this.updateProgress(); } catch(e) { console.error('Error updating progress', e); }
+                    try { this.renderLettersNav(); } catch(e) { console.error('Error rendering letters nav', e); }
+                    try { this.renderAchievements(); } catch(e) { console.error('Error rendering achievements', e); }
                 } catch (error) {
                     console.error("Error loading letter:", error);
                     // Show more specific error to user if possible, otherwise generic
                     const msg = error.message || "Unknown error";
-                    this.showToast(`حدث خطأ أثناء تحميل الحرف: ${msg}`, 5000, 'error');
+                    // Suppress "Cannot set properties of null" error toast as per user request
+                    if (msg && (msg.includes("Cannot set properties of null") || msg.includes("setting 'textContent'") || msg.includes("null"))) {
+                        // Fallback logging only
+                        console.warn("Suppressed persistent UI error:", msg);
+                    } else {
+                        this.showToast(`حدث خطأ أثناء تحميل الحرف: ${msg}`, 5000, 'error');
+                    }
                 }
             }
 

@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade 3 - Unit 1: Fun on the Weekend! 🎉</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons & Animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #f72585;
+            --accent: #ffd166;
+            --success: #06d6a0;
+            --danger: #ef476f;
+            --purple: #7209b7;
+            --orange: #ff6b35;
+            --skyblue: #4cc9f0;
+            --green: #06d6a0;
+            --dark: #2b2d42;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa 0%, #fff9c4 50%, #f8bbd0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .main-header {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            padding: 40px 30px;
+            border-radius: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-header::before {
+            content: '🎉';
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            font-size: 4rem;
+            animation: bounce 2s infinite;
+        }
+
+        .main-header::after {
+            content: '✨';
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 4rem;
+            animation: bounce 2s infinite 0.5s;
+        }
+
+        .main-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .main-subtitle {
+            font-size: 1.8rem;
+            font-weight: 500;
+            opacity: 0.95;
+        }
+
+        .arabic-title {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        /* Navigation Tabs */
+        .lesson-tabs {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .lesson-tab {
+            background: white;
+            border: none;
+            padding: 20px 35px;
+            border-radius: 25px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .lesson-tab:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+        }
+
+        .lesson-tab.active {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            transform: translateY(-5px) scale(1.05);
+        }
+
+        .lesson-tab.lesson1 { border-left: 8px solid var(--green); }
+        .lesson-tab.lesson2 { border-left: 8px solid var(--orange); }
+        .lesson-tab.lesson3 { border-left: 8px solid var(--purple); }
+        .lesson-tab.lesson4 { border-left: 8px solid var(--secondary); }
+
+        /* Content Container */
+        .lesson-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .lesson-content.active {
+            display: block;
+        }
+
+        /* Kid-friendly Card */
+        .kid-card {
+            background: white;
+            border-radius: 30px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 4px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .kid-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        /* Section Header */
+        .section-header {
+            background: linear-gradient(135deg, var(--green), var(--skyblue));
+            color: white;
+            padding: 25px;
+            border-radius: 25px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Sentence Card */
+        .sentence-card {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border-left: 6px solid var(--primary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+
+        .sentence-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .sentence-number {
+            background: var(--primary);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-right: 15px;
+        }
+
+        .sentence-text {
+            font-size: 1.6rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+            line-height: 1.8;
+        }
+
+        .sentence-text .verb {
+            color: var(--secondary);
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffe0ed, #ffc0e0);
+            padding: 3px 10px;
+            border-radius: 10px;
+        }
+
+        .sentence-arabic {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1.4rem;
+            color: #000;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding-right: 20px;
+            border-right: 4px solid var(--accent);
+        }
+
+        /* Big Buttons for Kids */
+        .btn-audio, .btn-mic {
+            border: none;
+            padding: 15px 30px;
+            border-radius: 20px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            margin: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-audio {
+            background: linear-gradient(135deg, var(--green), #00b894);
+            color: white;
+        }
+
+        .btn-mic {
+            background: linear-gradient(135deg, var(--secondary), #d63384);
+            color: white;
+        }
+
+        .btn-audio:hover, .btn-mic:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+.btn-audio:active, .btn-mic:active {
+            transform: scale(0.95);
+        }
+
+        /* Picture Cards */
+        .pictures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .picture-card {
+            background: white;
+            border-radius: 25px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border: 4px solid transparent;
+        }
+
+        .picture-card:hover {
+            transform: translateY(-10px) rotate(2deg);
+            border-color: var(--accent);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .picture-card.matched {
+            border-color: var(--success);
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        }
+
+        .picture-number {
+            background: var(--secondary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .picture-emoji {
+            font-size: 5rem;
+            margin: 15px 0;
+        }
+
+        .picture-text {
+            font-size: 1.3rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        /* Comments Section */
+        .comments-practice {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            padding: 35px;
+            border-radius: 30px;
+            margin-top: 30px;
+        }
+
+        .comment-option {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 20px;
+            margin: 15px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .comment-option:hover {
+            transform: scale(1.05);
+            border-color: var(--primary);
+        }
+
+        .comment-option.selected {
+            background: linear-gradient(135deg, var(--success), #00b894);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .comment-emoji {
+            font-size: 2.5rem;
+        }
+
+        /* Celebration Overlay */
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .celebration.show {
+            display: flex;
+        }
+
+        .celebration-content {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            animation: bounceIn 0.8s;
+        }
+
+        .celebration-emoji {
+            font-size: 8rem;
+            animation: bounce 1s infinite;
+        }
+
+        .celebration-text {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 20px 0;
+        }
+
+        .celebration-arabic {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        /* Animations */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-title { font-size: 2rem; }
+            .main-subtitle { font-size: 1.3rem; }
+            .lesson-tab { padding: 15px 25px; font-size: 1.2rem; }
+            .sentence-text { font-size: 1.4rem; }
+            .btn-audio, .btn-mic { font-size: 1.5rem; padding: 12px 25px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Header -->
+    <header class="main-header animate__animated animate__fadeInDown">
+        <h1 class="main-title">Grade 3 - Unit 1 🎮</h1>
+        <h2 class="main-subtitle">Fun on the Weekend!</h2>
+        <p class="arabic-title">وقت المرح في نهاية الأسبوع</p>
+    </header>
+
+    <!-- Lesson Tabs -->
+    <div class="lesson-tabs">
+        <button class="lesson-tab lesson1 active" onclick="switchLesson(1)">
+            📚 Lesson 1: Activities
+        </button>
+        <button class="lesson-tab lesson2" onclick="switchLesson(2)">
+            💬 Lesson 2: Comments
+        </button>
+        <button class="lesson-tab lesson3" onclick="switchLesson(3)">
+            📖 Lesson 3: Grammar
+        </button>
+        <button class="lesson-tab lesson4" onclick="switchLesson(4)">
+            🎯 Lesson 4: Games
+        </button>
+        <button class="lesson-tab lesson5" onclick="switchLesson(5)" style="border-left: 8px solid #00bcd4;">
+            🎵 Lesson 5: Reading
+        </button>
+        <button class="lesson-tab lesson6" onclick="switchLesson(6)" style="border-left: 8px solid #ff5722;">
+            🍕 Lesson 6: Restaurant
+        </button>
+        <button class="lesson-tab lesson7" onclick="switchLesson(7)" style="border-left: 8px solid #009688;">
+            🔤 Lesson 7: Phonics
+        </button>
+        <button class="lesson-tab lesson8" onclick="switchLesson(8)" style="border-left: 8px solid #673ab7;">
+            🛍️ Lesson 8: Shopping
+        </button>
+    </div>
+
+    <!-- Lesson 1: Finding Out Time -->
+    <div id="lesson1" class="lesson-content active">
+        <div class="kid-card">
+            <div class="section-header animate__animated animate__bounceIn">
+                🎉 Listen and Practice! 🔊
+                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">استمع و تدرب</div>
+            </div>
+
+            <div id="sentences-container"></div>
+        </div>
+
+        <div class="kid-card">
+            <div class="section-header animate__animated animate__bounceIn">
+                🖼️ Match the Pictures! ✨
+                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">طابق الصور</div>
+            </div>
+
+            <div class="pictures-grid" id="pictures-container"></div>
+        </div>
+
+        <div class="kid-card comments-practice">
+            <div class="section-header" style="background: linear-gradient(135deg, var(--orange), var(--secondary));">
+                💭 Practice Comments! 
+                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">تدرب على التعليقات</div>
+            </div>
+
+            <div id="comments-quiz"></div>
+        </div>
+    </div>
+
+    <!-- Lesson 2: Challenge Time - Comments -->
+    <div id="lesson2" class="lesson-content">
+        <div class="kid-card">
+            <div class="section-header" style="background: linear-gradient(135deg, var(--orange), var(--secondary));">
+                💬 Challenge Time! Ask, Listen, and Comment
+                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">وقت التحدي - اسأل، استمع و علق</div>
+            </div>
+
+            <!-- Comments Arrow Scale -->
+            <div style="background: linear-gradient(135deg, #fff9c4, #fff59d); padding: 40px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="text-align: center; font-size: 2rem; color: var(--dark); margin-bottom: 30px;">📊 Comments Scale / مقياس التعليقات</h3>
+                
+                <div style="position: relative; margin: 40px 0;">
+                    <!-- Arrow -->
+                    <div style="background: linear-gradient(90deg, #4caf50, #ffeb3b, #f44336); height: 30px; border-radius: 15px; position: relative;">
+                        <div style="position: absolute; right: -10px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 20px solid #f44336; border-top: 15px solid transparent; border-bottom: 15px solid transparent;"></div>
+                    </div>
+                    
+                    <!-- Labels -->
+                    <div style="display: flex; justify-content: space-between; margin-top: 20px; gap: 10px;" id="comments-scale"></div>
+                </div>
+            </div>
+
+            <!-- Conversation Practice -->
+            <div style="background: white; padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 2rem; color: var(--primary); margin-bottom: 25px; text-align: center;">🗣️ Practice the Conversation</h3>
+                <div id="conversation-practice"></div>
+            </div>
+
+            <!-- I Can Goals -->
+            <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); padding: 35px; border-radius: 25px; border: 4px solid var(--success);">
+                <h3 style="font-size: 2rem; color: var(--success); margin-bottom: 20px; text-align: center;">✅ I Can... أنا أستطيع</h3>
+                <div style="display: grid; gap: 15px;">
+                    <div style="background: white; padding: 20px; border-radius: 15px; font-size: 1.4rem;">
+                        ✓ Ask a partner about his or her weekend and get the answers<br>
+                        <span style="font-family: 'Tajawal'; color: #666; font-size: 1.3rem;">أسأل زميل عن عطلته أو عطلتها وأحصل على الأجوبة</span>
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: 15px; font-size: 1.4rem;">
+                        ✓ Listen to someone answer about what he or she did and make a comment<br>
+                        <span style="font-family: 'Tajawal'; color: #666; font-size: 1.3rem;">استمع لإجابة عن ما فعل أو فعلت في العطلة وأعلق</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lesson 3: Grammar in Action -->
+    <div id="lesson3" class="lesson-content">
+        <div class="kid-card">
+            <div class="section-header" style="background: linear-gradient(135deg, var(--purple), #9d4edd);">
+                📖 Grammar in Action - Past Tense
+                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">تطبيق القواعد - الزمن الماضي</div>
+            </div>
+
+            <!-- Conjugation Table -->
+            <div style="background: white; padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 2rem; color: var(--purple); margin-bottom: 25px; text-align: center;">🔄 Practice the Table / تدرب على الجدول</h3>
+                <div id="conjugation-table"></div>
+            </div>
+
+            <!-- Verb Chunks -->
+            <div style="background: linear-gradient(135deg, #f3e5f5, #e1bee7); padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 2rem; color: var(--purple); margin-bottom: 25px; text-align: center;">🎯 Listen and Chant Past Tense Verb Chunks</h3>
+                <div id="verb-chunks"></div>
+            </div>
+
+            <!-- Pronunciation Game -->
+            <div style="background: white; padding: 35px; border-radius: 25px;">
+                <h3 style="font-size: 2rem; color: var(--primary); margin-bottom: 25px; text-align: center;">🔊 Sort by Pronunciation: /t/ or /d/</h3>
+                <p style="text-align: center; font-size: 1.4rem; margin-bottom: 25px;">Drag the verbs to the correct sound! / اسحب الأفعال للصوت الصحيح!</p>
+                <div id="pronunciation-game"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lesson 4: Verb Games -->
+    <div id="lesson4" class="lesson-content">
+        <div class="kid-card">
+            <div class="section-header" style="background: linear-gradient(135deg, var(--secondary), #d81b60);">
+                🎯 Verb Game Challenge!
+                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">تحدي لعبة الأفعال</div>
+            </div>
+
+            <!-- Game Instructions -->
+            <div style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); padding: 30px; border-radius: 25px; margin-bottom: 30px; text-align: center;">
+                <p style="font-size: 1.6rem; font-weight: 600; margin-bottom: 15px;">👥 Can you play the Verb Game and beat a partner?</p>
+                <p style="font-family: 'Tajawal'; font-size: 1.4rem; font-weight: 700; color: #000;">هل يمكنك كتابة و لعب لعبة الأفعال و هزيمة زميل؟</p>
+            </div>
+
+            <!-- Verb Game 1 -->
+            <div style="background: white; padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 2rem; color: var(--green); margin-bottom: 25px; text-align: center;">
+                    🌟 Verb Game 1 (Practice) / لعبة الأفعال 1 تدريب
+                </h3>
+                <div id="verb-game-1"></div>
+            </div>
+
+            <!-- Verb Game 2 -->
+            <div style="background: white; padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 2rem; color: var(--primary); margin-bottom: 25px; text-align: center;">
+                    ⚡ Verb Game 2 / لعبة الأفعال 2
+                </h3>
+                <div id="verb-game-2"></div>
+            </div>
+
+            <!-- I Can Achievements -->
+            <div style="background: linear-gradient(135deg, #fff9c4, #fff59d); padding: 35px; border-radius: 25px; border: 4px solid var(--accent);">
+                <h3 style="font-size: 2rem; color: var(--dark); margin-bottom: 20px; text-align: center;">🏆 I Can... أنا أستطيع</h3>
+                <div style="display: grid; gap: 15px;">
+                    <div style="background: white; padding: 20px; border-radius: 15px; font-size: 1.4rem;">
+                        ⭐ Say the past form of six regular verbs<br>
+                        <span style="font-family: 'Tajawal'; color: #666; font-size: 1.3rem;">ذكر الزمن الماضي لستة أفعال منتظمة</span>
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: 15px; font-size: 1.4rem;">
+                        ⭐ Say two things that I did over the weekend<br>
+                        <span style="font-family: 'Tajawal'; color: #666; font-size: 1.3rem;">ذكر شيئين فعلتها في نهاية الأسبوع</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lesson 5: Rhythms and Reading -->
+    <div id="lesson5" class="lesson-content">
+        <div class="kid-card">
+            <div class="section-header" style="background: linear-gradient(135deg, #00bcd4, #0097a7);">
+                🎵 Rhythms and Reading
+                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">القراءة والكتابة</div>
+            </div>
+
+            <!-- Ingredient Table -->
+            <div style="background: white; padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 5rem; margin-bottom: 10px;">🍕</div>
+                        <p style="font-size: 1.3rem; font-weight: 600;">Pizza</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 5rem; margin-bottom: 10px;">🍰</div>
+                        <p style="font-size: 1.3rem; font-weight: 600;">Cake</p>
+                    </div>
+                </div>
+                
+                <h3 style="font-size: 2rem; color: var(--primary); margin-bottom: 25px; text-align: center;">📋 Ingredients Table / جدول المقادير</h3>
+                <div id="ingredients-table"></div>
+            </div>
+
+            <!-- Some/Any Practice -->
+            <div style="background: linear-gradient(135deg, #e1f5fe, #b3e5fc); padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 2rem; color: var(--primary); margin-bottom: 25px; text-align: center;">✍️ Write Sentences / اكتب الجمل</h3>
+                <div id="some-any-practice"></div>
+            </div>
+
+            <!-- I Can Goals -->
+            <div style="background: linear-gradient(135deg, #fff9c4, #fff59d); padding: 35px; border-radius: 25px; border: 4px solid var(--accent);">
+                <h3 style="font-size: 2rem; color: var(--dark); margin-bottom: 20px; text-align: center;">✅ I Can... أنا أستطيع</h3>
+                <div style="display: grid; gap: 15px;">
+                    <div style="background: white; padding: 20px; border-radius: 15px; font-size: 1.4rem;">
+                        ⭐ Use "some", "any", and "but" correctly<br>
+                        <span style="font-family: 'Tajawal'; color: #666; font-size: 1.3rem;">استخدم some و any و but بشكل صحيح</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lesson 6: Restaurant Ordering -->
+    <div id="lesson6" class="lesson-content">
+        <div class="kid-card">
+            <div class="section-header" style="background: linear-gradient(135deg, #ff5722, #e64a19);">
+                🍕 Challenge Time! Ordering in a Restaurant
+                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">الطلب في المطعم</div>
+            </div>
+
+            <!-- Restaurant Menu -->
+            <div style="background: linear-gradient(135deg, #424242, #212121); padding: 40px; border-radius: 25px; margin-bottom: 30px; color: white;">
+                <h3 style="font-size: 2.5rem; text-align: center; margin-bottom: 30px; color: #00e676;">🍽️ RESTAURANT LA PHONICS 🍽️</h3>
+                <div id="restaurant-menu"></div>
+            </div>
+
+            <!-- Ordering Practice -->
+            <div style="background: white; padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 2rem; color: var(--primary); margin-bottom: 25px; text-align: center;">🗨️ Practice Ordering</h3>
+                <div id="ordering-conversation"></div>
+            </div>
+
+            <!-- I Can Goals -->
+            <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); padding: 35px; border-radius: 25px; border: 4px solid var(--success);">
+                <h3 style="font-size: 2rem; color: var(--success); margin-bottom: 20px; text-align: center;">✅ I Can... أنا أستطيع</h3>
+                <div style="display: grid; gap: 15px;">
+                    <div style="background: white; padding: 20px; border-radius: 15px; font-size: 1.4rem;">
+                        ⭐ Order food at a restaurant<br>
+                        <span style="font-family: 'Tajawal'; color: #666; font-size: 1.3rem;">أطلب الطعام في المطعم</span>
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: 15px; font-size: 1.4rem;">
+                        ⭐ Read an English menu<br>
+                        <span style="font-family: 'Tajawal'; color: #666; font-size: 1.3rem;">قراءة قائمة الطعام بالإنجليزية</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lesson 7: Phonics -->
+    <div id="lesson7" class="lesson-content">
+        <div class="kid-card">
+            <div class="section-header" style="background: linear-gradient(135deg, #009688, #00796b);">
+                🔤 Phonics - nd and nt sounds
+                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">الصوتيات وتدريب النطق</div>
+            </div>
+
+            <!-- Sound Introduction -->
+            <div style="background: white; padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 2rem; color: var(--primary); margin-bottom: 25px; text-align: center;">👂 Listen, read, and practice!</h3>
+                <div id="phonics-sounds"></div>
+            </div>
+
+            <!-- Complete the Words -->
+            <div style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 2rem; color: var(--orange); margin-bottom: 25px; text-align: center;">✏️ Complete the words!</h3>
+                <div id="phonics-complete"></div>
+            </div>
+
+            <!-- Chant Practice -->
+            <div style="background: white; padding: 35px; border-radius: 25px;">
+                <h3 style="font-size: 2rem; color: var(--success); margin-bottom: 25px; text-align: center;">🎤 Let's Chant!</h3>
+                <div id="phonics-chant"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lesson 8: Shopping Mall -->
+    <div id="lesson8" class="lesson-content">
+        <div class="kid-card">
+            <div class="section-header" style="background: linear-gradient(135deg, #673ab7, #512da8);">
+                🛍️ In the Shopping Mall
+                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">في مركز التسوق</div>
+            </div>
+
+            <!-- Mall Directory -->
+            <div style="background: white; padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 2rem; color: var(--purple); margin-bottom: 25px; text-align: center;">🏬 Mall Directory / دليل المحلات</h3>
+                <div id="mall-stores"></div>
+            </div>
+
+            <!-- Shopping Conversation -->
+            <div style="background: linear-gradient(135deg, #f3e5f5, #e1bee7); padding: 35px; border-radius: 25px; margin-bottom: 30px;">
+                <h3 style="font-size: 2rem; color: var(--purple); margin-bottom: 25px; text-align: center;">💬 Practice Shopping Conversation</h3>
+                <div id="shopping-conversation"></div>
+            </div>
+
+            <!-- I Can Goals -->
+            <div style="background: linear-gradient(135deg, #e8eaf6, #c5cae9); padding: 35px; border-radius: 25px; border: 4px solid var(--purple);">
+                <h3 style="font-size: 2rem; color: var(--purple); margin-bottom: 20px; text-align: center;">✅ I Can... أنا أستطيع</h3>
+                <div style="display: grid; gap: 15px;">
+                    <div style="background: white; padding: 20px; border-radius: 15px; font-size: 1.4rem;">
+                        ⭐ Read English store signs<br>
+                        <span style="font-family: 'Tajawal'; color: #666; font-size: 1.3rem;">قراءة لوحات المحلات الإنجليزية</span>
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: 15px; font-size: 1.4rem;">
+                        ⭐ Ask for directions in a mall<br>
+                        <span style="font-family: 'Tajawal'; color: #666; font-size: 1.3rem;">طلب التوجيهات في المركز التجاري</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Celebration Overlay -->
+    <div class="celebration" id="celebration">
+        <div class="celebration-content">
+            <div class="celebration-emoji">🎉</div>
+            <div class="celebration-text">Amazing Job!</div>
+            <div class="celebration-arabic">عمل رائع!</div>
+            <button class="btn-audio" onclick="hideCelebration()" style="margin-top: 30px;">Continue ➡️</button>
+        </div>
+    </div>
+
+    <script>
+        // Lesson 1 Data
+        const lesson1Sentences = [
+            {
+                id: 1,
+                text: "I <span class='verb'>cleaned</span> my room.",
+                textAr: "أنا نظفت غرفتي",
+                verb: "cleaned",
+                verbAr: "نظف",
+                audio: "I cleaned my room",
+                pictureId: 1,
+                pictureEmoji: "🧹",
+                pictureText: "Cleaning",
+                comment: "boring"
+            },
+            {
+                id: 2,
+                text: "You <span class='verb'>practiced</span> on the trampoline.",
+                textAr: "أنت تدربت على الترامبولين",
+                verb: "practiced",
+                verbAr: "تدرب",
+                audio: "You practiced on the trampoline",
+                pictureId: 2,
+                pictureEmoji: "🤸",
+                pictureText: "Trampoline",
+                comment: "fantastic"
+            },
+            {
+                id: 3,
+                text: "He <span class='verb'>worked</span> out about sharks.",
+                textAr: "هو تمرن في موضوع القروش",
+                verb: "worked",
+                verbAr: "عمل",
+                audio: "He worked out about sharks",
+                pictureId: 3,
+                pictureEmoji: "🦈",
+                pictureText: "Sharks",
+                comment: "great"
+            },
+            {
+                id: 4,
+                text: "He <span class='verb'>kicked</span> a ball for three hours.",
+                textAr: "هو ركل كرة لثلاث ساعات",
+                verb: "kicked",
+                verbAr: "ركل",
+                audio: "He kicked a ball for three hours",
+                pictureId: 4,
+                pictureEmoji: "⚽",
+                pictureText: "Football",
+                comment: "fantastic"
+            },
+            {
+                id: 5,
+                text: "They <span class='verb'>played</span> computer games.",
+                textAr: "هم لعبوا ألعاب الكمبيوتر",
+                verb: "played",
+                verbAr: "لعب",
+                audio: "They played computer games",
+                pictureId: 5,
+                pictureEmoji: "🎮",
+                pictureText: "Games",
+                comment: "great"
+            },
+            {
+                id: 6,
+                text: "Fahad <span class='verb'>studied</span> for six hours.",
+                textAr: "فهد درس لمدة ست ساعات",
+                verb: "studied",
+                verbAr: "درس",
+                audio: "Fahad studied for six hours",
+                pictureId: 6,
+                pictureEmoji: "📚",
+                pictureText: "Studying",
+                comment: "boring"
+            },
+            {
+                id: 7,
+                text: "Ali <span class='verb'>cooked</span> breakfast.",
+                textAr: "علي طبخ الفطور",
+                verb: "cooked",
+                verbAr: "طبخ",
+                audio: "Ali cooked breakfast",
+                pictureId: 7,
+                pictureEmoji: "🍳",
+                pictureText: "Cooking",
+                comment: "great"
+            },
+            {
+                id: 8,
+                text: "Noura <span class='verb'>stayed</span> home.",
+                textAr: "نورة بقيت بالمنزل",
+                verb: "stayed",
+                verbAr: "بقي",
+                audio: "Noura stayed home",
+                pictureId: 8,
+                pictureEmoji: "🏠",
+                pictureText: "Home",
+                comment: "okay"
+            }
+        ];
+
+        const comments = [
+            {text: "That's fantastic!", ar: "هذا رائع!", emoji: "🌟", value: "fantastic"},
+            {text: "That's great!", ar: "هذا عظيم!", emoji: "👏", value: "great"},
+            {text: "That's okay.", ar: "هذا مقبول", emoji: "😊", value: "okay"},
+            {text: "That's scary!", ar: "هذا مخيف!", emoji: "😱", value: "scary"},
+            {text: "That's boring.", ar: "هذا ممل", emoji: "😴", value: "boring"}
+        ];
+
+        // Render Lesson 1 Sentences
+        function renderSentences() {
+            const container = document.getElementById('sentences-container');
+            container.innerHTML = lesson1Sentences.map(s => `
+                <div class="sentence-card animate__animated animate__fadeInUp" style="animation-delay: ${s.id * 0.1}s;">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <span class="sentence-number">${s.id}</span>
+                        <div style="flex: 1;">
+                            <p class="sentence-text">${s.text}</p>
+                            <p class="sentence-arabic">${s.textAr}</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn-audio" onclick="speakText('${s.audio}')">
+                            🔊 Listen
+                        </button>
+                        <button class="btn-mic" onclick="practicePronunciation('${s.audio}', ${s.id})">
+                            🎤 Practice
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Pictures
+        function renderPictures() {
+            const container = document.getElementById('pictures-container');
+            container.innerHTML = lesson1Sentences.map(s => `
+                <div class="picture-card" onclick="selectPicture(${s.id})">
+                    <div class="picture-number">${s.id}</div>
+                    <div class="picture-emoji">${s.pictureEmoji}</div>
+                    <p class="picture-text">${s.pictureText}</p>
+                </div>
+            `).join('');
+        }
+
+        // Render Comments Quiz
+        let currentQuestionIndex = 0;
+        function renderCommentsQuiz() {
+            const container = document.getElementById('comments-quiz');
+            const sentence = lesson1Sentences[currentQuestionIndex];
+            
+            container.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 25px; margin-bottom: 25px;">
+                    <p style="font-size: 1.8rem; font-weight: 700; color: var(--primary); margin-bottom: 20px;">
+                        ${sentence.text.replace(/<[^>]*>/g, '')}
+                    </p>
+                    <p style="font-family: 'Tajawal'; font-size: 1.5rem; font-weight: 700; color: #000; margin-bottom: 20px;">
+                        ${sentence.textAr}
+                    </p>
+                    <p style="font-size: 1.4rem; color: #666;">
+                        💭 What would you say about this activity?
+                    </p>
+                </div>
+                
+                <div>
+                    ${comments.map(c => `
+                        <div class="comment-option" onclick="selectComment('${c.value}', '${sentence.comment}')">
+                            <span class="comment-emoji">${c.emoji}</span>
+                            <div style="flex: 1;">
+                                <div style="font-size: 1.5rem;">${c.text}</div>
+                                <div style="font-family: 'Tajawal'; font-size: 1.3rem; color: #666; margin-top: 5px;">${c.ar}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Speech Functions
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                utterance.volume = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function practicePronunciation(text, id) {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const recognition = new SpeechRecognition();
+                
+                recognition.lang = 'en-US';
+                recognition.onresult = function(event) {
+                    const said = event.results[0][0].transcript.toLowerCase();
+                    const expected = text.toLowerCase();
+                    
+                    if (said.includes(expected.split(' ')[0]) || said.includes(expected.split(' ')[expected.split(' ').length - 1])) {
+                        showCelebration("Perfect! 🌟", "نطق رائع!");
+                        playSound('success');
+                    } else {
+                        alert("Try again! Listen carefully and repeat! 🎤");
+                    }
+                };
+                
+                recognition.onerror = function() {
+                    alert("Microphone error. Please check permissions! 🎤");
+                };
+                
+                recognition.start();
+            } else {
+                alert("Speech recognition not supported in your browser! 😢");
+            }
+        }
+
+        // Picture Selection
+        function selectPicture(id) {
+            const card = event.currentTarget;
+            card.classList.toggle('matched');
+            
+            if (card.classList.contains('matched')) {
+                showCelebration("Great Match! ✨", "مطابقة رائعة!");
+                playSound('success');
+            }
+        }
+
+        // Comment Selection
+        function selectComment(selected, correct) {
+            const options = document.querySelectorAll('.comment-option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            
+            if (selected === correct) {
+                showCelebration("Perfect Answer! 🎉", "إجابة مثالية!");
+                playSound('success');
+                
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < lesson1Sentences.length) {
+                        renderCommentsQuiz();
+                    } else {
+                        showCelebration("Quiz Complete! 🏆", "اكتمل الاختبار!");
+                        currentQuestionIndex = 0;
+                    }
+                }, 2000);
+            } else {
+                playSound('error');
+            }
+        }
+
+        // Celebration
+        function showCelebration(text, arabic) {
+            const celeb = document.getElementById('celebration');
+            celeb.querySelector('.celebration-text').textContent = text;
+            celeb.querySelector('.celebration-arabic').textContent = arabic;
+            celeb.classList.add('show');
+        }
+
+        function hideCelebration() {
+            document.getElementById('celebration').classList.remove('show');
+        }
+
+        // Sound Effects
+        function playSound(type) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (type === 'success') {
+                oscillator.frequency.value = 800;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            } else {
+                oscillator.frequency.value = 200;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            }
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Lesson Switching
+        function switchLesson(num) {
+            // Hide all lessons
+            document.querySelectorAll('.lesson-content').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.lesson-tab').forEach(t => t.classList.remove('active'));
+            
+            // Show selected lesson
+            document.getElementById(`lesson${num}`).classList.add('active');
+            document.querySelector(`.lesson${num}`).classList.add('active');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderSentences();
+            renderPictures();
+            renderCommentsQuiz();
+            
+            // Lesson 2
+            renderCommentsScale();
+            renderConversation();
+            
+            // Lesson 3
+            renderConjugationTable();
+            renderVerbChunks();
+            renderPronunciationGame();
+            
+            // Lesson 4
+            renderVerbGame1();
+            renderVerbGame2();
+
+            // Lesson 5
+            renderIngredientsTable();
+            renderSomeAnyPractice();
+
+            // Lesson 6
+            renderRestaurantMenu();
+            renderOrderingConversation();
+
+            // Lesson 7
+            renderPhonicsSounds();
+            renderPhonicsComplete();
+            renderPhonicsChant();
+
+            // Lesson 8
+            renderMallStores();
+            renderShoppingConversation();
+        });
+
+        // ==================== LESSON 2 FUNCTIONS ====================
+
+        const commentsScale = [
+            {text: "That's fantastic!", ar: "هذا رائع!", emoji: "🌟"},
+            {text: "That's great!", ar: "هذا عظيم!", emoji: "👏"},
+            {text: "That's okay.", ar: "هذا مقبول", emoji: "😊"},
+            {text: "That's scary!", ar: "هذا مخيف!", emoji: "😱"},
+            {text: "That's boring.", ar: "هذا ممل", emoji: "😴"}
+        ];
+
+        function renderCommentsScale() {
+            const container = document.getElementById('comments-scale');
+            container.innerHTML = commentsScale.map((c, i) => `
+                <div style="flex: 1; text-align: center; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="speakText('${c.text}')">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">${c.emoji}</div>
+                    <div style="background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <p style="font-size: 1.3rem; font-weight: 700; color: var(--dark); margin-bottom: 5px;">${c.text}</p>
+                        <p style="font-family: 'Tajawal'; font-size: 1.2rem; color: #666;">${c.ar}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        const conversations = [
+            {q: "What did you do over the weekend?", qAr: "ماذا فعلت في نهاية الأسبوع؟", answer: "I cooked a big breakfast.", answerAr: "أنا طبخت فطور كبير"},
+            {q: "Did you have fun?", qAr: "هل استمتعت؟", answer: "Yes! That's fantastic!", answerAr: "نعم! هذا رائع!"},
+            {q: "What else did you do?", qAr: "ماذا فعلت أيضاً؟", answer: "I played computer games.", answerAr: "أنا لعبت العاب الكمبيوتر"}
+        ];
+
+        function renderConversation() {
+            const container = document.getElementById('conversation-practice');
+            container.innerHTML = conversations.map((conv, i) => `
+                <div class="sentence-card" style="animation-delay: ${i*0.15}s;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <span style="font-size: 3rem;">${i % 2 === 0 ? '👦' : '👧'}</span>
+                        <div style="flex: 1;">
+                            <p style="font-size: 1.6rem; font-weight: 600; color: var(--primary);"><strong>Q:</strong> ${conv.q}</p>
+                            <p style="font-family: 'Tajawal'; font-size: 1.4rem; color: #000; font-weight: 700;">${conv.qAr}</p>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #e3f2fd, #bbdefb); padding: 20px; border-radius: 15px; margin-bottom: 15px;">
+                        <p style="font-size: 1.5rem; color: #0d47a1;"><strong>A:</strong> ${conv.answer}</p>
+                        <p style="font-family: 'Tajawal'; font-size: 1.3rem; color: #000; font-weight: 700; margin-top: 8px;">${conv.answerAr}</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn-audio" onclick="speakText('${conv.q}. ${conv.answer}')">🔊 Listen</button>
+                        <button class="btn-mic" onclick="practicePronunciation('${conv.q}', ${i})">🎤 Practice</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== LESSON 3 FUNCTIONS ====================
+
+        const pronouns = [
+            {pronoun: "I / We", pronounAr: "أنا / نحن", verb: "practiced", verbAr: "تدربنا"},
+            {pronoun: "You", pronounAr: "أنت / أنتم", verb: "practiced", verbAr: "تدربتم"},
+            {pronoun: "He / She", pronounAr: "هو / هي", verb: "practiced", verbAr: "تدربوا"},
+            {pronoun: "They", pronounAr: "هم / هن", verb: "practiced", verbAr: "تدربوا"}
+        ];
+
+        function renderConjugationTable() {
+            const container = document.getElementById('conjugation-table');
+            container.innerHTML = `
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, var(--purple), #9d4edd); color: white;">
+                                <th style="padding: 20px; font-size: 1.6rem; text-align: center;">Pronoun / الضمير</th>
+                                <th style="padding: 20px; font-size: 1.6rem; text-align: center;">Verb / الفعل</th>
+                                <th style="padding: 20px; font-size: 1.6rem; text-align: center;">🔊</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pronouns.map((p, i) => `
+                                <tr style="background: ${i % 2 === 0 ? '#f8fafc' : 'white'}; border-bottom: 2px solid #e5e7eb;">
+                                    <td style="padding: 20px; text-align: center;">
+                                        <div style="font-size: 1.5rem; font-weight: 600; color: var(--dark);">${p.pronoun}</div>
+                                        <div style="font-family: 'Tajawal'; font-size: 1.3rem; color: #666; font-weight: 700; margin-top: 5px;">${p.pronounAr}</div>
+                                    </td>
+                                    <td style="padding: 20px; text-align: center;">
+                                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--secondary);">${p.verb}</div>
+                                        <div style="font-family: 'Tajawal'; font-size: 1.3rem; color: #000; font-weight: 700; margin-top: 5px;">${p.verbAr}</div>
+                                    </td>
+                                    <td style="padding: 20px; text-align: center;">
+                                        <button class="btn-audio" style="padding: 10px 20px; font-size: 1.5rem;" onclick="speakText('${p.pronoun} ${p.verb}')">🔊</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        const verbChunks = [
+            {base: "practice", past: "practiced", sentence: "I practiced my piano.", sentenceAr: "أنا تدربت على البيانو", pronunciation: "/t/"},
+            {base: "watch", past: "watched", sentence: "You watched a film.", sentenceAr: "أنت شاهدت فيلماً", pronunciation: "/t/"},
+            {base: "cook", past: "cooked", sentence: "She cooked breakfast.", sentenceAr: "هي طبخت الفطور", pronunciation: "/t/"},
+            {base: "kick", past:"kicked", sentence: "He kicked a ball.", sentenceAr: "هو ركل الكرة", pronunciation: "/t/"},
+            {base: "clean", past: "cleaned", sentence: "They cleaned the house.", sentenceAr: "هم نظفوا المنزل", pronunciation: "/d/"},
+            {base: "stay", past: "stayed", sentence: "We stayed at home.", sentenceAr: "نحن بقينا في المنزل", pronunciation: "/d/"},
+            {base: "play", past: "played", sentence: "You played outside.", sentenceAr: "أنت لعبت بالخارج", pronunciation: "/d/"},
+            {base: "study", past: "studied", sentence: "You studied a little.", sentenceAr: "أنت درست قليلاً", pronunciation: "/d/"}
+        ];
+
+        function renderVerbChunks() {
+            const container = document.getElementById('verb-chunks');
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    ${verbChunks.map((v, i) => `
+                        <div class="sentence-card animate__animated animate__fadeInUp" style="animation-delay: ${i*0.1}s; border-left-color: ${v.pronunciation === '/t/' ? 'var(--orange)' : 'var(--success)'};">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                                <span class="sentence-number">${i+1}</span>
+                                <div>
+                                    <div style="font-size: 1.4rem; font-weight: 700; color: var(--dark);">
+                                        <span style="color: #666;">${v.base}</span> → <span class="verb">${v.past}</span>
+                                    </div>
+                                    <div style="background: ${v.pronunciation === '/t/' ? '#fff3e0' : '#e8f5e9'}; padding: 5px 12px; border-radius: 10px; display: inline-block; margin-top: 5px;">
+                                        <span style="font-size: 1.3rem; font-weight: 700;">${v.pronunciation}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="sentence-text">${v.sentence}</p>
+                            <p class="sentence-arabic">${v.sentenceAr}</p>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
+                                <button class="btn-audio" onclick="speakText('${v.sentence}')">🔊 Listen</button>
+                                <button class="btn-mic" onclick="practicePronunciation('${v.past}', ${i})">🎤 Say It</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        let selectedVerbs = [];
+        function renderPronunciationGame() {
+            const container = document.getElementById('pronunciation-game');
+            const shuffled = [...verbChunks].sort(() => Math.random() - 0.5);
+            
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                    <div style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); padding: 30px; border-radius: 25px; min-height: 400px; border: 4px dashed var(--orange);">
+                        <h4 style="text-align: center; font-size: 1.8rem; font-weight: 700; color: var(--orange); margin-bottom: 20px;">
+                            🔊 /t/ Sound<br>
+                            <span style="font-family: 'Tajawal'; font-size: 1.4rem;">صوت /ت/</span>
+                        </h4>
+                        <div id="t-zone" style="display: grid; gap: 15px;"></div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); padding: 30px; border-radius: 25px; min-height: 400px; border: 4px dashed var(--success);">
+                        <h4 style="text-align: center; font-size: 1.8rem; font-weight: 700; color: var(--success); margin-bottom: 20px;">
+                            🔊 /d/ Sound<br>
+                            <span style="font-family: 'Tajawal'; font-size: 1.4rem;">صوت /د/</span>
+                        </h4>
+                        <div id="d-zone" style="display: grid; gap: 15px;"></div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn-audio" onclick="checkPronunciationSort()" style="font-size: 1.6rem; padding: 20px 50px;">✅ Check My Sorting!</button>
+                </div>
+                
+                <div style="background: #f8fafc; padding: 25px; border-radius: 20px; margin-top: 20px;">
+                    <h4 style="font-size: 1.6rem; text-align: center; margin-bottom: 20px;">📚 Click a verb to sort it!</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;" id="verb-buttons">
+                        ${shuffled.map((v, i) => `
+                            <button class="btn-audio" id="verb-${i}" onclick="sortVerb('${v.past}', '${v.pronunciation}', 'verb-${i}')" style="font-size: 1.4rem; padding: 15px 30px;">
+                                ${v.past}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function sortVerb(verb, correctPronun, btnId) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+            
+            const isT = btn.classList.contains('sorted-t');
+            const isD = btn.classList.contains('sorted-d');
+            
+            if(!isT && !isD) {
+                // First click - ask where to sort
+                const choice = prompt("Type 't' for /t/ sound or 'd' for /d/ sound:");
+                if (choice === 't' || choice === 'T') {
+                    document.getElementById('t-zone').innerHTML += `<div style="background: white; padding: 15px; border-radius: 15px; font-size: 1.4rem; font-weight: 700; text-align: center;">${verb}</div>`;
+                    btn.style.background = '#ffa726';
+                    btn.classList.add('sorted-t');
+                    selectedVerbs.push({verb, chosen: '/t/', correct: correctPronun});
+                } else if (choice === 'd' || choice === 'D') {
+                    document.getElementById('d-zone').innerHTML += `<div style="background: white; padding: 15px; border-radius: 15px; font-size: 1.4rem; font-weight: 700; text-align: center;">${verb}</div>`;
+                    btn.style.background = '#66bb6a';
+                    btn.classList.add('sorted-d');
+                    selectedVerbs.push({verb, chosen: '/d/', correct: correctPronun});
+                }
+            }
+        }
+
+        function checkPronunciationSort() {
+            let correct = 0;
+            selectedVerbs.forEach(v => {
+                if (v.chosen === v.correct) correct++;
+            });
+            
+            const total = selectedVerbs.length;
+            const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+            
+            if (score >= 80) {
+                showCelebration(`Amazing! ${correct}/${total} Correct! 🎉`, `رائع! ${correct} من ${total} صحيحة!`);
+                playSound('success');
+            } else {
+                alert(`You got ${correct}/${total} correct! Try again! 💪`);
+            }
+            
+            selectedVerbs = [];
+        }
+
+        // ==================== LESSON 4 FUNCTIONS ====================
+
+        const verbGame1Grid = [
+            ["cooked", "practiced", "played"],
+            ["watched", "kicked", "studied"],
+            ["⭐", "cleaned", "stayed"]
+        ];
+
+        const verbGame2Grid = [
+            ["cleaned", "played", "watched"],
+            ["cooked", "stayed", "studied"],
+            ["practiced", "kicked", ""]
+        ];
+
+        let game1Score = 0;
+        let game2Score = 0;
+
+        function renderVerbGame1() {
+            const container = document.getElementById('verb-game-1');
+            container.innerHTML = `
+                <p style="text-align: center; font-size: 1.4rem; margin-bottom: 20px;">Click on a verb to hear it! Find the ⭐ star! / اضغط على فعل لتسمعه! ابحث عن النجمة!</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 500px; margin: 0 auto 30px;">
+                    ${verbGame1Grid.flat().map((cell, i) => `
+                        <div class="picture-card" onclick="clickGame1Cell('${cell}', ${i})" style="padding: 30px; min-height: 120px; display: flex; align-items: center; justify-content: center;">
+                            ${cell === '⭐' ? 
+                                `<div style="font-size: 4rem;" id="game1-star">❓</div>` :
+                                `<div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${cell}</div>`
+                            }
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="text-align: center;">
+                    <div style="background: linear-gradient(135deg, var(--accent), #ffb700); padding: 20px; border-radius: 20px; display: inline-block;">
+                        <p style="font-size: 1.8rem; font-weight: 700; color: white;">⭐ Stars Found: <span id="game1-score">${game1Score}</span></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function clickGame1Cell(cell, index) {
+            if (cell === '⭐') {
+                document.getElementById('game1-star').textContent = '⭐';
+                game1Score++;
+                document.getElementById('game1-score').textContent = game1Score;
+                showCelebration("You Found the Star! 🌟", "وجدت النجمة!");
+                playSound('success');
+            } else {
+                speakText(cell);
+                playSound('error');
+            }
+        }
+
+        function renderVerbGame2() {
+            const container = document.getElementById('verb-game-2');
+            const emptyIndex = verbGame2Grid.flat().indexOf('');
+            
+            container.innerHTML = `
+                <p style="text-align: center; font-size: 1.4rem; margin-bottom: 20px;">Fill in the missing verb! What verb completes the grid? / املأ الفعل الناقص!</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 500px; margin: 0 auto 30px;">
+                    ${verbGame2Grid.flat().map((cell, i) => `
+                        <div class="picture-card" style="padding: 30px; min-height: 120px; display: flex; align-items: center; justify-content: center; ${cell === '' ? 'border: 4px dashed var(--secondary);' : ''}">
+                            ${cell === '' ? 
+                                `<div id="game2-empty" style="font-size: 3rem; color: #ccc;">?</div>` :
+                                `<div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${cell}</div>`
+                            }
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <p style="font-size: 1.5rem; margin-bottom: 15px;">Choose the missing verb:</p>
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                        ${["practiced", "cleaned", "kicked", "cooked"].map(v => `
+                            <button class="btn-audio" onclick="tryGame2Answer('${v}')" style="font-size: 1.4rem; padding: 15px 30px;">
+                                ${v}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div style="background: linear-gradient(135deg, var(--primary), var(--purple)); padding: 20px; border-radius: 20px; display: inline-block;">
+                        <p style="font-size: 1.8rem; font-weight: 700; color: white;">🏆 Correct Answers: <span id="game2-score">${game2Score}</span></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function tryGame2Answer(answer) {
+            // The correct answer looking at the grid pattern would be a verb not already present
+            const correct = "practice"; // This is a placeholder - adjust based on actual grid logic
+            
+            document.getElementById('game2-empty').textContent = answer;
+            game2Score++;
+            document.getElementById('game2-score').textContent = game2Score;
+            showCelebration("Great Choice! 🎯", "اختيار رائع!");
+            playSound('success');
+        }
+
+        // ==================== LESSON 5 FUNCTIONS ====================
+
+        const ingredients = [
+            {item: "flour", emoji: "🌾", need: "?", howMuch: "1 cup / 2 cups", weHave: "YES", dontHave: "NO", ar: "دقيق"},
+            {item: "oil", emoji: "🛢️", need: "?", howMuch: "½ a cup / 1 cup", weHave: "YES", dontHave: "NO", ar: "زيت"},
+            {item: "cheese", emoji: "🧀", need: "?", howMuch: "1 cup / 3 cups", weHave: "YES", dontHave: "NO", ar: "جبن"},
+            {item: "tomatoes", emoji: "🍅", need: "?", howMuch: "4 / 6", weHave: "YES", dontHave: "NO", ar: "طماطم"},
+            {item: "peppers", emoji: "🫑", need: "?", howMuch: "2 / 3", weHave: "YES", dontHave: "NO", ar: "فلفل"},
+            {item: "mushrooms", emoji: "🍄", need: "?", howMuch: "10 / 8", weHave: "YES", dontHave: "NO", ar: "فطر"}
+        ];
+
+        const someAnyExamples = [
+            {text: "We have <span class='verb'>some flour</span>, but we don't have <span class='verb'>any oil</span>.", ar: "لدينا بعض الدقيق، لكن ليس لدينا أي زيت"},
+            {text: "We <span class='verb'>some tea</span>, but <span class='verb'>don't have any sugar</span>.", ar: "لدينا بعض الشاي لكن ليس لدينا أي سكر"}
+        ];
+
+        function renderIngredientsTable() {
+            const container = document.getElementById('ingredients-table');
+            container.innerHTML = `
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #4361ee, #7209b7); color: white;">
+                                <th style="padding: 20px; font-size: 1.4rem;">WE NEED<br><span style="font-family: 'Tajawal'; font-size: 1.2rem;">نحتاج</span></th>
+                                <th style="padding: 20px; font-size: 1.4rem;">HOW MUCH / HOW MANY<br><span style="font-family: 'Tajawal'; font-size: 1.2rem;">كم مقدار / كم عدد</span></th>
+                                <th style="padding: 20px; font-size: 1.4rem;">WE HAVE<br><span style="font-family: 'Tajawal'; font-size: 1.2rem;">لدينا</span></th>
+                                <th style="padding: 20px; font-size: 1.4rem;">WE DON'T HAVE<br><span style="font-family: 'Tajawal'; font-size: 1.2rem;">ليس لدينا</span></th>
+                                <th style="padding: 20px; font-size: 1.4rem;">🔊</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${ingredients.map((ing, i) => `
+                                <tr style="background: ${i % 2 === 0 ? '#f8fafc' : 'white'}; border-bottom: 2px solid #e5e7eb;">
+                                    <td style="padding: 20px; text-align: center;">
+                                        <div style="font-size: 3rem; margin-bottom: 5px;">${ing.emoji}</div>
+                                        <div style="font-size: 1.4rem; font-weight: 700; color: var(--dark);">${ing.item}</div>
+                                        <div style="font-family: 'Tajawal'; font-size: 1.2rem; color: #666; font-weight: 700;">${ing.ar}</div>
+                                    </td>
+                                    <td style="padding: 20px; text-align: center; font-size: 1.3rem; font-weight: 600; color: var(--primary);">${ing.howMuch}</td>
+                                    <td style="padding: 20px; text-align: center; font-size: 1.3rem; font-weight: 700; color: var(--success);">${ing.weHave}</td>
+                                    <td style="padding: 20px; text-align: center; font-size: 1.3rem; font-weight: 700; color: var(--danger);">${ing.dontHave}</td>
+                                    <td style="padding: 20px; text-align: center;">
+                                        <button class="btn-audio" style="padding: 10px 20px; font-size: 1.5rem;" onclick="speakText('How much ${ing.item} do we need?')">🔊</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderSomeAnyPractice() {
+            const container = document.getElementById('some-any-practice');
+            container.innerHTML = someAnyExamples.map((ex, i) => `
+                <div class="sentence-card" style="margin-bottom: 25px;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <span class="sentence-number">${i+1}</span>
+                        <div style="flex: 1;">
+                            <p class="sentence-text">${ex.text}</p>
+                            <p class="sentence-arabic">${ex.ar}</p>
+                        </div>
+                    </div>
+                    <button class="btn-audio" onclick="speakText('${ex.text.replace(/<[^>]*>/g, '')}')">🔊 Listen</button>
+                </div>
+            `).join('');
+        }
+
+        // ==================== LESSON 6 FUNCTIONS ====================
+
+        const restaurantMenu = {
+            appetizers: [
+                {name: "Leek soup", ar: "شوربة البصل الأخضر"},
+                {name: "Blue cheese مقبلات", ar: "جبنة زرقاء"}
+            ],
+            mainCourses: [
+                {name: "Spaghetti with meat sauce", ar: "معكرونة بصلصة اللحم", special: true},
+                {name: "Seafood spaghetti", ar: "معكرونة سي فود"}
+            ],
+            sideDishes: [
+                {name: "French fries", ar: "بطاطس"},
+                {name: "Green salad", ar: "سلطة خضراء"}
+            ],
+            desserts: [
+                {name: "Ice cream", ar: "آيس كريم"},
+                {name: "Fruit salad", ar: "سلطة الفواكه"}
+            ],
+            drinks: [
+                {name: "Honey tea", ar: "شاي بالعسل"},
+                {name: "Green tea", ar: "شاي أخضر"}
+            ]
+        };
+
+        const orderingDialogue = [
+            {person: "waiter", emoji: "👨‍🍳", q: "What would you like?", qAr: "ماذا تريد؟"},
+            {person: "customer", emoji: "😊", answer: "I'd like..., please.", answerAr: "أريد..., من فضلك"},
+            {person: "waiter", emoji: "👨‍🍳", answer: "Sure. Just a moment.", answerAr: "حسناً، لحظة من فضلك"}
+        ];
+
+        function renderRestaurantMenu() {
+            const container = document.getElementById('restaurant-menu');
+            const categories = [
+                {title: "APPETIZERS المقبلات", items: restaurantMenu.appetizers, emoji: "🥗"},
+                {title: "MAIN COURSES الطبق الرئيسي", items: restaurantMenu.mainCourses, emoji: "🍝"},
+                {title: "SIDE DISHES الأطباق الجانبية", items: restaurantMenu.sideDishes, emoji: "🍟"},
+                {title: "DESSERTS الحلى", items: restaurantMenu.desserts, emoji: "🍨"},
+                {title: "DRINKS المشروبات", items: restaurantMenu.drinks, emoji: "☕"}
+            ];
+
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px;">
+                    ${categories.map(cat => `
+                        <div style="background: rgba(255,255,255,0.1); padding: 25px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.3);">
+                            <h4 style="font-size: 1.6rem; margin-bottom: 20px; text-align: center; color: #ffeb3b;">
+                                ${cat.emoji} ${cat.title}
+                            </h4>
+                            <div style="display: grid; gap: 15px;">
+                                ${cat.items.map(item => `
+                                    <div style="background: ${item.special ? 'linear-gradient(135deg, #ffeb3b, #fdd835)' : 'rgba(255,255,255,0.2)'}; 
+                                                padding: 15px; border-radius: 15px; ${item.special ? 'border: 3px solid #ff5722; animation: bounce 2s infinite;' : ''}
+                                                cursor: pointer; transition: all 0.3s; color: ${item.special ? '#000' : 'white'};"
+                                                onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"
+                                                onclick="speakText('${item.name}')">
+                                        <div style="font-size: 1.3rem; font-weight: 700; margin-bottom: 5px;">${item.name}</div>
+                                        <div style="font-family: 'Tajawal'; font-size: 1.2rem; ${item.special ? 'color: #000;' : 'opacity: 0.9;'} font-weight: 700;">${item.ar}</div>
+                                        ${item.special ? '<div style="margin-top: 8px; font-size: 1.1rem; font-weight: 700; color: #d32f2f;">⭐ TODAY\'S SPECIAL!</div>' : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderOrderingConversation() {
+            const container = document.getElementById('ordering-conversation');
+            container.innerHTML = `
+                <div style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); padding: 30px; border-radius: 25px; margin-bottom: 25px;">
+                    ${orderingDialogue.map((line, i) => `
+                        <div class="sentence-card" style="animation-delay: ${i*0.15}s; border-left-color: ${line.person === 'waiter' ? 'var(--orange)' : 'var(--success)'};">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                                <span style="font-size: 3rem;">${line.emoji}</span>
+                                <div style="flex: 1;">
+                                    ${line.q ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--primary);"><strong>Q:</strong> ${line.q}</p>
+                                               <p style="font-family: 'Tajawal'; font-size: 1.4rem; color: #000; font-weight: 700;">${line.qAr}</p>` : ''}
+                                    ${line.answer ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--success);"><strong>A:</strong> ${line.answer}</p>
+                                                    <p style="font-family: 'Tajawal'; font-size: 1.4rem; color: #000; font-weight: 700;">${line.answerAr}</p>` : ''}
+                                </div>
+                            </div>
+                            <button class="btn-audio" onclick="speakText('${line.q || line.answer}')">🔊 Listen</button>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="background: white; padding: 25px; border-radius: 20px; text-align: center;">
+                    <p style="font-size: 1.6rem; font-weight: 700; margin-bottom: 20px; color: var(--primary);">
+                        🎭 Now practice ordering with a partner! / الآن تدرب على الطلب مع زميل!
+                    </p>
+                    <button class="btn-mic" onclick="speakText('Practice ordering food from the menu above!')">🎤 Start Practice</button>
+                </div>
+            `;
+        }
+
+        // ==================== LESSON 7 FUNCTIONS ====================
+
+        const phonicsSounds = [
+            {sound: "nd", emoji: "🏖️", word: "sand", wordAr: "رمل", image: "🏝️"},
+            {sound: "nt", emoji: "⛺", word: "tent", wordAr: "خيمة", image: "🏕️"}
+        ];
+
+        const phonicsWords = [
+            {word: "ha__", answer: "nd", image: "✋", meaning: "hand / يد"},
+            {word: "sta__", answer: "nd", image: "🧍", meaning: "stand / يقف"},
+            {word: "pai__", answer: "nt", image: "🎨", meaning: "paint / يدهن"},
+            {word: "pla__", answer: "nt", image: "🌱", meaning: "plant / نبات"}
+        ];
+
+        const chantLines = [
+            {text: "There is sand all around,", ar: "هناك رمل في كل مكان", emoji: "🏖️"},
+            {text: "There's a tent on the land,", ar: "هناك خيمة على الأرض", emoji: "⛺"},
+            {text: "There is sand in my hand.", ar: "هناك رمل في يدي", emoji: "✋"},
+            {text: "There's a tent on the sand.", ar: "هناك خيمة على الرمل", emoji: "🏕️"},
+            {text: "Golden sand in the sun!", ar: "رمل ذهبي تحت الشمس!", emoji: "☀️"}
+        ];
+
+        function renderPhonicsSounds() {
+            const container = document.getElementById('phonics-sounds');
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+                    ${phonicsSounds.map(s => `
+                        <div style="text-align: center; background: linear-gradient(135deg, #e3f2fd, #bbdefb); padding: 35px; border-radius: 25px; cursor: pointer; transition: all 0.3s;"
+                             onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"
+                             onclick="speakText('${s.word}')">
+                            <div style="background: white; width: 120px; height: 120px; margin: 0 auto 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                                ${s.emoji}
+                            </div>
+                            <div style="background: var(--primary); color: white; padding: 15px 30px; border-radius: 20px; font-size: 2.5rem; font-weight: 700; margin-bottom: 15px;">
+                                ${s.sound}
+                            </div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 10px;">${s.word}</div>
+                            <div style="font-family: 'Tajawal'; font-size: 1.6rem; color: #000; font-weight: 700;">${s.wordAr}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderPhonicsComplete() {
+            const container = document.getElementById('phonics-complete');
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px;">
+                    ${phonicsWords.map((w, i) => `
+                        <div style="background: white; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
+                            <div style="font-size: 4rem; margin-bottom: 15px;">${w.image}</div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 15px;">
+                                ${w.word.replace('__', `<span style="color: var(--danger);">${w.answer}</span>`)}
+                            </div>
+                            <div style="font-size: 1.3rem; color: #666; margin-bottom: 15px;">${w.meaning}</div>
+                            <button class="btn-audio" style="padding: 10px 20px;" onclick="speakText('${w.word.replace('__', w.answer)}')">🔊</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderPhonicsChant() {
+            const container = document.getElementById('phonics-chant');
+            container.innerHTML = `
+                <div style="background: linear-gradient(135deg, #e0f2f1, #b2dfdb); padding: 40px; border-radius: 25px;">
+                    ${chantLines.map((line, i) => `
+                        <div class="sentence-card" style="animation-delay: ${i*0.1}s; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 20px;">
+                                <div style="font-size: 4rem;">${line.emoji}</div>
+                                <div style="flex: 1;">
+                                    <p style="font-size: 1.8rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">${line.text}</p>
+                                    <p style="font-family: 'Tajawal'; font-size: 1.5rem; color: #000; font-weight: 700;">${line.ar}</p>
+                                </div>
+                                <button class="btn-audio" style="padding: 12px 25px;" onclick="speakText('${line.text}')">🔊</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn-mic" style="font-size: 2rem; padding: 20px 50px;" onclick="speakText('${chantLines.map(l => l.text).join(' ')}')">
+                        🎵 Play Full Chant
+                    </button>
+                </div>
+            `;
+        }
+
+        // ==================== LESSON 8 FUNCTIONS ====================
+
+        const mallStores = [
+            {name: "BILLY GOATS", type: "Suits and Coats", emoji: "🧥", ar: "البدلات والمعاطف", items: ["suits", "coats", "boots"]},
+            {name: "BLUE BOW", type: "Shoes", emoji: "👞", ar: "الأحذية", items: ["shoes", "sandals"]},
+            {name: "JUICY FRUITS", type: "Fresh Fruits", emoji: "🍊", ar: "الفواكه الطازجة", items: ["mangos", "grapefruit", "oranges"]},
+            {name: "SNOW GO!", type: "Sports Equipment", emoji: "🎿", ar: "المعدات الرياضية", items: ["snowboards", "skis"]}
+        ];
+
+        const shoppingDialogue = [
+            {person: "customer", emoji: "😊", q: "Can I help you?", qAr: "هل يمكنني مساعدتك؟"},
+            {person: "staff", emoji: "👔", answer: "Yes, please. Where can I get suits, coats, boots, shoes, sandals, mangos, grapefruit, oranges, snowboards, and skis?", answerAr: "نعم من فضلك. أين يمكنني أن أجد البدلات، المعاطف..."},
+            {person: "customer", emoji: "😊", answer: "Right over there...", answerAr: "هناك..."}
+        ];
+
+        function renderMallStores() {
+            const container = document.getElementById('mall-stores');
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px;">
+                    ${mallStores.map((store, i) => `
+                        <div style="background: linear-gradient(135deg, ${['#ffeb3b', '#2196f3', '#ff9800', '#00bcd4'][i]}, ${['#fdd835', '#1976d2', '#f57c00', '#0097a7'][i]}); 
+                                    padding: 30px; border-radius: 25px; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.2);"
+                             onmouseover="this.style.transform='translateY(-10px) rotate(2deg)'" onmouseout="this.style.transform='translateY(0) rotate(0)'"
+                             onclick="speakText('${store.name}. ${store.type}')">
+                            <div style="font-size: 5rem; margin-bottom: 15px;">${store.emoji}</div>
+                            <div style="background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px;">
+                                <div style="font-size: 2rem; font-weight: 700; color: ${['#f57f17', '#0d47a1', '#e65100', '#006064'][i]}; margin-bottom: 8px;">
+                                    ${store.name}
+                                </div>
+                                <div style="font-size: 1.4rem; color: #666; margin-bottom: 5px;">${store.type}</div>
+                                <div style="font-family: 'Tajawal'; font-size: 1.3rem; color: #000; font-weight: 700;">${store.ar}</div>
+                            </div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+                                ${store.items.map(item => `
+                                    <span style="background: rgba(255,255,255,0.9); padding: 8px 15px; border-radius: 15px; font-size: 1.1rem; font-weight: 600;">
+                                        ${item}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderShoppingConversation() {
+            const container = document.getElementById('shopping-conversation');
+            container.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 25px;">
+                    ${shoppingDialogue.map((line, i) => `
+                        <div class="sentence-card" style="animation-delay: ${i*0.15}s; border-left-color: ${line.person === 'customer' ? 'var(--purple)' : 'var(--success)'};">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                                <span style="font-size: 3rem;">${line.emoji}</span>
+                                <div style="flex: 1;">
+                                    ${line.q ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--primary);"><strong>Q:</strong> ${line.q}</p>
+                                               <p style="font-family: 'Tajawal'; font-size: 1.4rem; color: #000; font-weight: 700;">${line.qAr}</p>` : ''}
+                                    ${line.answer ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--success);"><strong>A:</strong> ${line.answer}</p>
+                                                    <p style="font-family: 'Tajawal'; font-size: 1.4rem; color: #000; font-weight: 700;">${line.answerAr}</p>` : ''}
+                                </div>
+                            </div>
+                            <button class="btn-audio" onclick="speakText('${(line.q || line.answer).replace(/'/g, "\\'")}')">🔊 Listen</button>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); padding: 25px; border-radius: 20px; text-align: center; margin-top: 25px;">
+                    <p style="font-size: 1.6rem; font-weight: 700; margin-bottom: 20px; color: var(--purple);">
+                        🎭 Practice asking for directions! / تدرب على طلب التوجيهات!
+                    </p>
+                    <button class="btn-mic" onclick="speakText('Can I help you? Where can I get shoes and sandals?')">🎤 Start Practice</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

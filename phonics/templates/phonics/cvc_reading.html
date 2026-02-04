@@ -60,7 +60,7 @@
             gap: 15px;
         }
 
-        .header h1 {َ
+        .header h1 {
             color: white;
             font-size: 28px;
             display: flex;
@@ -1128,9 +1128,575 @@
             <div class="words-grid" id="storiesGrid" style="display: none;"></div>
         </div>
 
-        <!-- Tab 4: Pronouns -->
+        <!-- Tab 4: Pronouns + CVC -->
         <div id="pronouns-tab" class="tab-content">
-            <div class="words-grid" id="pronounsGrid"></div>
+            <h2 style="text-align:center; color:#7209b7; font-size:2rem; margin-bottom:30px;">
+                👥 الضمائر + CVC - Pronouns + CVC
+            </h2>
+            
+            <!-- Pronoun Reference Table -->
+            <div class="pronoun-reference-section" style="background:white; padding:40px; border-radius:20px; margin-bottom:40px; box-shadow:0 5px 20px rgba(0,0,0,0.05);">
+                <h3 style="color:#7209b7; margin-bottom:30px; text-align:center; font-size:2rem;">
+                    📚 Pronoun Reference Table - جدول الضمائر المرجعي
+                </h3>
+
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:30px;">
+                        <thead>
+                            <tr style="background:linear-gradient(135deg, #667eea, #764ba2); color:white;">
+                                <th style="padding:15px; text-align:left; border-radius:10px 0 0 0;">Subject<br><span style="font-size:0.9rem;">فاعل</span></th>
+                                <th style="padding:15px; text-align:left;">Object<br><span style="font-size:0.9rem;">مفعول</span></th>
+                                <th style="padding:15px; text-align:left;">Possessive Adj<br><span style="font-size:0.9rem;">صفة ملك</span></th>
+                                <th style="padding:15px; text-align:left; border-radius:0 10px 0 0;">Possessive Pronoun<br><span style="font-size:0.9rem;">ضمير ملك</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background:#f8fafc;">
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('I')" style="background:#3b82f6; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong style="font-size:1.2rem; color:#1e40af;">I</strong>
+                                    <div style="color:#64748b; font-size:0.9rem; margin-top:5px;">أنا</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('me')" style="background:#3b82f6; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>me</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">ني/ي</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('my')" style="background:#3b82f6; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>my</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">...ي (الخاص بي)</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('mine')" style="background:#3b82f6; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>mine</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">لي/ملكي</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('You')" style="background:#10b981; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong style="font-size:1.2rem; color:#059669;">You</strong>
+                                    <div style="color:#64748b; font-size:0.9rem; margin-top:5px;">أنت/أنتم</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('you')" style="background:#10b981; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>you</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">ك/كم</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('your')" style="background:#10b981; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>your</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">...ك (الخاص بك)</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('yours')" style="background:#10b981; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>yours</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">لك/ملكك</div>
+                                </td>
+                            </tr>
+                            <tr style="background:#f8fafc;">
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('He')" style="background:#f59e0b; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong style="font-size:1.2rem; color:#d97706;">He</strong>
+                                    <div style="color:#64748b; font-size:0.9rem; margin-top:5px;">هو</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('him')" style="background:#f59e0b; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>him</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">ه</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('his')" style="background:#f59e0b; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>his</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">...ه (الخاص به)</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('his')" style="background:#f59e0b; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>his</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">له/ملكه</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('She')" style="background:#ec4899; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong style="font-size:1.2rem; color:#be185d;">She</strong>
+                                    <div style="color:#64748b; font-size:0.9rem; margin-top:5px;">هي</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('her')" style="background:#ec4899; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>her</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">ها</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('her')" style="background:#ec4899; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>her</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">...ها (الخاص بها)</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('hers')" style="background:#ec4899; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>hers</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">لها/ملكها</div>
+                                </td>
+                            </tr>
+                            <tr style="background:#f8fafc;">
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('It')" style="background:#8b5cf6; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong style="font-size:1.2rem; color:#6d28d9;">It</strong>
+                                    <div style="color:#64748b; font-size:0.9rem; margin-top:5px;">هو/هي (لغير العاقل)</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('it')" style="background:#8b5cf6; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>it</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">ه/ها</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('its')" style="background:#8b5cf6; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>its</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">...ه (الخاص به)</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <span style="color:#94a3b8; font-style:italic;">—</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('We')" style="background:#0ea5e9; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong style="font-size:1.2rem; color:#0284c7;">We</strong>
+                                    <div style="color:#64748b; font-size:0.9rem; margin-top:5px;">نحن</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('us')" style="background:#0ea5e9; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>us</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">نا</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('our')" style="background:#0ea5e9; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>our</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">...نا (الخاص بنا)</div>
+                                </td>
+                                <td style="padding:15px; border-bottom:1px solid #e2e8f0;">
+                                    <button onclick="playWord('ours')" style="background:#0ea5e9; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>ours</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">لنا/ملكنا</div>
+                                </td>
+                            </tr>
+                            <tr style="background:#f8fafc;">
+                                <td style="padding:15px; border-radius:0 0 0 10px;">
+                                    <button onclick="playWord('They')" style="background:#f43f5e; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong style="font-size:1.2rem; color:#e11d48;">They</strong>
+                                    <div style="color:#64748b; font-size:0.9rem; margin-top:5px;">هم/هن</div>
+                                </td>
+                                <td style="padding:15px;">
+                                    <button onclick="playWord('them')" style="background:#f43f5e; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>them</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">هم/هن</div>
+                                </td>
+                                <td style="padding:15px;">
+                                    <button onclick="playWord('their')" style="background:#f43f5e; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>their</strong>
+                                   <div style="color:#64748b; font-size:0.9rem;">..هم (الخاص بهم)</div>
+                                </td>
+                                <td style="padding:15px; border-radius:0 0 10px 0;">
+                                    <button onclick="playWord('theirs')" style="background:#f43f5e; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-right:10px;">🔊</button>
+                                    <strong>theirs</strong>
+                                    <div style="color:#64748b; font-size:0.9rem;">لهم/ملكهم</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Short Sentences Section -->
+            <div class="short-sentences-section" style="background:white; padding:40px; border-radius:20px; margin-bottom:40px;">
+                <h3 style="color:#7209b7; margin-bottom:30px; text-align:center; font-size:2rem;">
+                    💬 Short Sentence Examples - أمثلة جمل قصيرة
+                </h3>
+                <p style="text-align:center; color:#64748b; margin-bottom:40px;">
+                    Click 🔊 to listen! - اضغط 🔊 للاستماع!
+                </p>
+
+                <!-- I Sentences (10 sentences) -->
+                <div style="background:linear-gradient(135deg, #dbeafe, #bfdbfe); padding:30px; border-radius:15px; margin-bottom:30px;">
+                    <h4 style="color:#1e40af; margin-bottom:20px;">
+                        <span style="background:#3b82f6; color:white; padding:10px 20px; border-radius:10px; margin-right:10px;">I</span>
+                        أنا - Examples
+                    </h4>
+                    <div style="display:grid; gap:15px;">
+                        <div style="background:white; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><div style="font-size:1.1rem; color:#1e293b;">😊 <strong>I am happy.</strong></div><div style="color:#64748b; font-size:0.95rem;">أنا سعيد.</div></div>
+                            <button onclick="playWord('I am happy')" class="btn btn-listen">🔊</button>
+                        </div>
+                        <div style="background:white; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><div style="font-size:1.1rem; color:#1e293b;">📚 <strong>I love reading books.</strong></div><div style="color:#64748b; font-size:0.95rem;">أحب قراءة الكتب.</div></div>
+                            <button onclick="playWord('I love reading books')" class="btn btn-listen">🔊</button>
+                        </div>
+                        <div style="background:white; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><div style="font-size:1.1rem; color:#1e293b;">⚽ <strong>I play football every day.</strong></div><div style="color:#64748b; font-size:0.95rem;">ألعب كرة القدم كل يوم.</div></div>
+                            <button onclick="playWord('I play football every day')" class="btn btn-listen">🔊</button>
+                        </div>
+                        <div style="background:white; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><div style="font-size:1.1rem; color:#1e293b;">🎨 <strong>I can draw very well.</strong></div><div style="color:#64748b; font-size:0.95rem;">أستطيع الرسم بشكل جيد.</div></div>
+                            <button onclick="playWord('I can draw very well')" class="btn btn-listen">🔊</button>
+                        </div>
+                        <div style="background:white; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><div style="font-size:1.1rem; color:#1e293b;">🍕 <strong>I like pizza and ice cream.</strong></div><div style="color:#64748b; font-size:0.95rem;">أحب البيتزا والآيس كريم.</div></div>
+                            <button onclick="playWord('I like pizza and ice cream')" class="btn btn-listen">🔊</button>
+                        </div>
+                        <div style="background:white; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><div style="font-size:1.1rem; color:#1e293b;">🏫 <strong>I go to school by bus.</strong></div><div style="color:#64748b; font-size:0.95rem;">أذهب إلى المدرسة بالباص.</div></div>
+                            <button onclick="playWord('I go to school by bus')" class="btn btn-listen">🔊</button>
+                        </div>
+                        <div style="background:white; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><div style="font-size:1.1rem; color:#1e293b;">👨‍👩‍👧 <strong>I have a big family.</strong></div><div style="color:#64748b; font-size:0.95rem;">لدي عائلة كبيرة.</div></div>
+                            <button onclick="playWord('I have a big family')" class="btn btn-listen">🔊</button>
+                        </div>
+                        <div style="background:white; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><div style="font-size:1.1rem; color:#1e293b;">🎵 <strong>I listen to music daily.</strong></div><div style="color:#64748b; font-size:0.95rem;">أستمع للموسيقى يومياً.</div></div>
+                            <button onclick="playWord('I listen to music daily')" class="btn btn-listen">🔊</button>
+                        </div>
+                        <div style="background:white; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><div style="font-size:1.1rem; color:#1e293b;">🌟 <strong>I want to be a doctor.</strong></div><div style="color:#64748b; font-size:0.95rem;">أريد أن أكون طبيباً.</div></div>
+                            <button onclick="playWord('I want to be a doctor')" class="btn btn-listen">🔊</button>
+                        </div>
+                        <div style="background:white; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div><div style="font-size:1.1rem; color:#1e293b;">🐕 <strong>I have a cute dog.</strong></div><div style="color:#64748b; font-size:0.95rem;">لدي كلب لطيف.</div></div>
+                            <button onclick="playWord('I have a cute dog')" class="btn btn-listen">🔊</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More pronouns coming soon indicator -->
+                <div style="text-align:center; padding:40px; background:#f8fafc; border-radius:15px;">
+                    <div style="font-size:3rem; margin-bottom:20px;">🎯</div>
+                    <h4 style="color:#7209b7; margin-bottom:10px;">محتوى الضمائر متوفر!</h4>
+                    <p style="color:#64748b;">جدول الضمائر + 10 جمل للضمير "I" - المزيد قريباً!</p>
+                </div>
+            </div>
+
+            <!-- Quiz Section - 15 Questions -->
+            <div class="quiz-section" style="background:white; padding:40px; border-radius:20px; margin-top:40px;">
+                <h3 style="color:#7209b7; margin-bottom:30px; text-align:center; font-size:2rem;">
+                    🎯 Quiz Time - اختبر نفسك!
+                </h3>
+                <p style="text-align:center; color:#64748b; margin-bottom:40px;">
+                    15 أسئلة على الضمائر والملكيات - Choose the correct answer!
+                </p>
+
+                <!-- Question 1 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">❶ Choose the correct pronoun:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">___ am a student.</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 1, true)">I</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 1, false)">Me</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 1, false)">My</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 1, false)">Mine</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-1" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">❷ Fill in the blank:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">This book belongs to ___.</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 2, false)">I</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 2, true)">me</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 2, false)">my</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 2, false)">mine</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-2" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">❸ Choose the possessive adjective:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">This is ___ pen. (It belongs to me)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 3, false)">I</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 3, false)">me</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 3, true)">my</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 3, false)">mine</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-3" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">❹ Select the correct pronoun:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">___ is my best friend. (talking about Ali)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 4, true)">He</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 4, false)">She</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 4, false)">Him</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 4, false)">His</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-4" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 5 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">❺ Which is the possessive pronoun?</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">The red car is ___. (It belongs to me)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 5, false)">I</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 5, false)">me</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 5, false)">my</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 5, true)">mine</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-5" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 6 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">❻ Fill in with object pronoun:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">Sara loves ___. (talking about Ahmad)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 6, false)">he</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 6, true)">him</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 6, false)">his</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 6, false)">He</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-6" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 7 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">❼ Choose correctly:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">___ are playing football. (We're talking about Fatima and Layla)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 7, false)">She</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 7, false)">He</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 7, true)">They</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 7, false)">Them</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-7" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 8 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">❽ Possessive form:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">Those books are ___. (They belong to you)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 8, false)">you</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 8, false)">your</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 8, true)">yours</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 8, false)">You</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-8" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 9 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">❾ Find the right pronoun:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">___ lives in a big house. (talking about Mona)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 9, false)">He</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 9, true)">She</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 9, false)">Her</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 9, false)">Hers</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-9" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 10 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">❿ Object pronoun needed:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">Can you help ___? (talking about Noor and me)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 10, false)">we</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 10, true)">us</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 10, false)">our</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 10, false)">ours</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-10" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 11 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">⓫ Possessive adjective:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">___ house is very beautiful. (talking about Sara)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 11, false)">She</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 11, true)">Her</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 11, false)">Hers</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 11, false)">she</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-11" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 12 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">⓬ Which one is correct?</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">___ is very cute. (talking about a cat)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 12, false)">He</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 12, false)">She</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 12, true)">It</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 12, false)">Its</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-12" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 13 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">⓭ Possessive pronoun:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">This pencil is ___. (It belongs to him)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 13, false)">he</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 13, false)">him</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 13, true)">his</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 13, false)">He</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-13" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 14 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">⓮ Complete the sentence:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">___ are learning English. (talking about my classmates and me)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 14, true)">We</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 14, false)">Us</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 14, false)">Our</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 14, false)">They</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-14" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Question 15 -->
+                <div class="quiz-question-card" style="background:#f8fafc; padding:25px; border-radius:15px; margin-bottom:25px; border:2px solid #e2e8f0;">
+                    <div style="color:#7209b7; font-weight:bold; margin-bottom:15px;">⓯ Final question - Possessive:</div>
+                    <div style="font-size:1.1rem; margin-bottom:20px;">The toys are ___. (They belong to them)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 15, false)">they</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 15, false)">them</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 15, false)">their</button>
+                        <button class="quiz-btn" onclick="checkQuizAnswer(this, 15, true)">theirs</button>
+                    </div>
+                    <div class="quiz-feedback" id="quiz-feedback-15" style="margin-top:15px; padding:15px; border-radius:10px; display:none;"></div>
+                </div>
+
+                <!-- Quiz Score Display -->
+                <div id="quiz-score-display" style="text-align:center; padding:30px; background:linear-gradient(135deg, #667eea, #764ba2); color:white; border-radius:15px; margin-top:30px; display:none;">
+                    <div style="font-size:3rem; margin-bottom:10px;">🎉</div>
+                    <h3 style="font-size:2rem; margin-bottom:10px;">أحسنت! Well Done!</h3>
+                    <div id="quiz-score-text" style="font-size:1.5rem;"></div>
+                </div>
+
+                <style>
+                    .quiz-btn {
+                        padding: 15px 25px;
+                        background: white;
+                        border: 2px solid #e2e8f0;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-size: 1.1rem;
+                        font-weight: bold;
+                        transition: all 0.3s ease;
+                        color: #1e293b;
+                    }
+                    
+                    .quiz-btn:hover {
+                        border-color: #7209b7;
+                        background: #f8f4ff;
+                        transform: translateY(-2px);
+                    }
+                    
+                    .quiz-btn.correct {
+                        background: #10b981 !important;
+                        color: white !important;
+                        border-color: #10b981 !important;
+                    }
+                    
+                    .quiz-btn.wrong {
+                        background: #ef4444 !important;
+                        color: white !important;
+                        border-color: #ef4444 !important;
+                    }
+                    
+                    .quiz-btn:disabled {
+                        cursor: not-allowed;
+                        opacity: 0.6;
+                    }
+                </style>
+
+                <script>
+                    let quizScore = 0;
+                    let quizAnswered = 0;
+                    const totalQuizQuestions = 15;
+                    
+                    // Quiz answers with explanations
+                    const quizExplanations = {
+                        1: { correct: "I", explanation: "نستخدم 'I' كفاعل في الجملة - Subject pronoun" },
+                        2: { correct: "me", explanation: "نستخدم 'me' بعد حرف الجر 'to' - Object pronoun" },
+                        3: { correct: "my", explanation: "نستخدم 'my' قبل الاسم - Possessive adjective" },
+                        4: { correct: "He", explanation: "نستخدم 'He' للمذكر كفاعل - Subject pronoun (masculine)" },
+                        5: { correct: "mine", explanation: "نستخدم 'mine' للملكية بدون اسم بعدها - Possessive pronoun" },
+                        6: { correct: "him", explanation: "نستخدم 'him' كمفعول به - Object pronoun (masculine)" },
+                        7: { correct: "They", explanation: "نستخدم 'They' للجمع - Subject pronoun (plural)" },
+                        8: { correct: "yours", explanation: "نستخدم 'yours' للملكية بدون اسم - Possessive pronoun" },
+                        9: { correct: "She", explanation: "نستخدم 'She' للمؤنث كفاعل - Subject pronoun (feminine)" },
+                        10: { correct: "us", explanation: "نستخدم 'us' كمفعول به للجمع - Object pronoun (we)" },
+                        11: { correct: "Her", explanation: "نستخدم 'Her' قبل الاسم - Possessive adjective (feminine)" },
+                        12: { correct: "It", explanation: "نستخدم 'It' لغير العاقل - Pronoun for animals/things" },
+                        13: { correct: "his", explanation: "'his' تستخدم كملكية وصفة معاً - Possessive (masculine)" },
+                        14: { correct: "We", explanation: "نستخدم 'We' كفاعل للجمع المتكلم - Subject pronoun (we)" },
+                        15: { correct: "theirs", explanation: "نستخدم 'theirs' للملكية بدون اسم - Possessive pronoun (they)" }
+                    };
+                    
+                    function checkQuizAnswer(button, questionNum, isCorrect) {
+                        const allButtons = button.parentElement.querySelectorAll('.quiz-btn');
+                        const feedbackDiv = document.getElementById(`quiz-feedback-${questionNum}`);
+                        const explanation = quizExplanations[questionNum];
+                        
+                        // Disable all buttons
+                        allButtons.forEach(btn => btn.disabled = true);
+                        
+                        // Mark as answered if first time
+                        if (!button.parentElement.parentElement.classList.contains('answered')) {
+                            button.parentElement.parentElement.classList.add('answered');
+                            quizAnswered++;
+                            
+                            if (isCorrect) {
+                                quizScore++;
+                                button.classList.add('correct');
+                                feedbackDiv.innerHTML = `<div style="background:#d1fae5; color:#065f46; padding:15px; border-radius:10px;">✅ <strong>صحيح!</strong> ${explanation.explanation}</div>`;
+                            } else {
+                                button.classList.add('wrong');
+                                // Highlight correct answer
+                                allButtons.forEach(btn => {
+                                    if (btn.textContent.trim() === explanation.correct) {
+                                        btn.classList.add('correct');
+                                    }
+                                });
+                                feedbackDiv.innerHTML = `<div style="background:#fee2e2; color:#991b1b; padding:15px; border-radius:10px;">❌ <strong>خطأ!</strong> الجواب الصحيح: <strong>${explanation.correct}</strong><br>${explanation.explanation}</div>`;
+                            }
+                            
+                            feedbackDiv.style.display = 'block';
+                            
+                            // Show final score if all answered
+                            if (quizAnswered === totalQuizQuestions) {
+                                showQuizScore();
+                            }
+                        }
+                    }
+                    
+                    function showQuizScore() {
+                        const scoreDisplay = document.getElementById('quiz-score-display');
+                        const scoreText = document.getElementById('quiz-score-text');
+                        const percentage = Math.round((quizScore / totalQuizQuestions) * 100);
+                        
+                        scoreText.innerHTML = `Score: ${quizScore}/${totalQuizQuestions} (${percentage}%)`;
+                        scoreDisplay.style.display = 'block';
+                        
+                        // Scroll to score
+                        scoreDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                </script>
+            </div>
         </div>
     </div>
 

@@ -1,0 +1,227 @@
+/* ========================================
+   Top Goal - Responsive Styles
+   التصميم المتجاوب للشاشات الصغيرة
+   ======================================== */
+
+@media (max-width: 768px) {
+    /* --- Typography --- */
+    .hero-title, .banner h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .arena-title {
+        font-size: 1.8rem;
+    }
+
+    /* --- Layout --- */
+    .hero-unit, .banner {
+        padding: 40px 20px;
+    }
+
+    .games-arena, .arena-section {
+        padding: 25px 20px;
+    }
+
+    .container, .top-goal-container {
+        padding: 15px;
+    }
+
+    /* --- Navigation --- */
+    .lesson-nav {
+        gap: 10px;
+        padding: 15px 5px;
+    }
+
+    .lesson-btn {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+
+    /* --- Tabs --- */
+    .game-tabs {
+        gap: 10px;
+    }
+
+    .game-tab {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        flex: 1 1 45%; /* 2 per row */
+        text-align: center;
+    }
+
+    /* --- Games --- */
+    .memory-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 10px;
+    }
+
+    .match-container {
+        flex-direction: column;
+    }
+
+    .match-col {
+        width: 100%;
+    }
+
+    .listening-options {
+        grid-template-columns: 1fr;
+    }
+
+    .wheel-container {
+        width: 200px;
+        height: 200px;
+    }
+
+    .vocab-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+
+    .vocab-emoji {
+        font-size: 3rem;
+    }
+
+    .vocab-word {
+        font-size: 1.2rem;
+    }
+
+    /* --- Sentences & Content --- */
+    .sentence-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .sentence-ar {
+        font-size: 1rem;
+    }
+
+    /* --- Buttons --- */
+    .top-goal-btn {
+        padding: 10px 16px;
+        gap: 8px;
+    }
+
+    .top-goal-btn i {
+        font-size: 1.2rem;
+    }
+
+    .btn-title {
+        font-size: 0.85rem;
+    }
+
+    .btn-subtitle {
+        font-size: 0.65rem;
+    }
+
+    /* --- Floating Elements --- */
+    .floating-score {
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .score-stars {
+        font-size: 1.2rem;
+    }
+
+    .score-text {
+        font-size: 1.5rem;
+    }
+
+    /* --- Modals --- */
+    .result-content, .modal-content {
+        width: 90%;
+        padding: 30px;
+    }
+
+    /* --- Quiz --- */
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mcq-container {
+        grid-template-columns: 1fr;
+    }
+
+    /* --- Misc --- */
+    .gap-sentence-box {
+        padding: 20px;
+    }
+
+    #gap-sentence {
+        font-size: 1.4rem;
+    }
+
+    .dice-display {
+        font-size: 5rem;
+    }
+
+    .scramble-container {
+        padding: 15px;
+    }
+
+    .draggable-word {
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+}
+
+/* --- Extra Small Devices --- */
+@media (max-width: 480px) {
+    .hero-title, .banner h1 {
+        font-size: 2rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    .arena-title {
+        font-size: 1.5rem;
+    }
+
+    .game-tab {
+        flex: 1 1 100%; /* 1 per row on very small screens */
+        font-size: 0.85rem;
+    }
+
+    .lesson-btn {
+        padding: 10px 15px;
+        font-size: 0.85rem;
+    }
+
+    .btn-title {
+        font-size: 0.75rem;
+    }
+
+    .btn-subtitle {
+        font-size: 0.6rem;
+    }
+
+    .vocab-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .memory-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* --- Large Screens --- */
+@media (min-width: 1400px) {
+    .container, .top-goal-container {
+        max-width: 1400px;
+    }
+
+    .hero-title {
+        font-size: 4rem;
+    }
+
+    .vocab-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>منصة ألعاب الحروف الإنجليزية - Phonics Game Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/fgfg.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <!-- Mobile Menu -->
+            <div class="mobile-menu">
+                <div class="hamburger">☰</div>
+                <div class="dropdown-content">
+                    <a id="resetProgress">🔄 إعادة التقدم</a>
+                    <a id="viewAllLetters">🔤 جميع الحروف</a>
+                    <a id="jumpToLetter">↗️ انتقال للحرف</a>
+                    <a id="viewCertificate">📜 الشهادة</a>
+                    <a id="toggleSound">🔊 إيقاف الصوت</a>
+                    <a id="testMicrophone">🎤 اختبار المايك</a>
+                </div>
+            </div>
+            
+            <div class="theme-toggle" id="themeToggle">
+                <i class="fas fa-sun"></i>
+                <span>الوضع النهاري</span>
+            </div>
+            
+            <div class="logo-section">
+                <div class="logo">PGL</div>
+                <div class="logo-text">
+                    <h1>منصة ألعاب الحروف الإنجليزية</h1>
+                    <p>Phonics Game Lab - تعلم الحروف بطريقة تفاعلية</p>
+                </div>
+            </div>
+            
+            <div class="student-info">
+                <div class="student-name">
+                    <span>👤</span>
+                    <input type="text" id="studentName" placeholder="أدخل اسمك">
+                </div>
+                <div class="progress-chip">
+                    <span>التقدم:</span>
+                    <span class="progress-value" id="progressValue">الحرف A</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Letters Navigation -->
+        <div class="letters-nav" id="lettersNav">
+            <!-- Letters will be generated here by JavaScript -->
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel -->
+            <section class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">تعلم الحرف <span id="currentLetter">A</span></h2>
+                    <span class="panel-badge">الخطوة 1-2: استمع، انطق، اكتب</span>
+                </div>
+
+                <!-- Letter Display -->
+                <div class="letter-display">
+                    <div class="letter-visual">
+                        <div class="letter-uppercase" id="letterUpper">A</div>
+                        <div class="letter-lowercase" id="letterLower">a</div>
+                    </div>
+                    <div class="letter-actions">
+                        <button class="btn btn-primary" id="playLetter">
+                            <span>🔊</span> نطق الحرف
+                        </button>
+                        <button class="btn btn-secondary" id="letterInfo">
+                            <span>ℹ️</span> معلومات الحرف
+                        </button>
+                        <button class="btn btn-secondary" id="resetLetter">
+                            <span>🔄</span> إعادة المحاولة
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Words Section -->
+                <div class="words-section">
+                    <h3 class="section-title">
+                        <span>🔤</span> كلمات تبدأ بالحرف <span id="letterForWords">A</span>
+                    </h3>
+                    <div class="words-grid" id="wordsGrid">
+                        <!-- Words will be generated here by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Writing Section -->
+                <div class="writing-section">
+                    <h3 class="section-title">
+                        <span>✍️</span> تدرب على كتابة الحرف
+                    </h3>
+                    <div class="writing-row">
+                        <div class="writing-label">الحرف الكبير (A) 10 مرات</div>
+                        <div class="writing-boxes" id="capitalWriting">
+                            <!-- Writing boxes will be generated here by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="writing-row">
+                        <div class="writing-label">الحرف الصغير (a) 10 مرات</div>
+                        <div class="writing-boxes" id="smallWriting">
+                            <!-- Writing boxes will be generated here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel -->
+            <section class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">تمارين الحرف</h2>
+                    <span class="panel-badge">الخطوة 3-4: كتابة كلمات واختبار</span>
+                </div>
+
+                <!-- Word Writing -->
+                <div class="words-section">
+                    <h3 class="section-title">
+                        <span>📝</span> اكتب الكلمات التالية
+                    </h3>
+                    <div class="word-writing-list" id="wordWritingList">
+                        <!-- Word writing items will be generated here by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Quiz Section -->
+                <div class="words-section">
+                    <h3 class="section-title">
+                        <span>❓</span> اختبر معلوماتك
+                    </h3>
+                    <div class="quiz-container">
+                        <div class="quiz-header">
+                            <div>السؤال <span id="questionNumber">1</span> من 6</div>
+                            <div>النتيجة: <span id="quizScore">0</span>/6</div>
+                        </div>
+                        <div class="quiz-question" id="quizQuestion">
+                            <!-- Question will be set by JavaScript -->
+                        </div>
+                        <div class="quiz-options" id="quizOptions">
+                            <!-- Options will be set by JavaScript -->
+                        </div>
+                        <div class="quiz-navigation" id="quizNavigation">
+                            <button class="quiz-next-btn" id="quizNextBtn">
+                                <span>➡️</span> التالي
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Score Panel -->
+                <div class="score-panel">
+                    <div class="score-card">
+                        <div class="score-label">كتابة الحرف</div>
+                        <div class="score-value" id="writingScore">0/20</div>
+                    </div>
+                    <div class="score-card">
+                        <div class="score-label">كتابة الكلمات</div>
+                        <div class="score-value" id="wordsScore">0/6</div>
+                    </div>
+                    <div class="score-card">
+                        <div class="score-label">الاختبار</div>
+                        <div class="score-value" id="testScore">0/6</div>
+                    </div>
+                    <div class="score-card">
+                        <div class="score-label">المجموع</div>
+                        <div class="score-value" id="totalScore">0/32</div>
+                    </div>
+                </div>
+
+                <!-- Achievements -->
+                <div class="words-section">
+                    <h3 class="section-title">
+                        <span>🏆</span> الإنجازات
+                    </h3>
+                    <div class="achievements-container" id="achievementsContainer">
+                        <!-- Achievements will be generated here by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="footer-actions">
+                    <button class="btn btn-secondary" id="prevLetter">
+                        <span>⬅️</span> الحرف السابق
+                    </button>
+                    <button class="btn btn-primary" id="finishLetter">
+                        <span>✅</span> إنهاء الحرف
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Motivation Modal -->
+    <div class="modal" id="motivationModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeMotivation">×</button>
+            <div class="modal-header">
+                <div class="modal-badge">🔥 نار! مبروك!</div>
+                <h2 class="modal-title" id="motivationTitle">أحسنت!</h2>
+                <p class="modal-subtitle" id="motivationSubtitle">لقد أتممت تعلم الحرف A بنجاح</p>
+            </div>
+            <div class="modal-quote" id="motivationQuote">
+                "من جد وجد، ومن زرع حصد. استمر في التقدم!"
+            </div>
+            
+            <!-- Games Grid -->
+            <div class="games-grid" id="gamesGrid">
+                <div class="game-card" data-game="carRace">
+                    <div class="game-icon">🏎️</div>
+                    <div class="game-name">سباق السيارات</div>
+                </div>
+                <div class="game-card" data-game="racket">
+                    <div class="game-icon">🎾</div>
+                    <div class="game-name">لعبة المضرب</div>
+                </div>
+                <div class="game-card" data-game="fishing">
+                    <div class="game-icon">🎣</div>
+                    <div class="game-name">اصطياد الحرف</div>
+                </div>
+                <div class="game-card" data-game="balloons">
+                    <div class="game-icon">🎈</div>
+                    <div class="game-name">لعبة البالونات</div>
+                </div>
+                <div class="game-card" data-game="memory">
+                    <div class="game-icon">🧠</div>
+                    <div class="game-name">لعبة الذاكرة</div>
+                </div>
+                <div class="game-card" data-game="wordsearch">
+                    <div class="game-icon">🔍</div>
+                    <div class="game-name">لعبة البحث</div>
+                </div>
+                <div class="game-card" data-game="typing">
+                    <div class="game-icon">⌨️</div>
+                    <div class="game-name">الكتابة السريعة</div>
+                </div>
+                <div class="game-card" data-game="match">
+                    <div class="game-icon">🔤</div>
+                    <div class="game-name">لعبة المطابقة</div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="modal-btn game" id="playGames">
+                    <span>🎮</span> العب الألعاب
+                </button>
+                <button class="modal-btn next" id="nextLetter">
+                    <span>➡️</span> الحرف التالي
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Modal -->
+    <div class="modal" id="gameModal">
+        <div class="modal-content game-modal">
+            <button class="modal-close" id="closeGame">×</button>
+            <div class="game-header">
+                <h3 class="game-title" id="gameTitle">🎮 لعبة تعليمية</h3>
+                <div class="game-score">
+                    <span>النقاط:</span>
+                    <span id="gameScore">0</span>
+                    <span>الوقت:</span>
+                    <span id="gameTimer">60</span>
+                </div>
+            </div>
+            <div class="game-area">
+                <canvas id="gameCanvas"></canvas>
+            </div>
+            
+            <!-- Touch Controls for Mobile -->
+            <div class="touch-controls" id="touchControls">
+                <button class="control-btn" data-action="left">←</button>
+                <button class="control-btn" data-action="action">⚡</button>
+                <button class="control-btn" data-action="right">→</button>
+            </div>
+            
+            <div class="game-instructions" id="gameInstructions">
+                تعليمات اللعبة
+            </div>
+            
+            <div class="game-stats" id="gameStats">
+                <div class="stat-item">
+                    <div class="stat-value" id="successCount">0</div>
+                    <div class="stat-label">مرات ناجحة</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="difficultyLevel">1</div>
+                    <div class="stat-label">المستوى</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">الدقة</div>
+                </div>
+            </div>
+            
+            <div class="game-controls" id="gameControls">
+                <button class="btn btn-primary" id="restartGame">
+                    <span>🔄</span> إعادة اللعب
+                </button>
+                <button class="btn btn-secondary" id="pauseGame">
+                    <span>⏸️</span> إيقاف
+                </button>
+                <button class="btn btn-secondary" id="backToSelection">
+                    <span>🏠</span> العودة للألعاب
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win Modal -->
+    <div class="modal win-modal" id="winModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeWin">×</button>
+            <div class="modal-header">
+                <div class="modal-badge">🏆 فوز رائع!</div>
+                <h2 class="modal-title" id="winTitle">سلمت يابطل! 🔥</h2>
+                <p class="modal-subtitle" id="winSubtitle">أنت نجم المستقبل ✨</p>
+            </div>
+            
+            <div class="win-animation" id="winAnimation">🎆🎇✨</div>
+            
+            <div class="modal-quote" id="winQuote">
+                "مستوى رائع! مهاراتك في تعلم الحروف مذهلة!"
+            </div>
+            
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="finalScore">0</div>
+                    <div class="stat-label">النقاط النهائية</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="finalTime">60</div>
+                    <div class="stat-label">ثانية متبقية</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="finalAccuracy">100%</div>
+                    <div class="stat-label">الدقة</div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="modal-btn game" id="playAgain">
+                    <span>🔄</span> العب مرة أخرى
+                </button>
+                <button class="modal-btn next" id="backToGames">
+                    <span>🎮</span> العودة للألعاب
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Certificate Modal -->
+    <div class="modal" id="certificateModal">
+        <div class="certificate-container">
+            <div class="certificate-header">
+                <h1 class="certificate-title">شهادة إنجاز</h1>
+                <p class="certificate-subtitle">منصة ألعاب الحروف الإنجليزية</p>
+            </div>
+            <div class="certificate-body">
+                <p>هذه الشهادة تمنح إلى:</p>
+                <h2 class="certificate-student-name" id="certificateName">الطالب المتميز</h2>
+                <p class="certificate-message">
+                    لقد أتممت بنجاح تعلم جميع الحروف الإنجليزية من A إلى Z<br>
+                    وأظهرت تفانياً ومثابرة في رحلة التعلم
+                </p>
+                <p class="certificate-date" id="certificateDate">تم منح هذه الشهادة في: ١ يناير ٢٠٢٣</p>
+            </div>
+            <div class="certificate-stamp">
+                مكتمل<br>بنجاح
+            </div>
+            <div style="margin-top: 30px;">
+                <button class="btn btn-primary" id="printCertificate">
+                    <span>🖨️</span> طباعة الشهادة
+                </button>
+                <button class="btn btn-secondary" id="closeCertificate">
+                    <span>✕</span> إغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Letter Jump Menu -->
+    <div class="letter-jump-menu" id="letterJumpMenu">
+        <!-- Letters will be added here -->
+    </div>
+
+    <!-- Completion Animation -->
+    <div class="completion-animation" id="completionAnimation"></div>
+
+    <!-- Microphone Status -->
+    <div class="mic-status" id="micStatus">
+        <span>🎤</span>
+        <span id="micStatusText">جاري تحضير المايكروفون...</span>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-top" id="scrollTop">↑</button>
+
+    <script src="/static/js/fgfg.js"></script>
+</body>
+</html>

@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <title>منصة ألعاب الحروف الإنجليزية - Phonics Progress</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+        /* ===============================
+           إعدادات عامة + ألوان
+        =================================*/
+        :root {
+            --bg: #020617;
+            --bg-soft: #020617;
+            --panel: #020617;
+            --panel-soft: #0f172a;
+            --accent: #38bdf8;
+            --accent-soft: rgba(56,189,248,0.15);
+            --accent-strong: #0ea5e9;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #fbbf24;
+            --text: #e5e7eb;
+            --text-soft: #9ca3af;
+            --border: #1f2937;
+            --radius-xl: 24px;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --shadow-soft: 0 24px 80px rgba(15,23,42,0.9);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* منع النسخ والاختيار */
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%);
+            color: var(--text);
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            user-select: none;               /* منع تحديد النص */
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+
+        body *::selection {
+            background: transparent;
+        }
+
+        /* الحاوية الأساسية */
+        .app-shell {
+            width: 100%;
+            max-width: 1280px;
+            margin: 16px;
+            background: linear-gradient(145deg, #020617 0%, #020617 50%, #020617 100%);
+            border-radius: 30px;
+            box-shadow: var(--shadow-soft);
+            padding: 18px 18px 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            border: 1px solid rgba(148,163,184,0.07);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ===============================
+           الهيدر العلوي
+        =================================*/
+        .top-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: space-between;
+        }
+
+        .top-left,
+        .top-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: radial-gradient(circle at top left, rgba(56,189,248,0.35), transparent 60%),
+                        linear-gradient(120deg, #020617, #020617);
+            border: 1px solid rgba(148,163,184,0.4);
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at top, #38bdf8, #0f172a);
+            font-weight: 800;
+            font-size: 18px;
+        }
+
+        .brand-text-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .brand-text-sub {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .mode-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid rgba(148,163,184,0.4);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .mode-switch span.icon {
+            font-size: 14px;
+        }
+
+        .student-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.8);
+            border: 1px solid rgba(148,163,184,0.35);
+        }
+
+        .student-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at top, #4ade80, #0f172a);
+            font-size: 16px;
+        }
+
+        .student-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .student-meta label {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .student-input {
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: none;
+            background: rgba(15,23,42,0.9);
+            color: var(--text);
+            font-size: 12px;
+            min-width: 140px;
+            outline: none;
+        }
+
+        .certificate-button {
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: linear-gradient(120deg,#22c55e,#16a34a);
+            border: none;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            box-shadow: 0 12px 30px rgba(34,197,94,0.4);
+        }
+
+        .certificate-button[disabled] {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* ===============================
+           شريط الحروف A–Z
+        =================================*/
+        .letters-strip-wrapper {
+            margin-top: 4px;
+        }
+
+        .letters-strip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: radial-gradient(circle at top, rgba(56,189,248,0.12), transparent 55%);
+            border-radius: 18px;
+            border: 1px solid rgba(148,163,184,0.25);
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .letters-strip::-webkit-scrollbar {
+            height: 5px;
+        }
+
+        .letters-strip::-webkit-scrollbar-thumb {
+            background: rgba(148,163,184,0.55);
+            border-radius: 999px;
+        }
+
+        .letter-chip {
+            min-width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid rgba(148,163,184,0.45);
+            background: rgba(15,23,42,0.85);
+            color: var(--text-soft);
+            transition: 0.25s ease;
+            flex-shrink: 0;
+        }
+
+        .letter-chip span.lock {
+            position: absolute;
+            bottom: -6px;
+            right: -4px;
+            font-size: 13px;
+        }
+
+        .letter-chip.active {
+            background: radial-gradient(circle at top, #38bdf8, #0f172a);
+            color: #e5f4ff;
+            box-shadow: 0 0 0 1px rgba(56,189,248,0.3),
+                        0 0 24px rgba(56,189,248,0.6);
+        }
+
+        .letter-chip.completed {
+            border-color: rgba(34,197,94,0.9);
+            background: radial-gradient(circle at top, #22c55e, #0f172a);
+            color: #eafff4;
+        }
+
+        .letter-chip.completed span.lock {
+            display: none;
+        }
+
+        .letter-chip.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ===============================
+           التوزيع الرئيسي (يمين/يسار)
+        =================================*/
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.05fr);
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 960px) {
+            .main-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        .panel {
+            background: radial-gradient(circle at top left, rgba(15,23,42,0.9), #020617);
+            border-radius: var(--radius-xl);
+            border: 1px solid rgba(148,163,184,0.16);
+            padding: 16px 16px 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .panel-sub {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .tag-pill {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid rgba(148,163,184,0.35);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ===============================
+           كرت الحرف (يمين)
+        =================================*/
+        .letter-main-card {
+            display: grid;
+            grid-template-columns: 180px minmax(0, 1fr);
+            gap: 18px;
+        }
+
+        @media (max-width: 700px) {
+            .letter-main-card {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        .letter-big-tile {
+            background: radial-gradient(circle at top, #1d4ed8, #020617);
+            border-radius: 24px;
+            padding: 20px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 18px 50px rgba(37,99,235,0.55);
+        }
+
+        .letter-big-tile .big {
+            font-size: 70px;
+            font-weight: 800;
+        }
+
+        .letter-big-tile .small {
+            font-size: 40px;
+            opacity: 0.9;
+        }
+
+        .letter-big-tile .phoneme {
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 13px;
+            background: rgba(15,23,42,0.85);
+            border: 1px solid rgba(148,163,184,0.35);
+        }
+
+        .letter-info-blocks {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .info-row strong {
+            color: var(--text);
+        }
+
+        .word-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .word-chip {
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.8);
+            border: 1px solid rgba(148,163,184,0.3);
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .word-chip span.emoji {
+            font-size: 16px;
+        }
+
+        .progress-bar-line {
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(15,23,42,1);
+            overflow: hidden;
+            border: 1px solid rgba(148,163,184,0.3);
+        }
+
+        .progress-bar-line span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg,#22c55e,#38bdf8);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* ===============================
+           التمارين + النتائج (يسار)
+        =================================*/
+        .steps-tabs {
+            display: inline-flex;
+            gap: 6px;
+            padding: 3px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid rgba(148,163,184,0.35);
+            margin-bottom: 10px;
+        }
+
+        .step-tab {
+            padding: 5px 10px;
+            font-size: 11px;
+            border-radius: 999px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .step-tab.active {
+            background: rgba(56,189,248,0.18);
+            color: var(--accent);
+        }
+
+        .exercise-group {
+            background: rgba(15,23,42,0.9);
+            border-radius: 18px;
+            border: 1px solid rgba(148,163,184,0.2);
+            padding: 12px 12px 10px;
+            margin-bottom: 10px;
+        }
+
+        .exercise-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .exercise-sub {
+            font-size: 11px;
+            color: var(--text-soft);
+            margin-bottom: 8px;
+        }
+
+        .exercise-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .exercise-input {
+            flex: 1;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(31,41,55,0.9);
+            background: rgba(15,23,42,0.95);
+            color: var(--text);
+            font-size: 12px;
+            outline: none;
+        }
+
+        .small-btn {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: none;
+            font-size: 11px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .small-btn.primary {
+            background: linear-gradient(120deg,#38bdf8,#0ea5e9);
+            color: white;
+        }
+
+        .small-btn.neutral {
+            background: rgba(15,23,42,0.95);
+            color: var(--text-soft);
+            border: 1px solid rgba(148,163,184,0.4);
+        }
+
+        .small-btn.success {
+            background: linear-gradient(120deg,#22c55e,#16a34a);
+            color: white;
+        }
+
+        .results-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 11px;
+            margin-top: 6px;
+        }
+
+        .result-pill {
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid rgba(148,163,184,0.25);
+        }
+
+        .result-pill.success {
+            border-color: rgba(34,197,94,0.85);
+            color: #bbf7d0;
+        }
+
+        .result-pill.danger {
+            border-color: rgba(239,68,68,0.8);
+            color: #fecaca;
+        }
+
+        .result-pill.warning {
+            border-color: rgba(245,158,11,0.85);
+            color: #fef3c7;
+        }
+
+        /* ===============================
+           لعبة الحرف
+        =================================*/
+        .game-card {
+            background: radial-gradient(circle at top left, rgba(56,189,248,0.2), #020617);
+            border-radius: 18px;
+            border: 1px solid rgba(56,189,248,0.45);
+            padding: 10px 10px 12px;
+            margin-top: 8px;
+        }
+
+        .game-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .game-sub {
+            font-size: 11px;
+            color: var(--text-soft);
+            margin-bottom: 8px;
+        }
+
+        .game-question {
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .game-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .game-option {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.4);
+            background: rgba(15,23,42,0.9);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .game-option.correct {
+            border-color: rgba(34,197,94,0.8);
+            background: rgba(22,163,74,0.2);
+        }
+
+        .game-option.wrong {
+            border-color: rgba(239,68,68,0.9);
+            background: rgba(127,29,29,0.35);
+        }
+
+        /* ===============================
+           التوست (رسائل صغيرة)
+        =================================*/
+        .toast {
+            position: fixed;
+            bottom: 18px;
+            right: 18px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.96);
+            border: 1px solid rgba(248,250,252,0.18);
+            box-shadow: 0 14px 40px rgba(0,0,0,0.5);
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            z-index: 999;
+        }
+
+        .toast.visible {
+            display: inline-flex;
+        }
+
+        .toast span.icon {
+            font-size: 16px;
+        }
+
+        /* ===============================
+           نافذة الشهادة
+        =================================*/
+        .certificate-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.94);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 900;
+        }
+
+        .certificate-modal {
+            width: min(520px, 94vw);
+            background: #f8fafc;
+            color: #0f172a;
+            border-radius: 24px;
+            padding: 24px 26px;
+            box-shadow: 0 24px 80px rgba(15,23,42,0.85);
+            position: relative;
+        }
+
+        .certificate-modal h2 {
+            text-align: center;
+            margin: 0 0 6px;
+            font-size: 24px;
+        }
+
+        .certificate-subtitle {
+            text-align: center;
+            font-size: 13px;
+            margin-bottom: 12px;
+            color: #64748b;
+        }
+
+        .certificate-body {
+            border-radius: 18px;
+            border: 1px dashed #cbd5f5;
+            padding: 16px 14px 14px;
+            background: radial-gradient(circle at top, #eff6ff, #ffffff);
+        }
+
+        .certificate-student-name {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            margin: 8px 0;
+            color: #0f172a;
+        }
+
+        .certificate-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 18px;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .certificate-actions {
+            margin-top: 14px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 18px;
+            color: #64748b;
+        }
+
+        /* طباعة الشهادة فقط */
+        @media print {
+            body {
+                background: #f8fafc;
+                box-shadow: none;
+            }
+            .app-shell,
+            .toast,
+            .certificate-actions button:not(.print-only),
+            .close-btn {
+                display: none !important;
+            }
+            .certificate-modal-backdrop {
+                position: static;
+                background: transparent;
+                display: block !important;
+            }
+            .certificate-modal {
+                box-shadow: none;
+                margin: 0 auto;
+            }
+        }
+
+        /* استجابة عامة */
+        @media (max-width: 640px) {
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .top-left, .top-right {
+                justify-content: space-between;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-shell">
+
+    <!-- =================== الهيدر =================== -->
+    <header class="top-bar">
+        <div class="top-left">
+            <div class="brand-badge">
+                <div class="brand-logo">P</div>
+                <div>
+                    <div class="brand-text-title">منصة ألعاب الحروف الإنجليزية</div>
+                    <div class="brand-text-sub">Phonics Game Progress Lab</div>
+                </div>
+            </div>
+
+            <button class="mode-switch" type="button">
+                <span class="icon">🌗</span>
+                <span>الوضع الليلي / النهاري</span>
+            </button>
+        </div>
+
+        <div class="top-right">
+            <div class="student-card">
+                <div class="student-avatar">👩‍🎓</div>
+                <div class="student-meta">
+                    <label>اسم الطالب</label>
+                    <input type="text" id="studentNameInput" class="student-input" placeholder="اكتب اسمك هنا..." />
+                </div>
+            </div>
+
+            <button id="showCertificateBtn" class="certificate-button" type="button" disabled>
+                🏆 طباعة الشهادة
+            </button>
+        </div>
+    </header>
+
+    <!-- شريط الحروف -->
+    <section class="letters-strip-wrapper">
+        <div id="lettersStrip" class="letters-strip"></div>
+    </section>
+
+    <!-- الشبكة الرئيسية -->
+    <section class="main-grid">
+
+        <!-- التمارين + اللعبة -->
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">الخطوة 3-4: اكتب، اختر، والعب 🎮</div>
+                    <div class="panel-sub">
+                        أكمل التمارين واللعبة لتحصل على 14 درجة أو أكثر لفتح الحرف التالي.
+                    </div>
+                </div>
+                <div class="tag-pill">
+                    <span>الدرجة الحالية للحرف:</span>
+                    <strong id="letterScoreLabel">0 / 26</strong>
+                </div>
+            </div>
+
+            <div class="steps-tabs">
+                <div class="step-tab active" data-step="write">✍️ كتابة الكلمات</div>
+                <div class="step-tab" data-step="quiz">❓ اختبار سريع</div>
+                <div class="step-tab" data-step="game">🎮 لعبة الحرف</div>
+            </div>
+
+            <!-- مجموعة التمارين -->
+            <div id="stepWrite" class="step-panel">
+                <div class="exercise-group">
+                    <div class="exercise-title">
+                        <span>اكتب 5 كلمات تبدأ بالحرف <span id="currentLetterLabel1">A</span></span>
+                    </div>
+                    <div class="exercise-sub">
+                        اكتب الكلمة كما تراها، ثم اضغط "حفظ الكلمات". بإمكانك التصحيح والتحسين لاحقًا.
+                    </div>
+
+                    <div id="writeInputsContainer"></div>
+
+                    <button id="saveWriteBtn" class="small-btn primary" type="button">
+                        💾 حفظ الكلمات (10 درجات)
+                    </button>
+                </div>
+            </div>
+
+            <div id="stepQuiz" class="step-panel" style="display:none;">
+                <div class="exercise-group">
+                    <div class="exercise-title">
+                        <span>اختبار الحرف <span id="currentLetterLabel2">A</span> (6 أسئلة)</span>
+                        <button id="resetQuizBtn" class="small-btn neutral" type="button">إعادة الأسئلة</button>
+                    </div>
+                    <div class="exercise-sub">
+                        اختر الإجابة الصحيحة. كل إجابة صحيحة = 1 درجة (بحد أقصى 6 درجات.
+                    </div>
+
+                    <div id="quizContainer"></div>
+
+                    <div class="results-row">
+                        <div id="quizResultPill" class="result-pill warning">
+                            نتيجة الاختبار: 0 / 6
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="stepGame" class="step-panel" style="display:none;">
+                <div class="game-card">
+                    <div class="game-title">
+                        <span>لعبة اصطياد الحرف 🎣</span>
+                        <span style="font-size:11px;">كل إجابة صحيحة = 2 درجة (بحد أقصى 10)</span>
+                    </div>
+                    <div class="game-sub">
+                        اضغط على الكلمة التي تحتوي على الحرف <span id="currentLetterLabel3">A</span> في بدايتها.
+                    </div>
+
+                    <div id="gameQuestion" class="game-question"></div>
+                    <div id="gameOptions" class="game-options"></div>
+
+                    <div class="results-row">
+                        <div id="gameResultPill" class="result-pill warning">
+                            نقاط اللعبة: 0 / 10
+                        </div>
+                    </div>
+
+                    <button id="newGameRoundBtn" class="small-btn primary" type="button" style="margin-top:8px;">
+                        🔄 جولة جديدة
+                    </button>
+                </div>
+
+                <div class="exercise-group" style="margin-top:10px;">
+                    <div class="exercise-title">
+                        <span>إنهاء اليوم لهذا الحرف ✅</span>
+                    </div>
+                    <div class="exercise-sub">
+                        بعد إكمال الكتابة + الاختبار + اللعبة، اضغط "تقييم الحرف" لحساب الدرجة وفتح الحرف التالي إذا كانت الدرجة ≥ 14.
+                    </div>
+                    <button id="finalizeLetterBtn" class="small-btn success" type="button">
+                        ✅ تقييم الحرف وفتح التالي (إن أمكن)
+                    </button>
+
+                    <div class="results-row">
+                        <div id="letterStatusPill" class="result-pill warning">
+                            لم يتم تقييم الحرف بعد.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- معلومات الحرف + التقدم العام -->
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">
+                        تعلّم الحرف <span id="currentLetterTitle">A</span>
+                    </div>
+                    <div class="panel-sub">
+                        استمع للكلمات، احفظ المعاني، ثم انتقل للكتابة والاختبار واللعبة.
+                    </div>
+                </div>
+                <div class="tag-pill">
+                    <span>التقدم العام:</span>
+                    <strong id="globalProgressLabel">0 / 26 حروف</strong>
+                </div>
+            </div>
+
+            <div class="letter-main-card">
+                <div class="letter-big-tile">
+                    <div class="big" id="bigLetter">A</div>
+                    <div class="small" id="smallLetter">a</div>
+                    <div class="phoneme" id="phonemeLabel">/æ/ كما في Apple</div>
+                </div>
+
+                <div class="letter-info-blocks">
+                    <div class="info-row">
+                        <strong>كلمات تبدأ بالحرف:</strong>
+                        <div id="wordsStart" class="word-chips"></div>
+                    </div>
+
+                    <div class="info-row">
+                        <strong>في وسط الكلمة:</strong>
+                        <div id="wordsMiddle" class="word-chips"></div>
+                    </div>
+
+                    <div class="info-row">
+                        <strong>في نهاية الكلمة:</strong>
+                        <div id="wordsEnd" class="word-chips"></div>
+                    </div>
+
+                    <div class="info-row">
+                        <strong>درجة هذا الحرف:</strong>
+                        <div class="progress-bar-line">
+                            <span id="letterProgressBar"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:14px;">
+                <div class="panel-sub">
+                    عند إنهاء جميع الحروف بدرجة النجاح، ستُفعَّل زر الشهادة لطباعة شهادة باسم الطالب.
+                </div>
+            </div>
+        </div>
+
+    </section>
+</div>
+
+<!-- توست -->
+<div id="toast" class="toast">
+    <span id="toastIcon" class="icon">ℹ️</span>
+    <span id="toastMessage">رسالة توضيحية</span>
+</div>
+
+<!-- نافذة الشهادة -->
+<div id="certificateBackdrop" class="certificate-modal-backdrop">
+    <div class="certificate-modal" id="certificateContent">
+        <button class="close-btn print-only" type="button" onclick="hideCertificate()">✕</button>
+        <h2>شهادة إنجاز</h2>
+        <div class="certificate-subtitle">
+            تشهد منصة ألعاب الحروف الإنجليزية بأن الطالب التالي قد أتمّ جميع حروف اللغة الإنجليزية بنجاح:
+        </div>
+        <div class="certificate-body">
+            <div class="certificate-student-name" id="certStudentName">اسم الطالب</div>
+            <div style="text-align:center; font-size:13px; margin-top:6px;">
+                وأكمل جميع الحروف من A إلى Z، وشارك في التمارين والألعاب التفاعلية بنشاط واجتهاد. 👏
+            </div>
+            <div class="certificate-footer">
+                <div>التاريخ: <span id="certDate">--/--/----</span></div>
+                <div>منصة ألعاب الحروف الإنجليزية - Phonics Lab</div>
+            </div>
+        </div>
+        <div class="certificate-actions">
+            <button class="small-btn neutral print-only" type="button" onclick="hideCertificate()">إغلاق</button>
+            <button class="small-btn primary" type="button" onclick="window.print()">🖨 طباعة الشهادة</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ===================================================
+   بيانات الحروف (يمكنك توسعتها لاحقًا)
+=================================================== */
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+const LETTER_DATA = {
+    'A': {
+        phoneme: '/æ/ كما في Apple',
+        vocab: {
+            start: [
+                { word: 'Apple', emoji: '🍎', ar: 'تفاحة' },
+                { word: 'Ant', emoji: '🐜', ar: 'نملة' },
+                { word: 'Alligator', emoji: '🐊', ar: 'تمساح' },
+                { word: 'Airplane', emoji: '✈️', ar: 'طائرة' },
+                { word: 'Arrow', emoji: '🏹', ar: 'سهم' }
+            ],
+            middle: [
+                { word: 'Cat', emoji: '🐱', ar: 'قطة' },
+                { word: 'Map', emoji: '🗺️', ar: 'خريطة' },
+                { word: 'Hat', emoji: '🎩', ar: 'قبعة' }
+            ],
+            end: [
+                { word: 'Banana', emoji: '🍌', ar: 'موزة' },
+                { word: 'Pizza', emoji: '🍕', ar: 'بيتزا' }
+            ]
+        },
+        quiz: [
+            {
+                q: 'ما هو الصوت الأساسي للحرف A؟',
+                options: ['/æ/ كما في Apple', '/eɪ/ كما في name', '/ɑː/ كما في car'],
+                correct: 0
+            },
+            {
+                q: 'أي كلمة تبدأ بالحرف A؟',
+                options: ['Cat', 'Apple', 'Dog'],
+                correct: 1
+            },
+            {
+                q: 'أي صورة تدل على Apple؟',
+                options: ['🍌', '🍎', '🍇'],
+                correct: 1
+            },
+            {
+                q: 'أي كلمة تحتوي على A في الوسط؟',
+                options: ['Map', 'End', 'Bus'],
+                correct: 0
+            },
+            {
+                q: 'أي كلمة تنتهي بالحرف a؟',
+                options: ['Banana', 'Apple', 'Dog'],
+                correct: 0
+            },
+            {
+                q: 'اختر الكلمة ذات الحرف A القصير /æ/',
+                options: ['Cake', 'Apple', 'Name'],
+                correct: 1
+            }
+        ]
+    }
+};
+
+// توليد بيانات افتراضية لبقية الحروف
+for (const l of LETTERS) {
+    if (!LETTER_DATA[l]) {
+        LETTER_DATA[l] = {
+            phoneme: `صوت الحرف ${l}`,
+            vocab: {
+                start: [{ word: `${l}...`, emoji: '⭐', ar: 'كلمة لاحقًا' }],
+                middle: [],
+                end: []
+            },
+            quiz: [
+                { q: `ما هو الحرف المعروض؟`, options: [l, 'A', 'Z'], correct: 0 },
+                { q: `أي خيار يحتوي على الحرف ${l}؟`, options: [`${l}a`, `Ba`, `Ca`], correct: 0 },
+                { q: 'سؤال تدريبي سيتم تعديله لاحقًا.', options: ['1','2','3'], correct: 0 },
+                { q: 'سؤال تدريبي سيتم تعديله لاحقًا.', options: ['1','2','3'], correct: 0 },
+                { q: 'سؤال تدريبي سيتم تعديله لاحقًا.', options: ['1','2','3'], correct: 0 },
+                { q: 'سؤال تدريبي سيتم تعديله لاحقًا.', options: ['1','2','3'], correct: 0 }
+            ]
+        };
+    }
+}
+
+/* ===================================================
+   إدارة الحالة + LocalStorage
+=================================================== */
+const STORAGE_KEY = 'phonics_platform_progress_v1';
+
+let state = {
+    currentLetterIndex: 0,
+    letters: {}
+};
+
+function loadState() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') {
+                state = parsed;
+            }
+        }
+    } catch (e) {
+        console.error('Error loading state', e);
+    }
+
+    // تأكد من وجود كائن لكل حرف
+    LETTERS.forEach(letter => {
+        if (!state.letters[letter]) {
+            state.letters[letter] = {
+                scoreWrite: 0,
+                scoreQuiz: 0,
+                scoreGame: 0,
+                totalScore: 0,
+                passed: false
+            };
+        }
+    });
+}
+
+function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    refreshUI();
+}
+
+/* ===================================================
+   رسم شريط الحروف + المنع من فتح حرف قبل السابق
+=================================================== */
+const lettersStripEl = document.getElementById('lettersStrip');
+const letterScoreLabel = document.getElementById('letterScoreLabel');
+const globalProgressLabel = document.getElementById('globalProgressLabel');
+const letterStatusPill = document.getElementById('letterStatusPill');
+const letterProgressBar = document.getElementById('letterProgressBar');
+
+function buildLettersStrip() {
+    lettersStripEl.innerHTML = '';
+    const highestPassedIndex = getHighestPassedIndex();
+    const unlockedIndex = highestPassedIndex + 1; // الحرف التالي بعد آخر ناجح
+
+    LETTERS.forEach((letter, index) => {
+        const data = state.letters[letter];
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.textContent = letter;
+        chip.className = 'letter-chip';
+
+        if (data.passed) {
+            chip.classList.add('completed');
+        }
+
+        if (index === state.currentLetterIndex) {
+            chip.classList.add('active');
+        }
+
+        if (index > unlockedIndex) {
+            chip.classList.add('locked');
+            const lock = document.createElement('span');
+            lock.className = 'lock';
+            lock.textContent = '🔒';
+            chip.appendChild(lock);
+        } else if (!data.passed && index > highestPassedIndex + 1) {
+            // ضمان القفل للأبعد
+            chip.classList.add('locked');
+            const lock = document.createElement('span');
+            lock.className = 'lock';
+            lock.textContent = '🔒';
+            chip.appendChild(lock);
+        } else if (index > unlockedIndex) {
+            const lock = document.createElement('span');
+            lock.className = 'lock';
+            lock.textContent = '🔒';
+            chip.appendChild(lock);
+        }
+
+        chip.addEventListener('click', () => {
+            const highestIndex = getHighestPassedIndex();
+            const maxOpenIndex = highestIndex + 1;
+            if (index > maxOpenIndex) {
+                showToast('🔒', 'أكمل الحرف السابق أولاً قبل فتح هذا الحرف.');
+                return;
+            }
+            state.currentLetterIndex = index;
+            saveState();
+        });
+
+        lettersStripEl.appendChild(chip);
+    });
+
+    refreshGlobalProgress();
+}
+
+function getHighestPassedIndex() {
+    let highest = -1;
+    LETTERS.forEach((letter, idx) => {
+        if (state.letters[letter].passed) {
+            highest = idx;
+        }
+    });
+    return highest;
+}
+
+function refreshGlobalProgress() {
+    const passedCount = LETTERS.filter(letter => state.letters[letter].passed).length;
+    globalProgressLabel.textContent = `${passedCount} / ${LETTERS.length} حروف`;
+
+    const certBtn = document.getElementById('showCertificateBtn');
+    certBtn.disabled = (passedCount !== LETTERS.length);
+}
+
+/* ===================================================
+   تحديث واجهة الحرف الحالي
+=================================================== */
+const currentLetterTitle = document.getElementById('currentLetterTitle');
+const bigLetter = document.getElementById('bigLetter');
+const smallLetter = document.getElementById('smallLetter');
+const phonemeLabel = document.getElementById('phonemeLabel');
+const wordsStart = document.getElementById('wordsStart');
+const wordsMiddle = document.getElementById('wordsMiddle');
+const wordsEnd = document.getElementById('wordsEnd');
+const currentLetterLabel1 = document.getElementById('currentLetterLabel1');
+const currentLetterLabel2 = document.getElementById('currentLetterLabel2');
+const currentLetterLabel3 = document.getElementById('currentLetterLabel3');
+const writeInputsContainer = document.getElementById('writeInputsContainer');
+const quizContainer = document.getElementById('quizContainer');
+const quizResultPill = document.getElementById('quizResultPill');
+const gameQuestion = document.getElementById('gameQuestion');
+const gameOptions = document.getElementById('gameOptions');
+const gameResultPill = document.getElementById('gameResultPill');
+
+function refreshUI() {
+    const letter = LETTERS[state.currentLetterIndex];
+    const data = LETTER_DATA[letter];
+    const scores = state.letters[letter];
+
+    buildLettersStrip();
+
+    currentLetterTitle.textContent = letter;
+    bigLetter.textContent = letter;
+    smallLetter.textContent = letter.toLowerCase();
+    phonemeLabel.textContent = data.phoneme;
+    currentLetterLabel1.textContent = letter;
+    currentLetterLabel2.textContent = letter;
+    currentLetterLabel3.textContent = letter;
+
+    // كلمات
+    function renderWordChips(el, list) {
+        el.innerHTML = '';
+        list.forEach(item => {
+            const chip = document.createElement('div');
+            chip.className = 'word-chip';
+            chip.innerHTML = `<span class="emoji">${item.emoji || '🔹'}</span> ${item.word} <span style="color:#9ca3af;font-size:11px;">${item.ar || ''}</span>`;
+            el.appendChild(chip);
+        });
+        if (!list.length) {
+            el.innerHTML = '<span style="font-size:11px;color:#6b7280;">(يمكنك إضافة كلمات لاحقًا)</span>';
+        }
+    }
+
+    renderWordChips(wordsStart, data.vocab.start || []);
+    renderWordChips(wordsMiddle, data.vocab.middle || []);
+    renderWordChips(wordsEnd, data.vocab.end || []);
+
+    // المدخلات للكتابة (5 كلمات فقط لتقييم 10 درجات)
+    writeInputsContainer.innerHTML = '';
+    for (let i = 0; i < 5; i++) {
+        const row = document.createElement('div');
+        row.className = 'exercise-input-row';
+        row.innerHTML = `
+            <span style="font-size:12px;color:var(--text-soft);width:24px;text-align:center;">${i+1}.</span>
+            <input type="text" class="exercise-input" placeholder="اكتب الكلمة هنا..." />
+        `;
+        writeInputsContainer.appendChild(row);
+    }
+
+    // الاختبار
+    renderQuiz(letter);
+
+    // اللعبة
+    currentGameScore = scores.scoreGame || 0;
+    updateGameResultLabel();
+
+    // النتائج
+    const total = scores.totalScore || 0;
+    letterScoreLabel.textContent = `${total} / 26`;
+    letterProgressBar.style.width = `${(total / 26) * 100}%`;
+
+    if (scores.passed) {
+        letterStatusPill.textContent = '✅ تم اجتياز هذا الحرف. يمكنك تحسين الدرجة إن أحببت.';
+        letterStatusPill.className = 'result-pill success';
+    } else if (total > 0) {
+        letterStatusPill.textContent = 'الحرف لم يجتز بعد. حاول تحسين درجتك حتى تصل إلى 14 على الأقل.';
+        letterStatusPill.className = 'result-pill warning';
+    } else {
+        letterStatusPill.textContent = 'لم يتم تقييم الحرف بعد.';
+        letterStatusPill.className = 'result-pill warning';
+    }
+}
+
+/* ===================================================
+   تمارين الكتابة (10 درجات)
+=================================================== */
+const saveWriteBtn = document.getElementById('saveWriteBtn');
+
+saveWriteBtn.addEventListener('click', () => {
+    const letter = LETTERS[state.currentLetterIndex];
+    const scores = state.letters[letter];
+
+    // نعتبر كتابة 5 كلمات = 10 درجات (سواء تعبأ الكل أو لا ـ يمكن تطويرها لاحقًا)
+    scores.scoreWrite = 10;
+    recalcTotalScore(letter);
+    showToast('✍️', 'تم حفظ تمارين الكتابة (10 درجات). يمكنك تحسين باقي الأجزاء.');
+    saveState();
+});
+
+/* ===================================================
+   الاختبار (6 درجات)
+=================================================== */
+function renderQuiz(letter) {
+    const qList = (LETTER_DATA[letter] && LETTER_DATA[letter].quiz) || [];
+    quizContainer.innerHTML = '';
+    const scores = state.letters[letter];
+
+    qList.forEach((q, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.style.marginBottom = '8px';
+        wrapper.style.fontSize = '12px';
+
+        const qTitle = document.createElement('div');
+        qTitle.textContent = `${index+1}. ${q.q}`;
+        qTitle.style.marginBottom = '4px';
+        wrapper.appendChild(qTitle);
+
+        const optsRow = document.createElement('div');
+        optsRow.className = 'game-options';
+
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'game-option';
+            btn.textContent = opt;
+            btn.addEventListener('click', () => {
+                handleQuizAnswer(letter, index, idx, btn, optsRow);
+            });
+            optsRow.appendChild(btn);
+        });
+
+        wrapper.appendChild(optsRow);
+        quizContainer.appendChild(wrapper);
+    });
+
+    updateQuizResultLabel(letter);
+}
+
+const resetQuizBtn = document.getElementById('resetQuizBtn');
+
+resetQuizBtn.addEventListener('click', () => {
+    const letter = LETTERS[state.currentLetterIndex];
+    state.letters[letter].scoreQuiz = 0;
+    showToast('♻️', 'تمت إعادة تعيين الاختبار. يمكنك المحاولة من جديد.');
+    saveState();
+});
+
+function handleQuizAnswer(letter, questionIndex, chosenIndex, btn, container) {
+    const data = LETTER_DATA[letter].quiz[questionIndex];
+    const isCorrect = chosenIndex === data.correct;
+
+    // منع اختيار أكثر من مرة لكل سؤال: نجعل كل الأزرار غير مفعلة
+    Array.from(container.children).forEach(child => {
+        child.disabled = true;
+    });
+
+    if (isCorrect) {
+        btn.classList.add('correct');
+        state.letters[letter].scoreQuiz = Math.min(6, state.letters[letter].scoreQuiz + 1);
+        showToast('✅', 'إجابة صحيحة! حصلت على درجة إضافية.');
+    } else {
+        btn.classList.add('wrong');
+        showToast('❌', 'إجابة غير صحيحة. حاول تحسين نتيجتك في الأسئلة الأخرى.');
+    }
+
+    recalcTotalScore(letter);
+    saveState();
+    updateQuizResultLabel(letter);
+}
+
+function updateQuizResultLabel(letter) {
+    const scores = state.letters[letter];
+    const val = scores.scoreQuiz || 0;
+    quizResultPill.textContent = `نتيجة الاختبار: ${val} / 6`;
+    quizResultPill.className = 'result-pill ' + (val >= 4 ? 'success' : 'warning');
+}
+
+/* ===================================================
+   لعبة الحرف (10 درجات كحد أقصى)
+=================================================== */
+let currentGameScore = 0;
+
+const newGameRoundBtn = document.getElementById('newGameRoundBtn');
+
+newGameRoundBtn.addEventListener('click', () => {
+    startGameRound();
+});
+
+function startGameRound() {
+    const letter = LETTERS[state.currentLetterIndex];
+    const data = LETTER_DATA[letter];
+    const words = [...(data.vocab.start || []), ...(data.vocab.middle || []), ...(data.vocab.end || [])];
+
+    if (words.length < 3) {
+        gameQuestion.textContent = 'سيتم إضافة كلمات أكثر لهذا الحرف لاحقًا. يمكنك اللعب لاحقًا.';
+        gameOptions.innerHTML = '';
+        return;
+    }
+
+    // اختيار كلمة صحيحة + كلمتين عشوائيتين أخرى
+    const correctIndex = Math.floor(Math.random() * words.length);
+    const correctWord = words[correctIndex];
+
+    const pool = words.filter((_, idx) => idx !== correctIndex);
+    const wrong1 = pool[Math.floor(Math.random() * pool.length)];
+    const wrong2 = pool[Math.floor(Math.random() * pool.length)];
+
+    const choices = [correctWord, wrong1, wrong2].sort(() => Math.random() - 0.5);
+
+    gameQuestion.textContent = `اختر الكلمة التي تحتوي على الحرف ${letter} بشكل واضح:`;
+
+    gameOptions.innerHTML = '';
+    choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'game-option';
+        btn.textContent = `${choice.emoji || '🔹'} ${choice.word}`;
+        btn.addEventListener('click', () => {
+            const isCorrect = choice === correctWord;
+            Array.from(gameOptions.children).forEach(c => c.disabled = true);
+
+            const letterNow = LETTERS[state.currentLetterIndex];
+            const scores = state.letters[letterNow];
+
+            if (isCorrect) {
+                btn.classList.add('correct');
+                scores.scoreGame = Math.min(10, (scores.scoreGame || 0) + 2);
+                showToast('🎉', 'إجابة صحيحة في اللعبة! حصلت على درجتين.');
+            } else {
+                btn.classList.add('wrong');
+                showToast('🎯', 'اختيار غير دقيق. جرب جولة جديدة لتحسين نتيجتك.');
+            }
+
+            currentGameScore = scores.scoreGame;
+            recalcTotalScore(letterNow);
+            saveState();
+            updateGameResultLabel();
+        });
+        gameOptions.appendChild(btn);
+    });
+}
+
+function updateGameResultLabel() {
+    const letter = LETTERS[state.currentLetterIndex];
+    const scores = state.letters[letter];
+    const val = scores.scoreGame || 0;
+    gameResultPill.textContent = `نقاط اللعبة: ${val} / 10`;
+    gameResultPill.className = 'result-pill ' + (val >= 6 ? 'success' : 'warning');
+}
+
+/* ===================================================
+   تقييم الحرف + فتح التالي
+=================================================== */
+const finalizeLetterBtn = document.getElementById('finalizeLetterBtn');
+
+finalizeLetterBtn.addEventListener('click', () => {
+    const letter = LETTERS[state.currentLetterIndex];
+    const scores = state.letters[letter];
+
+    recalcTotalScore(letter);
+
+    if (scores.totalScore >= 14) {
+        scores.passed = true;
+        showToast('🏆', `تهانينا! اجتزت الحرف ${letter} ويمكنك فتح الحرف التالي.`);
+    } else {
+        scores.passed = false;
+        showToast('📈', `درجتك أقل من 14 (${scores.totalScore}). حاول تحسين الكتابة أو الاختبار أو اللعبة.`);
+    }
+
+    saveState();
+});
+
+function recalcTotalScore(letter) {
+    const s = state.letters[letter];
+    s.totalScore = (s.scoreWrite || 0) + (s.scoreQuiz || 0) + (s.scoreGame || 0);
+}
+
+/* ===================================================
+   التبويبات (كتابة / اختبار / لعبة)
+=================================================== */
+const tabs = document.querySelectorAll('.step-tab');
+const panels = {
+    write: document.getElementById('stepWrite'),
+    quiz: document.getElementById('stepQuiz'),
+    game: document.getElementById('stepGame')
+};
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        const step = tab.dataset.step;
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        Object.keys(panels).forEach(key => {
+            panels[key].style.display = (key === step) ? 'block' : 'none';
+        });
+
+        if (step === 'game') {
+            startGameRound();
+        }
+    });
+});
+
+/* ===================================================
+   الشهادة
+=================================================== */
+const certificateBackdrop = document.getElementById('certificateBackdrop');
+const certStudentName = document.getElementById('certStudentName');
+const certDate = document.getElementById('certDate');
+const showCertificateBtn = document.getElementById('showCertificateBtn');
+const studentNameInput = document.getElementById('studentNameInput');
+
+showCertificateBtn.addEventListener('click', () => {
+    const name = studentNameInput.value.trim() || 'الطالب / الطالبة';
+    certStudentName.textContent = name;
+
+    const now = new Date();
+    const formatted = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    certDate.textContent = formatted;
+
+    certificateBackdrop.style.display = 'flex';
+});
+
+function hideCertificate() {
+    certificateBackdrop.style.display = 'none';
+}
+
+/* ===================================================
+   توست بسيط
+=================================================== */
+const toastEl = document.getElementById('toast');
+const toastIcon = document.getElementById('toastIcon');
+const toastMessage = document.getElementById('toastMessage');
+let toastTimeout = null;
+
+function showToast(icon, message, duration = 2600) {
+    toastIcon.textContent = icon;
+    toastMessage.textContent = message;
+    toastEl.classList.add('visible');
+
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+        toastEl.classList.remove('visible');
+    }, duration);
+}
+
+/* ===================================================
+   الوضع الليلي / النهاري (مبدئي)
+=================================================== */
+const modeSwitch = document.querySelector('.mode-switch');
+let isNight = true;
+
+modeSwitch.addEventListener('click', () => {
+    // في هذا النموذج سنغير الخلفية فقط (يمكنك تطوير الثيم لاحقًا)
+    isNight = !isNight;
+    if (isNight) {
+        document.body.style.background = 'radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%)';
+        showToast('🌙', 'تم تفعيل الوضع الليلي.');
+    } else {
+        document.body.style.background = 'radial-gradient(circle at top, #e5f2ff 0, #cbd5f5 40%, #94a3b8 100%)';
+        showToast('☀️', 'تم تفعيل الوضع النهاري.');
+    }
+});
+
+/* ===================================================
+   منع النسخ + منع الزر الأيمن
+=================================================== */
+document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+    showToast('🚫', 'تم تعطيل النسخ والزر الأيمن في هذه المنصة لحماية محتوى المعلم.');
+});
+
+document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && ['c', 'x', 'u', 's'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+        showToast('🚫', 'اختصارات النسخ والحفظ المعطّلة لحماية المحتوى.');
+    }
+});
+
+/* ===================================================
+   تهيئة أولية
+=================================================== */
+loadState();
+refreshUI();
+startGameRound();
+
+</script>
+</body>
+</html>

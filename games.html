@@ -1,0 +1,3926 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>منصة ألعاب الحروف الإنجليزية - Phonics Game Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* جميع الأنماط السابقة تبقى كما هي */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --secondary: #f72585;
+            --accent: #4cc9f0;
+            --success: #4ade80;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --background: #ffffff;
+            --surface: #ffffff;
+            --surface-light: #f8fafc;
+            --text: #1e293b;
+            --text-secondary: #475569;
+            --border: #e2e8f0;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.05);
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-light));
+            --gradient-accent: linear-gradient(135deg, var(--accent), var(--primary-light));
+            --gradient-success: linear-gradient(135deg, var(--success), #22c55e);
+            --gradient-surface: linear-gradient(135deg, #ffffff, #f8fafc);
+            
+            --night-bg: #0f172a;
+            --night-surface: #1e293b;
+            --night-text: #f1f5f9;
+            --night-text-secondary: #cbd5e1;
+            --night-border: #475569;
+            --night-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* جميع الأنماط السابقة تبقى كما هي */
+        .night-mode {
+            --background: var(--night-bg);
+            --surface: var(--night-surface);
+            --surface-light: #334155;
+            --text: var(--night-text);
+            --text-secondary: var(--night-text-secondary);
+            --border: var(--night-border);
+            --shadow: var(--night-shadow);
+            --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.2);
+            --gradient-surface: linear-gradient(135deg, var(--surface), #1e293b);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* ... جميع الأنماط السابقة تبقى كما هي ... */
+
+        /* تحسينات للألعاب */
+        .game-area {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 100;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .power-up {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .explosion {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: particle-explode 1s ease-out forwards;
+        }
+
+        @keyframes particle-explode {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx, 0), var(--ty, 0)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .game-object {
+            transition: transform 0.2s ease;
+        }
+
+        .game-object:hover {
+            transform: scale(1.1);
+        }
+
+        /* تحسينات للعبة الصيد */
+        .fishing-game .hook {
+            transition: transform 0.1s ease;
+        }
+
+        .fishing-game .fish {
+            animation: swim 3s ease-in-out infinite;
+        }
+
+        @keyframes swim {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+        }
+
+        /* تحسينات للعبة البالونات */
+        .balloon {
+            animation: float-balloon 5s ease-in-out infinite;
+        }
+
+        @keyframes float-balloon {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        /* تحسينات للعبة الذاكرة */
+        .memory-card {
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .memory-card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .memory-card .front,
+        .memory-card .back {
+            position: absolute;
+            backface-visibility: hidden;
+        }
+
+        .memory-card .back {
+            transform: rotateY(180deg);
+        }
+
+        /* تأثيرات الفوز المحسنة */
+        .win-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .firework {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: firework-explode 1.5s ease-out forwards;
+        }
+
+        @keyframes firework-explode {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translateY(var(--y)) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(var(--y)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: sparkle 1s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        /* شريط التقدم في الألعاب */
+        .game-progress {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .game-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        /* مؤشرات اللعبة */
+        .game-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .combo-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(247, 37, 133, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10;
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- الهيكل الأساسي يبقى كما هو -->
+    <div class="app-container">
+        <!-- ... باقي الهيكل ... -->
+    </div>
+
+    <script>
+        // نظام الألعاب المحسن والمطور
+        class EnhancedGameSystem {
+            constructor(gameManager) {
+                this.gameManager = gameManager;
+                this.effects = [];
+                this.powerUps = [];
+                this.combo = 0;
+                this.comboTimer = null;
+                this.gameDifficulty = 1;
+            }
+
+            // تحسين لعبة سباق السيارات
+            initEnhancedCarRace(ctx, canvas) {
+                const currentLetter = this.gameManager.currentLetter;
+                const letterData = this.gameManager.letterData;
+                
+                // إعدادات اللعبة المحسنة
+                const gameSettings = {
+                    carSpeed: 6,
+                    obstacleSpeed: 3,
+                    roadSpeed: 2,
+                    laneCount: 3,
+                    laneWidth: canvas.width / 3,
+                    gameTime: 60,
+                    targetScore: 50,
+                    powerUpChance: 0.1,
+                    difficultyFactor: this.gameDifficulty
+                };
+
+                // تحسينات المركبة
+                const car = {
+                    x: canvas.width / 2 - 25,
+                    y: canvas.height - 100,
+                    width: 60,
+                    height: 100,
+                    speed: gameSettings.carSpeed,
+                    lane: 1,
+                    color: '#4361ee',
+                    nitro: false,
+                    nitroTime: 0,
+                    shield: false,
+                    shieldTime: 0,
+                    score: 0,
+                    lives: 3,
+                    
+                    draw: function(ctx) {
+                        // هيكل السيارة
+                        ctx.save();
+                        
+                        // تأثير النيترو
+                        if (this.nitro) {
+                            const gradient = ctx.createLinearGradient(
+                                this.x, this.y + this.height,
+                                this.x, this.y + this.height + 50
+                            );
+                            gradient.addColorStop(0, '#4cc9f0');
+                            gradient.addColorStop(1, 'transparent');
+                            ctx.fillStyle = gradient;
+                            ctx.fillRect(this.x + 10, this.y + this.height, 40, 50);
+                        }
+                        
+                        // الدرع
+                        if (this.shield) {
+                            ctx.strokeStyle = '#4cc9f0';
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.arc(
+                                this.x + this.width/2,
+                                this.y + this.height/2,
+                                this.width/2 + 10,
+                                0,
+                                Math.PI * 2
+                            );
+                            ctx.stroke();
+                        }
+                        
+                        // هيكل السيارة الرئيسي
+                        ctx.fillStyle = this.color;
+                        ctx.fillRect(this.x, this.y, this.width, this.height);
+                        
+                        // النوافذ
+                        ctx.fillStyle = '#4cc9f0';
+                        ctx.fillRect(this.x + 5, this.y + 10, 20, 25);
+                        ctx.fillRect(this.x + 35, this.y + 10, 20, 25);
+                        
+                        // العجلات
+                        ctx.fillStyle = '#1e293b';
+                        ctx.fillRect(this.x - 5, this.y + 70, 10, 25);
+                        ctx.fillRect(this.x + this.width - 5, this.y + 70, 10, 25);
+                        
+                        ctx.restore();
+                    },
+                    
+                    moveLeft: function() {
+                        if (this.lane > 0) {
+                            this.lane--;
+                            this.x = this.lane * gameSettings.laneWidth + (gameSettings.laneWidth - this.width) / 2;
+                        }
+                    },
+                    
+                    moveRight: function() {
+                        if (this.lane < gameSettings.laneCount - 1) {
+                            this.lane++;
+                            this.x = this.lane * gameSettings.laneWidth + (gameSettings.laneWidth - this.width) / 2;
+                        }
+                    },
+                    
+                    update: function(deltaTime) {
+                        if (this.nitro) {
+                            this.nitroTime -= deltaTime;
+                            if (this.nitroTime <= 0) {
+                                this.nitro = false;
+                            }
+                        }
+                        
+                        if (this.shield) {
+                            this.shieldTime -= deltaTime;
+                            if (this.shieldTime <= 0) {
+                                this.shield = false;
+                            }
+                        }
+                    },
+                    
+                    activateNitro: function() {
+                        this.nitro = true;
+                        this.nitroTime = 5000; // 5 ثواني
+                        this.speed = gameSettings.carSpeed * 2;
+                    },
+                    
+                    activateShield: function() {
+                        this.shield = true;
+                        this.shieldTime = 10000; // 10 ثواني
+                    }
+                };
+
+                // تحسينات العقبات
+                class Obstacle {
+                    constructor() {
+                        this.lane = Math.floor(Math.random() * gameSettings.laneCount);
+                        this.x = this.lane * gameSettings.laneWidth + (gameSettings.laneWidth - 40) / 2;
+                        this.y = -100;
+                        this.width = 40;
+                        this.height = 60;
+                        this.speed = gameSettings.obstacleSpeed + Math.random() * 2;
+                        this.type = Math.random() < 0.7 ? 'letter' : 'powerup';
+                        
+                        if (this.type === 'letter') {
+                            this.isCorrect = Math.random() > 0.5;
+                            this.letter = this.isCorrect ? currentLetter : 
+                                         this.getRandomDifferentLetter(currentLetter);
+                            this.color = this.isCorrect ? '#4ade80' : '#ef4444';
+                        } else {
+                            this.powerUpType = Math.random() < 0.5 ? 'nitro' : 'shield';
+                            this.color = this.powerUpType === 'nitro' ? '#f59e0b' : '#4cc9f0';
+                        }
+                    }
+                    
+                    getRandomDifferentLetter(currentLetter) {
+                        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                        const differentLetters = letters.filter(l => l !== currentLetter);
+                        return differentLetters[Math.floor(Math.random() * differentLetters.length)];
+                    }
+                    
+                    draw(ctx) {
+                        ctx.save();
+                        
+                        if (this.type === 'letter') {
+                            // رسم العقبة
+                            ctx.fillStyle = this.color;
+                            ctx.fillRect(this.x, this.y, this.width, this.height);
+                            
+                            // الحرف
+                            ctx.fillStyle = 'white';
+                            ctx.font = 'bold 24px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(this.letter, this.x + this.width/2, this.y + this.height/2);
+                            
+                            // تأثير للعقبات الصحيحة
+                            if (this.isCorrect) {
+                                ctx.strokeStyle = '#ffffff';
+                                ctx.lineWidth = 2;
+                                ctx.strokeRect(this.x - 2, this.y - 2, this.width + 4, this.height + 4);
+                            }
+                        } else {
+                            // رسم الباور أب
+                            ctx.fillStyle = this.color;
+                            ctx.beginPath();
+                            ctx.arc(
+                                this.x + this.width/2,
+                                this.y + this.height/2,
+                                this.width/2,
+                                0,
+                                Math.PI * 2
+                            );
+                            ctx.fill();
+                            
+                            // رمز الباور أب
+                            ctx.fillStyle = 'white';
+                            ctx.font = 'bold 20px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(
+                                this.powerUpType === 'nitro' ? '⚡' : '🛡️',
+                                this.x + this.width/2,
+                                this.y + this.height/2
+                            );
+                        }
+                        
+                        ctx.restore();
+                    }
+                    
+                    update(deltaTime) {
+                        this.y += this.speed * (car.nitro ? 1.5 : 1);
+                        return this.y > canvas.height;
+                    }
+                    
+                    checkCollision(car) {
+                        return (
+                            this.x < car.x + car.width &&
+                            this.x + this.width > car.x &&
+                            this.y < car.y + car.height &&
+                            this.y + this.height > car.y
+                        );
+                    }
+                }
+
+                // خطوط الطريق المتحركة
+                const roadLines = [];
+                for (let i = 0; i < 10; i++) {
+                    roadLines.push({
+                        x: canvas.width / 2 - 2,
+                        y: i * 80,
+                        width: 4,
+                        height: 40
+                    });
+                }
+
+                // المتغيرات الرئيسية للعبة
+                const obstacles = [];
+                let score = 0;
+                let gameOver = false;
+                let lastObstacleTime = 0;
+                let lastRoadUpdate = 0;
+                
+                // دورة اللعبة المحسنة
+                const gameLoop = (timestamp) => {
+                    if (gameOver) return;
+                    
+                    const deltaTime = timestamp - lastTime;
+                    lastTime = timestamp;
+                    
+                    // تحديث المركبة
+                    car.update(deltaTime);
+                    
+                    // تحديث العقبات
+                    obstacles.forEach((obstacle, index) => {
+                        if (obstacle.update(deltaTime)) {
+                            obstacles.splice(index, 1);
+                        }
+                        
+                        // اكتشاف الاصطدام
+                        if (obstacle.checkCollision(car)) {
+                            if (obstacle.type === 'letter') {
+                                if (obstacle.isCorrect) {
+                                    score += 10;
+                                    this.gameManager.gameScore += 10;
+                                    this.gameManager.soundManager.playSound('success');
+                                    this.addCombo();
+                                    this.createExplosion(obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2, '#4ade80');
+                                } else if (!car.shield) {
+                                    car.lives--;
+                                    this.gameManager.soundManager.playSound('error');
+                                    this.createExplosion(obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2, '#ef4444');
+                                    
+                                    if (car.lives <= 0) {
+                                        gameOver = true;
+                                        this.showGameOver(canvas, ctx, score);
+                                    }
+                                }
+                            } else {
+                                if (obstacle.powerUpType === 'nitro') {
+                                    car.activateNitro();
+                                } else {
+                                    car.activateShield();
+                                }
+                                this.gameManager.soundManager.playSound('success');
+                                this.createExplosion(obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2, obstacle.color);
+                            }
+                            obstacles.splice(index, 1);
+                        }
+                    });
+                    
+                    // إنشاء عقبات جديدة
+                    if (timestamp - lastObstacleTime > 1000 - (this.gameDifficulty * 100)) {
+                        obstacles.push(new Obstacle());
+                        lastObstacleTime = timestamp;
+                    }
+                    
+                    // تحديث خطوط الطريق
+                    if (timestamp - lastRoadUpdate > 1000 / 60) {
+                        roadLines.forEach(line => {
+                            line.y += gameSettings.roadSpeed * (car.nitro ? 1.5 : 1);
+                            if (line.y > canvas.height) {
+                                line.y = -40;
+                            }
+                        });
+                        lastRoadUpdate = timestamp;
+                    }
+                    
+                    // تحديث المؤثرات
+                    this.updateEffects(deltaTime);
+                    
+                    // الرسم
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // خلفية الطريق
+                    const roadGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    roadGradient.addColorStop(0, '#475569');
+                    roadGradient.addColorStop(1, '#334155');
+                    ctx.fillStyle = roadGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // خطوط الطريق
+                    ctx.fillStyle = '#f1f5f9';
+                    roadLines.forEach(line => {
+                        ctx.fillRect(line.x, line.y, line.width, line.height);
+                    });
+                    
+                    // الحدود الجانبية
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillRect(0, 0, 20, canvas.height);
+                    ctx.fillRect(canvas.width - 20, 0, 20, canvas.height);
+                    
+                    // رسم العقبات
+                    obstacles.forEach(obstacle => obstacle.draw(ctx));
+                    
+                    // رسم المركبة
+                    car.draw(ctx);
+                    
+                    // رسم المؤثرات
+                    this.drawEffects(ctx);
+                    
+                    // رسم المعلومات
+                    this.drawGameInfo(ctx, canvas, score, car.lives, car.nitro, car.shield);
+                    
+                    // التحقق من الفوز
+                    if (score >= gameSettings.targetScore) {
+                        gameOver = true;
+                        this.showWinScreen(canvas, ctx, score);
+                    }
+                    
+                    requestAnimationFrame(gameLoop);
+                };
+
+                let lastTime = 0;
+                requestAnimationFrame((timestamp) => {
+                    lastTime = timestamp;
+                    gameLoop(timestamp);
+                });
+
+                // إضافة مستمعي الأحداث للتحكم
+                this.setupCarRaceControls(car);
+            }
+
+            setupCarRaceControls(car) {
+                const keyHandler = (e) => {
+                    switch(e.key) {
+                        case 'ArrowLeft':
+                        case 'a':
+                        case 'A':
+                            car.moveLeft();
+                            break;
+                        case 'ArrowRight':
+                        case 'd':
+                        case 'D':
+                            car.moveRight();
+                            break;
+                    }
+                };
+
+                document.addEventListener('keydown', keyHandler);
+                this.gameManager.currentKeyHandler = keyHandler;
+
+                // التحكم باللمس
+                const touchHandler = (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const rect = this.gameManager.gameCanvas.getBoundingClientRect();
+                    const touchX = touch.clientX - rect.left;
+                    
+                    if (touchX < rect.width / 2) {
+                        car.moveLeft();
+                    } else {
+                        car.moveRight();
+                    }
+                };
+
+                this.gameManager.gameCanvas.addEventListener('touchstart', touchHandler);
+                this.gameManager.currentTouchHandler = touchHandler;
+            }
+
+            // تحسين لعبة الصيد
+            initEnhancedFishing(ctx, canvas) {
+                const currentLetter = this.gameManager.currentLetter;
+                
+                // إعدادات اللعبة المحسنة
+                const gameSettings = {
+                    hookSpeed: 0.08,
+                    hookLength: 200,
+                    fishCount: 15,
+                    fishSpeed: 1,
+                    gameTime: 60,
+                    targetScore: 30,
+                    difficultyFactor: this.gameDifficulty
+                };
+
+                // صنارة الصيد المحسنة
+                const fishingRod = {
+                    x: canvas.width / 2,
+                    y: 80,
+                    angle: 0,
+                    length: gameSettings.hookLength,
+                    speed: gameSettings.hookSpeed,
+                    hook: {
+                        x: 0,
+                        y: 0,
+                        radius: 15,
+                        hasFish: false,
+                        fish: null,
+                        lineLength: 0
+                    },
+                    score: 0,
+                    combo: 0,
+                    lastCatchTime: 0,
+                    
+                    draw: function(ctx) {
+                        // رسم القصبة
+                        ctx.save();
+                        ctx.strokeStyle = '#8b5a2b';
+                        ctx.lineWidth = 8;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        
+                        // منحنى القصبة
+                        const controlX = this.x + Math.sin(this.angle) * 50;
+                        const controlY = this.y + Math.cos(this.angle) * 50;
+                        ctx.quadraticCurveTo(controlX, controlY, this.hook.x, this.hook.y);
+                        ctx.stroke();
+                        
+                        // رسم الخطاف
+                        ctx.fillStyle = this.hook.hasFish ? '#4ade80' : '#1e293b';
+                        ctx.beginPath();
+                        ctx.arc(this.hook.x, this.hook.y, this.hook.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // خطاف حقيقي
+                        ctx.strokeStyle = '#1e293b';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(this.hook.x, this.hook.y);
+                        ctx.lineTo(this.hook.x - 10, this.hook.y + 10);
+                        ctx.lineTo(this.hook.x + 10, this.hook.y + 10);
+                        ctx.closePath();
+                        ctx.stroke();
+                        
+                        // إذا كان هناك سمكة
+                        if (this.hook.hasFish && this.hook.fish) {
+                            this.hook.fish.drawHook(ctx, this.hook.x, this.hook.y);
+                        }
+                        
+                        ctx.restore();
+                    },
+                    
+                    update: function(deltaTime) {
+                        // تحديث الزاوية
+                        this.angle += this.speed;
+                        
+                        // حساب موقع الخطاف
+                        this.hook.x = this.x + Math.sin(this.angle) * this.length;
+                        this.hook.y = this.y + Math.cos(this.angle) * 0.8 * this.length;
+                        
+                        // التحكم
+                        if (this.gameManager.touchControls.left) {
+                            this.speed = -gameSettings.hookSpeed * 1.5;
+                        } else if (this.gameManager.touchControls.right) {
+                            this.speed = gameSettings.hookSpeed * 1.5;
+                        } else {
+                            this.speed = this.speed > 0 ? 
+                                gameSettings.hookSpeed : 
+                                -gameSettings.hookSpeed;
+                        }
+                        
+                        // تقييد السرعة
+                        this.speed = Math.max(-gameSettings.hookSpeed * 2, 
+                                            Math.min(gameSettings.hookSpeed * 2, this.speed));
+                        
+                        // تحديث الخطاف
+                        if (this.hook.hasFish && this.hook.fish) {
+                            this.hook.y -= 3; // سحب السمكة للأعلى
+                        }
+                        
+                        // تحديث الكومبو
+                        if (Date.now() - this.lastCatchTime > 3000) {
+                            this.combo = 0;
+                        }
+                    },
+                    
+                    catchFish: function(fish) {
+                        this.hook.hasFish = true;
+                        this.hook.fish = fish;
+                        fish.isCaught = true;
+                        this.lastCatchTime = Date.now();
+                    },
+                    
+                    releaseHook: function() {
+                        if (this.hook.hasFish && this.hook.fish) {
+                            const fish = this.hook.fish;
+                            this.score += fish.isCorrect ? 10 : -5;
+                            this.combo += fish.isCorrect ? 1 : 0;
+                            this.hook.hasFish = false;
+                            this.hook.fish = null;
+                            return fish;
+                        }
+                        return null;
+                    }
+                };
+
+                // الأسماك المحسنة
+                class Fish {
+                    constructor() {
+                        this.width = 50 + Math.random() * 30;
+                        this.height = 25 + Math.random() * 15;
+                        this.x = Math.random() * (canvas.width - this.width);
+                        this.y = 150 + Math.random() * (canvas.height - 250);
+                        this.speedX = (Math.random() - 0.5) * 2;
+                        this.speedY = (Math.random() - 0.5) * 1;
+                        this.isCorrect = Math.random() > 0.5;
+                        this.letter = this.isCorrect ? currentLetter : 
+                                     this.getRandomDifferentLetter(currentLetter);
+                        this.color = this.getFishColor();
+                        this.isCaught = false;
+                        this.caughtTime = 0;
+                        this.wobble = Math.random() * Math.PI * 2;
+                        this.wobbleSpeed = 0.1 + Math.random() * 0.1;
+                    }
+                    
+                    getRandomDifferentLetter(currentLetter) {
+                        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                        const differentLetters = letters.filter(l => l !== currentLetter);
+                        return differentLetters[Math.floor(Math.random() * differentLetters.length)];
+                    }
+                    
+                    getFishColor() {
+                        const colors = this.isCorrect ? 
+                            ['#4cc9f0', '#4895ef', '#4361ee'] : 
+                            ['#ef4444', '#f59e0b', '#f97316'];
+                        return colors[Math.floor(Math.random() * colors.length)];
+                    }
+                    
+                    draw(ctx) {
+                        if (this.isCaught) return;
+                        
+                        ctx.save();
+                        
+                        // حركة التمايل
+                        const wobbleOffset = Math.sin(this.wobble) * 5;
+                        
+                        // جسم السمكة
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        
+                        // شكل السمكة البيضاوي
+                        ctx.ellipse(
+                            this.x + this.width/2,
+                            this.y + this.height/2 + wobbleOffset,
+                            this.width/2,
+                            this.height/2,
+                            0, 0, Math.PI * 2
+                        );
+                        ctx.fill();
+                        
+                        // الذيل
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y + this.height/2 + wobbleOffset);
+                        ctx.lineTo(this.x - this.width/3, this.y + wobbleOffset);
+                        ctx.lineTo(this.x - this.width/3, this.y + this.height + wobbleOffset);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // العين
+                        ctx.fillStyle = 'white';
+                        ctx.beginPath();
+                        ctx.arc(
+                            this.x + this.width * 0.7,
+                            this.y + this.height/3 + wobbleOffset,
+                            4, 0, Math.PI * 2
+                        );
+                        ctx.fill();
+                        
+                        ctx.fillStyle = 'black';
+                        ctx.beginPath();
+                        ctx.arc(
+                            this.x + this.width * 0.7,
+                            this.y + this.height/3 + wobbleOffset,
+                            2, 0, Math.PI * 2
+                        );
+                        ctx.fill();
+                        
+                        // الزعانف
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.moveTo(this.x + this.width/3, this.y + this.height/2 + wobbleOffset);
+                        ctx.lineTo(this.x + this.width/2, this.y - 5 + wobbleOffset);
+                        ctx.lineTo(this.x + this.width/2, this.y + this.height/2 + wobbleOffset);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // الحرف
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 20px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(
+                            this.letter,
+                            this.x + this.width/2,
+                            this.y + this.height/2 + wobbleOffset
+                        );
+                        
+                        // فقاعات
+                        if (Math.random() > 0.9) {
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                            ctx.beginPath();
+                            ctx.arc(
+                                this.x + this.width + 5,
+                                this.y + this.height/3,
+                                3, 0, Math.PI * 2
+                            );
+                            ctx.fill();
+                        }
+                        
+                        ctx.restore();
+                    }
+                    
+                    drawHook(ctx, hookX, hookY) {
+                        ctx.save();
+                        
+                        // جسم السمكة على الخطاف
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.ellipse(
+                            hookX,
+                            hookY,
+                            this.width/2,
+                            this.height/2,
+                            Math.PI/4, 0, Math.PI * 2
+                        );
+                        ctx.fill();
+                        
+                        // الذيل
+                        ctx.beginPath();
+                        ctx.moveTo(hookX - this.width/2, hookY);
+                        ctx.lineTo(hookX - this.width, hookY - this.height/3);
+                        ctx.lineTo(hookX - this.width, hookY + this.height/3);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // الحرف
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 16px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(this.letter, hookX, hookY);
+                        
+                        ctx.restore();
+                    }
+                    
+                    update(deltaTime) {
+                        if (this.isCaught) return;
+                        
+                        this.wobble += this.wobbleSpeed;
+                        
+                        // حركة السمكة
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        
+                        // ارتداد من الحواف
+                        if (this.x < 0 || this.x > canvas.width - this.width) {
+                            this.speedX = -this.speedX;
+                        }
+                        if (this.y < 150 || this.y > canvas.height - 50) {
+                            this.speedY = -this.speedY;
+                        }
+                        
+                        // تغيير الاتجاه بشكل عشوائي
+                        if (Math.random() < 0.01) {
+                            this.speedX = (Math.random() - 0.5) * 2;
+                            this.speedY = (Math.random() - 0.5) * 1;
+                        }
+                    }
+                    
+                    checkCollision(hookX, hookY, hookRadius) {
+                        if (this.isCaught) return false;
+                        
+                        const dx = (this.x + this.width/2) - hookX;
+                        const dy = (this.y + this.height/2) - hookY;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        return distance < (this.width/2 + hookRadius);
+                    }
+                }
+
+                // إنشاء الأسماك
+                const fishes = [];
+                for (let i = 0; i < gameSettings.fishCount; i++) {
+                    fishes.push(new Fish());
+                }
+
+                // العناصر الأخرى في البحر
+                const seaElements = [];
+                for (let i = 0; i < 10; i++) {
+                    seaElements.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        type: Math.random() > 0.5 ? 'plant' : 'rock',
+                        size: 20 + Math.random() * 30,
+                        sway: Math.random() * Math.PI * 2
+                    });
+                }
+
+                let gameTime = gameSettings.gameTime * 1000;
+                let lastTime = 0;
+                let gameActive = true;
+
+                const gameLoop = (timestamp) => {
+                    if (!gameActive) return;
+                    
+                    const deltaTime = timestamp - lastTime;
+                    lastTime = timestamp;
+                    
+                    // تحديث الوقت
+                    gameTime -= deltaTime;
+                    if (gameTime <= 0) {
+                        gameActive = false;
+                        this.showGameOver(canvas, ctx, fishingRod.score);
+                        return;
+                    }
+                    
+                    // تحديث الصنارة
+                    fishingRod.update(deltaTime);
+                    
+                    // تحديث الأسماك
+                    fishes.forEach(fish => fish.update(deltaTime));
+                    
+                    // التحقق من الاصطياد
+                    if (!fishingRod.hook.hasFish) {
+                        fishes.forEach(fish => {
+                            if (fish.checkCollision(fishingRod.hook.x, fishingRod.hook.y, fishingRod.hook.radius)) {
+                                fishingRod.catchFish(fish);
+                                this.gameManager.soundManager.playSound('click');
+                            }
+                        });
+                    }
+                    
+                    // التحقق من رفع الصنارة
+                    if (fishingRod.hook.hasFish && fishingRod.hook.y < 100) {
+                        const caughtFish = fishingRod.releaseHook();
+                        if (caughtFish) {
+                            if (caughtFish.isCorrect) {
+                                this.gameManager.gameScore += 10 + fishingRod.combo * 2;
+                                this.gameManager.soundManager.playSound('success');
+                                this.createExplosion(
+                                    fishingRod.hook.x,
+                                    fishingRod.hook.y,
+                                    caughtFish.color
+                                );
+                                this.addCombo();
+                            } else {
+                                this.gameManager.soundManager.playSound('error');
+                                fishingRod.score = Math.max(0, fishingRod.score - 5);
+                            }
+                        }
+                    }
+                    
+                    // تحديث عناصر البحر
+                    seaElements.forEach(element => {
+                        element.sway += 0.02;
+                    });
+                    
+                    // الرسم
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // خلفية البحر
+                    const seaGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    seaGradient.addColorStop(0, '#4cc9f0');
+                    seaGradient.addColorStop(0.5, '#4895ef');
+                    seaGradient.addColorStop(1, '#3a0ca3');
+                    ctx.fillStyle = seaGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // سطح الماء مع حركة الموج
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                    for (let x = 0; x < canvas.width; x += 20) {
+                        const waveHeight = Math.sin(Date.now()/1000 + x/100) * 10;
+                        ctx.beginPath();
+                        ctx.arc(x, 50 + waveHeight, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // رسم عناصر البحر
+                    seaElements.forEach(element => {
+                        ctx.save();
+                        if (element.type === 'plant') {
+                            ctx.fillStyle = '#22c55e';
+                            const swayOffset = Math.sin(element.sway) * 5;
+                            for (let i = 0; i < 3; i++) {
+                                ctx.beginPath();
+                                ctx.moveTo(element.x, element.y);
+                                ctx.quadraticCurveTo(
+                                    element.x - 20 + swayOffset,
+                                    element.y - element.size/2,
+                                    element.x,
+                                    element.y - element.size
+                                );
+                                ctx.stroke();
+                            }
+                        } else {
+                            ctx.fillStyle = '#64748b';
+                            ctx.beginPath();
+                            ctx.arc(element.x, element.y, element.size/2, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        ctx.restore();
+                    });
+                    
+                    // رسم الأسماك
+                    fishes.forEach(fish => fish.draw(ctx));
+                    
+                    // رسم الصنارة
+                    fishingRod.draw(ctx);
+                    
+                    // رسم المعلومات
+                    this.drawFishingInfo(ctx, canvas, fishingRod.score, gameTime, fishingRod.combo);
+                    
+                    // التحقق من الفوز
+                    if (fishingRod.score >= gameSettings.targetScore) {
+                        gameActive = false;
+                        this.showWinScreen(canvas, ctx, fishingRod.score);
+                        return;
+                    }
+                    
+                    requestAnimationFrame(gameLoop);
+                };
+
+                lastTime = 0;
+                requestAnimationFrame(gameLoop);
+
+                // إضافة مستمعي التحكم
+                this.setupFishingControls();
+            }
+
+            setupFishingControls() {
+                const keyHandler = (e) => {
+                    switch(e.key) {
+                        case 'ArrowLeft':
+                        case 'a':
+                        case 'A':
+                            this.gameManager.touchControls.left = true;
+                            break;
+                        case 'ArrowRight':
+                        case 'd':
+                        case 'D':
+                            this.gameManager.touchControls.right = true;
+                            break;
+                    }
+                };
+
+                const keyUpHandler = (e) => {
+                    switch(e.key) {
+                        case 'ArrowLeft':
+                        case 'a':
+                        case 'A':
+                            this.gameManager.touchControls.left = false;
+                            break;
+                        case 'ArrowRight':
+                        case 'd':
+                        case 'D':
+                            this.gameManager.touchControls.right = false;
+                            break;
+                    }
+                };
+
+                document.addEventListener('keydown', keyHandler);
+                document.addEventListener('keyup', keyUpHandler);
+                
+                this.gameManager.currentKeyHandlers = {
+                    keydown: keyHandler,
+                    keyup: keyUpHandler
+                };
+            }
+
+            // تحسين لعبة المضرب
+            initEnhancedRacket(ctx, canvas) {
+                const currentLetter = this.gameManager.currentLetter;
+                
+                // إعدادات اللعبة
+                const gameSettings = {
+                    paddleSpeed: 8,
+                    ballSpeed: 5,
+                    gameTime: 60,
+                    targetScore: 40,
+                    difficultyFactor: this.gameDifficulty
+                };
+
+                // المضرب المحسن
+                const paddle = {
+                    x: canvas.width / 2 - 60,
+                    y: canvas.height - 40,
+                    width: 120,
+                    height: 25,
+                    speed: gameSettings.paddleSpeed,
+                    color: '#f72585',
+                    score: 0,
+                    lives: 3,
+                    power: 1,
+                    
+                    draw: function(ctx) {
+                        // المضرب الأساسي
+                        ctx.fillStyle = this.color;
+                        ctx.fillRect(this.x, this.y, this.width, this.height);
+                        
+                        // وسط المضرب
+                        ctx.fillStyle = '#4cc9f0';
+                        ctx.fillRect(this.x + 10, this.y + 5, this.width - 20, 15);
+                        
+                        // حواف المضرب
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(this.x, this.y, this.width, this.height);
+                    },
+                    
+                    moveLeft: function() {
+                        this.x = Math.max(0, this.x - this.speed);
+                    },
+                    
+                    moveRight: function() {
+                        this.x = Math.min(canvas.width - this.width, this.x + this.speed);
+                    },
+                    
+                    increasePower: function() {
+                        this.power = Math.min(3, this.power + 0.5);
+                        this.width = 120 * this.power;
+                    },
+                    
+                    decreasePower: function() {
+                        this.power = Math.max(0.5, this.power - 0.5);
+                        this.width = 120 * this.power;
+                    }
+                };
+
+                // الكرة المحسنة
+                class Ball {
+                    constructor() {
+                        this.reset();
+                        this.letter = currentLetter;
+                        this.isCorrect = true;
+                        this.size = 25;
+                        this.color = '#4361ee';
+                        this.trail = [];
+                        this.maxTrail = 10;
+                    }
+                    
+                    reset() {
+                        this.x = canvas.width / 2;
+                        this.y = canvas.height / 2;
+                        this.speedX = (Math.random() > 0.5 ? 1 : -1) * gameSettings.ballSpeed;
+                        this.speedY = -gameSettings.ballSpeed;
+                        this.letter = this.getRandomLetter();
+                        this.color = this.isCorrect ? '#4361ee' : '#ef4444';
+                    }
+                    
+                    getRandomLetter() {
+                        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                        this.isCorrect = Math.random() > 0.3;
+                        return this.isCorrect ? currentLetter : 
+                               letters.filter(l => l !== currentLetter)[
+                                   Math.floor(Math.random() * 25)
+                               ];
+                    }
+                    
+                    draw(ctx) {
+                        // رسم الأثر
+                        this.trail.forEach((pos, index) => {
+                            const alpha = index / this.maxTrail;
+                            ctx.fillStyle = `rgba(67, 97, 238, ${alpha})`;
+                            ctx.beginPath();
+                            ctx.arc(pos.x, pos.y, this.size * alpha, 0, Math.PI * 2);
+                            ctx.fill();
+                        });
+                        
+                        // رسم الكرة
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // الحرف
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 18px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(this.letter, this.x, this.y);
+                        
+                        // تأثير للكرات الصحيحة
+                        if (this.isCorrect) {
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.arc(this.x, this.y, this.size + 3, 0, Math.PI * 2);
+                            ctx.stroke();
+                        }
+                    }
+                    
+                    update() {
+                        // تحديث الأثر
+                        this.trail.push({ x: this.x, y: this.y });
+                        if (this.trail.length > this.maxTrail) {
+                            this.trail.shift();
+                        }
+                        
+                        // حركة الكرة
+                        this.x += this.speedX;
+                        this.y += this.speedY;
+                        
+                        // ارتداد من الجدران
+                        if (this.x - this.size < 0 || this.x + this.size > canvas.width) {
+                            this.speedX = -this.speedX;
+                            this.gameManager.soundManager.playSound('click');
+                        }
+                        
+                        if (this.y - this.size < 0) {
+                            this.speedY = -this.speedY;
+                            this.gameManager.soundManager.playSound('click');
+                        }
+                        
+                        // ارتداد من المضرب
+                        if (this.y + this.size > paddle.y &&
+                            this.y - this.size < paddle.y + paddle.height &&
+                            this.x + this.size > paddle.x &&
+                            this.x - this.size < paddle.x + paddle.width) {
+                            
+                            // حساب زاوية الارتداد بناءً على مكان الاصطدام بالمضرب
+                            const hitPos = (this.x - paddle.x) / paddle.width;
+                            const angle = hitPos * Math.PI - Math.PI / 2;
+                            
+                            this.speedX = Math.sin(angle) * gameSettings.ballSpeed * paddle.power;
+                            this.speedY = -Math.abs(Math.cos(angle) * gameSettings.ballSpeed * paddle.power);
+                            
+                            // تأثيرات حسب نوع الكرة
+                            if (this.isCorrect) {
+                                paddle.score += 10;
+                                this.gameManager.gameScore += 10;
+                                this.gameManager.soundManager.playSound('success');
+                                this.createExplosion(this.x, this.y, this.color);
+                                this.addCombo();
+                            } else {
+                                paddle.lives--;
+                                this.gameManager.soundManager.playSound('error');
+                                paddle.decreasePower();
+                                if (paddle.lives <= 0) {
+                                    return 'gameover';
+                                }
+                            }
+                            
+                            // تغيير الحرف بعد الارتداد
+                            this.letter = this.getRandomLetter();
+                            this.color = this.isCorrect ? '#4361ee' : '#ef4444';
+                            
+                            return 'hit';
+                        }
+                        
+                        // فقدان الكرة
+                        if (this.y - this.size > canvas.height) {
+                            paddle.lives--;
+                            this.gameManager.soundManager.playSound('error');
+                            paddle.decreasePower();
+                            this.reset();
+                            
+                            if (paddle.lives <= 0) {
+                                return 'gameover';
+                            }
+                            return 'lost';
+                        }
+                        
+                        return 'playing';
+                    }
+                }
+
+                // الكرات النشطة
+                const balls = [new Ball()];
+                let gameTime = gameSettings.gameTime;
+                let lastTime = 0;
+                let gameActive = true;
+                let combo = 0;
+                let lastHitTime = 0;
+
+                // عناصر الميدان
+                const fieldElements = [];
+                for (let i = 0; i < 5; i++) {
+                    fieldElements.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * (canvas.height - 200) + 100,
+                        size: 5 + Math.random() * 10,
+                        speed: 0.5 + Math.random() * 1
+                    });
+                }
+
+                const gameLoop = (timestamp) => {
+                    if (!gameActive) return;
+                    
+                    const deltaTime = timestamp - lastTime;
+                    lastTime = timestamp;
+                    
+                    // تحديث المضرب
+                    if (this.gameManager.touchControls.left) paddle.moveLeft();
+                    if (this.gameManager.touchControls.right) paddle.moveRight();
+                    
+                    // تحديث الكرات
+                    balls.forEach((ball, index) => {
+                        const result = ball.update();
+                        
+                        if (result === 'gameover') {
+                            gameActive = false;
+                            this.showGameOver(canvas, ctx, paddle.score);
+                            return;
+                        } else if (result === 'hit') {
+                            lastHitTime = Date.now();
+                            combo++;
+                            
+                            // إضافة كرات جديدة عند الكومبو العالي
+                            if (combo % 5 === 0 && balls.length < 3) {
+                                balls.push(new Ball());
+                            }
+                            
+                            // زيادة القوة عند الكومبو العالي
+                            if (combo % 3 === 0) {
+                                paddle.increasePower();
+                            }
+                        }
+                    });
+                    
+                    // تحديث الكومبو
+                    if (Date.now() - lastHitTime > 2000) {
+                        combo = 0;
+                    }
+                    
+                    // تحديث عناصر الميدان
+                    fieldElements.forEach(element => {
+                        element.y += element.speed;
+                        if (element.y > canvas.height) {
+                            element.y = 100;
+                            element.x = Math.random() * canvas.width;
+                        }
+                    });
+                    
+                    // تحديث الوقت
+                    gameTime -= deltaTime / 1000;
+                    if (gameTime <= 0) {
+                        gameActive = false;
+                        this.showGameOver(canvas, ctx, paddle.score);
+                        return;
+                    }
+                    
+                    // الرسم
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // خلفية الميدان
+                    const fieldGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    fieldGradient.addColorStop(0, '#1e293b');
+                    fieldGradient.addColorStop(1, '#0f172a');
+                    ctx.fillStyle = fieldGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // شبكة المنتصف
+                    ctx.strokeStyle = '#475569';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([10, 10]);
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width/2, 0);
+                    ctx.lineTo(canvas.width/2, canvas.height);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // عناصر الميدان
+                    ctx.fillStyle = '#334155';
+                    fieldElements.forEach(element => {
+                        ctx.beginPath();
+                        ctx.arc(element.x, element.y, element.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                    
+                    // رسم الكرات
+                    balls.forEach(ball => ball.draw(ctx));
+                    
+                    // رسم المضرب
+                    paddle.draw(ctx);
+                    
+                    // رسم المعلومات
+                    this.drawRacketInfo(ctx, canvas, paddle.score, paddle.lives, gameTime, combo);
+                    
+                    // التحقق من الفوز
+                    if (paddle.score >= gameSettings.targetScore) {
+                        gameActive = false;
+                        this.showWinScreen(canvas, ctx, paddle.score);
+                        return;
+                    }
+                    
+                    requestAnimationFrame(gameLoop);
+                };
+
+                lastTime = 0;
+                requestAnimationFrame(gameLoop);
+
+                // إضافة مستمعي التحكم
+                this.setupRacketControls();
+            }
+
+            // تحسين لعبة البالونات
+            initEnhancedBalloons(ctx, canvas) {
+                const currentLetter = this.gameManager.currentLetter;
+                
+                // إعدادات اللعبة
+                const gameSettings = {
+                    balloonSpeed: 1.5,
+                    balloonCount: 25,
+                    gameTime: 60,
+                    targetScore: 50,
+                    difficultyFactor: this.gameDifficulty,
+                    colors: ['#f72585', '#4361ee', '#4cc9f0', '#4ade80', '#f59e0b']
+                };
+
+                // البالونات المحسنة
+                class Balloon {
+                    constructor() {
+                        this.reset();
+                        this.wobble = Math.random() * Math.PI * 2;
+                        this.wobbleSpeed = 0.05 + Math.random() * 0.05;
+                        this.pulse = 0;
+                        this.pulseSpeed = 0.1;
+                    }
+                    
+                    reset() {
+                        this.radius = 25 + Math.random() * 25;
+                        this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
+                        this.y = canvas.height + this.radius;
+                        this.speed = gameSettings.balloonSpeed + Math.random() * 2;
+                        this.isCorrect = Math.random() > 0.4;
+                        this.letter = this.isCorrect ? currentLetter : 
+                                     this.getRandomDifferentLetter(currentLetter);
+                        this.color = gameSettings.colors[Math.floor(Math.random() * gameSettings.colors.length)];
+                        this.popped = false;
+                        this.popProgress = 0;
+                        this.stringLength = 60 + Math.random() * 40;
+                        this.stringAngle = Math.random() * Math.PI * 2;
+                    }
+                    
+                    getRandomDifferentLetter(currentLetter) {
+                        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                        const differentLetters = letters.filter(l => l !== currentLetter);
+                        return differentLetters[Math.floor(Math.random() * differentLetters.length)];
+                    }
+                    
+                    draw(ctx) {
+                        if (this.popped) {
+                            // تأثير الفرقعة
+                            this.drawPopEffect(ctx);
+                            return;
+                        }
+                        
+                        ctx.save();
+                        
+                        // حركة التمايل
+                        const wobbleOffset = Math.sin(this.wobble) * 5;
+                        const pulseScale = 1 + Math.sin(this.pulse) * 0.1;
+                        
+                        // خيط البالون
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y + this.radius);
+                        
+                        const stringEndX = this.x + Math.sin(this.stringAngle) * this.stringLength;
+                        const stringEndY = this.y + this.radius + Math.cos(this.stringAngle) * this.stringLength;
+                        
+                        ctx.quadraticCurveTo(
+                            this.x,
+                            this.y + this.radius + this.stringLength/2,
+                            stringEndX,
+                            stringEndY
+                        );
+                        ctx.stroke();
+                        
+                        // البالون
+                        ctx.translate(this.x, this.y + wobbleOffset);
+                        ctx.scale(pulseScale, pulseScale);
+                        
+                        // جسم البالون
+                        const gradient = ctx.createRadialGradient(
+                            0, 0, 0,
+                            0, 0, this.radius
+                        );
+                        gradient.addColorStop(0, this.color);
+                        gradient.addColorStop(1, this.darkenColor(this.color, 30));
+                        
+                        ctx.fillStyle = gradient;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // تسليط الضوء
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                        ctx.beginPath();
+                        ctx.arc(-this.radius/3, -this.radius/3, this.radius/4, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // عقدة البالون
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(0, this.radius, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // الحرف
+                        ctx.fillStyle = 'white';
+                        ctx.font = `bold ${this.radius/2}px Arial`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(this.letter, 0, 0);
+                        
+                        // تأثير للبالونات الصحيحة
+                        if (this.isCorrect) {
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.arc(0, 0, this.radius + 5, 0, Math.PI * 2);
+                            ctx.stroke();
+                        }
+                        
+                        ctx.restore();
+                    }
+                    
+                    drawPopEffect(ctx) {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        
+                        // قطع البالون المتفجرة
+                        for (let i = 0; i < 8; i++) {
+                            const angle = (i / 8) * Math.PI * 2;
+                            const distance = this.radius * (1 + this.popProgress);
+                            
+                            ctx.fillStyle = this.color;
+                            ctx.beginPath();
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(
+                                Math.cos(angle) * this.radius/2,
+                                Math.sin(angle) * this.radius/2
+                            );
+                            ctx.lineTo(
+                                Math.cos(angle) * distance,
+                                Math.sin(angle) * distance
+                            );
+                            ctx.closePath();
+                            ctx.fill();
+                        }
+                        
+                        ctx.restore();
+                    }
+                    
+                    darkenColor(color, percent) {
+                        const num = parseInt(color.slice(1), 16);
+                        const amt = Math.round(2.55 * percent);
+                        const R = (num >> 16) - amt;
+                        const G = (num >> 8 & 0x00FF) - amt;
+                        const B = (num & 0x0000FF) - amt;
+                        return `#${(0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1)}`;
+                    }
+                    
+                    update(deltaTime) {
+                        if (this.popped) {
+                            this.popProgress += deltaTime / 500;
+                            return this.popProgress >= 1;
+                        }
+                        
+                        this.wobble += this.wobbleSpeed;
+                        this.pulse += this.pulseSpeed;
+                        
+                        this.y -= this.speed;
+                        
+                        // حركة خيط البالون
+                        this.stringAngle += 0.02;
+                        
+                        return this.y < -this.radius;
+                    }
+                    
+                    checkClick(mouseX, mouseY) {
+                        if (this.popped) return false;
+                        
+                        const dx = mouseX - this.x;
+                        const dy = mouseY - (this.y + Math.sin(this.wobble) * 5);
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        return distance < this.radius;
+                    }
+                    
+                    pop() {
+                        this.popped = true;
+                        this.popProgress = 0;
+                        return this.isCorrect;
+                    }
+                }
+
+                // إنشاء البالونات
+                const balloons = [];
+                for (let i = 0; i < gameSettings.balloonCount; i++) {
+                    const balloon = new Balloon();
+                    balloon.y = -Math.random() * canvas.height;
+                    balloons.push(balloon);
+                }
+
+                // السحب المتحركة
+                const clouds = [];
+                for (let i = 0; i < 5; i++) {
+                    clouds.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * 100,
+                        size: 40 + Math.random() * 40,
+                        speed: 0.2 + Math.random() * 0.3
+                    });
+                }
+
+                let score = 0;
+                let gameTime = gameSettings.gameTime;
+                let lastTime = 0;
+                let gameActive = true;
+                let combo = 0;
+                let lastPopTime = 0;
+
+                const gameLoop = (timestamp) => {
+                    if (!gameActive) return;
+                    
+                    const deltaTime = timestamp - lastTime;
+                    lastTime = timestamp;
+                    
+                    // تحديث البالونات
+                    balloons.forEach((balloon, index) => {
+                        const shouldRemove = balloon.update(deltaTime);
+                        
+                        if (shouldRemove) {
+                            if (!balloon.popped) {
+                                // فقدان حياة إذا خرج بالون صحيح
+                                if (balloon.isCorrect) {
+                                    combo = 0;
+                                }
+                            }
+                            balloon.reset();
+                            balloon.y = canvas.height + balloon.radius;
+                        }
+                    });
+                    
+                    // تحديث السحب
+                    clouds.forEach(cloud => {
+                        cloud.x += cloud.speed;
+                        if (cloud.x > canvas.width + cloud.size) {
+                            cloud.x = -cloud.size;
+                            cloud.y = Math.random() * 100;
+                        }
+                    });
+                    
+                    // تحديث الوقت
+                    gameTime -= deltaTime / 1000;
+                    if (gameTime <= 0) {
+                        gameActive = false;
+                        this.showGameOver(canvas, ctx, score);
+                        return;
+                    }
+                    
+                    // تحديث الكومبو
+                    if (Date.now() - lastPopTime > 2000) {
+                        combo = 0;
+                    }
+                    
+                    // الرسم
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // خلفية السماء
+                    const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    skyGradient.addColorStop(0, '#4cc9f0');
+                    skyGradient.addColorStop(1, '#4895ef');
+                    ctx.fillStyle = skyGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // السحب
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    clouds.forEach(cloud => {
+                        ctx.beginPath();
+                        ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
+                        ctx.arc(cloud.x + cloud.size/2, cloud.y - cloud.size/3, cloud.size/1.5, 0, Math.PI * 2);
+                        ctx.arc(cloud.x - cloud.size/2, cloud.y - cloud.size/4, cloud.size/1.8, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                    
+                    // رسم البالونات
+                    balloons.forEach(balloon => balloon.draw(ctx));
+                    
+                    // رسم المعلومات
+                    this.drawBalloonsInfo(ctx, canvas, score, gameTime, combo);
+                    
+                    // التحقق من الفوز
+                    if (score >= gameSettings.targetScore) {
+                        gameActive = false;
+                        this.showWinScreen(canvas, ctx, score);
+                        return;
+                    }
+                    
+                    requestAnimationFrame(gameLoop);
+                };
+
+                lastTime = 0;
+                requestAnimationFrame(gameLoop);
+
+                // إضافة مستمعي النقر
+                const clickHandler = (e) => {
+                    if (!gameActive) return;
+                    
+                    const rect = canvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    
+                    balloons.forEach(balloon => {
+                        if (balloon.checkClick(mouseX, mouseY)) {
+                            const isCorrect = balloon.pop();
+                            
+                            if (isCorrect) {
+                                score += 10 + combo * 2;
+                                this.gameManager.gameScore += 10 + combo * 2;
+                                this.gameManager.soundManager.playSound('success');
+                                this.addCombo();
+                                combo++;
+                                lastPopTime = Date.now();
+                                
+                                // تأثيرات خاصة للكومبو
+                                if (combo >= 5) {
+                                    this.createExplosion(balloon.x, balloon.y, '#f59e0b');
+                                }
+                            } else {
+                                this.gameManager.soundManager.playSound('error');
+                                combo = 0;
+                                score = Math.max(0, score - 5);
+                            }
+                            
+                            this.createExplosion(balloon.x, balloon.y, balloon.color);
+                        }
+                    });
+                };
+
+                canvas.addEventListener('click', clickHandler);
+                this.gameManager.currentClickHandler = clickHandler;
+
+                // للشاشات التي تعمل باللمس
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    clickHandler(e.touches[0]);
+                });
+            }
+
+            // تحسين لعبة الذاكرة
+            initEnhancedMemory(ctx, canvas) {
+                const currentLetter = this.gameManager.currentLetter;
+                const letterData = this.gameManager.letterData;
+                
+                // إعدادات اللعبة
+                const gameSettings = {
+                    rows: 4,
+                    cols: 4,
+                    gameTime: 90,
+                    cardFlipSpeed: 0.6,
+                    difficultyFactor: this.gameDifficulty
+                };
+
+                // البطاقات المحسنة
+                class MemoryCard {
+                    constructor(row, col, pairId, type, value) {
+                        this.row = row;
+                        this.col = col;
+                        this.pairId = pairId;
+                        this.type = type; // 'letter' أو 'word'
+                        this.value = value;
+                        this.width = 80;
+                        this.height = 100;
+                        this.x = col * (this.width + 10) + (canvas.width - (gameSettings.cols * (this.width + 10) - 10)) / 2;
+                        this.y = row * (this.height + 10) + 80;
+                        this.flipped = false;
+                        this.matched = false;
+                        this.flipProgress = 0;
+                        this.flipSpeed = gameSettings.cardFlipSpeed;
+                        this.hover = false;
+                        this.pulse = 0;
+                    }
+                    
+                    draw(ctx) {
+                        ctx.save();
+                        ctx.translate(this.x + this.width/2, this.y + this.height/2);
+                        
+                        // تأثير التقليب
+                        if (this.flipProgress < 1) {
+                            const scale = Math.abs(this.flipProgress - 0.5) * 2;
+                            ctx.scale(scale, 1);
+                        }
+                        
+                        // تأثير النبض للبطاقات غير المطابقة
+                        if (!this.matched && this.hover) {
+                            this.pulse += 0.1;
+                            const pulseScale = 1 + Math.sin(this.pulse) * 0.05;
+                            ctx.scale(pulseScale, pulseScale);
+                        }
+                        
+                        // خلفية البطاقة
+                        if (this.matched) {
+                            // بطاقة مطابقة
+                            const gradient = ctx.createLinearGradient(
+                                -this.width/2, -this.height/2,
+                                this.width/2, this.height/2
+                            );
+                            gradient.addColorStop(0, '#4ade80');
+                            gradient.addColorStop(1, '#22c55e');
+                            ctx.fillStyle = gradient;
+                        } else if (this.flipped || this.flipProgress > 0.5) {
+                            // بطاقة مقلوبة
+                            ctx.fillStyle = '#ffffff';
+                        } else {
+                            // ظهر البطاقة
+                            const gradient = ctx.createLinearGradient(
+                                -this.width/2, -this.height/2,
+                                this.width/2, this.height/2
+                            );
+                            gradient.addColorStop(0, '#4361ee');
+                            gradient.addColorStop(1, '#3a0ca3');
+                            ctx.fillStyle = gradient;
+                        }
+                        
+                        // شكل البطاقة مع زوايا مدورة
+                        const radius = 10;
+                        ctx.beginPath();
+                        ctx.moveTo(-this.width/2 + radius, -this.height/2);
+                        ctx.lineTo(this.width/2 - radius, -this.height/2);
+                        ctx.quadraticCurveTo(this.width/2, -this.height/2, this.width/2, -this.height/2 + radius);
+                        ctx.lineTo(this.width/2, this.height/2 - radius);
+                        ctx.quadraticCurveTo(this.width/2, this.height/2, this.width/2 - radius, this.height/2);
+                        ctx.lineTo(-this.width/2 + radius, this.height/2);
+                        ctx.quadraticCurveTo(-this.width/2, this.height/2, -this.width/2, this.height/2 - radius);
+                        ctx.lineTo(-this.width/2, -this.height/2 + radius);
+                        ctx.quadraticCurveTo(-this.width/2, -this.height/2, -this.width/2 + radius, -this.height/2);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // حدود البطاقة
+                        ctx.strokeStyle = this.matched ? '#166534' : '#1e293b';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        
+                        // محتوى البطاقة
+                        if (this.flipped || this.flipProgress > 0.5 || this.matched) {
+                            // نوع البطاقة
+                            ctx.fillStyle = '#475569';
+                            ctx.font = 'bold 12px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'top';
+                            ctx.fillText(
+                                this.type === 'letter' ? 'الحرف' : 'الكلمة',
+                                0, -this.height/2 + 10
+                            );
+                            
+                            // المحتوى الرئيسي
+                            ctx.fillStyle = '#1e293b';
+                            if (this.type === 'letter') {
+                                ctx.font = 'bold 40px Arial';
+                                ctx.fillText(this.value, 0, -15);
+                            } else {
+                                ctx.font = 'bold 16px Arial';
+                                this.wrapText(ctx, this.value, this.width - 20).forEach((line, i) => {
+                                    ctx.fillText(line, 0, -20 + i * 20);
+                                });
+                            }
+                            
+                            // رمز التطابق
+                            if (this.matched) {
+                                ctx.fillStyle = '#ffffff';
+                                ctx.font = 'bold 24px Arial';
+                                ctx.fillText('✓', 0, this.height/2 - 30);
+                            }
+                        } else {
+                            // ظهر البطاقة
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = 'bold 24px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText('?', 0, 0);
+                            
+                            // نمط زخرفي
+                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                            ctx.lineWidth = 1;
+                            for (let i = 0; i < 4; i++) {
+                                ctx.beginPath();
+                                ctx.arc(0, 0, 20 + i * 5, 0, Math.PI * 2);
+                                ctx.stroke();
+                            }
+                        }
+                        
+                        ctx.restore();
+                    }
+                    
+                    wrapText(ctx, text, maxWidth) {
+                        const words = text.split(' ');
+                        const lines = [];
+                        let currentLine = words[0];
+                        
+                        for (let i = 1; i < words.length; i++) {
+                            const word = words[i];
+                            const width = ctx.measureText(currentLine + " " + word).width;
+                            if (width < maxWidth) {
+                                currentLine += " " + word;
+                            } else {
+                                lines.push(currentLine);
+                                currentLine = word;
+                            }
+                        }
+                        lines.push(currentLine);
+                        return lines;
+                    }
+                    
+                    update(deltaTime) {
+                        // تحديث تأثير التقليب
+                        if (this.flipped && this.flipProgress < 1) {
+                            this.flipProgress += this.flipSpeed * deltaTime / 16;
+                            if (this.flipProgress > 1) this.flipProgress = 1;
+                        } else if (!this.flipped && this.flipProgress > 0) {
+                            this.flipProgress -= this.flipSpeed * deltaTime / 16;
+                            if (this.flipProgress < 0) this.flipProgress = 0;
+                        }
+                        
+                        // تحديث تأثير النبض
+                        if (this.hover && !this.matched) {
+                            this.pulse += 0.1;
+                        }
+                    }
+                    
+                    contains(x, y) {
+                        return x >= this.x && x <= this.x + this.width &&
+                               y >= this.y && y <= this.y + this.height;
+                    }
+                    
+                    flip() {
+                        this.flipped = !this.flipped;
+                        this.gameManager.soundManager.playSound('click');
+                    }
+                }
+
+                // إنشاء أزواج البطاقات
+                const pairs = [];
+                const totalPairs = (gameSettings.rows * gameSettings.cols) / 2;
+                
+                // إضافة أزواج الحرف والكلمات
+                for (let i = 0; i < Math.min(totalPairs, letterData.words.length); i++) {
+                    pairs.push({
+                        id: i,
+                        letter: currentLetter,
+                        word: letterData.words[i].word
+                    });
+                }
+                
+                // إنشاء البطاقات
+                const cards = [];
+                const cardPairs = [];
+                
+                pairs.forEach(pair => {
+                    cardPairs.push(
+                        new MemoryCard(0, 0, pair.id, 'letter', pair.letter),
+                        new MemoryCard(0, 0, pair.id, 'word', pair.word)
+                    );
+                });
+                
+                // خلط البطاقات وتعيين مواقعها
+                this.shuffleArray(cardPairs);
+                
+                for (let i = 0; i < gameSettings.rows; i++) {
+                    for (let j = 0; j < gameSettings.cols; j++) {
+                        const index = i * gameSettings.cols + j;
+                        if (index < cardPairs.length) {
+                            const card = cardPairs[index];
+                            card.row = i;
+                            card.col = j;
+                            card.x = j * (card.width + 10) + (canvas.width - (gameSettings.cols * (card.width + 10) - 10)) / 2;
+                            card.y = i * (card.height + 10) + 80;
+                            cards.push(card);
+                        }
+                    }
+                }
+
+                // حالة اللعبة
+                let firstCard = null;
+                let secondCard = null;
+                let canFlip = true;
+                let matchedPairs = 0;
+                let moves = 0;
+                let gameTime = gameSettings.gameTime;
+                let lastTime = 0;
+                let gameActive = true;
+                let score = 0;
+
+                const gameLoop = (timestamp) => {
+                    if (!gameActive) return;
+                    
+                    const deltaTime = timestamp - lastTime;
+                    lastTime = timestamp;
+                    
+                    // تحديث البطاقات
+                    cards.forEach(card => {
+                        card.update(deltaTime);
+                        
+                        // تحديث تأثير التحويم
+                        card.hover = false;
+                    });
+                    
+                    // تحديث الوقت
+                    gameTime -= deltaTime / 1000;
+                    if (gameTime <= 0) {
+                        gameActive = false;
+                        this.showGameOver(canvas, ctx, score);
+                        return;
+                    }
+                    
+                    // الرسم
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // خلفية
+                    const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    bgGradient.addColorStop(0, '#f8fafc');
+                    bgGradient.addColorStop(1, '#e2e8f0');
+                    ctx.fillStyle = bgGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // العنوان
+                    ctx.fillStyle = '#1e293b';
+                    ctx.font = 'bold 28px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(`لعبة الذاكرة - الحرف ${currentLetter}`, canvas.width/2, 20);
+                    
+                    // رسم البطاقات
+                    cards.forEach(card => card.draw(ctx));
+                    
+                    // رسم المعلومات
+                    this.drawMemoryInfo(ctx, canvas, matchedPairs, pairs.length, moves, gameTime, score);
+                    
+                    // التحقق من الفوز
+                    if (matchedPairs === pairs.length) {
+                        gameActive = false;
+                        score += Math.max(0, Math.floor(gameTime)) * 10;
+                        this.showWinScreen(canvas, ctx, score);
+                        return;
+                    }
+                    
+                    requestAnimationFrame(gameLoop);
+                };
+
+                lastTime = 0;
+                requestAnimationFrame(gameLoop);
+
+                // إضافة مستمعي النقر
+                const clickHandler = (e) => {
+                    if (!gameActive || !canFlip) return;
+                    
+                    const rect = canvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    
+                    const clickedCard = cards.find(card => 
+                        !card.matched && card.contains(mouseX, mouseY)
+                    );
+                    
+                    if (!clickedCard || clickedCard.flipped) return;
+                    
+                    // إظهار تأثير التحويم
+                    clickedCard.hover = true;
+                    
+                    clickedCard.flip();
+                    moves++;
+                    
+                    if (!firstCard) {
+                        firstCard = clickedCard;
+                    } else if (!secondCard) {
+                        secondCard = clickedCard;
+                        canFlip = false;
+                        
+                        // التحقق من التطابق
+                        setTimeout(() => {
+                            if (firstCard.pairId === secondCard.pairId) {
+                                // تطابق صحيح
+                                firstCard.matched = true;
+                                secondCard.matched = true;
+                                matchedPairs++;
+                                score += 20;
+                                
+                                this.gameManager.soundManager.playSound('success');
+                                this.createExplosion(
+                                    firstCard.x + firstCard.width/2,
+                                    firstCard.y + firstCard.height/2,
+                                    '#4ade80'
+                                );
+                                this.createExplosion(
+                                    secondCard.x + secondCard.width/2,
+                                    secondCard.y + secondCard.height/2,
+                                    '#4ade80'
+                                );
+                            } else {
+                                // تطابق خاطئ
+                                firstCard.flip();
+                                secondCard.flip();
+                                score = Math.max(0, score - 5);
+                                this.gameManager.soundManager.playSound('error');
+                            }
+                            
+                            firstCard = null;
+                            secondCard = null;
+                            canFlip = true;
+                        }, 1000);
+                    }
+                };
+
+                canvas.addEventListener('click', clickHandler);
+                this.gameManager.currentClickHandler = clickHandler;
+
+                // للشاشات التي تعمل باللمس
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    clickHandler(e.touches[0]);
+                });
+            }
+
+            // تحسين لعبة البحث عن الكلمات
+            initEnhancedWordSearch(ctx, canvas) {
+                const currentLetter = this.gameManager.currentLetter;
+                const letterData = this.gameManager.letterData;
+                
+                // إعدادات اللعبة
+                const gameSettings = {
+                    gridSize: 12,
+                    cellSize: 30,
+                    wordCount: 8,
+                    gameTime: 120,
+                    difficultyFactor: this.gameDifficulty
+                };
+
+                // الشبكة المحسنة
+                class WordSearchGrid {
+                    constructor() {
+                        this.size = gameSettings.gridSize;
+                        this.cellSize = gameSettings.cellSize;
+                        this.grid = [];
+                        this.words = [];
+                        this.foundWords = [];
+                        this.selectedCells = [];
+                        this.isSelecting = false;
+                        this.startCell = null;
+                        this.highlightedCells = [];
+                        
+                        this.initGrid();
+                        this.placeWords();
+                        this.fillEmptyCells();
+                    }
+                    
+                    initGrid() {
+                        for (let i = 0; i < this.size; i++) {
+                            this.grid[i] = [];
+                            for (let j = 0; j < this.size; j++) {
+                                this.grid[i][j] = {
+                                    letter: '',
+                                    row: i,
+                                    col: j,
+                                    x: j * this.cellSize + 50,
+                                    y: i * this.cellSize + 50,
+                                    selected: false,
+                                    partOfWord: false,
+                                    wordId: -1
+                                };
+                            }
+                        }
+                    }
+                    
+                    placeWords() {
+                        const directions = [
+                            { dr: 0, dc: 1 },   // أفقي
+                            { dr: 1, dc: 0 },   // عمودي
+                            { dr: 1, dc: 1 },   // قطري
+                            { dr: 1, dc: -1 }   // قطري معكوس
+                        ];
+                        
+                        // اختر الكلمات
+                        const availableWords = letterData.words.map(w => w.word.toUpperCase());
+                        const wordsToPlace = availableWords.slice(0, Math.min(gameSettings.wordCount, availableWords.length));
+                        
+                        wordsToPlace.forEach((word, wordId) => {
+                            let placed = false;
+                            let attempts = 0;
+                            
+                            while (!placed && attempts < 100) {
+                                const direction = directions[Math.floor(Math.random() * directions.length)];
+                                const row = Math.floor(Math.random() * this.size);
+                                const col = Math.floor(Math.random() * this.size);
+                                
+                                if (this.canPlaceWord(word, row, col, direction)) {
+                                    this.placeWord(word, row, col, direction, wordId);
+                                    this.words.push({
+                                        id: wordId,
+                                        word: word,
+                                        row: row,
+                                        col: col,
+                                        direction: direction,
+                                        found: false
+                                    });
+                                    placed = true;
+                                }
+                                attempts++;
+                            }
+                        });
+                    }
+                    
+                    canPlaceWord(word, row, col, direction) {
+                        // التحقق من الحدود
+                        const endRow = row + direction.dr * (word.length - 1);
+                        const endCol = col + direction.dc * (word.length - 1);
+                        
+                        if (endRow < 0 || endRow >= this.size || endCol < 0 || endCol >= this.size) {
+                            return false;
+                        }
+                        
+                        // التحقق من التعارض
+                        for (let i = 0; i < word.length; i++) {
+                            const r = row + direction.dr * i;
+                            const c = col + direction.dc * i;
+                            
+                            if (this.grid[r][c].letter !== '' && this.grid[r][c].letter !== word[i]) {
+                                return false;
+                            }
+                        }
+                        
+                        return true;
+                    }
+                    
+                    placeWord(word, row, col, direction, wordId) {
+                        for (let i = 0; i < word.length; i++) {
+                            const r = row + direction.dr * i;
+                            const c = col + direction.dc * i;
+                            
+                            this.grid[r][c].letter = word[i];
+                            this.grid[r][c].partOfWord = true;
+                            this.grid[r][c].wordId = wordId;
+                        }
+                    }
+                    
+                    fillEmptyCells() {
+                        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                        for (let i = 0; i < this.size; i++) {
+                            for (let j = 0; j < this.size; j++) {
+                                if (this.grid[i][j].letter === '') {
+                                    this.grid[i][j].letter = letters[Math.floor(Math.random() * letters.length)];
+                                }
+                            }
+                        }
+                    }
+                    
+                    draw(ctx) {
+                        // رسم الخلايا
+                        for (let i = 0; i < this.size; i++) {
+                            for (let j = 0; j < this.size; j++) {
+                                const cell = this.grid[i][j];
+                                
+                                // خلفية الخلية
+                                if (cell.selected) {
+                                    ctx.fillStyle = '#4cc9f0';
+                                } else if (this.highlightedCells.some(c => c.row === i && c.col === j)) {
+                                    ctx.fillStyle = '#4ade80';
+                                } else {
+                                    ctx.fillStyle = cell.partOfWord ? '#f8fafc' : '#ffffff';
+                                }
+                                
+                                ctx.fillRect(cell.x, cell.y, this.cellSize, this.cellSize);
+                                
+                                // حدود الخلية
+                                ctx.strokeStyle = cell.partOfWord ? '#3a0ca3' : '#cbd5e1';
+                                ctx.lineWidth = cell.partOfWord ? 2 : 1;
+                                ctx.strokeRect(cell.x, cell.y, this.cellSize, this.cellSize);
+                                
+                                // الحرف
+                                ctx.fillStyle = cell.partOfWord ? '#1e293b' : '#475569';
+                                ctx.font = 'bold 18px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText(
+                                    cell.letter,
+                                    cell.x + this.cellSize/2,
+                                    cell.y + this.cellSize/2
+                                );
+                            }
+                        }
+                        
+                        // رسم التحديد
+                        if (this.selectedCells.length > 1) {
+                            ctx.strokeStyle = '#f72585';
+                            ctx.lineWidth = 3;
+                            ctx.lineCap = 'round';
+                            ctx.beginPath();
+                            
+                            this.selectedCells.forEach((cell, index) => {
+                                const x = cell.x + this.cellSize/2;
+                                const y = cell.y + this.cellSize/2;
+                                
+                                if (index === 0) {
+                                    ctx.moveTo(x, y);
+                                } else {
+                                    ctx.lineTo(x, y);
+                                }
+                            });
+                            
+                            ctx.stroke();
+                        }
+                    }
+                    
+                    startSelection(row, col) {
+                        this.isSelecting = true;
+                        this.startCell = this.grid[row][col];
+                        this.selectedCells = [this.startCell];
+                        this.startCell.selected = true;
+                    }
+                    
+                    updateSelection(row, col) {
+                        if (!this.isSelecting || !this.startCell) return;
+                        
+                        const currentCell = this.grid[row][col];
+                        this.selectedCells = this.getCellsBetween(this.startCell, currentCell);
+                        
+                        // تحديث حالة التحديد
+                        for (let i = 0; i < this.size; i++) {
+                            for (let j = 0; j < this.size; j++) {
+                                this.grid[i][j].selected = this.selectedCells.some(
+                                    cell => cell.row === i && cell.col === j
+                                );
+                            }
+                        }
+                    }
+                    
+                    endSelection() {
+                        if (!this.isSelecting || this.selectedCells.length < 2) {
+                            this.clearSelection();
+                            return null;
+                        }
+                        
+                        this.isSelecting = false;
+                        const selectedWord = this.selectedCells.map(cell => cell.letter).join('');
+                        const selectedCellsCopy = [...this.selectedCells];
+                        
+                        setTimeout(() => this.clearSelection(), 1000);
+                        
+                        return { word: selectedWord, cells: selectedCellsCopy };
+                    }
+                    
+                    clearSelection() {
+                        this.isSelecting = false;
+                        this.startCell = null;
+                        this.selectedCells = [];
+                        
+                        for (let i = 0; i < this.size; i++) {
+                            for (let j = 0; j < this.size; j++) {
+                                this.grid[i][j].selected = false;
+                            }
+                        }
+                    }
+                    
+                    getCellsBetween(startCell, endCell) {
+                        const cells = [startCell];
+                        
+                        const rowDiff = endCell.row - startCell.row;
+                        const colDiff = endCell.col - startCell.col;
+                        
+                        // التأكد من أن الخلايا على خط مستقيم
+                        if (rowDiff !== 0 && colDiff !== 0 && Math.abs(rowDiff) !== Math.abs(colDiff)) {
+                            return cells;
+                        }
+                        
+                        const rowStep = rowDiff === 0 ? 0 : rowDiff / Math.abs(rowDiff);
+                        const colStep = colDiff === 0 ? 0 : colDiff / Math.abs(colDiff);
+                        
+                        let currentRow = startCell.row + rowStep;
+                        let currentCol = startCell.col + colStep;
+                        
+                        while ((rowStep === 0 || (rowStep > 0 ? currentRow <= endCell.row : currentRow >= endCell.row)) &&
+                               (colStep === 0 || (colStep > 0 ? currentCol <= endCell.col : currentCol >= endCell.col))) {
+                            
+                            const cell = this.grid[currentRow][currentCol];
+                            if (cell) {
+                                cells.push(cell);
+                            }
+                            
+                            currentRow += rowStep;
+                            currentCol += colStep;
+                        }
+                        
+                        return cells;
+                    }
+                    
+                    checkWord(selectedWord, selectedCells) {
+                        for (const word of this.words) {
+                            if (!word.found && selectedWord === word.word) {
+                                // التحقق من أن الخلايا المحددة تطابق اتجاه الكلمة
+                                const cellsMatch = this.checkCellsMatchWord(selectedCells, word);
+                                if (cellsMatch) {
+                                    word.found = true;
+                                    this.highlightedCells.push(...selectedCells);
+                                    return { success: true, word: word };
+                                }
+                            }
+                        }
+                        return { success: false };
+                    }
+                    
+                    checkCellsMatchWord(selectedCells, word) {
+                        if (selectedCells.length !== word.word.length) return false;
+                        
+                        // التحقق من الاتجاه
+                        const firstCell = selectedCells[0];
+                        const lastCell = selectedCells[selectedCells.length - 1];
+                        
+                        const rowDiff = lastCell.row - firstCell.row;
+                        const colDiff = lastCell.col - firstCell.col;
+                        
+                        const expectedRowStep = word.direction.dr;
+                        const expectedColStep = word.direction.dc;
+                        
+                        const actualRowStep = rowDiff === 0 ? 0 : rowDiff / Math.abs(rowDiff);
+                        const actualColStep = colDiff === 0 ? 0 : colDiff / Math.abs(colDiff);
+                        
+                        return actualRowStep === expectedRowStep && actualColStep === expectedColStep;
+                    }
+                    
+                    allWordsFound() {
+                        return this.words.every(word => word.found);
+                    }
+                }
+
+                // إنشاء الشبكة
+                const grid = new WordSearchGrid();
+                
+                // حالة اللعبة
+                let score = 0;
+                let gameTime = gameSettings.gameTime;
+                let lastTime = 0;
+                let gameActive = true;
+                let hintTime = 10000; // تلميح كل 10 ثواني
+                let lastHintTime = 0;
+
+                const gameLoop = (timestamp) => {
+                    if (!gameActive) return;
+                    
+                    const deltaTime = timestamp - lastTime;
+                    lastTime = timestamp;
+                    
+                    // تحديث الوقت
+                    gameTime -= deltaTime / 1000;
+                    if (gameTime <= 0) {
+                        gameActive = false;
+                        this.showGameOver(canvas, ctx, score);
+                        return;
+                    }
+                    
+                    // تحديث التلميحات
+                    hintTime -= deltaTime;
+                    if (hintTime <= 0) {
+                        this.showHint(grid);
+                        hintTime = 10000;
+                        lastHintTime = timestamp;
+                    }
+                    
+                    // الرسم
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // خلفية
+                    const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    bgGradient.addColorStop(0, '#f1f5f9');
+                    bgGradient.addColorStop(1, '#e2e8f0');
+                    ctx.fillStyle = bgGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // العنوان
+                    ctx.fillStyle = '#1e293b';
+                    ctx.font = 'bold 28px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(`لعبة البحث عن الكلمات - الحرف ${currentLetter}`, canvas.width/2, 15);
+                    
+                    // رسم الشبكة
+                    grid.draw(ctx);
+                    
+                    // رسم قائمة الكلمات
+                    this.drawWordList(ctx, canvas, grid.words);
+                    
+                    // رسم المعلومات
+                    this.drawWordSearchInfo(ctx, canvas, score, gameTime, 
+                                          grid.words.filter(w => w.found).length,
+                                          grid.words.length);
+                    
+                    // التحقق من الفوز
+                    if (grid.allWordsFound()) {
+                        gameActive = false;
+                        score += Math.max(0, Math.floor(gameTime)) * 5;
+                        this.showWinScreen(canvas, ctx, score);
+                        return;
+                    }
+                    
+                    requestAnimationFrame(gameLoop);
+                };
+
+                lastTime = 0;
+                requestAnimationFrame(gameLoop);
+
+                // إضافة مستمعي الأحداث
+                this.setupWordSearchControls(grid);
+            }
+
+            setupWordSearchControls(grid) {
+                let isMouseDown = false;
+                
+                const getCellFromMouse = (x, y) => {
+                    for (let i = 0; i < grid.size; i++) {
+                        for (let j = 0; j < grid.size; j++) {
+                            const cell = grid.grid[i][j];
+                            if (x >= cell.x && x <= cell.x + grid.cellSize &&
+                                y >= cell.y && y <= cell.y + grid.cellSize) {
+                                return { row: i, col: j };
+                            }
+                        }
+                    }
+                    return null;
+                };
+                
+                const mouseDownHandler = (e) => {
+                    if (!this.gameManager.gameActive) return;
+                    
+                    const rect = this.gameManager.gameCanvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    
+                    const cellPos = getCellFromMouse(mouseX, mouseY);
+                    if (cellPos) {
+                        isMouseDown = true;
+                        grid.startSelection(cellPos.row, cellPos.col);
+                    }
+                };
+                
+                const mouseMoveHandler = (e) => {
+                    if (!isMouseDown || !this.gameManager.gameActive) return;
+                    
+                    const rect = this.gameManager.gameCanvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    
+                    const cellPos = getCellFromMouse(mouseX, mouseY);
+                    if (cellPos) {
+                        grid.updateSelection(cellPos.row, cellPos.col);
+                    }
+                };
+                
+                const mouseUpHandler = (e) => {
+                    if (!isMouseDown || !this.gameManager.gameActive) return;
+                    
+                    isMouseDown = false;
+                    const selection = grid.endSelection();
+                    
+                    if (selection) {
+                        const result = grid.checkWord(selection.word, selection.cells);
+                        
+                        if (result.success) {
+                            score += 15;
+                            this.gameManager.gameScore += 15;
+                            this.gameManager.soundManager.playSound('success');
+                            
+                            // تأثيرات للخلايا التي تحتوي على الكلمة
+                            selection.cells.forEach(cell => {
+                                this.createExplosion(
+                                    cell.x + grid.cellSize/2,
+                                    cell.y + grid.cellSize/2,
+                                    '#4ade80'
+                                );
+                            });
+                        } else {
+                            this.gameManager.soundManager.playSound('error');
+                            score = Math.max(0, score - 5);
+                        }
+                    }
+                };
+                
+                const canvas = this.gameManager.gameCanvas;
+                canvas.addEventListener('mousedown', mouseDownHandler);
+                canvas.addEventListener('mousemove', mouseMoveHandler);
+                canvas.addEventListener('mouseup', mouseUpHandler);
+                
+                // للشاشات التي تعمل باللمس
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    mouseDownHandler(e.touches[0]);
+                });
+                
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    mouseMoveHandler(e.touches[0]);
+                });
+                
+                canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    mouseUpHandler(e.changedTouches[0]);
+                });
+                
+                this.gameManager.currentMouseHandlers = {
+                    mousedown: mouseDownHandler,
+                    mousemove: mouseMoveHandler,
+                    mouseup: mouseUpHandler
+                };
+            }
+
+            // تحسين لعبة الكتابة السريعة
+            initEnhancedTyping(ctx, canvas) {
+                const currentLetter = this.gameManager.currentLetter;
+                const letterData = this.gameManager.letterData;
+                
+                // إعدادات اللعبة
+                const gameSettings = {
+                    wordSpeed: 1,
+                    wordSpawnRate: 2000,
+                    gameTime: 90,
+                    targetScore: 60,
+                    difficultyFactor: this.gameDifficulty
+                };
+
+                // الكلمات المحسنة
+                class FallingWord {
+                    constructor() {
+                        this.word = this.getRandomWord();
+                        this.x = Math.random() * (canvas.width - 200) + 100;
+                        this.y = -50;
+                        this.speed = gameSettings.wordSpeed + Math.random() * 1.5;
+                        this.typed = '';
+                        this.completed = false;
+                        this.wobble = Math.random() * Math.PI * 2;
+                        this.wobbleSpeed = 0.05;
+                        this.pulse = 0;
+                        this.pulseSpeed = 0.1;
+                        this.glow = 0;
+                        this.glowSpeed = 0.2;
+                    }
+                    
+                    getRandomWord() {
+                        const words = letterData.words.map(w => w.word);
+                        return words[Math.floor(Math.random() * words.length)];
+                    }
+                    
+                    draw(ctx) {
+                        ctx.save();
+                        
+                        // حركة التمايل
+                        const wobbleOffset = Math.sin(this.wobble) * 3;
+                        const pulseScale = 1 + Math.sin(this.pulse) * 0.1;
+                        const glowAlpha = 0.3 + Math.sin(this.glow) * 0.2;
+                        
+                        ctx.translate(this.x, this.y + wobbleOffset);
+                        ctx.scale(pulseScale, pulseScale);
+                        
+                        // تأثير التوهج للكلمات المكتملة
+                        if (this.completed) {
+                            ctx.shadowColor = '#4ade80';
+                            ctx.shadowBlur = 20;
+                        }
+                        
+                        // خلفية الكلمة
+                        const gradient = ctx.createLinearGradient(-100, -30, 100, 30);
+                        
+                        if (this.completed) {
+                            gradient.addColorStop(0, '#4ade80');
+                            gradient.addColorStop(1, '#22c55e');
+                        } else if (this.typed.length > 0) {
+                            gradient.addColorStop(0, '#4cc9f0');
+                            gradient.addColorStop(1, '#4361ee');
+                        } else {
+                            gradient.addColorStop(0, '#f72585');
+                            gradient.addColorStop(1, '#d946ef');
+                        }
+                        
+                        ctx.fillStyle = gradient;
+                        
+                        // شكل الكلمة مع زوايا مدورة
+                        const width = ctx.measureText(this.word).width + 40;
+                        const height = 50;
+                        const radius = 15;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(-width/2 + radius, -height/2);
+                        ctx.lineTo(width/2 - radius, -height/2);
+                        ctx.quadraticCurveTo(width/2, -height/2, width/2, -height/2 + radius);
+                        ctx.lineTo(width/2, height/2 - radius);
+                        ctx.quadraticCurveTo(width/2, height/2, width/2 - radius, height/2);
+                        ctx.lineTo(-width/2 + radius, height/2);
+                        ctx.quadraticCurveTo(-width/2, height/2, -width/2, height/2 - radius);
+                        ctx.lineTo(-width/2, -height/2 + radius);
+                        ctx.quadraticCurveTo(-width/2, -height/2, -width/2 + radius, -height/2);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // حدود الكلمة
+                        ctx.strokeStyle = this.completed ? '#166534' : '#ffffff';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        
+                        // الكلمة
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 24px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        
+                        // عرض الكلمة مع الجزء المطبوع ملون
+                        const wordText = this.word;
+                        const typedText = this.typed;
+                        
+                        // الجزء المطبوع
+                        if (typedText.length > 0) {
+                            ctx.fillStyle = '#4cc9f0';
+                            ctx.fillText(typedText, 0, 0);
+                            
+                            // الجزء المتبقي
+                            const remainingText = wordText.substring(typedText.length);
+                            const typedWidth = ctx.measureText(typedText).width;
+                            
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillText(remainingText, typedWidth/2, 0);
+                        } else {
+                            ctx.fillText(wordText, 0, 0);
+                        }
+                        
+                        // مؤشر الكتابة
+                        if (!this.completed && typedText.length < wordText.length) {
+                            const typedWidth = ctx.measureText(typedText).width;
+                            const charWidth = ctx.measureText(wordText[typedText.length]).width;
+                            
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(
+                                typedWidth - charWidth/2,
+                                -10,
+                                3,
+                                20
+                            );
+                        }
+                        
+                        ctx.restore();
+                    }
+                    
+                    update(deltaTime) {
+                        this.wobble += this.wobbleSpeed;
+                        this.pulse += this.pulseSpeed;
+                        this.glow += this.glowSpeed;
+                        
+                        this.y += this.speed;
+                        
+                        return this.y > canvas.height;
+                    }
+                    
+                    typeCharacter(char) {
+                        if (this.completed) return false;
+                        
+                        const expectedChar = this.word[this.typed.length].toLowerCase();
+                        if (char.toLowerCase() === expectedChar) {
+                            this.typed += this.word[this.typed.length];
+                            
+                            if (this.typed === this.word) {
+                                this.completed = true;
+                                return 'completed';
+                            }
+                            return 'correct';
+                        }
+                        return 'incorrect';
+                    }
+                }
+
+                // الكلمات النشطة
+                const fallingWords = [];
+                let score = 0;
+                let gameTime = gameSettings.gameTime;
+                let lastTime = 0;
+                let lastSpawnTime = 0;
+                let gameActive = true;
+                let combo = 0;
+                let lastCorrectTime = 0;
+                let currentInput = '';
+
+                const gameLoop = (timestamp) => {
+                    if (!gameActive) return;
+                    
+                    const deltaTime = timestamp - lastTime;
+                    lastTime = timestamp;
+                    
+                    // تحديث الوقت
+                    gameTime -= deltaTime / 1000;
+                    if (gameTime <= 0) {
+                        gameActive = false;
+                        this.showGameOver(canvas, ctx, score);
+                        return;
+                    }
+                    
+                    // إنشاء كلمات جديدة
+                    if (timestamp - lastSpawnTime > gameSettings.wordSpawnRate - (this.gameDifficulty * 200)) {
+                        fallingWords.push(new FallingWord());
+                        lastSpawnTime = timestamp;
+                    }
+                    
+                    // تحديث الكلمات
+                    fallingWords.forEach((word, index) => {
+                        const shouldRemove = word.update(deltaTime);
+                        
+                        if (shouldRemove) {
+                            if (!word.completed) {
+                                // عقوبة لفقدان الكلمة
+                                combo = 0;
+                                score = Math.max(0, score - 5);
+                            }
+                            fallingWords.splice(index, 1);
+                        }
+                    });
+                    
+                    // تحديث الكومبو
+                    if (timestamp - lastCorrectTime > 2000) {
+                        combo = 0;
+                    }
+                    
+                    // الرسم
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // خلفية
+                    const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    bgGradient.addColorStop(0, '#0f172a');
+                    bgGradient.addColorStop(1, '#1e293b');
+                    ctx.fillStyle = bgGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // النجوم الخلفية
+                    ctx.fillStyle = '#ffffff';
+                    for (let i = 0; i < 50; i++) {
+                        const alpha = 0.1 + Math.random() * 0.3;
+                        const size = 1 + Math.random() * 2;
+                        const x = Math.random() * canvas.width;
+                        const y = (Math.random() * canvas.height + timestamp/100) % canvas.height;
+                        
+                        ctx.globalAlpha = alpha;
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
+                    
+                    // رسم الكلمات
+                    fallingWords.forEach(word => word.draw(ctx));
+                    
+                    // رسم المعلومات
+                    this.drawTypingInfo(ctx, canvas, score, gameTime, combo, currentInput);
+                    
+                    // التحقق من الفوز
+                    if (score >= gameSettings.targetScore) {
+                        gameActive = false;
+                        this.showWinScreen(canvas, ctx, score);
+                        return;
+                    }
+                    
+                    requestAnimationFrame(gameLoop);
+                };
+
+                lastTime = 0;
+                requestAnimationFrame(gameLoop);
+
+                // إضافة مستمعي لوحة المفاتيح
+                const keyHandler = (e) => {
+                    if (!gameActive) return;
+                    
+                    if (e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
+                        currentInput += e.key;
+                        
+                        let typedAny = false;
+                        fallingWords.forEach(word => {
+                            const result = word.typeCharacter(e.key);
+                            
+                            if (result === 'correct' || result === 'completed') {
+                                typedAny = true;
+                                this.gameManager.soundManager.playSound('click');
+                                
+                                if (result === 'completed') {
+                                    score += 10 + combo * 2;
+                                    this.gameManager.gameScore += 10 + combo * 2;
+                                    this.gameManager.soundManager.playSound('success');
+                                    this.createExplosion(word.x, word.y, '#4ade80');
+                                    combo++;
+                                    lastCorrectTime = Date.now();
+                                    currentInput = '';
+                                }
+                            }
+                        });
+                        
+                        if (!typedAny) {
+                            this.gameManager.soundManager.playSound('error');
+                            combo = 0;
+                            currentInput = '';
+                        }
+                    } else if (e.key === 'Backspace') {
+                        currentInput = currentInput.slice(0, -1);
+                    } else if (e.key === 'Escape') {
+                        currentInput = '';
+                    }
+                };
+
+                document.addEventListener('keydown', keyHandler);
+                this.gameManager.currentKeyHandler = keyHandler;
+            }
+
+            // تحسين لعبة المطابقة
+            initEnhancedMatch(ctx, canvas) {
+                const currentLetter = this.gameManager.currentLetter;
+                const letterData = this.gameManager.letterData;
+                
+                // إعدادات اللعبة
+                const gameSettings = {
+                    itemCount: 6,
+                    gameTime: 90,
+                    targetScore: 50,
+                    difficultyFactor: this.gameDifficulty
+                };
+
+                // العناصر المحسنة
+                class MatchItem {
+                    constructor(id, type, value, translation, x, y) {
+                        this.id = id;
+                        this.type = type; // 'letter' أو 'word'
+                        this.value = value;
+                        this.translation = translation;
+                        this.x = x;
+                        this.y = y;
+                        this.width = type === 'letter' ? 80 : 160;
+                        this.height = 60;
+                        this.dragging = false;
+                        this.matched = false;
+                        this.targetX = x;
+                        this.targetY = y;
+                        this.speed = 5;
+                        this.wobble = Math.random() * Math.PI * 2;
+                        this.wobbleSpeed = 0.05;
+                        this.hover = false;
+                        this.returning = false;
+                    }
+                    
+                    draw(ctx) {
+                        ctx.save();
+                        
+                        // حركة التمايل
+                        const wobbleOffset = this.dragging ? 0 : Math.sin(this.wobble) * 3;
+                        
+                        ctx.translate(this.x, this.y + wobbleOffset);
+                        
+                        // تأثير السحب
+                        if (this.dragging) {
+                            ctx.shadowColor = '#4cc9f0';
+                            ctx.shadowBlur = 20;
+                            ctx.globalAlpha = 0.9;
+                        }
+                        
+                        // تأثير التحويم
+                        if (this.hover && !this.dragging && !this.matched) {
+                            ctx.scale(1.05, 1.05);
+                        }
+                        
+                        // تأثير المطابقة
+                        if (this.matched) {
+                            ctx.globalAlpha = 0.7;
+                        }
+                        
+                        // خلفية العنصر
+                        const gradient = ctx.createLinearGradient(
+                            -this.width/2, -this.height/2,
+                            this.width/2, this.height/2
+                        );
+                        
+                        if (this.matched) {
+                            gradient.addColorStop(0, '#4ade80');
+                            gradient.addColorStop(1, '#22c55e');
+                        } else if (this.type === 'letter') {
+                            gradient.addColorStop(0, '#4361ee');
+                            gradient.addColorStop(1, '#3a0ca3');
+                        } else {
+                            gradient.addColorStop(0, '#f72585');
+                            gradient.addColorStop(1, '#d946ef');
+                        }
+                        
+                        ctx.fillStyle = gradient;
+                        
+                        // شكل العنصر مع زوايا مدورة
+                        const radius = 10;
+                        ctx.beginPath();
+                        ctx.moveTo(-this.width/2 + radius, -this.height/2);
+                        ctx.lineTo(this.width/2 - radius, -this.height/2);
+                        ctx.quadraticCurveTo(this.width/2, -this.height/2, this.width/2, -this.height/2 + radius);
+                        ctx.lineTo(this.width/2, this.height/2 - radius);
+                        ctx.quadraticCurveTo(this.width/2, this.height/2, this.width/2 - radius, this.height/2);
+                        ctx.lineTo(-this.width/2 + radius, this.height/2);
+                        ctx.quadraticCurveTo(-this.width/2, this.height/2, -this.width/2, this.height/2 - radius);
+                        ctx.lineTo(-this.width/2, -this.height/2 + radius);
+                        ctx.quadraticCurveTo(-this.width/2, -this.height/2, -this.width/2 + radius, -this.height/2);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // حدود العنصر
+                        ctx.strokeStyle = this.matched ? '#166534' : '#ffffff';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        
+                        // المحتوى
+                        ctx.fillStyle = '#ffffff';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        
+                        if (this.type === 'letter') {
+                            ctx.font = 'bold 32px Arial';
+                            ctx.fillText(this.value, 0, 0);
+                            
+                            ctx.font = '12px Arial';
+                            ctx.fillText('الحرف', 0, -this.height/2 + 15);
+                        } else {
+                            ctx.font = 'bold 18px Arial';
+                            const lines = this.wrapText(ctx, this.value, this.width - 20);
+                            lines.forEach((line, i) => {
+                                ctx.fillText(line, 0, -10 + i * 20);
+                            });
+                            
+                            ctx.font = '12px Arial';
+                            ctx.fillText(this.translation, 0, this.height/2 - 15);
+                        }
+                        
+                        ctx.restore();
+                    }
+                    
+                    wrapText(ctx, text, maxWidth) {
+                        const words = text.split(' ');
+                        const lines = [];
+                        let currentLine = words[0];
+                        
+                        for (let i = 1; i < words.length; i++) {
+                            const word = words[i];
+                            const width = ctx.measureText(currentLine + " " + word).width;
+                            if (width < maxWidth) {
+                                currentLine += " " + word;
+                            } else {
+                                lines.push(currentLine);
+                                currentLine = word;
+                            }
+                        }
+                        lines.push(currentLine);
+                        return lines;
+                    }
+                    
+                    update() {
+                        // تحديث التمايل
+                        if (!this.dragging) {
+                            this.wobble += this.wobbleSpeed;
+                        }
+                        
+                        // الحركة نحو الهدف
+                        if (!this.dragging && (this.x !== this.targetX || this.y !== this.targetY)) {
+                            const dx = this.targetX - this.x;
+                            const dy = this.targetY - this.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance < this.speed) {
+                                this.x = this.targetX;
+                                this.y = this.targetY;
+                                this.returning = false;
+                            } else {
+                                this.x += (dx / distance) * this.speed;
+                                this.y += (dy / distance) * this.speed;
+                            }
+                        }
+                    }
+                    
+                    contains(x, y) {
+                        return x >= this.x - this.width/2 && x <= this.x + this.width/2 &&
+                               y >= this.y - this.height/2 && y <= this.y + this.height/2;
+                    }
+                    
+                    startDrag(offsetX, offsetY) {
+                        this.dragging = true;
+                        this.dragOffsetX = offsetX;
+                        this.dragOffsetY = offsetY;
+                        this.originalX = this.x;
+                        this.originalY = this.y;
+                    }
+                    
+                    updateDrag(mouseX, mouseY) {
+                        if (this.dragging) {
+                            this.x = mouseX - this.dragOffsetX;
+                            this.y = mouseY - this.dragOffsetY;
+                        }
+                    }
+                    
+                    endDrag() {
+                        this.dragging = false;
+                        this.returning = true;
+                        this.targetX = this.originalX;
+                        this.targetY = this.originalY;
+                    }
+                    
+                    snapTo(targetX, targetY) {
+                        this.matched = true;
+                        this.dragging = false;
+                        this.targetX = targetX;
+                        this.targetY = targetY;
+                    }
+                }
+
+                // إنشاء الحروف والكلمات
+                const letters = [];
+                const words = [];
+                const matches = [];
+                
+                for (let i = 0; i < Math.min(gameSettings.itemCount, letterData.words.length); i++) {
+                    const wordData = letterData.words[i];
+                    
+                    // الحرف
+                    letters.push(new MatchItem(
+                        i,
+                        'letter',
+                        currentLetter,
+                        'الحرف',
+                        100,
+                        100 + i * 80
+                    ));
+                    
+                    // الكلمة
+                    words.push(new MatchItem(
+                        i,
+                        'word',
+                        wordData.word,
+                        wordData.translation,
+                        canvas.width - 200,
+                        100 + i * 80
+                    ));
+                }
+
+                // خلط الكلمات
+                this.shuffleArray(words);
+                
+                let score = 0;
+                let gameTime = gameSettings.gameTime;
+                let lastTime = 0;
+                let gameActive = true;
+                let draggedItem = null;
+                let offsetX = 0, offsetY = 0;
+
+                const gameLoop = (timestamp) => {
+                    if (!gameActive) return;
+                    
+                    const deltaTime = timestamp - lastTime;
+                    lastTime = timestamp;
+                    
+                    // تحديث الوقت
+                    gameTime -= deltaTime / 1000;
+                    if (gameTime <= 0) {
+                        gameActive = false;
+                        this.showGameOver(canvas, ctx, score);
+                        return;
+                    }
+                    
+                    // تحديث العناصر
+                    letters.forEach(letter => letter.update());
+                    words.forEach(word => word.update());
+                    
+                    // تحديث خطوط التوصيل
+                    matches.forEach(match => {
+                        // خطوط التوصيل تتبع العناصر المطابقة
+                        const letter = letters.find(l => l.id === match.letterId);
+                        const word = words.find(w => w.id === match.wordId);
+                        
+                        if (letter && word) {
+                            match.fromX = letter.x;
+                            match.fromY = letter.y;
+                            match.toX = word.x;
+                            match.toY = word.y;
+                        }
+                    });
+                    
+                    // الرسم
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // خلفية
+                    const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    bgGradient.addColorStop(0, '#f8fafc');
+                    bgGradient.addColorStop(1, '#e2e8f0');
+                    ctx.fillStyle = bgGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // العنوان
+                    ctx.fillStyle = '#1e293b';
+                    ctx.font = 'bold 28px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(`لعبة المطابقة - الحرف ${currentLetter}`, canvas.width/2, 15);
+                    
+                    // تعليمات
+                    ctx.fillStyle = '#475569';
+                    ctx.font = '16px Arial';
+                    ctx.fillText('اسحب الحرف إلى الكلمة التي تبدأ به', canvas.width/2, 50);
+                    
+                    // رسم خطوط التوصيل
+                    ctx.strokeStyle = '#4cc9f0';
+                    ctx.lineWidth = 3;
+                    ctx.lineCap = 'round';
+                    matches.forEach(match => {
+                        ctx.beginPath();
+                        ctx.moveTo(match.fromX, match.fromY);
+                        ctx.lineTo(match.toX, match.toY);
+                        ctx.stroke();
+                    });
+                    
+                    // رسم الكلمات
+                    words.forEach(word => word.draw(ctx));
+                    
+                    // رسم الحروف
+                    letters.forEach(letter => letter.draw(ctx));
+                    
+                    // رسم المعلومات
+                    this.drawMatchInfo(ctx, canvas, score, gameTime, matches.length, letters.length);
+                    
+                    // التحقق من الفوز
+                    if (matches.length === letters.length) {
+                        gameActive = false;
+                        score += Math.max(0, Math.floor(gameTime)) * 10;
+                        this.showWinScreen(canvas, ctx, score);
+                        return;
+                    }
+                    
+                    requestAnimationFrame(gameLoop);
+                };
+
+                lastTime = 0;
+                requestAnimationFrame(gameLoop);
+
+                // إضافة مستمعي الأحداث
+                this.setupMatchControls(letters, words, matches);
+            }
+
+            setupMatchControls(letters, words, matches) {
+                let draggedItem = null;
+                let offsetX = 0, offsetY = 0;
+                
+                const mouseDownHandler = (e) => {
+                    if (!this.gameManager.gameActive) return;
+                    
+                    const rect = this.gameManager.gameCanvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    
+                    // البحث عن حرف غير مطابق يتم سحبه
+                    for (const letter of letters) {
+                        if (!letter.matched && letter.contains(mouseX, mouseY)) {
+                            draggedItem = letter;
+                            offsetX = mouseX - letter.x;
+                            offsetY = mouseY - letter.y;
+                            draggedItem.startDrag(offsetX, offsetY);
+                            this.gameManager.soundManager.playSound('click');
+                            break;
+                        }
+                    }
+                };
+                
+                const mouseMoveHandler = (e) => {
+                    if (!draggedItem) return;
+                    
+                    const rect = this.gameManager.gameCanvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    
+                    draggedItem.updateDrag(mouseX, mouseY);
+                    
+                    // تحديث تأثير التحويم للكلمات
+                    words.forEach(word => {
+                        word.hover = !word.matched && word.contains(mouseX, mouseY);
+                    });
+                };
+                
+                const mouseUpHandler = (e) => {
+                    if (!draggedItem) return;
+                    
+                    const rect = this.gameManager.gameCanvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    
+                    // البحث عن تطابق
+                    let matchedWord = null;
+                    for (const word of words) {
+                        if (!word.matched && word.contains(mouseX, mouseY)) {
+                            // التحقق من أن الكلمة تبدأ بالحرف
+                            if (word.value.startsWith(draggedItem.value)) {
+                                matchedWord = word;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (matchedWord) {
+                        // تطابق ناجح
+                        draggedItem.snapTo(matchedWord.x - 120, matchedWord.y);
+                        matchedWord.matched = true;
+                        
+                        // إضافة خط للتوصيل
+                        matches.push({
+                            letterId: draggedItem.id,
+                            wordId: matchedWord.id,
+                            fromX: draggedItem.x,
+                            fromY: draggedItem.y,
+                            toX: matchedWord.x,
+                            toY: matchedWord.y
+                        });
+                        
+                        score += 10;
+                        this.gameManager.gameScore += 10;
+                        this.gameManager.soundManager.playSound('success');
+                        this.createExplosion(draggedItem.x, draggedItem.y, '#4ade80');
+                        this.createExplosion(matchedWord.x, matchedWord.y, '#4ade80');
+                    } else {
+                        // إعادة الحرف لمكانه
+                        draggedItem.endDrag();
+                        this.gameManager.soundManager.playSound('error');
+                    }
+                    
+                    draggedItem = null;
+                };
+                
+                const canvas = this.gameManager.gameCanvas;
+                canvas.addEventListener('mousedown', mouseDownHandler);
+                canvas.addEventListener('mousemove', mouseMoveHandler);
+                canvas.addEventListener('mouseup', mouseUpHandler);
+                
+                // للشاشات التي تعمل باللمس
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    mouseDownHandler(e.touches[0]);
+                });
+                
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    mouseMoveHandler(e.touches[0]);
+                });
+                
+                canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    mouseUpHandler(e.changedTouches[0]);
+                });
+                
+                this.gameManager.currentMouseHandlers = {
+                    mousedown: mouseDownHandler,
+                    mousemove: mouseMoveHandler,
+                    mouseup: mouseUpHandler
+                };
+            }
+
+            // ============ دوال مساعدة ============
+            
+            shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            addCombo() {
+                this.combo++;
+                if (this.comboTimer) clearTimeout(this.comboTimer);
+                this.comboTimer = setTimeout(() => {
+                    this.combo = 0;
+                }, 3000);
+            }
+            
+            createExplosion(x, y, color) {
+                for (let i = 0; i < 15; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 3;
+                    const size = 3 + Math.random() * 4;
+                    const life = 0.5 + Math.random() * 0.5;
+                    
+                    this.effects.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: size,
+                        color: color,
+                        life: life,
+                        maxLife: life
+                    });
+                }
+            }
+            
+            updateEffects(deltaTime) {
+                for (let i = this.effects.length - 1; i >= 0; i--) {
+                    const effect = this.effects[i];
+                    effect.x += effect.vx;
+                    effect.y += effect.vy;
+                    effect.life -= deltaTime / 1000;
+                    
+                    if (effect.life <= 0) {
+                        this.effects.splice(i, 1);
+                    }
+                }
+            }
+            
+            drawEffects(ctx) {
+                this.effects.forEach(effect => {
+                    const alpha = effect.life / effect.maxLife;
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = effect.color;
+                    ctx.beginPath();
+                    ctx.arc(effect.x, effect.y, effect.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+            }
+            
+            showHint(grid) {
+                // إظهار تلميح للكلمات غير الموجودة
+                const unfoundWords = grid.words.filter(word => !word.found);
+                if (unfoundWords.length > 0) {
+                    const randomWord = unfoundWords[Math.floor(Math.random() * unfoundWords.length)];
+                    const cells = [];
+                    
+                    for (let i = 0; i < randomWord.word.length; i++) {
+                        const r = randomWord.row + randomWord.direction.dr * i;
+                        const c = randomWord.col + randomWord.direction.dc * i;
+                        cells.push(grid.grid[r][c]);
+                    }
+                    
+                    // وميض الخلايا
+                    cells.forEach(cell => {
+                        cell.highlighted = true;
+                        setTimeout(() => {
+                            cell.highlighted = false;
+                        }, 1000);
+                    });
+                }
+            }
+            
+            drawGameInfo(ctx, canvas, score, lives, nitro, shield) {
+                // النقاط
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`النقاط: ${score}`, 20, 20);
+                
+                // الوقت
+                ctx.textAlign = 'right';
+                ctx.fillText(`الوقت: ${Math.ceil(this.gameManager.gameTimeLeft)}`, canvas.width - 20, 20);
+                
+                // الأرواح
+                ctx.textAlign = 'left';
+                ctx.fillText(`❤️ ${lives}`, 20, 50);
+                
+                // الباور أب
+                if (nitro) {
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillText('⚡ نيترو نشط', 100, 50);
+                }
+                
+                if (shield) {
+                    ctx.fillStyle = '#4cc9f0';
+                    ctx.fillText('🛡️ درع نشط', 220, 50);
+                }
+                
+                // الكومبو
+                if (this.combo > 1) {
+                    ctx.fillStyle = '#f72585';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`كومبو x${this.combo}!`, canvas.width/2, 20);
+                }
+            }
+            
+            drawFishingInfo(ctx, canvas, score, timeLeft, combo) {
+                // النقاط
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`النقاط: ${score}`, 20, 20);
+                
+                // الوقت
+                const seconds = Math.ceil(timeLeft / 1000);
+                ctx.textAlign = 'right';
+                ctx.fillText(`الوقت: ${seconds}`, canvas.width - 20, 20);
+                
+                // الكومبو
+                if (combo > 1) {
+                    ctx.fillStyle = '#f72585';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`كومبو صيد x${combo}!`, canvas.width/2, 20);
+                }
+                
+                // الهدف
+                ctx.fillStyle = '#4cc9f0';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('الهدف: 30 نقطة', canvas.width/2, 50);
+            }
+            
+            drawRacketInfo(ctx, canvas, score, lives, timeLeft, combo) {
+                // النقاط
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`النقاط: ${score}`, 20, 20);
+                
+                // الأرواح
+                ctx.fillText(`❤️ ${lives}`, 20, 50);
+                
+                // الوقت
+                ctx.textAlign = 'right';
+                ctx.fillText(`الوقت: ${Math.ceil(timeLeft)}`, canvas.width - 20, 20);
+                
+                // الكومبو
+                if (combo > 0) {
+                    ctx.fillStyle = '#f72585';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`كومبو x${combo}!`, canvas.width/2, 20);
+                }
+                
+                // الهدف
+                ctx.fillStyle = '#4cc9f0';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('الهدف: 40 نقطة', canvas.width/2, 50);
+            }
+            
+            drawBalloonsInfo(ctx, canvas, score, timeLeft, combo) {
+                // النقاط
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`النقاط: ${score}`, 20, 20);
+                
+                // الوقت
+                ctx.textAlign = 'right';
+                ctx.fillText(`الوقت: ${Math.ceil(timeLeft)}`, canvas.width - 20, 20);
+                
+                // الكومبو
+                if (combo > 1) {
+                    ctx.fillStyle = '#f72585';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`كومبو x${combo}!`, canvas.width/2, 20);
+                }
+                
+                // الهدف
+                ctx.fillStyle = '#3a0ca3';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('الهدف: 50 نقطة', canvas.width/2, 50);
+            }
+            
+            drawMemoryInfo(ctx, canvas, matched, total, moves, timeLeft, score) {
+                // الأزواج
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`الأزواج: ${matched}/${total}`, 20, 20);
+                
+                // الحركات
+                ctx.fillText(`الحركات: ${moves}`, 20, 50);
+                
+                // الوقت
+                ctx.textAlign = 'right';
+                ctx.fillText(`الوقت: ${Math.ceil(timeLeft)}`, canvas.width - 20, 20);
+                
+                // النقاط
+                ctx.fillText(`النقاط: ${score}`, canvas.width - 20, 50);
+            }
+            
+            drawWordList(ctx, canvas, words) {
+                const startX = 50;
+                const startY = canvas.height - 150;
+                
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 18px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText('الكلمات المطلوبة:', startX, startY);
+                
+                words.forEach((word, i) => {
+                    const status = word.found ? '✅' : '🔍';
+                    const color = word.found ? '#166534' : '#475569';
+                    
+                    ctx.fillStyle = color;
+                    ctx.font = 'bold 16px Arial';
+                    ctx.fillText(`${status} ${word.word}`, startX, startY + 30 + i * 25);
+                });
+            }
+            
+            drawWordSearchInfo(ctx, canvas, score, timeLeft, found, total) {
+                // النقاط
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`النقاط: ${score}`, 20, canvas.height - 80);
+                
+                // الكلمات
+                ctx.fillText(`الكلمات: ${found}/${total}`, 20, canvas.height - 50);
+                
+                // الوقت
+                ctx.textAlign = 'right';
+                ctx.fillText(`الوقت: ${Math.ceil(timeLeft)}`, canvas.width - 20, canvas.height - 80);
+            }
+            
+            drawTypingInfo(ctx, canvas, score, timeLeft, combo, input) {
+                // النقاط
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`النقاط: ${score}`, 20, 20);
+                
+                // الوقت
+                ctx.textAlign = 'right';
+                ctx.fillText(`الوقت: ${Math.ceil(timeLeft)}`, canvas.width - 20, 20);
+                
+                // الإدخال
+                ctx.textAlign = 'center';
+                ctx.fillText(`الإدخال: ${input}`, canvas.width/2, 50);
+                
+                // الكومبو
+                if (combo > 1) {
+                    ctx.fillStyle = '#f72585';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.fillText(`كومبو كتابة x${combo}!`, canvas.width/2, 80);
+                }
+                
+                // الهدف
+                ctx.fillStyle = '#4cc9f0';
+                ctx.font = '16px Arial';
+                ctx.fillText('الهدف: 60 نقطة', canvas.width/2, canvas.height - 30);
+            }
+            
+            drawMatchInfo(ctx, canvas, score, timeLeft, matched, total) {
+                // النقاط
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`النقاط: ${score}`, 20, canvas.height - 50);
+                
+                // التطابقات
+                ctx.fillText(`التطابقات: ${matched}/${total}`, 20, canvas.height - 80);
+                
+                // الوقت
+                ctx.textAlign = 'right';
+                ctx.fillText(`الوقت: ${Math.ceil(timeLeft)}`, canvas.width - 20, canvas.height - 50);
+            }
+            
+            showGameOver(canvas, ctx, score) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 36px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('انتهت اللعبة!', canvas.width/2, canvas.height/2 - 50);
+                
+                ctx.font = 'bold 28px Arial';
+                ctx.fillText(`النقاط النهائية: ${score}`, canvas.width/2, canvas.height/2);
+                
+                ctx.font = '24px Arial';
+                ctx.fillText('انقر لإعادة اللعب', canvas.width/2, canvas.height/2 + 50);
+                
+                // إضافة مستمع لإعادة اللعب
+                const restartHandler = () => {
+                    this.gameManager.restartGame();
+                };
+                
+                canvas.addEventListener('click', restartHandler);
+                this.gameManager.currentRestartHandler = restartHandler;
+            }
+            
+            showWinScreen(canvas, ctx, score) {
+                // إضافة النقاط النهائية
+                this.gameManager.gameScore += score;
+                
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // رسائل الفوز
+                const winMessages = [
+                    "سلمت يابطل! 🏆",
+                    "مذهل! إتقان رائع! ⭐",
+                    "أنت نجم الحروف! ✨",
+                    "فوز مدهش! 👑",
+                    "براعة فائقة! 💫"
+                ];
+                
+                const randomMessage = winMessages[Math.floor(Math.random() * winMessages.length)];
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 36px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(randomMessage, canvas.width/2, canvas.height/2 - 50);
+                
+                ctx.font = 'bold 28px Arial';
+                ctx.fillText(`النقاط النهائية: ${score}`, canvas.width/2, canvas.height/2);
+                
+                // تأثيرات الفوز
+                this.createFireworks(canvas);
+                
+                // الانتقال التلقائي بعد 3 ثواني
+                setTimeout(() => {
+                    this.gameManager.showWinModal(score);
+                }, 3000);
+            }
+            
+            createFireworks(canvas) {
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        const x = Math.random() * canvas.width;
+                        const y = Math.random() * canvas.height * 0.7;
+                        this.createFireworkExplosion(x, y);
+                    }, i * 300);
+                }
+            }
+            
+            createFireworkExplosion(x, y) {
+                const colors = ['#f72585', '#4361ee', '#4cc9f0', '#4ade80', '#f59e0b'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                for (let i = 0; i < 30; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 3 + Math.random() * 4;
+                    const size = 4 + Math.random() * 4;
+                    const life = 1 + Math.random() * 0.5;
+                    
+                    this.effects.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: size,
+                        color: color,
+                        life: life,
+                        maxLife: life
+                    });
+                }
+            }
+        }
+
+        // تحديث فئة PhonicsGameLab لاستخدام نظام الألعاب المحسن
+        class EnhancedPhonicsGameLab extends PhonicsGameLab {
+            constructor() {
+                super();
+                this.enhancedGameSystem = new EnhancedGameSystem(this);
+            }
+            
+            startGame(gameType) {
+                // ... الكود السابق يبقى كما هو ...
+                
+                // استبدال استدعاء initGame باستدعاء نظام الألعاب المحسن
+                this.enhancedGameSystem.initEnhancedGame(gameType);
+            }
+            
+            initEnhancedGame(gameType) {
+                const canvas = this.gameCanvas;
+                const ctx = canvas.getContext('2d');
+                
+                const container = canvas.parentElement;
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+                
+                switch(gameType) {
+                    case 'carRace':
+                        this.enhancedGameSystem.initEnhancedCarRace(ctx, canvas);
+                        break;
+                    case 'racket':
+                        this.enhancedGameSystem.initEnhancedRacket(ctx, canvas);
+                        break;
+                    case 'fishing':
+                        this.enhancedGameSystem.initEnhancedFishing(ctx, canvas);
+                        break;
+                    case 'balloons':
+                        this.enhancedGameSystem.initEnhancedBalloons(ctx, canvas);
+                        break;
+                    case 'memory':
+                        this.enhancedGameSystem.initEnhancedMemory(ctx, canvas);
+                        break;
+                    case 'wordsearch':
+                        this.enhancedGameSystem.initEnhancedWordSearch(ctx, canvas);
+                        break;
+                    case 'typing':
+                        this.enhancedGameSystem.initEnhancedTyping(ctx, canvas);
+                        break;
+                    case 'match':
+                        this.enhancedGameSystem.initEnhancedMatch(ctx, canvas);
+                        break;
+                    default:
+                        this.enhancedGameSystem.initEnhancedCarRace(ctx, canvas);
+                }
+            }
+        }
+
+        // بدء التطبيق المحسن
+        document.addEventListener('DOMContentLoaded', () => {
+            new EnhancedPhonicsGameLab();
+        });
+    </script>
+</body>
+</html>

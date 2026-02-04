@@ -1,0 +1,375 @@
+/* ========================================
+   Top Goal - Games Styles
+   أنماط الألعاب
+   ======================================== */
+
+/* --- Games Arena --- */
+.arena-section, .games-arena {
+    background: white;
+    border-radius: 30px;
+    padding: 40px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    margin-bottom: 60px;
+}
+
+.arena-title {
+    text-align: center;
+    font-size: 2.2rem;
+    color: #3a0ca3;
+    margin-bottom: 30px;
+    font-weight: 900;
+}
+
+/* --- Game Tabs --- */
+.game-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.game-tab {
+    padding: 12px 25px;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+
+.game-tab.active, .game-tab:hover {
+    background: #3a0ca3;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(58, 12, 163, 0.2);
+}
+
+/* --- Game Panels --- */
+.game-panel {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.game-panel.active {
+    display: block;
+}
+
+/* --- Memory Game --- */
+.memory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.memory-card {
+    aspect-ratio: 1/1;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+    cursor: pointer;
+}
+
+.memory-card.flip {
+    transform: rotateY(180deg);
+}
+
+.memory-card.matched {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.memory-card .front, .memory-card .back {
+    width: 100%; 
+    height: 100%;
+    position: absolute;
+    backface-visibility: hidden;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    font-weight: 700;
+}
+
+.memory-card .front {
+    background: linear-gradient(135deg, #4361ee, #4895ef);
+    color: white;
+    font-size: 2rem;
+}
+
+.memory-card .back {
+    background: white;
+    color: #3a0ca3;
+    transform: rotateY(180deg);
+    border: 2px solid #4361ee;
+    font-size: 1.2rem;
+    text-align: center; 
+    padding: 5px;
+}
+
+.emoji-large { 
+    font-size: 3.5rem !important; 
+}
+
+/* --- Scramble Game --- */
+.scramble-container {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.sentence-drop-zone {
+    min-height: 100px;
+    border: 3px dashed #cbd5e1;
+    border-radius: 20px;
+    background: #fff;
+    margin-bottom: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    transition: all 0.3s;
+}
+
+.sentence-drop-zone.drag-over {
+    border-color: #d946ef;
+    background: #fdf4ff;
+}
+
+.word-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    min-height: 60px;
+}
+
+.draggable-word {
+    display: inline-block;
+    padding: 12px 25px;
+    background: white;
+    border-radius: 12px;
+    font-weight: 700;
+    color: #1e293b;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    cursor: grab;
+    user-select: none;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+    font-size: 1.1rem;
+    font-family: 'Outfit', sans-serif;
+}
+
+.draggable-word:active {
+    cursor: grabbing;
+    transform: scale(1.05);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+
+/* --- Listening Game --- */
+.listening-area { 
+    text-align: center; 
+    max-width: 600px; 
+    margin: 0 auto; 
+}
+
+.listen-btn-large {
+    width: 80px; 
+    height: 80px;
+    border-radius: 50%
+;
+    background: #f72585;
+    color: white;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+    margin-bottom: 30px;
+    transition: transform 0.2s;
+}
+
+.listen-btn-large:active { 
+    transform: scale(0.95); 
+}
+
+.listening-options { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 20px; 
+}
+
+.listening-option {
+    background: white; 
+    padding: 20px; 
+    border-radius: 15px;
+    border: 2px solid #e2e8f0; 
+    cursor: pointer;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 10px;
+    transition: all 0.2s; 
+    font-weight: bold;
+}
+
+.listening-option:hover { 
+    border-color: #4cc9f0; 
+    transform: translateY(-5px); 
+}
+
+.listening-option.correct { 
+    background: #dcfce7; 
+    border-color: #22c55e; 
+    color: #15803d; 
+}
+
+.listening-option.wrong { 
+    background: #fee2e2; 
+    border-color: #ef4444; 
+    color: #b91c1c; 
+}
+
+/* --- Picture Match Game --- */
+.match-container { 
+    display: flex; 
+    gap: 30px; 
+    justify-content: center; 
+}
+
+.match-col { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+    width: 45%; 
+}
+
+.match-target {
+    background: #f8fafc; 
+    border: 3px dashed #cbd5e1; 
+    border-radius: 15px;
+    padding: 15px; 
+    display: flex; 
+    align-items: center; 
+    gap: 15px;
+    transition: all 0.2s;
+}
+
+.match-target.drag-over { 
+    background: #e0f2fe; 
+    border-color: #3b82f6; 
+}
+
+.target-emoji { 
+    font-size: 2.5rem; 
+}
+
+.target-drop-area { 
+    flex-grow: 1; 
+    font-style: italic; 
+    color: #94a3b8; 
+}
+
+.match-source {
+    background: white; 
+    padding: 15px; 
+    border-radius: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+    font-weight: bold;
+    cursor: grab; 
+    border: 1px solid #e2e8f0; 
+    text-align: center;
+}
+
+/* --- Wheel Game --- */
+.wheel-section { 
+    text-align: center; 
+    margin-bottom: 60px; 
+}
+
+.wheel-container {
+    width: 300px; 
+    height: 300px; 
+    background: #e2e8f0;
+    border-radius: 50%; 
+    margin: 30px auto; 
+    position: relative;
+    background: conic-gradient(#f72585 0 25%, #7209b7 25% 50%, #3a0ca3 50% 75%, #4cc9f0 75% 100%);
+    border: 10px solid white; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.wheel-arrow {
+    position: absolute; 
+    top: -20px; 
+    left: 50%; 
+    transform: translateX(-50%);
+    width: 0; 
+    height: 0; 
+    border-left: 20px solid transparent; 
+    border-right: 20px solid transparent;
+    border-top: 30px solid #1e293b; 
+    z-index: 10;
+}
+
+.wheel-result { 
+    font-size: 1.5rem; 
+    font-weight: bold; 
+    color: #3a0ca3; 
+    min-height: 40px; 
+    margin-top: 10px; 
+}
+
+.vocab-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    gap: 20px; 
+}
+
+/* --- Drag Cards for Board Game --- */
+.drag-card {
+    padding: 18px 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    cursor: move;
+    transition: all 0.3s;
+    font-size: 1.2rem;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(102,126,234,0.3);
+    min-width: 140px;
+    text-align: center;
+}
+
+.drop-zone {
+    min-height: 90px;
+    border: 3px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 20px;
+    background: #f8fafc;
+    text-align: center;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.drop-zone.drag-over {
+    border-color: #7209b7;
+    background: #f3e8ff;
+}
+
+.dropped-item {
+    margin-top: 10px;
+    min-height: 20px;
+}
