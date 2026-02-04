@@ -166,7 +166,7 @@
 
         /* --- CONTENT AREA --- */
         .content-area {
-            padding: 20px;
+            padding: 80px 20px 20px 20px;
             min-height: 500px;
         }
 
@@ -543,11 +543,11 @@
 
         /* Pronoun Sorter */
         .sort-container {
-            display: flex; gap: 30px; justify-content: center; margin-bottom: 50px; flex-wrap: wrap;
+            display: flex; gap: 15px; justify-content: center; margin-bottom: 50px; flex-wrap: wrap;
         }
         .sort-bucket {
-            width: 200px; min-height: 250px; background: white; border-radius: 20px;
-            border: 3px dashed #ccc; padding: 20px; text-align: center;
+            width: 45%; max-width: 200px; min-height: 200px; background: white; border-radius: 20px;
+            border: 3px dashed #ccc; padding: 15px; text-align: center;
             transition: all 0.3s;
         }
         .sort-bucket.drag-over { background: #f0f7ff; border-color: var(--primary); transform: scale(1.05); }
@@ -560,6 +560,11 @@
             background: var(--accent); color: var(--dark); padding: 12px 25px;
             border-radius: 15px; font-weight: bold; cursor: grab; font-size: 1.2rem;
             box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+            touch-action: none; /* Critical for mobile dragging */
+            user-select: none;
+            position: relative; /* For touch movement */
+            margin: 5px;
+            display: inline-block;
         }
         .draggable-item.dragging { opacity: 0.5; }
 
@@ -593,6 +598,13 @@
         .reading-vocab-bar {
             display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; justify-content: center;
         }
+        .d-input {
+            border: 2px solid #ddd; border-radius: 8px; padding: 5px 10px; font-size: 1rem; width: 120px;
+            text-align: center; background: white; cursor: pointer;
+        }
+        .d-input.correct { border-color: #06d6a0; background: #d1fae5; color: #065f46; }
+        .d-input.wrong { border-color: #ef476f; background: #fee2e2; color: #991b1b; }
+
         .vocab-chip {
             background: white; padding: 8px 15px; border-radius: 20px; font-weight: bold;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s; cursor: pointer;
@@ -687,7 +699,7 @@
     <div id="navDropdown" class="nav-dropdown-content">
         <a href="/top-goal-6-unit-1/" class="nav-item">
             <i class="fas fa-film" style="color:#f43f5e;"></i>
-            <span>Top Goal 6 - Unit 1</span>
+            <span>الصف السادس</span>
         </a>
         <a href="/grade-4-unit-1/" class="nav-item">
             <i class="fas fa-tree" style="color:#10b981;"></i>
@@ -970,7 +982,15 @@
                     <div class="dialogue-line">
                         <div class="speaker-avatar" style="background:#b5ead7">👧</div>
                         <div class="speaker-text">
-                            <strong>Nura:</strong> I'm sorry! I <input type="text" class="d-input" data-ans="was"> watching a movie!
+                            <strong>Nura:</strong> I'm sorry! I 
+                            <select class="d-input" data-ans="was">
+                                <option value="">...</option>
+                                <option value="was">was</option>
+                                <option value="were">were</option>
+                                <option value="wasn't">wasn't</option>
+                                <option value="weren't">weren't</option>
+                            </select> 
+                            watching a movie!
                             <button class="btn-icon" onclick="speak('I am sorry! I was watching a movie!')" style="float:right">🔊</button>
                             <div class="arabic-sub" style="margin-top:5px; color:#666;">أنا آسفة! كنت أشاهد فيلماً!</div>
                         </div>
@@ -978,7 +998,15 @@
                     <div class="dialogue-line">
                         <div class="speaker-avatar" style="background:#ffb7b2">👩</div>
                         <div class="speaker-text">
-                            <strong>Mona:</strong> Oh great! What <input type="text" class="d-input" data-ans="were"> you watching?
+                            <strong>Mona:</strong> Oh great! What 
+                            <select class="d-input" data-ans="were">
+                                <option value="">...</option>
+                                <option value="was">was</option>
+                                <option value="were">were</option>
+                                <option value="wasn't">wasn't</option>
+                                <option value="weren't">weren't</option>
+                            </select> 
+                            you watching?
                             <button class="btn-icon" onclick="speak('Oh great! What were you watching?')" style="float:right">🔊</button>
                             <div class="arabic-sub" style="margin-top:5px; color:#666;">أوه رائع! ماذا كنت تشاهدين؟</div>
                         </div>
@@ -986,7 +1014,15 @@
                     <div class="dialogue-line">
                         <div class="speaker-avatar" style="background:#b5ead7">👧</div>
                         <div class="speaker-text">
-                            <strong>Nura:</strong> An old sci-fi movie. But I <input type="text" class="d-input" data-ans="wasn't"> really enjoying it.
+                            <strong>Nura:</strong> An old sci-fi movie. But I 
+                            <select class="d-input" data-ans="wasn't">
+                                <option value="">...</option>
+                                <option value="was">was</option>
+                                <option value="were">were</option>
+                                <option value="wasn't">wasn't</option>
+                                <option value="weren't">weren't</option>
+                            </select> 
+                            really enjoying it.
                             <button class="btn-icon" onclick="speak('An old sci-fi movie. But I wasn\'t really enjoying it.')" style="float:right">🔊</button>
                             <div class="arabic-sub" style="margin-top:5px; color:#666;">فيلم خيال علمي قديم. لكني لم أكن أستمتع به حقاً.</div>
                         </div>
@@ -994,7 +1030,15 @@
                      <div class="dialogue-line">
                         <div class="speaker-avatar" style="background:#ffb7b2">👩</div>
                         <div class="speaker-text">
-                             Why <input type="text" class="d-input" data-ans="were"> you calling?
+                             Why 
+                             <select class="d-input" data-ans="were">
+                                <option value="">...</option>
+                                <option value="was">was</option>
+                                <option value="were">were</option>
+                                <option value="wasn't">wasn't</option>
+                                <option value="weren't">weren't</option>
+                            </select> 
+                             you calling?
                              <button class="btn-icon" onclick="speak('Why were you calling?')" style="float:right">🔊</button>
                              <div class="arabic-sub" style="margin-top:5px; color:#666;">لماذا كنت تتصلين؟</div>
                         </div>
@@ -2048,13 +2092,20 @@
         // --- LESSON 2 JS ---
 
         // 1. Pronoun Sorter
+        // 1. Pronoun Sorter (Mobile & Desktop)
         function initDraggablePronouns() {
             const draggables = document.querySelectorAll('.draggable-item');
             const buckets = document.querySelectorAll('.sort-bucket');
 
+            // --- DESKTOP EVENTS ---
             draggables.forEach(draggable => {
                 draggable.addEventListener('dragstart', () => { draggable.classList.add('dragging'); });
                 draggable.addEventListener('dragend', () => { draggable.classList.remove('dragging'); });
+                
+                // --- MOBILE TOUCH EVENTS ---
+                draggable.addEventListener('touchstart', handleTouchStart, {passive: false});
+                draggable.addEventListener('touchmove', handleTouchMove, {passive: false});
+                draggable.addEventListener('touchend', handleTouchEnd);
             });
 
             buckets.forEach(bucket => {
@@ -2073,6 +2124,74 @@
                     }
                 });
             });
+
+            // --- TOUCH LOGIC ---
+            let touchDragItem = null;
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let initialTransform = '';
+
+            function handleTouchStart(e) {
+                if (!e.target.classList.contains('draggable-item')) return;
+                
+                touchDragItem = e.target;
+                e.preventDefault(); // Stop scrolling
+                
+                // Visual feedback
+                touchDragItem.classList.add('dragging');
+                touchDragItem.style.position = 'relative'; 
+                touchDragItem.style.zIndex = '1000';
+                touchDragItem.style.transition = 'none'; // Instant movement
+                
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+                initialTransform = touchDragItem.style.transform;
+            }
+
+            function handleTouchMove(e) {
+                if (!touchDragItem) return;
+                e.preventDefault();
+                
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - touchStartX;
+                const deltaY = touch.clientY - touchStartY;
+                
+                // Move element
+                touchDragItem.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+            }
+
+            function handleTouchEnd(e) {
+                if (!touchDragItem) return;
+                
+                // 1. Temporarily hide to find element below
+                touchDragItem.style.display = 'none';
+                const touch = e.changedTouches[0];
+                const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                touchDragItem.style.display = 'inline-block'; // Restore (was flex/block etc based on CSS)
+                
+                // 2. Check overlap
+                const bucket = elemBelow ? elemBelow.closest('.sort-bucket') : null;
+                
+                if (bucket) {
+                    // SUCCESS DROP
+                    bucket.querySelector('.bucket-content').appendChild(touchDragItem);
+                    playSound('pop');
+                    
+                    // Add nice interaction
+                    bucket.classList.add('drag-over');
+                    setTimeout(() => bucket.classList.remove('drag-over'), 300);
+                }
+                
+                // 3. Cleanup Styles
+                touchDragItem.classList.remove('dragging');
+                touchDragItem.style.position = '';
+                touchDragItem.style.zIndex = '';
+                touchDragItem.style.transform = '';
+                touchDragItem.style.transition = '';
+                
+                touchDragItem = null;
+            }
         }
 
         function checkPronounSort() {
@@ -3265,7 +3384,7 @@
                             <div style="display:grid; gap:12px;">
                                 ${q.options.map((opt, oi) => `
                                     <label class="l7-quiz-option" data-qid="${i}" style="display:block; padding:15px; border:2px solid #e5e7eb; border-radius:10px; cursor:pointer; transition: all 0.3s;" onmouseover="if(!this.classList.contains('selected')) {this.style.borderColor='var(--primary)'; this.style.background='#f0f9ff';}" onmouseout="if(!this.classList.contains('selected')) {this.style.borderColor='#e5e7eb'; this.style.background='white';}">
-                                        <input type="radio" name="l7-q${i}" value="${oi}" style="margin-right:10px; width:18px; height:18px;" onchange="document.querySelectorAll('[data-qid=\\"${i}\\"]').forEach(el => el.classList.remove('selected')); this.parentElement.classList.add('selected'); this.parentElement.style.borderColor='var(--accent)'; this.parentElement.style.background='#fef3c7';" ${oi === q.answer ? `data-correct="true"` : ''}>
+                                        <input type="radio" name="l7-q${i}" value="${oi}" style="margin-right:10px; width:18px; height:18px;" onchange="this.closest('.vocab-card').querySelectorAll('.l7-quiz-option').forEach(el => el.classList.remove('selected')); this.parentElement.classList.add('selected'); this.parentElement.style.borderColor='var(--accent)'; this.parentElement.style.background='#fef3c7';" ${oi === q.answer ? `data-correct="true"` : ''}>
                                         <span style="font-size:1.2rem; color:#2d3748;">${opt}</span>
                                         <span style="font-family:'Tajawal'; font-size:1.1rem; color:#666; margin-left:10px;">(${q.optionsAr[oi]})</span>
                                     </label>
@@ -3688,7 +3807,7 @@
                             <div style="display:grid; gap:12px;">
                                 ${q.options.map((opt, oi) => `
                                     <label class="l9-quiz-option" data-qid="${i}" style="display:block; padding:15px; border:2px solid #e5e7eb; border-radius:10px; cursor:pointer; transition:all 0.3s;" onmouseover="if(!this.classList.contains('selected')) {this.style.borderColor='var(--primary)'; this.style.background='#f0f9ff';}" onmouseout="if(!this.classList.contains('selected')) {this.style.borderColor='#e5e7eb'; this.style.background='white';}">
-                                        <input type="radio" name="l9-q${i}" value="${oi}" style="margin-right:10px; width:18px; height:18px;" onchange="document.querySelectorAll('[data-qid=\\"${i}\\"]').forEach(el => el.classList.remove('selected')); this.parentElement.classList.add('selected'); this.parentElement.style.borderColor='var(--accent)'; this.parentElement.style.background='#fef3c7';" ${oi === q.answer ? `data-correct="true"` : ''}>
+                                        <input type="radio" name="l9-q${i}" value="${oi}" style="margin-right:10px; width:18px; height:18px;" onchange="this.closest('.vocab-card').querySelectorAll('.l9-quiz-option').forEach(el => el.classList.remove('selected')); this.parentElement.classList.add('selected'); this.parentElement.style.borderColor='var(--accent)'; this.parentElement.style.background='#fef3c7';" ${oi === q.answer ? `data-correct="true"` : ''}>
                                         <span style="font-size:1.2rem; color:#2d3748;">${opt}</span>
                                         <span style="font-family:'Tajawal'; font-size:1.1rem; color:#666; margin-left:10px;">(${q.optionsAr[oi]})</span>
                                     </label>

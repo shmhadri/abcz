@@ -463,6 +463,8 @@
             .lesson-tab { min-width: 140px; font-size: 1.1rem; }
             .animal-grid { grid-template-columns: repeat(2, 1fr); }
             .store-grid { grid-template-columns: 1fr; }
+            .dialogue-card { flex-direction: column; text-align: center; }
+            .dialogue-emoji { margin-bottom: 20px; }
         }
     </style>
 </head>
@@ -1262,6 +1264,286 @@
             renderPhonics();
             renderPhonicsRace();
         });
+    </script>
+    <!-- AI Assistant -->
+    <div id="ai-assistant-container">
+        <!-- Floating Button -->
+        <button id="ai-btn" class="ai-float-btn" onclick="toggleAI()">
+            <img src="https://img.freepik.com/free-vector/cute-robot-mascot-logo-cartoon-character-illustration_138676-2067.jpg" alt="AI" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            <span class="pulse-ring"></span>
+        </button>
+
+        <!-- Chat Box -->
+        <div id="ai-chat-box" class="ai-chat-box">
+            <div class="ai-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 35px; height: 35px; background: white; border-radius: 50%; overflow: hidden;">
+                        <img src="https://img.freepik.com/free-vector/cute-robot-mascot-logo-cartoon-character-illustration_138676-2067.jpg" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <span>المساعد الذكي</span>
+                </div>
+                <button onclick="toggleAI()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">✖</button>
+            </div>
+            <div class="ai-body" id="ai-chat-body">
+                <div class="ai-msg bot">
+                    مرحباً بك في درس الحيوانات البرية! 🦁
+                    <br>
+                    أنا صديقك الروبوت. اسألني عن الأسد، الفيل، أو الألعاب!
+                </div>
+            </div>
+            <div class="ai-footer">
+                <input type="text" id="ai-user-input" placeholder="اكتب سؤالك هنا..." style="width: 100%; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none;">
+                <button id="ai-send-btn" onclick="sendMessage()" style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 50%; margin-right: 5px; cursor: pointer;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .ai-float-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 9999;
+            padding: 0;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: visible;
+        }
+
+        .ai-float-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .pulse-ring {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            animation: pulse 2s infinite;
+            z-index: -1;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        .ai-chat-box {
+            position: fixed;
+            bottom: 100px;
+            left: 30px;
+            width: 320px;
+            height: 450px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: none;
+            flex-direction: column;
+            z-index: 9999;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+            animation: slideUp 0.4s ease;
+        }
+
+        .ai-chat-box.active {
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ai-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 15px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .ai-body {
+            flex: 1;
+            padding: 15px;
+            background: #f8f9fa;
+            overflow-y: auto;
+            direction: rtl;
+        }
+
+        .ai-msg {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .ai-msg.bot {
+            background: white;
+            color: #333;
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-left: auto;
+        }
+
+        .ai-msg.user {
+            background: var(--primary);
+            color: white;
+            border-bottom-left-radius: 2px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-right: auto;
+        }
+
+        .ai-footer {
+            padding: 10px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            background: white;
+            border-radius: 15px;
+            margin-left: auto;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .typing-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #999;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+
+    <script>
+        function toggleAI() {
+            const chatBox = document.getElementById('ai-chat-box');
+            chatBox.classList.toggle('active');
+            if (chatBox.classList.contains('active')) {
+                document.getElementById('ai-user-input').focus();
+            }
+        }
+
+        document.getElementById('ai-user-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const inputField = document.getElementById('ai-user-input');
+            const message = inputField.value.trim();
+            
+            if (message === "") return;
+            
+            // Add User Message
+            addMessage(message, 'user');
+            inputField.value = '';
+            
+            // Show Typing Indicator
+            showTyping();
+            
+            // Simple Bot Logic (Simulation)
+            setTimeout(() => {
+                removeTyping();
+                const response = getBotResponse(message);
+                addMessage(response, 'bot');
+            }, 1000);
+        }
+
+        function addMessage(text, sender) {
+            const chatBody = document.getElementById('ai-chat-body');
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('ai-msg', sender);
+            msgDiv.innerHTML = text;
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        function showTyping() {
+            const chatBody = document.getElementById('ai-chat-body');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'ai-typing';
+            typingDiv.className = 'typing-indicator';
+            typingDiv.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+            chatBody.appendChild(typingDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        function removeTyping() {
+            const typingDiv = document.getElementById('ai-typing');
+            if (typingDiv) typingDiv.remove();
+        }
+
+        function getBotResponse(input) {
+            input = input.toLowerCase();
+            
+            // Greetings
+            if (input.includes('مرحبا') || input.includes('hello') || input.includes('hi')) {
+                return "أهلاً بك يا بطل! 🦁 أنا هنا لمساعدتك واكتشاف عالم الحيوانات معك. هل أنت مستعد؟";
+            }
+            
+            // Animals (Lesson Specific)
+            if (input.includes('أسد') || input.includes('lion')) {
+                return "الأسد (Lion) هو ملك الغابة! 🦁 هل تعلم أنه يزأر بصوت عالٍ جداً؟";
+            }
+            if (input.includes('فيل') || input.includes('elephant')) {
+                return "الفيل (Elephant) هو أضخم حيوان بري على الأرض! 🐘 ولديه خرطوم طويل يستخدمه للأكل والشرب.";
+            }
+            if (input.includes('زرافة') || input.includes('giraffe')) {
+                return "الزرافة (Giraffe) هي أطول حيوان! 🦒 رقبتها الطويلة تساعدها على أكل أوراق الشجر العالية.";
+            }
+
+            // Games
+            if (input.includes('لعبة') || input.includes('game') || input.includes('العب')) {
+                return "رائع! 😍 اذهب إلى الدرس 2 لتلعب 'Animal Chart' أو الدرس 5 للعبة التخمين 'Guessing Game'. أي واحدة تفضل؟";
+            }
+            
+            // Help
+            if (input.includes('مساعدة') || input.includes('help') || input.includes('كيف')) {
+                return "يمكنك التنقل بين الدروس من خلال الأزرار في الأعلى. ابدأ بـ Talk Time لتتعلم المحادثة! 🗣️";
+            }
+
+            // Audio
+            if (input.includes('صوت') || input.includes('audio') || input.includes('نطق')) {
+                return "لتسمع النطق الصحيح، اضغط على أيقونة السماعة 🔊 بجانب الكلمات والجمل.";
+            }
+            
+            // Default Fallback
+            return "سؤال ذكي! 🤓<br>أنا خبير في الحيوانات البرية. اسألني عن 'الأسد' أو 'اللعبة' أو 'كيف أبدأ'!";
+        }
     </script>
 </body>
 </html>

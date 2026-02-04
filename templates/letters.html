@@ -190,51 +190,38 @@
             margin: 0;
         }
 
-        /* Hamburger Button */
         .hamburger-btn {
             display: none;
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 28px;
             color: var(--text);
             cursor: pointer;
             padding: 5px;
+            margin-left: 15px; /* Space between hamburger and logo in RTL */
         }
-
+        
+        /* Mobile Header Layout */
         @media (max-width: 768px) {
+            .app-header {
+                justify-content: flex-start; /* Align specifically for mobile customization */
+            }
+            
             .hamburger-btn {
                 display: block;
+                order: -1; /* Ensure it's first */
             }
             
-            .user-menu-btn {
-                display: none; /* Hide user profile button on mobile, use hamburger */
+            .logo-section {
+                margin-right: 0;
             }
             
-            .dropdown-menu {
-                position: fixed;
-                top: 0;
-                right: -280px; /* Start off-screen */
-                width: 280px;
-                height: 100vh;
-                background: var(--surface);
-                border-radius: 0;
-                border-left: 1px solid var(--border);
-                padding: 20px;
-                transition: right 0.3s ease;
-                display: flex; /* Always flex, but hidden by position */
-                z-index: 2000;
-                box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-            }
-            
-            .dropdown-menu.show {
-                right: 0;
-                display: flex;
-            }
-            
-            .mobile-only {
-                display: flex !important;
+            .user-controls {
+                margin-right: auto; /* Push to the left */
             }
         }
+
+
 
         /* User Menu & Dropdown */
         .user-controls {
@@ -287,47 +274,103 @@
         }
 
         .dropdown-menu {
-            position: absolute;
-            top: 120%;
-            right: 0;
-            width: 240px;
+            position: fixed;
+            top: 0;
+            right: -280px; /* Start off-screen */
+            width: 280px;
+            height: 100vh;
             background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            padding: 10px;
-            display: none;
+            border-left: 1px solid var(--border);
+            padding: 20px;
+            transition: right 0.3s ease;
+            display: flex;
             flex-direction: column;
-            gap: 6px;
-            z-index: 1001;
-            animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            transform-origin: top right;
+            gap: 5px;
+            z-index: 2000;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
         }
 
-        .dropdown-menu.active {
-            display: flex;
+        .dropdown-menu.show {
+            right: 0 !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            bottom: 0;
+            display: flex !important; /* Ensure flex is maintained */
         }
+
+        .night-mode .dropdown-menu {
+            background: var(--surface);
+            border-color: var(--border);
+        }
+
+        .night-mode .dropdown-menu {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        /* .dropdown-menu.show is handled above */
 
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
+        @media (max-width: 768px) {
+            .hamburger-btn {
+                display: block;
+            }
+            
+            .user-menu-btn {
+                display: none;
+            }
+            
+            .dropdown-menu {
+                position: fixed;
+                top: 0;
+                right: -280px; 
+                width: 280px;
+                height: 100vh;
+                background: var(--surface);
+                border-radius: 0;
+                border: none;
+                border-left: 1px solid var(--border);
+                padding: 20px;
+                transition: right 0.3s ease;
+                display: flex; /* Always flex */
+                z-index: 2000;
+                box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+                animation: none;
+                transform: none;
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .dropdown-menu.show {
+                right: 0;
+                display: flex;
+            }
+            
+            .mobile-only {
+                display: flex !important;
+            }
+        }
+
         .menu-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 10px;
+            gap: 15px;
+            padding: 14px 18px;
+            border-radius: 12px;
             color: var(--text);
             text-decoration: none;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid transparent;
             background: transparent;
             width: 100%;
-            text-align: right; /* RTL support */
+            text-align: right;
             cursor: pointer;
             position: relative;
             overflow: hidden;
@@ -338,7 +381,11 @@
             color: var(--primary);
             transform: translateX(-5px);
             border-color: var(--border);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .night-mode .menu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .menu-item:active {
@@ -346,13 +393,16 @@
         }
 
         .menu-item i {
-            width: 20px;
+            width: 24px;
             text-align: center;
             color: var(--text-secondary);
+            font-size: 18px;
+            transition: color 0.2s;
         }
 
         .menu-item:hover i {
             color: var(--primary);
+            text-shadow: 0 0 10px rgba(67, 97, 238, 0.3);
         }
 
         .menu-divider {
@@ -2404,12 +2454,52 @@
                 -webkit-user-select: none;
             }
         }
+
+        /* ===== FIX: Standard Sidebar Drawer (Mobile + Desktop) ===== */
+        #userDropdown {
+            position: fixed;
+            top: 0;
+            right: -280px; /* Start off-screen */
+            width: 280px;
+            height: 100vh;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            z-index: 2005; /* Above overlay */
+            
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Open State */
+        #userDropdown.show {
+            right: 0 !important;
+        }
+
+        /* Night Mode */
+        .night-mode #userDropdown {
+            background: #0f172a;
+            border-color: rgba(255,255,255,.12);
+        }
+                max-width: none; /* Full width on mobile */
+            }
+        }
     </style>
 </head>
 <body data-phonics-user-id="" data-phonics-user-email="">
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
+            <!-- Mobile Hamburger Menu (Moved here for positioning) -->
+            <button class="hamburger-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+
             <div class="logo-section">
                 <div class="logo">PGL</div>
                 <div class="logo-text">
@@ -2424,80 +2514,12 @@
                     <i class="fas fa-moon"></i>
                 </button>
 
-                <!-- Mobile Hamburger Menu -->
-                <button class="hamburger-btn" id="mobileMenuBtn" style="display: none;">
-                    <i class="fas fa-bars"></i>
-                </button>
-
                 <!-- User Menu (Desktop) -->
                 <div class="user-menu-container">
                     <div class="user-menu-btn" id="userMenuBtn">
                         <div class="user-avatar"><i class="fas fa-user"></i></div>
                         <span class="user-name-display" id="studentNameDisplay">Guest</span>
                         <i class="fas fa-chevron-down" style="font-size: 12px; color: var(--text-secondary);"></i>
-                    </div>
-
-                    <!-- Dropdown -->
-                    <div class="dropdown-menu" id="userDropdown">
-                        <!-- Back Button for Mobile -->
-                        <button class="menu-item mobile-only" id="closeMenuBtn" style="display: none; color: var(--text-secondary);">
-                            <i class="fas fa-arrow-right"></i> رجوع
-                        </button>
-                        
-                        <button class="menu-item" id="profileBtn">
-                            <i class="fas fa-sign-in-alt"></i> تسجيل الدخول / الملف الشخصي
-                        </button>
-                        <a href="{% url 'leaderboard' %}" class="menu-item" style="text-decoration:none;">
-                            <i class="fas fa-trophy"></i> لوحة المتصدرين
-                        </a>
-
-                        <div class="menu-divider"></div>
-
-                        <a href="{% url 'top_goal_unit_1' %}" class="menu-item" style="text-decoration:none; color: #7209b7; font-weight: bold;">
-                            <i class="fas fa-film"></i> توب قول 6 - الوحدة 1
-                        </a>
-                        <a href="{% url 'grade_2_unit_1' %}" class="menu-item" style="text-decoration:none; color: #ff6b6b; font-weight: bold;">
-                            <i class="fas fa-paw"></i> ثاني ابتدائي - الوحدة 1
-                        </a>
-                        <a href="{% url 'grade_3_unit_1' %}" class="menu-item" style="text-decoration:none; color: #2196f3; font-weight: bold;">
-                            <i class="fas fa-book-open"></i> ثالث الوحده الاولى
-                        </a>
-                        <a href="{% url 'grade_4_unit_1' %}" class="menu-item" style="text-decoration:none; color: #10b981; font-weight: bold;">
-                            <i class="fas fa-tree"></i> رابع الوحده الاولى
-                        </a>
-                        
-                        <div class="menu-divider"></div>
-                        
-                        <button class="menu-item" id="viewInstructions">
-                            <i class="fas fa-info-circle"></i> تعليمات الموقع
-                        </button>
-                        <button class="menu-item" id="viewAllLetters">
-                            <i class="fas fa-th"></i> جميع الحروف
-                        </button>
-                        <button class="menu-item" id="jumpToLetter">
-                            <i class="fas fa-share"></i> انتقل إلى حرف
-                        </button>
-                        <button class="menu-item" id="viewCertificate">
-                            <i class="fas fa-certificate"></i> الشهادة
-                        </button>
-                        <a href="{% url 'cvc_reading' %}" class="menu-item" style="text-decoration:none;">
-                            <i class="fas fa-book-reader"></i> قراءة CVC
-                        </a>
-                        
-                        <div class="menu-divider"></div>
-                        
-                        <button class="menu-item" id="toggleSound">
-                            <i class="fas fa-volume-up"></i> كتم/تشغيل الصوت
-                        </button>
-                        <button class="menu-item" id="testMicrophone">
-                            <i class="fas fa-microphone"></i> اختبار الميكروفون
-                        </button>
-
-                        <div class="menu-divider"></div>
-                        
-                        <button class="menu-item" id="resetProgressBtn" style="color: var(--error);">
-                            <i class="fas fa-power-off"></i> إعادة ضبط التقدم
-                        </button>
                     </div>
                 </div>
             </div>
@@ -3013,43 +3035,16 @@
                 <a href="https://wa.me/966551561955" target="_blank" class="footer-link">
                     <i class="fab fa-whatsapp"></i> واتساب
                 </a>
-                <button id="privacyPolicyBtn" class="footer-link-btn">
-                    <i class="fas fa-shield-alt"></i> سياسة الخصوصية
-                </button>
+
             </div>
             <div class="footer-copyright">
                 <p>© 2025 Phonics Game Lab. جميع الحقوق محفوظة.</p>
-                <p class="developer-credit">تم التطوير بواسطة <span style="color: var(--accent);">shmhadri</span></p>
+
             </div>
         </div>
     </footer>
 
-    <!-- Privacy Policy Modal -->
-    <div class="modal" id="privacyModal" style="display: none;">
-        <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header">
-                <h2 class="modal-title">سياسة الخصوصية</h2>
-                <button class="modal-close" id="closePrivacyModal">✕</button>
-            </div>
-            <div class="modal-body" style="line-height: 1.8; color: var(--text); text-align: right;">
-                <h3 style="color: var(--primary);">مقدمة</h3>
-                <p>نحن في Phonics Game Lab نولي اهتماماً كبيراً لخصوصية زوارنا، وخاصة الأطفال. توضح هذه السياسة كيفية تعاملنا مع المعلومات.</p>
-                
-                <h4 style="color: var(--secondary); margin-top: 15px;">البيانات التي نجمعها</h4>
-                <p>نحن لا نجمع أي بيانات شخصية حساسة. البيانات التي قد يتم تخزينها تشمل:</p>
-                <ul>
-                    <li>تقدم الطالب في الألعاب (النجوم، الحروف المنجزة) ويتم تخزينها محلياً على جهازك.</li>
-                    <li>الاسم الذي تدخله للشهادة (يستخدم فقط لتوليد الشهادة).</li>
-                </ul>
 
-                <h4 style="color: var(--success); margin-top: 15px;">استخدام الميكروفون</h4>
-                <p>يطلب الموقع إذن الوصول للميكروفون فقط لغرض تقييم نطق الحروف. لا يتم تسجيل أو تخزين أي أصوات على خوادمنا.</p>
-
-                <h4 style="color: var(--warning); margin-top: 15px;">تواصل معنا</h4>
-                <p>لأي استفسارات، يمكنك التواصل معنا عبر الواتساب: <a href="https://wa.me/966551561955" style="color: var(--primary);">0551561955</a></p>
-            </div>
-        </div>
-    </div>
 
     <style>
         .app-footer {
@@ -9635,5 +9630,416 @@ function sendAudioToServer(blob, letter){
     .then(res => console.log("Speech:", res));
 }
 </script>
+    <!-- AI Assistant -->
+    <div id="ai-assistant-container">
+        <!-- Floating Button -->
+        <button id="ai-btn" class="ai-float-btn" onclick="toggleAI()">
+            <!-- New colorful robot image -->
+            <img src="https://img.freepik.com/free-vector/cute-robot-mascot-logo-cartoon-character-illustration_138676-2067.jpg" alt="AI" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            <span class="pulse-ring"></span>
+        </button>
+
+        <!-- Chat Box -->
+        <div id="ai-chat-box" class="ai-chat-box">
+            <div class="ai-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 35px; height: 35px; background: white; border-radius: 50%; overflow: hidden;">
+                        <img src="https://img.freepik.com/free-vector/cute-robot-mascot-logo-cartoon-character-illustration_138676-2067.jpg" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <span>المساعد الذكي</span>
+                </div>
+                <button onclick="toggleAI()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">✖</button>
+            </div>
+            <div class="ai-body" id="ai-chat-body">
+                <div class="ai-msg bot">
+                    مرحباً بك! 👋
+                    <br>
+                    أنا صديقك الروبوت الذكي في منصة الحروف. 🤖
+                    <br>
+                    يمكنك سؤالي عن الدروس، الألعاب، أو الحيوانات!
+                </div>
+            </div>
+            <div class="ai-footer">
+                <input type="text" id="ai-user-input" placeholder="اكتب سؤالك هنا..." style="width: 100%; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none;">
+                <button id="ai-send-btn" onclick="sendMessage()" style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 50%; margin-right: 5px; cursor: pointer; min-width: 45px;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .ai-float-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 9999;
+            padding: 0;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: visible;
+        }
+
+        .ai-float-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .pulse-ring {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            animation: pulse 2s infinite;
+            z-index: -1;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        .ai-chat-box {
+            position: fixed;
+            bottom: 100px;
+            left: 30px;
+            width: 320px;
+            height: 450px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: none;
+            flex-direction: column;
+            z-index: 9999;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+            animation: slideUp 0.4s ease;
+        }
+
+        .ai-chat-box.active {
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ai-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 15px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .ai-body {
+            flex: 1;
+            padding: 15px;
+            background: #f8f9fa;
+            overflow-y: auto;
+            direction: rtl;
+        }
+
+        .ai-msg {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .ai-msg.bot {
+            background: white;
+            color: #333;
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-left: auto;
+        }
+
+        .ai-msg.user {
+            background: var(--primary);
+            color: white;
+            border-bottom-left-radius: 2px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-right: auto;
+        }
+
+        .ai-footer {
+            padding: 10px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            background: white;
+            border-radius: 15px;
+            margin-left: auto;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .typing-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #999;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+
+    <script>
+        function toggleAI() {
+            const chatBox = document.getElementById('ai-chat-box');
+            chatBox.classList.toggle('active');
+            if (chatBox.classList.contains('active')) {
+                document.getElementById('ai-user-input').focus();
+            }
+        }
+
+        document.getElementById('ai-user-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const inputField = document.getElementById('ai-user-input');
+            const message = inputField.value.trim();
+            
+            if (message === "") return;
+            
+            // Add User Message
+            addMessage(message, 'user');
+            inputField.value = '';
+            
+            // Show Typing Indicator
+            showTyping();
+            
+            // Simple Bot Logic (Simulation)
+            setTimeout(() => {
+                removeTyping();
+                const response = getBotResponse(message);
+                addMessage(response, 'bot');
+            }, 1000);
+        }
+
+        function addMessage(text, sender) {
+            const chatBody = document.getElementById('ai-chat-body');
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('ai-msg', sender);
+            msgDiv.innerHTML = text; // Using innerHTML to allow <br> or formatting
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        function showTyping() {
+            const chatBody = document.getElementById('ai-chat-body');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'ai-typing';
+            typingDiv.className = 'typing-indicator';
+            typingDiv.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+            chatBody.appendChild(typingDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        function removeTyping() {
+            const typingDiv = document.getElementById('ai-typing');
+            if (typingDiv) typingDiv.remove();
+        }
+
+        function getBotResponse(input) {
+            input = input.toLowerCase();
+            
+            // Greetings
+            if (input.includes('مرحبا') || input.includes('هلا') || input.includes('سلام') || input.includes('hi') || input.includes('hello')) {
+                return "أهلاً بك يا بطل! 🌟 أنا هنا لمساعدتك في رحلة التعلم الممتعة. ماذا تريد أن تتعلم اليوم؟";
+            }
+            
+            // Usage / How to
+            if (input.includes('كيف') || input.includes('استخدم') || input.includes('عمل') || input.includes('اعمل') || input.includes('how')) {
+                return "الأمر بسيط جداً! 🧩<br>1️⃣ اختر حرفاً أو درساً من القائمة.<br>2️⃣ استمتع بالألعاب والأنشطة التفاعلية.<br>3️⃣ جمع النقاط واحصل على الشهادات! 🏆<br>ابدأ باختيار حرف من الأعلى!";
+            }
+            
+            // Grade 2 Specific
+            if (input.includes('ثاني') || input.includes('حيوانات') || input.includes('wild') || input.includes('animals')) {
+                return "درس الحيوانات البرية 🦁 للصف الثاني موجود في القائمة الجانبية (أو الزر العائم). فيه ألعاب ممتعة مثل 'Animal Chart' و 'Guessing Game'!";
+            }
+            
+            // General Help
+            if (input.includes('مساعدة') || input.includes('help')) {
+                return "أكيد! لديك قائمة بالحروف في الأعلى، وقائمة بالصفوف في الجانب. اضغط على أي منها لتبدأ.";
+            }
+
+            // Games
+            if (input.includes('لعبة') || input.includes('game') || input.includes('لعب')) {
+                return "نحن نحب اللعب! 🎮 كل حرف ودرس يحتوي على ألعاب ممتعة. جرب درس الحيوانات للعب 'Find the Animal'!";
+            }
+            
+            // Thanks/Bye
+            if (input.includes('شكرا') || input.includes('شكراً') || input.includes('thanks')) {
+                return "عفواً يا بطل! استمتع بوقتك! 🎈";
+            }
+            if (input.includes('باي') || input.includes('مع السلامة')) {
+                return "إلى اللقاء! نراك قريباً! 👋";
+            }
+            
+            // Default Fallback
+            return "سؤال جميل! 😊<br>يمكنك تجربة الدروس الموجودة في الصفحة، أو سؤالي عن 'كيف أستخدم الموقع' أو 'أين درس الحيوانات'.";
+        }
+    </script>
+        // Menu Toggle Logic - Definitive Fix
+        document.addEventListener('DOMContentLoaded', () => {
+            const userMenuBtn = document.getElementById('userMenuBtn');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn'); // Using ID as per line 2460
+            const menu = document.getElementById('userDropdown');
+            const menuOverlay = document.getElementById('menuOverlay');
+
+            function toggleMenu(e) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
+                // Toggle Show Class
+                const isNowShown = menu.classList.toggle('show');
+                
+                // Handle Overlay
+                if (menuOverlay) {
+                    if (isNowShown) {
+                        menuOverlay.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        menuOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                }
+            }
+
+            function closeMenu() {
+                menu.classList.remove('show');
+                if (menuOverlay) {
+                    menuOverlay.classList.remove('active');
+                }
+                document.body.style.overflow = '';
+            }
+
+            // Bind Events
+            if (userMenuBtn) userMenuBtn.addEventListener('click', toggleMenu);
+            if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMenu);
+
+            // Close on outside click
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+                const isClickInsideMenu = menu.contains(target);
+                const isClickOnUserBtn = userMenuBtn && userMenuBtn.contains(target);
+                const isClickOnMobileBtn = mobileMenuBtn && mobileMenuBtn.contains(target);
+
+                if (!isClickInsideMenu && !isClickOnUserBtn && !isClickOnMobileBtn) {
+                    closeMenu();
+                }
+            });
+
+            // Prevent closing when clicking inside menu
+            menu.addEventListener('click', (e) => {
+                // Allow links/buttons to work, but don't close unless it's a specific close action
+                // For now, let's stop propagation so the document click doesn't catch it
+                // e.stopPropagation(); 
+                // Actually, we usually WANT links to close the menu.
+            });
+            
+            // Explicit Close Buttons inside menu
+            menu.querySelectorAll('a, button.menu-item').forEach(item => {
+                item.addEventListener('click', closeMenu);
+            });
+        });
+    </script>
+    <div class="dropdown-menu" id="userDropdown">
+        <button class="menu-item mobile-only" id="closeMenuBtn" style="display: none; color: var(--text-secondary);">
+            <i class="fas fa-arrow-right"></i> رجوع
+        </button>
+        
+        <button class="menu-item" id="profileBtn">
+            <i class="fas fa-sign-in-alt"></i> تسجيل الدخول / الملف الشخصي
+        </button>
+        <a href="{% url 'leaderboard' %}" class="menu-item" style="text-decoration:none;">
+            <i class="fas fa-trophy"></i> لوحة المتصدرين
+        </a>
+
+        <div class="menu-divider"></div>
+
+        <a href="{% url 'top_goal_unit_1' %}" class="menu-item" style="text-decoration:none; color: #7209b7; font-weight: bold;">
+            <i class="fas fa-film"></i> الصف السادس
+        </a>
+        <a href="{% url 'grade_2_unit_1' %}" class="menu-item" style="text-decoration:none; color: #ff6b6b; font-weight: bold;">
+            <i class="fas fa-paw"></i> ثاني ابتدائي - الوحدة 1
+        </a>
+        <a href="{% url 'grade_3_unit_1' %}" class="menu-item" style="text-decoration:none; color: #2196f3; font-weight: bold;">
+            <i class="fas fa-book-open"></i> ثالث الوحده الاولى
+        </a>
+        <a href="{% url 'grade_4_unit_1' %}" class="menu-item" style="text-decoration:none; color: #10b981; font-weight: bold;">
+            <i class="fas fa-tree"></i> رابع الوحده الاولى
+        </a>
+        
+        <div class="menu-divider"></div>
+        
+        <button class="menu-item" id="viewInstructions">
+            <i class="fas fa-info-circle"></i> تعليمات الموقع
+        </button>
+        <button class="menu-item" id="viewAllLetters">
+            <i class="fas fa-th"></i> جميع الحروف
+        </button>
+        <button class="menu-item" id="jumpToLetter">
+            <i class="fas fa-share"></i> انتقل إلى حرف
+        </button>
+        <button class="menu-item" id="viewCertificate">
+            <i class="fas fa-certificate"></i> الشهادة
+        </button>
+        <a href="{% url 'cvc_reading' %}" class="menu-item" style="text-decoration:none;">
+            <i class="fas fa-book-reader"></i> قراءة CVC
+        </a>
+        
+        <div class="menu-divider"></div>
+        
+        <button class="menu-item" id="toggleSound">
+            <i class="fas fa-volume-up"></i> كتم/تشغيل الصوت
+        </button>
+        <button class="menu-item" id="testMicrophone">
+            <i class="fas fa-microphone"></i> اختبار الميكروفون
+        </button>
+
+        <div class="menu-divider"></div>
+        
+        <button class="menu-item" id="resetProgressBtn" style="color: var(--error);">
+            <i class="fas fa-power-off"></i> إعادة ضبط التقدم
+        </button>
+    </div>
 </body>
 </html>
