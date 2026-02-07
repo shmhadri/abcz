@@ -1059,18 +1059,11 @@
         <!-- Tab 1: Words -->
         <div id="words-tab" class="tab-content active">
             <!-- ✨ New Filter Section -->
+            <!-- ✨ New Filter Section -->
             <div class="filter-section">
-                <h3 class="section-title">🔍 اختر حسب الحرف (Vowel Sound)</h3>
-                <div class="filter-container" id="vowelFilters">
-                    <div class="filter-chip active" onclick="filterData('vowel', 'all', this)">الكل</div>
-                    <div class="filter-chip" onclick="filterData('vowel', 'a', this)">Short A</div>
-                    <div class="filter-chip" onclick="filterData('vowel', 'e', this)">Short E</div>
-                    <div class="filter-chip" onclick="filterData('vowel', 'i', this)">Short I</div>
-                    <div class="filter-chip" onclick="filterData('vowel', 'o', this)">Short O</div>
-                    <div class="filter-chip" onclick="filterData('vowel', 'u', this)">Short U</div>
-                </div>
-
-                <h3 class="section-title">🏠 اختر العائلة (Word Family)</h3>
+                <!-- Vowel Section Hidden by JS, replaced by Categories -->
+                
+                <h3 class="section-title">🏠 اختر المجموعة (Word Groups)</h3>
                 <div class="filter-container" id="familyFilters">
                     <div class="filter-chip active" onclick="filterData('family', 'all', this)">الكل</div>
                     <!-- Dynamic families will be loaded here -->
@@ -1848,6 +1841,9 @@
         // ============================================
         // Load Data
         // ============================================
+        // ============================================
+        // Load Data
+        // ============================================
         async function loadData() {
             await loadWords();
             await loadSentences();
@@ -1855,94 +1851,272 @@
         }
 
         // ✨ Global State for Filters
-        let currentVowel = 'all';
-        let currentFamily = 'all';
+        let currentCategory = 'all';
 
         async function loadWords() {
-            try {
-                const response = await fetch('/api/cvc-words/');
-                const data = await response.json();
-                wordsData = data.words || [];
-
-                if (wordsData.length === 0) {
-                     document.getElementById('wordsLoading').innerHTML =
-                        '<p style="color: #ef4444;">لا توجد كلمات متاحة حالياً.</p>';
-                    return;
-                }
+            // Static Data Replacement as per user request
+            // Categories: L-Blends, R-Blends, S-Blends, Digraphs, etc.
+            wordsData = [
+                // --- R-Blends (Br, Cr, Dr, Fr, Gr, Pr, Tr) ---
+                { word: "Brat", emoji: "👧", category: "R-Blends", family: "br", arabic_meaning: "شقي" },
+                { word: "Brag", emoji: "🗣️", category: "R-Blends", family: "br", arabic_meaning: "يتفاخر" },
+                { word: "Brim", emoji: "🧢", category: "R-Blends", family: "br", arabic_meaning: "حافة" },
+                { word: "Bran", emoji: "🌾", category: "R-Blends", family: "br", arabic_meaning: "نخالة" },
+                { word: "Bred", emoji: "🍞", category: "R-Blends", family: "br", arabic_meaning: "تربية" },
+                { word: "Brig", emoji: "⛵", category: "R-Blends", family: "br", arabic_meaning: "سجن السفينة" },
+                { word: "Brad", emoji: "🔩", category: "R-Blends", family: "br", arabic_meaning: "مسمار صغير" },
                 
-                // ✨ Initialize Filters
-                initFilters();
+                { word: "Crab", emoji: "🦀", category: "R-Blends", family: "cr", arabic_meaning: "سرطان البحر" },
+                { word: "Crip", emoji: "♿", category: "R-Blends", family: "cr", arabic_meaning: "عرج" },
+                { word: "Crop", emoji: "🌽", category: "R-Blends", family: "cr", arabic_meaning: "محصول" },
+                { word: "Crib", emoji: "👶", category: "R-Blends", family: "cr", arabic_meaning: "سرير طفل" },
+                { word: "Crag", emoji: "⛰️", category: "R-Blends", family: "cr", arabic_meaning: "صخرة وعرة" },
+                { word: "Crux", emoji: "🧩", category: "R-Blends", family: "cr", arabic_meaning: "صلب الموضوع" },
+                { word: "Cram", emoji: "📚", category: "R-Blends", family: "cr", arabic_meaning: "يحشر" },
 
-                displayWords();
+                { word: "Drag", emoji: "🖐️", category: "R-Blends", family: "dr", arabic_meaning: "يسحب" },
+                { word: "Drop", emoji: "💧", category: "R-Blends", family: "dr", arabic_meaning: "قطرة / يسقط" },
+                { word: "Drum", emoji: "🥁", category: "R-Blends", family: "dr", arabic_meaning: "طبل" },
+                { word: "Drip", emoji: "🚰", category: "R-Blends", family: "dr", arabic_meaning: "يقطر" },
+                { word: "Drab", emoji: "🌫️", category: "R-Blends", family: "dr", arabic_meaning: "كئيب" },
+                { word: "Drub", emoji: "🏏", category: "R-Blends", family: "dr", arabic_meaning: "يضرب" },
+                { word: "Dram", emoji: "🥃", category: "R-Blends", family: "dr", arabic_meaning: "جرعة" },
+                { word: "Drug", emoji: "💊", category: "R-Blends", family: "dr", arabic_meaning: "دواء" },
+
+                { word: "Frog", emoji: "🐸", category: "R-Blends", family: "fr", arabic_meaning: "ضفدع" },
+                { word: "Flag", emoji: "🚩", category: "L-Blends", family: "fl", arabic_meaning: "علم" }, 
+                { word: "Fled", emoji: "🏃", category: "L-Blends", family: "fl", arabic_meaning: "هرب" }, 
+                { word: "From", emoji: "➡️", category: "R-Blends", family: "fr", arabic_meaning: "من" },
+                { word: "Fret", emoji: "😟", category: "R-Blends", family: "fr", arabic_meaning: "يقلق" },
+
+                { word: "Grab", emoji: "✊", category: "R-Blends", family: "gr", arabic_meaning: "يمسك" },
+                { word: "Grip", emoji: "🤝", category: "R-Blends", family: "gr", arabic_meaning: "قبضة" },
+                { word: "Grim", emoji: "😐", category: "R-Blends", family: "gr", arabic_meaning: "تجهم" },
+                { word: "Grid", emoji: "▦", category: "R-Blends", family: "gr", arabic_meaning: "شبكة" },
+                { word: "Grin", emoji: "😁", category: "R-Blends", family: "gr", arabic_meaning: "ابتسامة عريضة" },
+                { word: "Gram", emoji: "⚖️", category: "R-Blends", family: "gr", arabic_meaning: "جرام" },
+                { word: "Grit", emoji: "🧱", category: "R-Blends", family: "gr", arabic_meaning: "حصى / عزم" },
+                { word: "Gran", emoji: "👵", category: "R-Blends", family: "gr", arabic_meaning: "جدة" },
+                { word: "Grub", emoji: "🐛", category: "R-Blends", family: "gr", arabic_meaning: "يرقة" },
+
+                { word: "Prep", emoji: "📝", category: "R-Blends", family: "pr", arabic_meaning: "تحضير" },
+                { word: "Prim", emoji: "🧐", category: "R-Blends", family: "pr", arabic_meaning: "رسمي / أنيق" },
+                { word: "Prop", emoji: "🎭", category: "R-Blends", family: "pr", arabic_meaning: "دعامة" },
+                { word: "Prom", emoji: "💃", category: "R-Blends", family: "pr", arabic_meaning: "حفلة موسيقية" },
+                { word: "Prig", emoji: "😒", category: "R-Blends", family: "pr", arabic_meaning: "متعجرف" },
+                { word: "Prod", emoji: "👉", category: "R-Blends", family: "pr", arabic_meaning: "يحث / يوكز" },
+                { word: "Prof", emoji: "👨‍🏫", category: "R-Blends", family: "pr", arabic_meaning: "أستاذ" },
+
+                { word: "Tram", emoji: "🚋", category: "R-Blends", family: "tr", arabic_meaning: "ترام" },
+                { word: "Trip", emoji: "✈️", category: "R-Blends", family: "tr", arabic_meaning: "رحلة" },
+                { word: "Trot", emoji: "🐎", category: "R-Blends", family: "tr", arabic_meaning: "هرولة" },
+                { word: "Trap", emoji: "🪤", category: "R-Blends", family: "tr", arabic_meaning: "فخ" },
+                { word: "Trim", emoji: "✂️", category: "R-Blends", family: "tr", arabic_meaning: "يقلّم" },
+                { word: "Trod", emoji: "👣", category: "R-Blends", family: "tr", arabic_meaning: "داس" },
+                { word: "Trek", emoji: "🥾", category: "R-Blends", family: "tr", arabic_meaning: "رحلة شاقة" },
+
+                // --- L-Blends (Bl, Cl, Fl, Gl, Pl, Sl) ---
+                { word: "Blog", emoji: "💻", category: "L-Blends", family: "bl", arabic_meaning: "مدونة" },
+                { word: "Bled", emoji: "🩸", category: "L-Blends", family: "bl", arabic_meaning: "نزف" },
+                { word: "Blob", emoji: "💧", category: "L-Blends", family: "bl", arabic_meaning: "لطخة" },
+                { word: "Blab", emoji: "🗣️", category: "L-Blends", family: "bl", arabic_meaning: "ثرثرة" },
+                { word: "Blip", emoji: "📉", category: "L-Blends", family: "bl", arabic_meaning: "إشارة مفاجئة" },
+                { word: "Blot", emoji: "🖊️", category: "L-Blends", family: "bl", arabic_meaning: "بقعة حبر" },
+
+                { word: "Clan", emoji: "👪", category: "L-Blends", family: "cl", arabic_meaning: "عشيرة" },
+                { word: "Clam", emoji: "🐚", category: "L-Blends", family: "cl", arabic_meaning: "محار" },
+                { word: "Clap", emoji: "👏", category: "L-Blends", family: "cl", arabic_meaning: "يصفق" },
+                { word: "Clog", emoji: "👞", category: "L-Blends", family: "cl", arabic_meaning: "قبقاب / انسداد" },
+                { word: "Club", emoji: "♣️", category: "L-Blends", family: "cl", arabic_meaning: "نادي" },
+                { word: "Clad", emoji: "👕", category: "L-Blends", family: "cl", arabic_meaning: "مكسو" },
+                { word: "Clef", emoji: "🎼", category: "L-Blends", family: "cl", arabic_meaning: "مفتاح موسيقي" },
+                { word: "Clop", emoji: "🐴", category: "L-Blends", family: "cl", arabic_meaning: "صوت الحوافر" },
+                { word: "Clip", emoji: "📎", category: "L-Blends", family: "cl", arabic_meaning: "مشبك" },
+                { word: "Clot", emoji: "🩸", category: "L-Blends", family: "cl", arabic_meaning: "جلطة" },
+                { word: "Clod", emoji: "🪨", category: "L-Blends", family: "cl", arabic_meaning: "كتلة تراب" },
+
+                { word: "Flat", emoji: "🏢", category: "L-Blends", family: "fl", arabic_meaning: "شقة / مسطح" },
+                { word: "Flip", emoji: "🙃", category: "L-Blends", family: "fl", arabic_meaning: "يقلب" },
+                { word: "Flap", emoji: "🐦", category: "L-Blends", family: "fl", arabic_meaning: "رفرفة" },
+                { word: "Flex", emoji: "💪", category: "L-Blends", family: "fl", arabic_meaning: "يثني العضلات" },
+                { word: "Flab", emoji: "🥓", category: "L-Blends", family: "fl", arabic_meaning: "ترهل" },
+                { word: "Flop", emoji: "📉", category: "L-Blends", family: "fl", arabic_meaning: "إخفاق / سقوط" },
+                { word: "Flub", emoji: "❌", category: "L-Blends", family: "fl", arabic_meaning: "خطأ غبي" },
+                { word: "Flak", emoji: "💥", category: "L-Blends", family: "fl", arabic_meaning: "نقد لاذع" },
+                { word: "Flax", emoji: "🌾", category: "L-Blends", family: "fl", arabic_meaning: "كتان" },
+                { word: "Flit", emoji: "🦋", category: "L-Blends", family: "fl", arabic_meaning: "ينتقل بخفة" },
+                { word: "Flux", emoji: "🌊", category: "L-Blends", family: "fl", arabic_meaning: "تدفق" },
+                { word: "Flan", emoji: "🍮", category: "L-Blends", family: "fl", arabic_meaning: "فطيرة" },
+                { word: "Flog", emoji: "🏇", category: "L-Blends", family: "fl", arabic_meaning: "يضرب بالسوط" },
+
+                { word: "Glad", emoji: "😃", category: "L-Blends", family: "gl", arabic_meaning: "سعيد" },
+                { word: "Glen", emoji: "🏞️", category: "L-Blends", family: "gl", arabic_meaning: "وادٍ صغير" },
+                { word: "Glob", emoji: "💧", category: "L-Blends", family: "gl", arabic_meaning: "قطرة كبيرة" },
+                { word: "Glib", emoji: "😏", category: "L-Blends", family: "gl", arabic_meaning: "طلق اللسان" },
+                { word: "Glut", emoji: "🍔", category: "L-Blends", family: "gl", arabic_meaning: "تخمة" },
+                { word: "Glop", emoji: "🥣", category: "L-Blends", family: "gl", arabic_meaning: "مادة لزجة" },
+                { word: "Glum", emoji: "😔", category: "L-Blends", family: "gl", arabic_meaning: "كئيب" },
+
+                { word: "Plan", emoji: "🗺️", category: "L-Blends", family: "pl", arabic_meaning: "خطة" },
+                { word: "Plus", emoji: "➕", category: "L-Blends", family: "pl", arabic_meaning: "زائد" },
+                { word: "Plop", emoji: "💦", category: "L-Blends", family: "pl", arabic_meaning: "سقوط في الماء" },
+                { word: "Plug", emoji: "🔌", category: "L-Blends", family: "pl", arabic_meaning: "قابس" },
+                { word: "Plum", emoji: "🍑", category: "L-Blends", family: "pl", arabic_meaning: "برقوق" },
+                { word: "Plot", emoji: "📉", category: "L-Blends", family: "pl", arabic_meaning: "مؤامرة / حبكة" },
+                { word: "Pled", emoji: "🙏", category: "L-Blends", family: "pl", arabic_meaning: "توسل" },
+                { word: "Plod", emoji: "🚶", category: "L-Blends", family: "pl", arabic_meaning: "يمشي ببطء" },
+
+                { word: "Slab", emoji: "🪨", category: "L-Blends", family: "sl", arabic_meaning: "لوح" },
+                { word: "Slam", emoji: "🚪", category: "L-Blends", family: "sl", arabic_meaning: "يصفق بقوة" },
+                { word: "Slap", emoji: "👋", category: "L-Blends", family: "sl", arabic_meaning: "صفعة" },
+                { word: "Slip", emoji: "🍌", category: "L-Blends", family: "sl", arabic_meaning: "ينزلق" },
+                { word: "Sled", emoji: "🛷", category: "L-Blends", family: "sl", arabic_meaning: "مزلاجة" },
+                { word: "Slid", emoji: "📉", category: "L-Blends", family: "sl", arabic_meaning: "انزلق" },
+                { word: "Slim", emoji: "📏", category: "L-Blends", family: "sl", arabic_meaning: "نحيف" },
+                { word: "Slit", emoji: "🔪", category: "L-Blends", family: "sl", arabic_meaning: "شق" },
+                { word: "Slot", emoji: "🎰", category: "L-Blends", family: "sl", arabic_meaning: "فتحة" },
+                { word: "Slug", emoji: "🐌", category: "L-Blends", family: "sl", arabic_meaning: "بزاقة" },
+                { word: "Slog", emoji: "😓", category: "L-Blends", family: "sl", arabic_meaning: "كدح" },
+                { word: "Slum", emoji: "🏘️", category: "L-Blends", family: "sl", arabic_meaning: "حي فقير" },
+                { word: "Slag", emoji: "🌋", category: "L-Blends", family: "sl", arabic_meaning: "خبث المعادن" },
+                { word: "Slop", emoji: "🥣", category: "L-Blends", family: "sl", arabic_meaning: "طعام رديء" },
+
+                // --- S-Blends (Sc, Sk, Sm, Sn, Sp, St, Sw) ---
+                { word: "Scab", emoji: "🩹", category: "S-Blends", family: "sc", arabic_meaning: "قشرة الجرح" },
+                { word: "Scar", emoji: "🤕", category: "S-Blends", family: "sc", arabic_meaning: "ندبة" },
+                { word: "Scum", emoji: "🧼", category: "S-Blends", family: "sc", arabic_meaning: "رغوة صابون" },
+                { word: "Scat", emoji: "🐱", category: "S-Blends", family: "sc", arabic_meaning: "ابعاد القطة" },
+                { word: "Scup", emoji: "🐟", category: "S-Blends", family: "sc", arabic_meaning: "نوع سمك" },
+                { word: "Scot", emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", category: "S-Blends", family: "sc", arabic_meaning: "اسكتلندي" },
+                { word: "Scut", emoji: "🐇", category: "S-Blends", family: "sc", arabic_meaning: "ذيل قصير" },
+                { word: "Scad", emoji: "🐟", category: "S-Blends", family: "sc", arabic_meaning: "سمك الإسقمري" },
+                { word: "Scud", emoji: "☁️", category: "S-Blends", family: "sc", arabic_meaning: "سحب عابرة" },
+                { word: "Scan", emoji: "📠", category: "S-Blends", family: "sc", arabic_meaning: "مسح ضوئي" },
+
+                { word: "Skid", emoji: "🚗", category: "S-Blends", family: "sk", arabic_meaning: "انزلاق" },
+                { word: "Skin", emoji: "🖐️", category: "S-Blends", family: "sk", arabic_meaning: "جلد" },
+                { word: "Skip", emoji: "⏭️", category: "S-Blends", family: "sk", arabic_meaning: "تخطي" },
+                { word: "Skit", emoji: "🎭", category: "S-Blends", family: "sk", arabic_meaning: "مسرحية قصيرة" },
+                { word: "Skim", emoji: "🥛", category: "S-Blends", family: "sk", arabic_meaning: "قشط" },
+
+                { word: "Smog", emoji: "🌫️", category: "S-Blends", family: "sm", arabic_meaning: "ضباب دخاني" },
+                { word: "Smug", emoji: "😏", category: "S-Blends", family: "sm", arabic_meaning: "معجب بنفسه" },
+
+                { word: "Snap", emoji: "🤌", category: "S-Blends", family: "sn", arabic_meaning: "فرقعة" },
+                { word: "Snip", emoji: "✂️", category: "S-Blends", family: "sn", arabic_meaning: "قص" },
+                { word: "Snug", emoji: "🛋️", category: "S-Blends", family: "sn", arabic_meaning: "دافئ ومريح" },
+                { word: "Snit", emoji: "😠", category: "S-Blends", family: "sn", arabic_meaning: "انزعاج" },
+                { word: "Snag", emoji: "🧶", category: "S-Blends", family: "sn", arabic_meaning: "عقبة" },
+                { word: "Snob", emoji: "🧐", category: "S-Blends", family: "sn", arabic_meaning: "متكبر" },
+                { word: "Snub", emoji: "😤", category: "S-Blends", family: "sn", arabic_meaning: "تجاهل" },
+
+                { word: "Span", emoji: "🌉", category: "S-Blends", family: "sp", arabic_meaning: "يمتد / شبر" },
+                { word: "Spin", emoji: "🔄", category: "L-Blends", family: "sp", arabic_meaning: "يدور" }, 
+                { word: "Spit", emoji: "💦", category: "S-Blends", family: "sp", arabic_meaning: "بصق" },
+                { word: "Spot", emoji: "📍", category: "S-Blends", family: "sp", arabic_meaning: "بقعة / مكان" },
+                { word: "Spur", emoji: "👢", category: "S-Blends", family: "sp", arabic_meaning: "مهماز" },
+                { word: "Spud", emoji: "🥔", category: "S-Blends", family: "sp", arabic_meaning: "بطاطس" },
+                { word: "Spun", emoji: "🕸️", category: "S-Blends", family: "sp", arabic_meaning: "غزل" },
+
+                { word: "Star", emoji: "⭐", category: "S-Blends", family: "st", arabic_meaning: "نجمة" },
+                { word: "Step", emoji: "🦶", category: "S-Blends", family: "st", arabic_meaning: "خطوة" },
+                { word: "Stop", emoji: "🛑", category: "S-Blends", family: "st", arabic_meaning: "قف" },
+                { word: "Stun", emoji: "😲", category: "S-Blends", family: "st", arabic_meaning: "ذهول" },
+                { word: "Stir", emoji: "🥄", category: "S-Blends", family: "st", arabic_meaning: "يحرك" },
+                { word: "Stab", emoji: "🗡️", category: "S-Blends", family: "st", arabic_meaning: "طعن" },
+                { word: "Stag", emoji: "🦌", category: "S-Blends", family: "st", arabic_meaning: "أيل" },
+                { word: "Stub", emoji: "🎫", category: "S-Blends", family: "st", arabic_meaning: "عقب" },
+
+                { word: "Swam", emoji: "🏊", category: "S-Blends", family: "sw", arabic_meaning: "سبح" },
+                { word: "Swan", emoji: "🦢", category: "S-Blends", family: "sw", arabic_meaning: "بجعة" },
+                { word: "Swim", emoji: "🏊‍♀️", category: "S-Blends", family: "sw", arabic_meaning: "يسبح" },
+                { word: "Swab", emoji: "🧹", category: "S-Blends", family: "sw", arabic_meaning: "ممسحة" },
+                { word: "Swap", emoji: "🔄", category: "S-Blends", family: "sw", arabic_meaning: "تبادل" },
+                { word: "Swob", emoji: "🧼", category: "S-Blends", family: "sw", arabic_meaning: "تنظيف" },
+                { word: "Swag", emoji: "😎", category: "S-Blends", family: "sw", arabic_meaning: "غنائم / أناقة" },
+                { word: "Swat", emoji: "🦟", category: "S-Blends", family: "sw", arabic_meaning: "ضربة قوية" },
+                { word: "Swop", emoji: "🔄", category: "S-Blends", family: "sw", arabic_meaning: "مبادلة" },
+                { word: "Swig", emoji: "🥤", category: "S-Blends", family: "sw", arabic_meaning: "جرعة كبيرة" },
+                { word: "Swum", emoji: "🏊‍♂️", category: "S-Blends", family: "sw", arabic_meaning: "سبح (التصريف الثالث)" },
+
+                // --- Digraphs (Ch, Sh, Th, Wh) ---
+                { word: "Chat", emoji: "💬", category: "Digraphs", family: "ch", arabic_meaning: "دردشة" },
+                { word: "Chip", emoji: "🍟", category: "Digraphs", family: "ch", arabic_meaning: "رقاقة" },
+                { word: "Chop", emoji: "🔪", category: "Digraphs", family: "ch", arabic_meaning: "يقطع" },
+                { word: "Chin", emoji: "🧔", category: "Digraphs", family: "ch", arabic_meaning: "ذقن" },
+                { word: "Chap", emoji: "🤠", category: "Digraphs", family: "ch", arabic_meaning: "رجل / تشقق" },
+
+                { word: "Ship", emoji: "🚢", category: "Digraphs", family: "sh", arabic_meaning: "سفينة" },
+                { word: "Shut", emoji: "🚪", category: "Digraphs", family: "sh", arabic_meaning: "يغلق" },
+                { word: "Shot", emoji: "💉", category: "Digraphs", family: "sh", arabic_meaning: "حقنة / تسديدة" },
+                { word: "Shed", emoji: "🏠", category: "Digraphs", family: "sh", arabic_meaning: "كوخ" },
+                { word: "Shin", emoji: "🦵", category: "Digraphs", family: "sh", arabic_meaning: "قصبة الساق" },
+                { word: "Shop", emoji: "🛒", category: "Digraphs", family: "sh", arabic_meaning: "متجر" },
+
+                { word: "This", emoji: "👇", category: "Digraphs", family: "th", arabic_meaning: "هذا" },
+                { word: "That", emoji: "👉", category: "Digraphs", family: "th", arabic_meaning: "ذلك" },
+                { word: "Then", emoji: "⏳", category: "Digraphs", family: "th", arabic_meaning: "ثم" },
+                { word: "Them", emoji: "👥", category: "Digraphs", family: "th", arabic_meaning: "هم" },
+                { word: "Than", emoji: "🆚", category: "Digraphs", family: "th", arabic_meaning: "من (للمقارنة)" },
+
+                { word: "Wham", emoji: "💥", category: "Digraphs", family: "wh", arabic_meaning: "ضربة قوية" },
+                { word: "Whip", emoji: "🏇", category: "Digraphs", family: "wh", arabic_meaning: "سوط" },
+                { word: "Whiz", emoji: "💨", category: "Digraphs", family: "wh", arabic_meaning: "أزيز" },
+                { word: "When", emoji: "⏰", category: "Digraphs", family: "wh", arabic_meaning: "متى" },
+                { word: "Whim", emoji: "💭", category: "Digraphs", family: "wh", arabic_meaning: "نزوة" }
+            ].map((w, i) => ({ ...w, id: i + 1 })); // Add IDs dynamically
+
+            console.log("Static CVC Words Loaded:", wordsData.length);
+            
+            // Re-Initialize Filters with new Logic
+            initFilters();
+            displayWords();
                 
-                // Show exercises
-                if (wordsData.length > 0) {
-                    document.getElementById('exercises-section').style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error loading words:', error);
-                document.getElementById('wordsLoading').innerHTML =
-                    '<p style="color: #ef4444;">خطأ في تحميل البيانات.</p>';
+            // Show exercises if we have data
+            if (wordsData.length > 0) {
+                document.getElementById('exercises-section').style.display = 'block';
             }
         }
         
-        // ✨ Filter Logic
+        // ✨ Filter Logic - Updated for Blends/Digraphs
         function initFilters() {
-            // Generate Family chips
-            const families = new Set(wordsData.map(w => w.word_family).filter(f => f));
-            const container = document.getElementById('familyFilters');
-            
-            // Keep "All"
-            container.innerHTML = '<div class="filter-chip active" onclick="filterData(\'family\', \'all\', this)">الكل</div>';
+            const container = document.getElementById('familyFilters'); // Reuse same container ID in HTML
+            // Clear existing
+            container.innerHTML = '';
 
-            let sortedFamilies = Array.from(families).sort();
+            // Main Categories Chips
+            const categories = ["R-Blends", "L-Blends", "S-Blends", "Digraphs"];
             
-            sortedFamilies.forEach(fam => {
+            // Add "All" chip
+            const allChip = document.createElement('div');
+            allChip.className = 'filter-chip active';
+            allChip.textContent = 'الكل';
+            allChip.onclick = () => filterByCategory('all', allChip);
+            container.appendChild(allChip);
+
+            categories.forEach(cat => {
                 const chip = document.createElement('div');
                 chip.className = 'filter-chip';
-                chip.textContent = `-${fam}`;
-                chip.setAttribute('data-family', fam);
-                
-                // Set dataset vowel for filtering
-                const word = wordsData.find(w => w.word_family === fam);
-                if (word && word.vowel_sound) {
-                    chip.setAttribute('data-vowel', word.vowel_sound); 
-                }
-                
-                chip.onclick = () => filterData('family', fam, chip);
+                chip.textContent = cat;
+                chip.onclick = () => filterByCategory(cat, chip);
                 container.appendChild(chip);
             });
+            
+            // Update Section Title
+            document.querySelector('.section-title').textContent = "🔍 اختر المجموعة (Filter by Group)";
+            
+            // Hide Vowel Section as we are using Blends now
+            const vowelSection = document.getElementById('vowelFilters');
+            if(vowelSection) vowelSection.parentElement.style.display = 'none'; // Hide parent container of vowels
         }
 
-        function filterData(type, value, element) {
-            if (type === 'vowel') {
-                currentVowel = value;
-                document.querySelectorAll('#vowelFilters .filter-chip').forEach(c => c.classList.remove('active'));
-                
-                // Show/Hide Family chips based on vowel
-                const familyChips = document.querySelectorAll('#familyFilters .filter-chip');
-                familyChips.forEach(chip => {
-                    const famVowel = chip.getAttribute('data-vowel');
-                    if (value === 'all' || !famVowel || famVowel === value) {
-                        chip.style.display = 'block';
-                    } else {
-                        chip.style.display = 'none';
-                    }
-                });
-                
-                // Reset family selection
-                if (currentFamily !== 'all') {
-                     currentFamily = 'all';
-                     document.querySelectorAll('#familyFilters .filter-chip').forEach(c => c.classList.remove('active'));
-                     document.querySelector('#familyFilters .filter-chip').classList.add('active');
-                }
-
-            } else if (type === 'family') {
-                currentFamily = value;
-                document.querySelectorAll('#familyFilters .filter-chip').forEach(c => c.classList.remove('active'));
-            }
+        function filterByCategory(category, element) {
+            currentCategory = category;
             
+            // Update UI
+            document.querySelectorAll('#familyFilters .filter-chip').forEach(c => c.classList.remove('active'));
             element.classList.add('active');
+            
             displayWords();
         }
 
@@ -1953,17 +2127,9 @@
 
             // Filter Logic
             let filtered = wordsData;
-            // Filter by Vowel
-            if (currentVowel !== 'all') {
-                filtered = filtered.filter(w => w.vowel_sound === currentVowel);
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(w => w.category === currentCategory);
             }
-            // Filter by Family
-            if (currentFamily !== 'all') {
-                filtered = filtered.filter(w => w.word_family === currentFamily);
-            }
-            
-            // Exclude Pronouns from main words tab
-            filtered = filtered.filter(w => w.category !== 'pronouns');
             
             if (filtered.length === 0) {
                  grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666; font-size: 1.2rem;">لا توجد كلمات في هذا التصنيف 🧐</div>';
