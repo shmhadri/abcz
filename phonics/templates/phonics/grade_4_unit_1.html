@@ -363,6 +363,9 @@
             <button class="nav-btn" onclick="showSection('social7')">
                 <i class="fas fa-globe-americas"></i> Social Studies
             </button>
+            <button class="nav-btn" onclick="showSection('writing')">
+                <i class="fas fa-pen-fancy"></i> Writing
+            </button>
         </div>
     </div>
 
@@ -371,12 +374,24 @@
         <!-- SECTION 1: LEARN -->
         <div id="learn" class="section active animate__animated animate__fadeIn">
             <h2 class="section-title">Vocabulary Words 📖</h2>
+            <div style="text-align:center; margin-bottom:30px; display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
+                <button onclick="openTest('learn', 'pre')" style="background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border:none; padding:15px 35px; border-radius:50px; font-size:1.3rem; cursor:pointer; font-weight:600; box-shadow:0 5px 15px rgba(59,130,246,0.3);">
+                    📋 Pre-Test / اختبار قبلي
+                </button>
+                <button onclick="openTest('learn', 'post')" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:15px 35px; border-radius:50px; font-size:1.3rem; cursor:pointer; font-weight:600; box-shadow:0 5px 15px rgba(16,185,129,0.3);">
+                    ✅ Post-Test / اختبار بعدي
+                </button>
+            </div>
             <div class="vocab-grid" id="vocab-grid"></div>
         </div>
 
         <!-- SECTION 2: GRAMMAR -->
         <div id="grammar" class="section" style="display:none;">
             <h2 class="section-title">Grammar Rules ⚡</h2>
+            <div style="text-align:center; margin-bottom:30px; display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
+                <button onclick="openTest('grammar', 'pre')" style="background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border:none; padding:15px 35px; border-radius:50px; font-size:1.3rem; cursor:pointer; font-weight:600;">📋 Pre-Test / اختبار قبلي</button>
+                <button onclick="openTest('grammar', 'post')" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:15px 35px; border-radius:50px; font-size:1.3rem; cursor:pointer; font-weight:600;">✅ Post-Test / اختبار بعدي</button>
+            </div>
             
             <!-- Reference Chart -->
             <div style="max-width:900px; margin:0 auto; overflow-x: auto;">
@@ -900,7 +915,170 @@
              </div>
         </div>
 
+        <!-- SECTION 8: WRITING -->
+        <div id="writing" class="section" style="display:none;">
+            <h2 class="section-title">📝 Word Work and Writing</h2>
+            <div style="text-align:center; margin-bottom:30px; display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
+                <button onclick="openTest('writing', 'pre')" style="background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border:none; padding:15px 35px; border-radius:50px; font-size:1.3rem; cursor:pointer; font-weight:600;">📋 Pre-Test / اختبار قبلي</button>
+                <button onclick="openTest('writing', 'post')" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:15px 35px; border-radius:50px; font-size:1.3rem; cursor:pointer; font-weight:600;">✅ Post-Test / اختبار بعدي</button>
+            </div>
+            
+            <!-- Activity 1 -->
+            <div class="card" style="margin-bottom:40px;">
+                <h3 style="font-size:2rem; margin-bottom:25px; color:var(--primary);">
+                    1. Look and write the words in the correct columns
+                </h3>
+                
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px; margin-bottom:30px;">
+                    <div style="padding:15px; text-align:center; background:white; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.05);">
+                        <div style="font-size:2.5rem;">🐸</div>
+                        <div style="font-size:1.2rem; font-weight:600; margin:8px 0;">frog</div>
+                        <div style="font-size:0.9rem; font-family:'Tajawal'; color:#666;">ضفدع</div>
+                        <button class="btn-audio" onclick="speak('frog')" style="margin-top:8px;">🔊</button>
+                    </div>
+                    <div style="padding:15px; text-align:center; background:white; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.05);">
+                        <div style="font-size:2.5rem;">🚂</div>
+                        <div style="font-size:1.2rem; font-weight:600; margin:8px 0;">train</div>
+                        <div style="font-size:0.9rem; font-family:'Tajawal'; color:#666;">قطار</div>
+                        <button class="btn-audio" onclick="speak('train')" style="margin-top:8px;">🔊</button>
+                    </div>
+                    <div style="padding:15px; text-align:center; background:white; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.05);">
+                        <div style="font-size:2.5rem;">🐑</div>
+                        <div style="font-size:1.2rem; font-weight:600; margin:8px 0;">sheep</div>
+                        <div style="font-size:0.9rem; font-family:'Tajawal'; color:#666;">خروف</div>
+                        <button class="btn-audio" onclick="speak('sheep')" style="margin-top:8px;">🔊</button>
+                    </div>
+                    <div style="padding:15px; text-align:center; background:white; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.05);">
+                        <div style="font-size:2.5rem;">🧭</div>
+                        <div style="font-size:1.2rem; font-weight:600; margin:8px 0;">west</div>
+                        <div style="font-size:0.9rem; font-family:'Tajawal'; color:#666;">غرب</div>
+                        <button class="btn-audio" onclick="speak('west')" style="margin-top:8px;">🔊</button>
+                    </div>
+                    <div style="padding:15px; text-align:center; background:white; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.05);">
+                        <div style="font-size:2.5rem;">🚴</div>
+                        <div style="font-size:1.2rem; font-weight:600; margin:8px 0;">bike</div>
+                        <div style="font-size:0.9rem; font-family:'T ajawal'; color:#666;">دراجة</div>
+                        <button class="btn-audio" onclick="speak('bike')" style="margin-top:8px;">🔊</button>
+                    </div>
+                    <div style="padding:15px; text-align:center; background:white; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.05);">
+                        <div style="font-size:2.5rem;">🐱</div>
+                        <div style="font-size:1.2rem; font-weight:600; margin:8px 0;">cat</div>
+                        <div style="font-size:0.9rem; font-family:'Tajawal'; color:#666;">قطة</div>
+                        <button class="btn-audio" onclick="speak('cat')" style="margin-top:8px;">🔊</button>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="grammar-table" style="width:100%; text-align:center;">
+                        <thead>
+                            <tr>
+                                <th style="background:#0ea5e9;">-og</th>
+                                <th style="background:#10b981;">-ain</th>
+                                <th style="background:#f59e0b;">-eep</th>
+                                <th style="background:#ec4899;">-est</th>
+                                <th style="background:#8b5cf6;">-ike</th>
+                                <th style="background:#ef4444;">-at</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:15px;">frog</td>
+                                <td style="padding:15px;">train</td>
+                                <td style="padding:15px;">sheep</td>
+                                <td style="padding:15px;">west</td>
+                                <td style="padding:15px;">bike</td>
+                                <td style="padding:15px;">cat</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Activity 2 -->
+            <div class="card" style="margin-bottom:40px;">
+                <h3 style="font-size:2rem; margin-bottom:25px; color:var(--primary);">
+                    2. Look, read, and complete the sentences
+                </h3>
+
+                <div style="background:#fffbeb; padding:20px; border-radius:15px; margin-bottom:20px;">
+                    <p style="font-size:1.3rem; line-height:2;">
+                        Let's k<span style="background:#fde047; padding:2px 8px; border-radius:4px; font-weight:700;">ing</span> s flowers in the spr<span style="background:#fde047; padding:2px 8px; border-radius:4px; font-weight:700;">ing</span>.
+                    </p>
+                    <button class="btn-audio" onclick="speak('Lets king s flowers in the spring')" style="margin-top:10px;">🔊</button>
+                </div>
+
+                <div style="background:#f0fdf4; padding:20px; border-radius:15px; margin-bottom:20px;">
+                    <p style="font-size:1.3rem; line-height:2;">
+                        The s<span style="background:#a7f3d0; padding:2px 8px; border-radius:4px; font-weight:700;">un</span> for f<span style="background:#a7f3d0; padding:2px 8px; border-radius:4px; font-weight:700;">un</span>.
+                    </p>
+                    <button class="btn-audio" onclick="speak('The sun for fun')" style="margin-top:10px;">🔊</button>
+                </div>
+
+                <div style="background:#fff7ed; padding:20px; border-radius:15px; margin-bottom:20px;">
+                    <p style="font-size:1.3rem; line-height:2;">
+                        We must sk<span style="background:#fed7aa; padding:2px 8px; border-radius:4px; font-weight:700;">ate</span> to the g<span style="background:#fed7aa; padding:2px 8px; border-radius:4px; font-weight:700;">ate</span> because we're l<span style="background:#fed7aa; padding:2px 8px; border-radius:4px; font-weight:700;">ate</span>.
+                    </p>
+                    <button class="btn-audio" onclick="speak('We must skate to the gate because we are late')" style="margin-top:10px;">🔊</button>
+                </div>
+
+                <div style="background:#eff6ff; padding:20px; border-radius:15px;">
+                    <p style="font-size:1.3rem; line-height:2;">
+                        There's a c<span style="background:#bfdbfe; padding:2px 8px; border-radius:4px; font-weight:700;">ool</span> p<span style="background:#bfdbfe; padding:2px 8px; border-radius:4px; font-weight:700;">ool</span> at our new sch<span style="background:#bfdbfe; padding:2px 8px; border-radius:4px; font-weight:700;">ool</span>.
+                    </p>
+                    <button class="btn-audio" onclick="speak('Theres a cool pool at our new school')" style="margin-top:10px;">🔊</button>
+                </div>
+            </div>
+
+            <!-- Activity 3 -->
+            <div class="card">
+                <h3 style="font-size:2rem; margin-bottom:25px; color:var(--primary);">
+                    3. Write about your summer vacation
+                </h3>
+
+                <div style="background:#f0fdf4; padding:25px; border-radius:15px; margin-bottom:25px;">
+                    <h4 style="color:#15803d; margin-bottom:15px;">Guide Questions:</h4>
+                    <ol style="font-size:1.1rem; line-height:2;">
+                        <li>Where did you go on vacation?</li>
+                        <li>What was the weather like?</li>
+                        <li>What could you do there?</li>
+                        <li>What couldn't you do there?</li>
+                        <li>Where do you want to go next year?</li>
+                    </ol>
+                </div>
+
+                <div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding:30px; border-radius:20px; color:white; margin-bottom:25px;">
+                    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+                        <div style="background:white; padding:15px; border-radius:15px; font-size:2rem;">📝</div>
+                        <div>
+                            <h4 style="margin:0; font-size:1.5rem;">My Blog - March 12</h4>
+                        </div>
+                        <button class="btn-audio" onclick="speak('I had an excellent vacation last summer. I went to Jeddah with my family')" style="margin-left:auto; background:white; color:#667eea;">🔊</button>
+                    </div>
+                    <div style="background:white; padding:25px; border-radius:15px; color:#1f2937; font-size:1.2rem; line-height:1.9;">
+                        I had an excellent vacation last summer. I went to Jeddah with my family. The weather was cold so we couldn't swim in the sea, but we visited beautiful places like King Fahd's Fountain, Al-Balad and Red Sea Mall. It was a great vacation. We want to visit it again next summer.
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display:block; font-size:1.2rem; font-weight:600; margin-bottom:10px;">✍️ Your Writing:</label>
+                    <textarea style="width:100%; min-height:200px; padding:20px; border:2px solid #e2e8f0; border-radius:15px; font-size:1.1rem; resize:vertical;" placeholder="Write about your summer vacation here..."></textarea>
+                </div>
+            </div>
+        </div>
+
     </main>
+
+    <!-- TEST MODAL -->
+    <div id="testModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center; padding:20px; overflow-y:auto;">
+        <div style="background:white; max-width:900px; width:100%; border-radius:25px; padding:40px; max-height:90vh; overflow-y:auto; position:relative;">
+            <button onclick="closeTestModal()" style="position:absolute; top:20px; right:20px; background:#f87171; color:white; border:none; width:45px; height:45px; border-radius:50%; font-size:1.5rem; cursor:pointer;">✕</button>
+            <h2 id="testTitle" style="text-align:center; font-size:2.5rem; color:var(--primary); margin-bottom:30px; font-family:'Tajawal'; line-height:1.5;"></h2>
+            <div id="testQuestions"></div>
+            <div style="text-align:center; margin-top:30px;">
+                <button id="submitTest" class="quiz-btn" style="padding:18px 50px; font-size:1.6rem;">إرسال / Submit ✓</button>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
@@ -1338,6 +1516,210 @@
             
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             event.currentTarget.classList.add('active');
+        }
+
+        // --- SPEAK FUNCTION ---
+        function speak(text) {
+            // Clean text from emojis and special characters
+            const cleanText = text.replace(/[^\w\s\.\,\!\?]/g, '').trim();
+            if (!cleanText) return;
+            
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'en-GB'; // British English
+            utterance.rate = 0.9;
+            speechSynthesis.cancel(); // Stop any current speech
+            speechSynthesis.speak(utterance);
+        }
+
+        // --- GRADE 4 TESTS ---
+        const grade4Tests = {
+            learn: {
+                pre: [
+                    {q: 'What is "Lake" in Arabic? / ما معنى Lake بالعربية؟', options: ['بُحيرة', 'جَبَل', 'صحراء', 'غابة'], correct: 0},
+                    {q: 'Choose the correct word / اختر الكلمة الصحيحة: 🏔️', options: ['Mountain', 'Island', 'Desert', 'Cave'], correct: 0},
+                    {q: 'What is "شلال" in English? / ما معنى شلال بالإنجليزية؟', options: ['Waterfall', 'Lake', 'River', 'Ocean'], correct: 0},
+                    {q: 'Where can you find trees? / أين تجد الأشجار؟', options: ['Forest', 'Desert', 'Cave', 'Island'], correct: 0},
+                    {q: 'What is "كهف" in English? / ما معنى كهف؟', options: ['Cave', 'Hill', 'Mountain', 'Valley'], correct: 0}
+                ],
+                post: [
+                    {q: 'What is "جزيرة" in English? / ما معنى جزيرة؟', options: ['Island', 'Lake', 'Ocean', 'River'], correct: 0},
+                    {q: 'Choose: A very dry place / مكان جاف جداً', options: ['Desert', 'Lake', 'Forest', 'Island'], correct: 0},
+                    {q: 'What is "تَل" in English? / ما معنى تل؟', options: ['Hill', 'Mountain', 'Valley', 'Cave'], correct: 0},
+                    {q: 'The planet we live on / الكوكب الذي نعيش عليه', options: ['Earth', 'Moon', 'Sun', 'Star'], correct: 0},
+                    {q: 'Water that falls from high / ماء يسقط من أعلى', options: ['Waterfall', 'Rain', 'Lake', 'River'], correct: 0}
+                ]
+            },
+            grammar: {
+                pre: [
+                    {q: 'I want ___ play outside. / أريد ___ اللعب بالخارج', options: ['to', 'ing', 'for', 'at'], correct: 0},
+                    {q: 'She forgot ___ bring her book. / نسيت ___ كتابها', options: ['to', 'ing', 'for', 'with'], correct: 0},
+                    {q: 'We enjoy ___ in the park. / نستمتع ___ في الحديقة', options: ['playing', 'to play', 'play', 'played'], correct: 0},
+                    {q: 'He likes ___ football. / يحب ___ كرة القدم', options: ['playing', 'to play', 'play', 'plays'], correct: 0},
+                    {q: 'They decided ___ go camping. / قرروا ___ التخييم', options: ['to', 'ing', 'for', 'on'], correct: 0}
+                ],
+                post: [
+                    {q: 'I love ___ books. / أحب ___ الكتب', options: ['reading', 'to read', 'read', 'reads'], correct: 0},
+                    {q: 'We plan ___ visit the museum. / نخطط ___ المتحف', options: ['to', 'ing', 'for', 'at'], correct: 0},
+                    {q: 'She enjoys ___ pictures. / تستمتع ___ الصور', options: ['drawing', 'to draw', 'draw', 'draws'], correct: 0},
+                    {q: 'They hope ___ win the game. / يأملون ___ المباراة', options: ['to', 'ing', 'for', 'in'], correct: 0},
+                    {q: 'He finished ___ his homework. / انتهى من ___ واجبه', options: ['doing', 'to do', 'do', 'does'], correct: 0}
+                ]
+            },
+            story: {
+                pre: [
+                    {q: 'Who spent the day in the countryside? / من قضى اليوم في الريف؟', options: ['Layla', 'Ahmed', 'Sara', 'Ali'], correct: 0},
+                    {q: 'What did they see at the farm? / ماذا رأوا في المزرعة؟', options: ['Animals', 'Cars', 'Toys', 'Books'], correct: 0},
+                    {q: 'Where did they go? / أين ذهبوا؟', options: ['Countryside', 'City', 'Beach', 'Desert'], correct: 0}
+                ],
+                post: [
+                    {q: 'Was it a good day? / هل كان يوماً جيداً؟', options: ['Yes', 'No', 'Maybe', 'Unknown'], correct: 0},
+                    {q: 'What season was it? / أي فصل كان؟', options: ['Summer', 'Winter', 'Spring', 'Fall'], correct: 0},
+                    {q: 'Did they enjoy the trip? / هل استمتعوا بالرحلة؟', options: ['Yes', 'No', 'A little', 'Not sure'], correct: 0}
+                ]
+            },
+            vocab5: {
+                pre: [
+                    {q: 'Flash cards help you ___ / البطاقات تساعدك على', options: ['Remember', 'Forget', 'Sleep', 'Eat'], correct: 0},
+                    {q: 'A synonym for "big" / مرادف لكلمة كبير', options: ['Large', 'Small', 'Tiny', 'Little'], correct: 0},
+                    {q: 'Opposite of "hot" / عكس ساخن', options: ['Cold', 'Warm', 'Cool', 'Fire'], correct: 0}
+                ],
+                post: [
+                    {q: 'Vocabulary means ___ / Vocabulary تعني', options: ['Words', 'Numbers', 'Colors', 'Shapes'], correct: 0},
+                    {q: 'Synonym for "happy" / مرادف سعيد', options: ['Joyful', 'Sad', 'Angry', 'Tired'], correct: 0},
+                    {q: 'Opposite of "old" / عكس قديم', options: ['New', 'Young', 'Ancient', 'Modern'], correct: 0}
+                ]
+            },
+            grammar6: {
+                pre: [
+                    {q: 'The book is ___ the table. / الكتاب ___ الطاولة', options: ['on', 'in', 'at', 'to'], correct: 0},
+                    {q: 'She lives ___ Riyadh. / تعيش ___ الرياض', options: ['in', 'on', 'at', 'to'], correct: 0},
+                    {q: 'We meet ___ 3 PM. / نلتقي ___ الساعة 3', options: ['at', 'in', 'on', 'to'], correct: 0}
+                ],
+                post: [
+                    {q: 'The cat is ___ the box. / القطة ___ الصندوق', options: ['in', 'on', 'at', 'to'], correct: 0},
+                    {q: 'My birthday is ___ May. / عيد ميلادي ___ مايو', options: ['in', 'on', 'at', 'to'], correct: 0},
+                    {q: 'She arrived ___ Monday. / وصلت ___ الاثنين', options: ['on', 'in', 'at', 'to'], correct: 0}
+                ]
+            },
+            social7: {
+                pre: [
+                    {q: 'Where is Qiddiya? / أين تقع القدية؟', options: ['Saudi Arabia', 'UAE', 'Egypt', 'Jordan'], correct: 0},
+                    {q: 'What is Dragon Ball? / ما هو دراجون بول؟', options: ['Comic & TV show', 'Game', 'Food', 'Sport'], correct: 0},
+                    {q: 'A roller coaster is ___ / الأفعوانية هي', options: ['A ride', 'A game', 'Food', 'A book'], correct: 0}
+                ],
+                post: [
+                    {q: 'Is Qiddiya a new city? / هل القدية مدينة جديدة؟', options: ['Yes', 'No', 'Maybe', 'Unknown'], correct: 0},
+                    {q: 'Theme parks have ___ / حدائق الملاهي بها', options: ['Rides', 'Books', 'Desks', 'Beds'], correct: 0},
+                    {q: 'Who is Goku? / من هو غوكو؟', options: ['Character', 'City', 'Food', 'Game'], correct: 0}
+                ]
+            },
+            writing: {
+                pre: [
+                    {q: 'Which word ends with -og? / أي كلمة تنتهي بـ -og؟', options: ['frog', 'train', 'sheep', 'bike'], correct: 0},
+                    {q: 'Which ends with -ain? / تنتهي بـ -ain', options: ['rain', 'cat', 'nest', 'deep'], correct: 0},
+                    {q: '"king" rhymes with ___ / تقافي مع', options: ['spring', 'sun', 'gate', 'pool'], correct: 0}
+                ],
+                post: [
+                    {q: 'Complete: The s_n for f_n', options: ['un, un', 'ing, ing', 'ate, ate', 'ool, ool'], correct: 0},
+                    {q: 'Which word has -eep? / تحتوي على -eep', options: ['sheep', 'frog', 'bike', 'cat'], correct: 0},
+                    {q: 'A blog is for ___ / المدونة لـ', options: ['Writing', 'Eating', 'Sleeping', 'Running'], correct: 0}
+                ]
+            }
+        };
+
+        // --- TEST FUNCTIONS ---
+        function openTest(section, type) {
+            const modal = document.getElementById('testModal');
+            const title = document.getElementById('testTitle');
+            const container = document.getElementById('testQuestions');
+            
+            title.innerHTML = `${type === 'pre' ? 'Pre-Test 📋 اختبار قبلي' : 'Post-Test ✅ اختبار بعدي'}<br><small style="font-size:1.2rem; color:#666;">${getSectionName(section)}</small>`;
+            
+            const tests = grade4Tests[section][type];
+            container.innerHTML = tests.map((t, i) => `
+                <div style="margin-bottom:30px; padding:25px; background:#f8fafc; border-radius:15px; border-left:4px solid var(--primary);">
+                    <div style="font-size:1.8rem; font-weight:700; margin-bottom:20px; color:#1e293b; line-height:1.6;">
+                        ${i + 1}. ${t.q}
+                    </div>
+                    <div style="display:grid; gap:12px;">
+                        ${t.options.map((opt, idx) => `
+                            <button class="quiz-btn" onclick="selectAnswer(${i}, ${idx})" data-qindex="${i}" style="text-align:left; font-size:1.5rem; padding:18px 25px; background:white;">
+                                ${String.fromCharCode(65 + idx)}. ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('submitTest').onclick = () => checkTest(section, type);
+            modal.style.display = 'flex';
+        }
+
+        let selectedAnswers = {};
+        function selectAnswer(qIndex, optIndex) {
+            selectedAnswers[qIndex] = optIndex;
+            const btns = document.querySelectorAll(`[data-qindex="${qIndex}"]`);
+            btns.forEach((b, i) => {
+                b.style.background = i === optIndex ? '#d1fae5' : 'white';
+                b.style.borderColor = i === optIndex ? '#10b981' : '#e2e8f0';
+            });
+        }
+
+        function checkTest(section, type) {
+            const tests = grade4Tests[section][type];
+            let score = 0;
+            tests.forEach((t, i) => {
+                if (selectedAnswers[i] === t.correct) score++;
+            });
+            
+            const container = document.getElementById('testQuestions');
+            const percentage = Math.round((score / tests.length) * 100);
+            
+            let message = '';
+            let emoji = '';
+            if (score === tests.length) {
+                message = '🎉 ممتاز! درجة كاملة!<br>Excellent! Perfect Score!';
+                emoji = '🎉';
+                confetti({particleCount: 100, spread: 70, origin: {y: 0.6}});
+            } else if (score >= tests.length * 0.7) {
+                message = '👍 أحسنت! عمل جيد!<br>Good Job! Well Done!';
+                emoji = '👍';
+            } else {
+                message = '📚 حاول مرة أخرى<br>Try Again!';
+                emoji = '📚';
+            }
+            
+            container.innerHTML = `
+                <div style="text-align:center; padding:50px;">
+                    <div style="font-size:6rem; margin-bottom:20px;">${emoji}</div>
+                    <div style="font-size:3rem; font-weight:800; color:var(--primary); margin-bottom:15px;">
+                        ${score}/${tests.length}
+                    </div>
+                    <div style="font-size:2rem; font-weight:600; color:#64748b; margin-bottom:20px;">
+                        ${percentage}%
+                    </div>
+                    <div style="font-size:1.8rem; line-height:1.8; color:#475569; font-family:'Tajawal', sans-serif;">
+                        ${message}
+                    </div>
+                    <button class="quiz-btn" onclick="closeTestModal()" style="margin-top:30px; font-size:1.5rem; padding:15px 40px;">
+                        إغلاق / Close
+                    </button>
+                </div>
+            `;
+            selectedAnswers = {};
+        }
+
+        function closeTestModal() {
+            document.getElementById('testModal').style.display = 'none';
+        }
+
+        function getSectionName(section) {
+            const names = {
+                learn: 'Vocabulary', grammar: 'Grammar', story: 'Story',
+                vocab5: 'Vocab & Games', grammar6: 'Grammar L6',
+                social7: 'Social Studies', writing: 'Writing'
+            };
+            return names[section] || section;
         }
 
     </script>

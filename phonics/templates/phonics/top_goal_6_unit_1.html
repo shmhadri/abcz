@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top Goal 6 Unit 1 | Movie Genres 🎬</title>
+    <title>Top Goal 2 | Movie Genres 🎬</title>
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -713,7 +713,7 @@
             <div class="film-strip top"></div>
             <div class="header-content">
                 <i class="fas fa-clapperboard header-decoration clapper"></i>
-                <h1 class="main-title">TOP GOAL 6</h1>
+                <h1 class="main-title">TOP GOAL 2</h1>
                 <h2 class="sub-title">Unit 1: Let's Watch a Movie! 🍿</h2>
                 <p class="arabic-sub">هيا نشاهد فيلماً - أنواع الأفلام والقصص</p>
             </div>
@@ -4093,6 +4093,372 @@
             playSound('success');
         };
 
+
+        /* ==================== PRE/POST TESTS DATA ==================== */
+        const lessonTests = {
+            1: { 
+                pre: [
+                    {q: "Which genre makes you laugh?", qAr: "ما هو النوع الذي يجعلك تضحك؟", options: ["Comedy", "Horror", "Action"], optionsAr: ["كوميديا", "رعب", "حركة"], answer: 0},
+                    {q: "Which genre has fast cars and fighting?", qAr: "ما هو النوع الذي فيه سيارات سريعة وقتال؟", options: ["Documentary", "Action", "Drama"], optionsAr: ["وثائقي", "حركة", "دراما"], answer: 1},
+                    {q: "Which genre is about the future and space?", qAr: "ما هو النوع الذي يتحدث عن المستقبل والفضاء؟", options: ["Western", "Science Fiction", "History"], optionsAr: ["ويسترن", "خيال علمي", "تاريخ"], answer: 1},
+                    {q: "Which genre is scary?", qAr: "ما هو النوع المخيف؟", options: ["Comedy", "Horror", "Adventure"], optionsAr: ["كوميديا", "رعب", "مغامرة"], answer: 1},
+                    {q: "Which genre is about solving a crime?", qAr: "ما هو النوع الذي يدور حول حل جريمة؟", options: ["Mystery", "Romance", "Musical"], optionsAr: ["غموض", "رومانسية", "موسيقية"], answer: 0}
+                ],
+                post: [
+                    {q: "A funny movie is a ____.", qAr: "الفيلم المضحك هو ____.", options: ["Comedy", "Drama", "Horror"], optionsAr: ["كوميديا", "دراما", "رعب"], answer: 0},
+                    {q: "A scary movie is a ____.", qAr: "الفيلم المخيف هو ____.", options: ["Action", "Horror", "Western"], optionsAr: ["حركة", "رعب", "ويسترن"], answer: 1},
+                    {q: "An exciting movie with travel is ____.", qAr: "فيلم مثير مع سفر هو ____.", options: ["Adventure", "History", "Documentary"], optionsAr: ["مغامرة", "تاريخ", "وثائقي"], answer: 0},
+                    {q: "Star Wars is a ____ movie.", qAr: "حرب النجوم هو فيلم ____.", options: ["Science Fiction", "Drama", "Comedy"], optionsAr: ["خيال علمي", "دراما", "كوميديا"], answer: 0},
+                    {q: "Cowboys are in ____ movies.", qAr: "رعاة البقر في أفلام ____.", options: ["Western", "Sci-Fi", "Animation"], optionsAr: ["ويسترن", "خيال علمي", "رسوم متحركة"], answer: 0}
+                ]
+            },
+            2: { 
+                pre: [
+                    {q: "I ___ eating.", qAr: "أنا ___ آكل.", options: ["was", "were", "am"], optionsAr: ["كنت", "كانوا", "أكون"], answer: 0},
+                    {q: "They ___ playing.", qAr: "هم ___ يلعبون.", options: ["were", "was", "is"], optionsAr: ["كانوا", "كان", "يكون"], answer: 0},
+                    {q: "She ___ sleeping.", qAr: "هي ___ نائمة.", options: ["was", "were", "are"], optionsAr: ["كانت", "كانوا", "تكون"], answer: 0},
+                    {q: "We ___ watching TV.", qAr: "نحن ___ نشاهد التلفاز.", options: ["were", "was", "am"], optionsAr: ["كنا", "كان", "أكون"], answer: 0},
+                    {q: "___ you reading?", qAr: "___ أنت تقرأ؟", options: ["Were", "Was", "Is"], optionsAr: ["هل كنت", "هل كان", "هل يكون"], answer: 0}
+                ],
+                post: [
+                    {q: "He was ___ football.", qAr: "هو كان ___ كرة القدم.", options: ["playing", "play", "played"], optionsAr: ["يلعب", "لعب", "لعب"], answer: 0},
+                    {q: "They were ___ lunch.", qAr: "هم كانوا ___ الغداء.", options: ["eating", "eat", "ate"], optionsAr: ["يأكلون", "أكل", "أكلوا"], answer: 0},
+                    {q: "I was not ___.", qAr: "أنا لم أكن ___.", options: ["sleeping", "sleep", "slept"], optionsAr: ["نائماً", "نام", "نام"], answer: 0},
+                    {q: "What were you ___?", qAr: "ماذا كنت ___؟", options: ["doing", "do", "did"], optionsAr: ["تفعل", "فعل", "فعلت"], answer: 0},
+                    {q: "She was ___ a book.", qAr: "هي كانت ___ كتاباً.", options: ["reading", "read", "reads"], optionsAr: ["تقرأ", "قرأت", "تقرأ"], answer: 0}
+                ]
+            },
+            3: { 
+                pre: [
+                    {q: "Who is presenting?", qAr: "من يقدم العرض؟", options: ["Connor and Kai", "Teacher", "Parents"], optionsAr: ["كونور وكاي", "المعلم", "الآباء"], answer: 0},
+                    {q: "They are doing a ____.", qAr: "هم يقومون بـ ____.", options: ["Presentation", "Video", "Song"], optionsAr: ["عرض تقديمي", "فيديو", "أغنية"], answer: 0},
+                    {q: "The box is ____.", qAr: "الصندوق ____.", options: ["Mysterious", "Clear", "Empty"], optionsAr: ["غامض", "واضح", "فارغ"], answer: 0},
+                    {q: "The story is about ____.", qAr: "القصة عن ____.", options: ["English Class", "Math Class", "Gym"], optionsAr: ["حصة الإنجليزية", "حصة الرياضيات", "الجمباز"], answer: 0},
+                    {q: "They are holding a ____.", qAr: "هم يحملون ____.", options: ["Box", "Cat", "Ball"], optionsAr: ["صندوق", "قطة", "كرة"], answer: 0}
+                ],
+                post: [
+                    {q: "The teacher said ____.", qAr: "المعلم قال ____.", options: ["Excellent", "Bad", "Quiet"], optionsAr: ["ممتاز", "سيء", "هدوء"], answer: 0},
+                    {q: "Kai was wearing a ____.", qAr: "كاي كان يرتدي ____.", options: ["Costume", "Suit", "Uniform"], optionsAr: ["زي تنكري", "بدلة", "زي موحد"], answer: 0},
+                    {q: "The presentation was ____.", qAr: "العرض كان ____.", options: ["Great", "Bad", "Boring"], optionsAr: ["رائع", "سيء", "ممل"], answer: 0},
+                    {q: "The class ____.", qAr: "الفصل ____.", options: ["Clapped", "Slept", "Left"], optionsAr: ["صفق", "نام", "غادر"], answer: 0},
+                    {q: "They got a ____ grade.", qAr: "حصلوا على درجة ____.", options: ["High", "Low", "Zero"], optionsAr: ["عالية", "منخفضة", "صفر"], answer: 0}
+                ]
+            },
+            4: {
+                pre: [
+                    {q: "Liliana is a ____.", qAr: "ليليانا هي ____.", options: ["Girl", "Boy", "Cat"], optionsAr: ["فتاة", "فتى", "قطة"], answer: 0},
+                    {q: "She heard a ____.", qAr: "هي سمعت ____.", options: ["Noise", "Song", "Bell"], optionsAr: ["ضجيج", "أغنية", "جرس"], answer: 0},
+                    {q: "The story is set inside a ____.", qAr: "القصة تدور داخل ____.", options: ["House", "School", "Forest"], optionsAr: ["منزل", "مدرسة", "غابة"], answer: 0},
+                    {q: "Who is Jayden?", qAr: "من هو جايدن؟", options: ["Brother", "Friend", "Teacher"], optionsAr: ["أخ", "صديق", "معلم"], answer: 0},
+                    {q: "They are watching ____.", qAr: "هم يشاهدون ____.", options: ["TV", "Birds", "Cars"], optionsAr: ["تلفاز", "طيور", "سيارات"], answer: 0}
+                ],
+                post: [
+                    {q: "Liliana was ____.", qAr: "ليليانا كانت ____.", options: ["Scared", "Happy", "Sad"], optionsAr: ["خائفة", "سعيدة", "حزينة"], answer: 0},
+                    {q: "Wait, was it a bear?", qAr: "انتظر، هل كان دبا؟", options: ["No", "Yes", "Maybe"], optionsAr: ["لا", "نعم", "ربما"], answer: 0},
+                    {q: "It was actually a ____.", qAr: "كان في الواقع ____.", options: ["Cat", "Dog", "Bird"], optionsAr: ["قطة", "كلب", "طائر"], answer: 0},
+                    {q: "Jayden was ____.", qAr: "جايدن كان ____.", options: ["Laughing", "Crying", "Sleeping"], optionsAr: ["يضحك", "يبكي", "نائم"], answer: 0},
+                    {q: "They felt ____ at the end.", qAr: "شعروا بـ ____ في النهاية.", options: ["Relieved", "Angry", "Sad"], optionsAr: ["الارتياح", "الغضب", "الحزن"], answer: 0}
+                ]
+            },
+            5: { 
+                pre: [
+                    {q: "Who are the people in a story?", qAr: "من هم الأشخاص في القصة؟", options: ["Characters", "Setting", "Plot"], optionsAr: ["شخصيات", "مكان", "حبكة"], answer: 0},
+                    {q: "Where the story happens is the ____.", qAr: "أين تحدث القصة هو ____.", options: ["Setting", "Character", "Theme"], optionsAr: ["مكان", "شخصية", "موضوع"], answer: 0},
+                    {q: "What happens in the story is the ____.", qAr: "ما يحدث في القصة هو ____.", options: ["Plot", "Setting", "Title"], optionsAr: ["حبكة", "مكان", "عنوان"], answer: 0},
+                    {q: "When implies ____.", qAr: "متى تعني ____.", options: ["Time", "Place", "Person"], optionsAr: ["وقت", "مكان", "شخص"], answer: 0},
+                    {q: "Who implies ____.", qAr: "من تعني ____.", options: ["Person", "Time", "Place"], optionsAr: ["شخص", "وقت", "مكان"], answer: 0}
+                ],
+                post: [
+                    {q: "The beginning introduces ____.", qAr: "البداية تقدم ____.", options: ["Characters", "Ending", "Solution"], optionsAr: ["شخصيات", "نهاية", "حل"], answer: 0},
+                    {q: "The middle has the ____.", qAr: "الوسط يحتوي على ____.", options: ["Problem", "Title", "Date"], optionsAr: ["مشكلة", "عنوان", "تاريخ"], answer: 0},
+                    {q: "The end has the ____.", qAr: "النهاية تحتوي على ____.", options: ["Solution", "Problem", "Start"], optionsAr: ["حل", "مشكلة", "بداية"], answer: 0},
+                    {q: "A storyboard uses ____.", qAr: "لوحة القصة تستخدم ____.", options: ["Pictures", "Music", "Video"], optionsAr: ["صور", "موسيقى", "فيديو"], answer: 0},
+                    {q: "The title is the ____.", qAr: "العنوان هو ____.", options: ["Name", "End", "Middle"], optionsAr: ["اسم", "نهاية", "وسط"], answer: 0}
+                ]
+            },
+            6: { 
+                pre: [
+                    {q: "___ don't we go?", qAr: "___ لا نذهب؟", options: ["Why", "What", "When"], optionsAr: ["لماذا", "ماذا", "متى"], answer: 0},
+                    {q: "How ___ going to the park?", qAr: "ماذا ___ الذهاب للحديقة؟", options: ["about", "is", "are"], optionsAr: ["عن", "يكون", "تكون"], answer: 0},
+                    {q: "Let's ___ a movie.", qAr: "دعنا ___ فيلماً.", options: ["watch", "watching", "watched"], optionsAr: ["نشاهد", "مشاهدة", "شاهد"], answer: 0},
+                    {q: "___ you like to come?", qAr: "___ تود أن تأتي؟", options: ["Would", "Do", "Are"], optionsAr: ["هل", "هل", "هل"], answer: 0},
+                    {q: "Good ___!", qAr: "___ جيدة!", options: ["idea", "think", "know"], optionsAr: ["فكرة", "فكر", "عرف"], answer: 0}
+                ],
+                post: [
+                    {q: "Why don't we ____?", qAr: "لماذا لا ____؟", options: ["play", "playing", "played"], optionsAr: ["نلعب", "لعب", "لعب"], answer: 0},
+                    {q: "How about ____?", qAr: "ماذا عن ____؟", options: ["eating", "eat", "eats"], optionsAr: ["الأكل", "أكل", "يأكل"], answer: 0},
+                    {q: "That sounds ____.", qAr: "هذا يبدو ____.", options: ["Great", "Badly", "Well"], optionsAr: ["رائعاً", "بشكل سيء", "جيداً"], answer: 0},
+                    {q: "I'd love ____.", qAr: "أود ____.", options: ["to", "at", "on"], optionsAr: ["أن", "في", "على"], answer: 0},
+                    {q: "Maybe ____.", qAr: "ربما ____.", options: ["later", "late", "lates"], optionsAr: ["لاحقاً", "متأخر", "متأخرات"], answer: 0}
+                ]
+            },
+            7: { 
+                 pre: [
+                    {q: "A blog is on the ____.", qAr: "المدونة على ____.", options: ["Internet", "TV", "Radio"], optionsAr: ["إنترنت", "تلفاز", "راديو"], answer: 0},
+                    {q: "You give stars for a ____.", qAr: "تعطي نجوماً لـ ____.", options: ["Rating", "Time", "Date"], optionsAr: ["تقييم", "وقت", "تاريخ"], answer: 0},
+                    {q: "You write a ____.", qAr: "أنت تكتب ____.", options: ["Review", "Movie", "Song"], optionsAr: ["مراجعة", "فيلم", "أغنية"], answer: 0},
+                    {q: "Comedy is ____.", qAr: "الكوميديا ____.", options: ["Funny", "Sad", "Scary"], optionsAr: ["مضحك", "حزين", "مخيف"], answer: 0},
+                    {q: "Action is ____.", qAr: "الأكشن ____.", options: ["Exciting", "Boring", "Slow"], optionsAr: ["مثير", "ممل", "بطيء"], answer: 0}
+                ],
+                post: [
+                    {q: "The writer liked the ____.", qAr: "الكاتب أحب ____.", options: ["Acting", "Popcorn", "Seats"], optionsAr: ["تمثيل", "فشار", "مقاعد"], answer: 0},
+                    {q: "The rating was ____ stars.", qAr: "التقييم كان ____ نجوم.", options: ["5", "1", "0"], optionsAr: ["5", "1", "0"], answer: 0},
+                    {q: "The movie was ____.", qAr: "الفيلم كان ____.", options: ["Funny", "Bad", "Old"], optionsAr: ["مضحك", "سيء", "قديم"], answer: 0},
+                    {q: "He recommends it to ____.", qAr: "ينصح به لـ ____.", options: ["Everyone", "No one", "Babies"], optionsAr: ["الجميع", "لا أحد", "الأطفال"], answer: 0},
+                    {q: "Best movie of the ____.", qAr: "أفضل فيلم في ____.", options: ["Year", "Day", "Hour"], optionsAr: ["سنة", "يوم", "ساعة"], answer: 0}
+                ]
+            },
+            8: { 
+                pre: [
+                    {q: "An actor ____.", qAr: "الممثل ____.", options: ["Acts", "Sings", "Cooks"], optionsAr: ["يمثل", "يغني", "يطبخ"], answer: 0},
+                    {q: "A director ____.", qAr: "المخرج ____.", options: ["Directs", "Drives", "Draws"], optionsAr: ["يخرج", "يقود", "يرسم"], answer: 0},
+                    {q: "A writer ____.", qAr: "الكاتب ____.", options: ["Writes", "Walks", "Waits"], optionsAr: ["يكتب", "يمشي", "ينتظر"], answer: 0},
+                    {q: "Comedy -> ____.", qAr: "كوميديا -> ____.", options: ["Comedian", "Comic", "Comedy"], optionsAr: ["كوميديان", "كوميك", "كوميديا"], answer: 0},
+                    {q: "History -> ____.", qAr: "تاريخ -> ____.", options: ["Historical", "Historian", "Histories"], optionsAr: ["تاريخي", "مؤرخ", "تاريخ"], answer: 0}
+                ],
+                post: [
+                    {q: "The ____ made the movie.", qAr: "الـ ____ صنع الفيلم.", options: ["Director", "Actor", "Viewer"], optionsAr: ["مخرج", "ممثل", "مشاهد"], answer: 0},
+                    {q: "The ____ was funny.", qAr: "الـ ____ كان مضحكاً.", options: ["Comedian", "Comedy", "Comic"], optionsAr: ["كوميديان", "كوميديا", "كوميك"], answer: 0},
+                    {q: "It is a ____ movie.", qAr: "هو فيلم ____.", options: ["Historical", "History", "Historian"], optionsAr: ["تاريخي", "تاريخ", "مؤرخ"], answer: 0},
+                    {q: "He is a good ____.", qAr: "هو ____ جيد.", options: ["Actor", "Act", "Acting"], optionsAr: ["ممثل", "فعل", "تمثيل"], answer: 0},
+                    {q: "She writes a ____.", qAr: "هي تكتب ____.", options: ["Script", "Movie", "Camera"], optionsAr: ["سيناريو", "فيلم", "كاميرا"], answer: 0}
+                ]
+            },
+            9: {
+                pre: [
+                    {q: "Act 1 is the ____.", qAr: "الفصل 1 هو ____.", options: ["Beginning", "Middle", "End"], optionsAr: ["بداية", "وسط", "نهاية"], answer: 0},
+                    {q: "Act 2 is the ____.", qAr: "الفصل 2 هو ____.", options: ["Middle", "End", "Start"], optionsAr: ["وسط", "نهاية", "بداية"], answer: 0},
+                    {q: "Act 3 is the ____.", qAr: "الفصل 3 هو ____.", options: ["End", "Middle", "Start"], optionsAr: ["نهاية", "وسط", "بداية"], answer: 0},
+                    {q: "Every story has a ____.", qAr: "كل قصة لها ____.", options: ["Structure", "Phone", "Car"], optionsAr: ["هيكل", "هاتف", "سيارة"], answer: 0},
+                    {q: "The peak is in Act ____.", qAr: "الذروة في الفصل ____.", options: ["2", "1", "3"], optionsAr: ["2", "1", "3"], answer: 0}
+                ],
+                post: [
+                    {q: "The characters meet in Act ____.", qAr: "الشخصيات تلتقي في الفصل ____.", options: ["1", "3", "2"], optionsAr: ["1", "3", "2"], answer: 0},
+                    {q: "The big problem is in Act ____.", qAr: "المشكلة الكبيرة في الفصل ____.", options: ["2", "1", "3"], optionsAr: ["2", "1", "3"], answer: 0},
+                    {q: "The solution is in Act ____.", qAr: "الحل في الفصل ____.", options: ["3", "2", "1"], optionsAr: ["3", "2", "1"], answer: 0},
+                    {q: "The climax is the most ____ part.", qAr: "الذروة هي الجزء الأكثر ____.", options: ["Exciting", "Boring", "Quiet"], optionsAr: ["إثارة", "ملل", "هدوء"], answer: 0},
+                    {q: "Resolution means ____.", qAr: "الحل يعني ____.", options: ["Ending", "Starting", "Playing"], optionsAr: ["نهاية", "بداية", "لعب"], answer: 0}
+                ]
+            },
+            10: { 
+               pre: [
+                    {q: "We learnt about ____.", qAr: "تعلمنا عن ____.", options: ["Genres", "Cooking", "Sports"], optionsAr: ["أنواع", "طبخ", "رياضة"], answer: 0},
+                    {q: "Past Progressive uses ____.", qAr: "الماضي المستمر يستخدم ____.", options: ["Ing", "Ed", "S"], optionsAr: ["Ing", "Ed", "S"], answer: 0},
+                    {q: "A review gives an ____.", qAr: "المراجعة تعطي ____.", options: ["Opinion", "Fact", "Lie"], optionsAr: ["رأي", "حقيقة", "كذبة"], answer: 0},
+                    {q: "Stories have ____ acts.", qAr: "القصص لها ____ فصول.", options: ["3", "2", "4"], optionsAr: ["3", "2", "4"], answer: 0},
+                    {q: "We made a movie ____.", qAr: "صنعنا ____ فيلم.", options: ["Poster", "Camera", "Ticket"], optionsAr: ["ملصق", "كاميرا", "تذكرة"], answer: 0}
+                ],
+                post: [
+                    {q: "Did you enjoy the unit?", qAr: "هل استمتعت بالوحدة؟", options: ["Yes", "No", "Maybe"], optionsAr: ["نعم", "لا", "ربما"], answer: 0},
+                    {q: "I can write a ____.", qAr: "أستطيع كتابة ____.", options: ["Review", "Movie", "Song"], optionsAr: ["مراجعة", "فيلم", "أغنية"], answer: 0},
+                    {q: "I can use ____.", qAr: "أستطيع استخدام ____.", options: ["Past Progressive", "Future", "Present"], optionsAr: ["ماضي مستمر", "مستقبل", "حاضر"], answer: 0},
+                    {q: "I know movie ____.", qAr: "أعرف ____ الفيلم.", options: ["Genres", "Food", "Seats"], optionsAr: ["أنواع", "طعام", "مقاعد"], answer: 0},
+                    {q: "I am a ____ star!", qAr: "أنا نجم ____!", options: ["Movie", "Rock", "Space"], optionsAr: ["سينما", "روك", "فضاء"], answer: 0}
+                ]
+            }
+        };
+
+        function renderTest(lessonId, type) {
+            const testData = lessonTests[lessonId][type];
+            if (!testData) return;
+            
+            // Create Modal if not exists
+            let modalId = `l${lessonId}-${type}-test-modal`;
+            let modal = document.getElementById(modalId);
+            
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = modalId;
+                modal.className = "celebration-overlay"; // Reuse style
+                modal.style.display = 'none';
+                modal.innerHTML = `
+                    <div class="celeb-content" style="max-width:800px; max-height:90vh; overflow-y:auto; text-align:left;">
+                        <button onclick="document.getElementById('${modalId}').style.display='none'" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:2rem; cursor:pointer;">&times;</button>
+                        <h2 style="text-align:center; color:var(--primary); margin-bottom:20px;">
+                            ${type === 'pre' ? '📝 Pre-Test (اختبار قبلي)' : '🎓 Post-Test (اختبار بعدي)'}
+                        </h2>
+                        <div id="l${lessonId}-${type}-questions"></div>
+                        <div id="l${lessonId}-${type}-result" style="text-align:center; margin-top:20px;"></div>
+                        <button onclick="checkTest(${lessonId}, '${type}')" class="btn-action btn-play" style="width:100%; margin-top:20px; justify-content:center;">Check Answers / تحقق</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            
+            // Render Questions
+            const qContainer = modal.querySelector(`#l${lessonId}-${type}-questions`);
+            qContainer.innerHTML = testData.map((q, i) => `
+                <div class="vocab-card" style="padding:20px; margin-bottom:15px; text-align:left;">
+                    <p style="font-size:1.3rem; font-weight:bold; color:var(--dark); margin-bottom:5px;">${i+1}. ${q.q}</p>
+                    <p style="font-family:'Tajawal'; font-size:1.1rem; color:#666; margin-bottom:15px;">${q.qAr}</p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                        ${q.options.map((opt, oi) => `
+                            <label style="background:#f8f9fa; padding:10px; border-radius:10px; border:2px solid #eee; cursor:pointer; display:block; text-align:center;" class="opt-label-${lessonId}-${type}-${i}">
+                                <input type="radio" name="l${lessonId}-${type}-q${i}" value="${oi}" style="display:none;" onchange="selectOption(this)">
+                                <span style="font-size:1.1rem; font-weight:bold;">${opt}</span><br>
+                                <span style="font-family:'Tajawal'; font-size:0.9rem;">${q.optionsAr[oi]}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Show Modal
+            modal.style.display = 'flex';
+        }
+        
+        window.selectOption = function(radio) {
+            // Reset styles in this group
+            const group = document.getElementsByName(radio.name);
+            group.forEach(r => {
+                r.parentElement.style.borderColor = '#eee';
+                r.parentElement.style.background = '#f8f9fa';
+            });
+            // Highlight selected
+            if(radio.checked) {
+                radio.parentElement.style.borderColor = 'var(--primary)';
+                radio.parentElement.style.background = '#e0f2fe';
+            }
+        };
+
+        window.checkTest = function(lessonId, type) {
+            const testData = lessonTests[lessonId][type];
+            let correct = 0;
+            
+            testData.forEach((q, i) => {
+                const selected = document.querySelector(`input[name="l${lessonId}-${type}-q${i}"]:checked`);
+                const options = document.querySelectorAll(`.opt-label-${lessonId}-${type}-${i}`);
+                
+                // Disable inputs
+                document.querySelectorAll(`input[name="l${lessonId}-${type}-q${i}"]`).forEach(inp => inp.disabled = true);
+                
+                options.forEach((opt, oi) => {
+                    if (oi === q.answer) {
+                        opt.style.borderColor = 'var(--success)';
+                        opt.style.background = '#d1fae5';
+                        if (selected && parseInt(selected.value) === oi) correct++;
+                    } else if (selected && parseInt(selected.value) === oi) {
+                        opt.style.borderColor = 'var(--error)';
+                        opt.style.background = '#fee2e2';
+                    }
+                });
+            });
+            
+            const score = Math.round((correct / testData.length) * 100);
+            const resultDiv = document.getElementById(`l${lessonId}-${type}-result`);
+            
+            let msg = score === 100 ? "Perfect Score! You are amazing! 🌟" : score >= 80 ? "Great Job! Keep it up! 👏" : "Good try! Review the lesson.";
+            let msgAr = score === 100 ? "درجة كاملة! أنت مذهل!" : score >= 80 ? "عمل رائع! استمر!" : "محاولة جيدة! راجع الدرس.";
+            
+            resultDiv.innerHTML = `
+                <div class="animate__animated animate__zoomIn" style="background:var(--accent); padding:20px; border-radius:15px; margin-top:15px;">
+                    <h3 style="font-size:2rem; margin-bottom:10px;">Score: ${score}%</h3>
+                    <p style="font-size:1.2rem; font-weight:bold;">${msg}</p>
+                    <p style="font-family:'Tajawal'; font-size:1.2rem;">${msgAr}</p>
+                </div>
+            `;
+            
+            if (score === 100) {
+                showCelebration();
+                playSound('success');
+            } else {
+                playSound('complete');
+            }
+        };
+
+        function initTestButtons() {
+            const sections = {
+                1: 'vocab-grid-container', // Insert Before Grid
+                2: 'grammar-chart-container',
+                3: 'reading-vocab-bar', // Just finding anchors
+                4: 'lesson4-content', // Assuming ID or just Prepending to active tab content
+                5: 'l5-storyboard-container',
+                6: 'l6-grammar-container',
+                7: 'l7-reading-text',
+                8: 'l8-vocab-table-container',
+                9: 'l9-three-acts-info',
+                10: 'l10-game-board'
+            };
+            
+            // Logic to find tab content div and prepend/append
+            // We know the tab contents are:
+            // 1: vocab-section
+            // 2: grammar-section (wait, id="grammar-section" inside renderLesson2?)
+            // Actually switchTab logic hides/shows sections.
+            // Let's rely on switchTab to inject buttons if not present?
+            // Or easier: Loop 1 to 10 and try to find the container.
+            
+            // Mapping Lesson Num -> Section ID
+            const lessonSections = {
+                1: 'vocab-section',
+                2: 'grammar-section', // Need to confirm this ID exists in HTML or rendered
+            };
+            // Dynamic ones are tricky.
+            // Let's Use a helper that runs after render.
+            
+            // Better Approach: Inject floating buttons inside the active content area?
+            // Or standard buttons at Top and Bottom of "main.content-area" ?
+            // No, the content changes.
+            
+            // Let's modify switchTab to inject buttons.
+            const originalSwitchTab = window.switchTab;
+            window.switchTab = function(tabName) {
+                if (originalSwitchTab) originalSwitchTab(tabName);
+                
+                // Determine Lesson ID
+                let lessonId = 0;
+                if (tabName === 'vocab') lessonId = 1;
+                else if (tabName === 'grammar') lessonId = 2; // Check if this is L2 or L6? L2 is 'grammar', L6 is 'lesson6'
+                else if (tabName === 'lesson3') lessonId = 3;
+                else if (tabName === 'lesson4') lessonId = 4;
+                else if (tabName === 'lesson5') lessonId = 5;
+                else if (tabName === 'lesson6') lessonId = 6;
+                else if (tabName === 'lesson7') lessonId = 7;
+                else if (tabName === 'lesson8') lessonId = 8;
+                else if (tabName === 'lesson9') lessonId = 9;
+                else if (tabName === 'lesson10') lessonId = 10;
+                
+                if (lessonId > 0) {
+                    setTimeout(() => addTestButtons(lessonId, tabName), 100); // Wait for render
+                }
+            };
+        }
+        
+        function addTestButtons(lessonId, tabName) {
+            // Find the active container
+            let container = null;
+            if (tabName === 'vocab') container = document.getElementById('vocab-section');
+            else if (tabName === 'grammar') container = document.getElementById('grammar-section') || document.querySelector('.tab-content.active'); 
+            else container = document.getElementById(tabName + '-section') || document.querySelector('.tab-content.active');
+            
+            if (!container) return;
+            
+            // Check if buttons exist
+            if (container.querySelector('.pre-test-btn')) return;
+            
+            // Pre-Test Button
+            const preBtn = document.createElement('div');
+            preBtn.innerHTML = `
+                <button class="btn-action pre-test-btn" onclick="renderTest(${lessonId}, 'pre')" style="width:100%; margin-bottom:20px; background:linear-gradient(45deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%); color:#555; border:none; box-shadow:0 5px 15px rgba(0,0,0,0.1);">
+                    <i class="fas fa-clipboard-list"></i> 📝 Pre-Test / اختبار قبلي
+                </button>
+            `;
+            container.insertBefore(preBtn, container.firstChild);
+            
+            // Post-Test Button
+            const postBtn = document.createElement('div');
+            postBtn.innerHTML = `
+                <button class="btn-action post-test-btn" onclick="renderTest(${lessonId}, 'post')" style="width:100%; margin-top:30px; background:linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%); color:#555; border:none; box-shadow:0 5px 15px rgba(0,0,0,0.1);">
+                    <i class="fas fa-graduation-cap"></i> 🎓 Post-Test / اختبار بعدي
+                </button>
+            `;
+            container.appendChild(postBtn);
+        }
+
+        // Initialize Call
+        document.addEventListener('DOMContentLoaded', initTestButtons);
+        
     </script>
+
 </body>
 </html>

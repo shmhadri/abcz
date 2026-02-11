@@ -411,23 +411,912 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Responsive */
+        /* Balloons & Celebration Extras */
+        .balloon {
+            position: fixed;
+            bottom: -100px;
+            width: 50px;
+            height: 70px;
+            background: red;
+            border-radius: 50%;
+            opacity: 0.9;
+            z-index: 20000;
+            animation: floatUp 4s ease-in infinite;
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2);
+        }
+
+        .balloon::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100px;
+            background: rgba(255,255,255,0.5);
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.9; }
+            100% { transform: translateY(-120vh) rotate(20deg); opacity: 0; }
+        }
+
+        .option-ar {
+            display: block;
+            font-family: 'Tajawal';
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* ===== TEST SYSTEM STYLES ===== */
+        
+        .test-buttons-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn-test {
+            background: linear-gradient(135deg, var(--purple), var(--primary));
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 25px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            font-family: 'Fredoka', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-test:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+        }
+
+        .btn-test:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .btn-test.pre-test {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+        }
+
+        .btn-test.post-test {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .test-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .test-modal.show {
+            display: flex;
+        }
+
+        .test-container {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: bounceIn 0.6s;
+        }
+
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 4px solid var(--accent);
+        }
+
+        .test-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .test-subtitle {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .test-progress {
+            background: #e0e0e0;
+            height: 12px;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .test-progress-bar {
+            background: linear-gradient(90deg, var(--success), var(--skyblue));
+            height: 100%;
+            transition: width 0.5s;
+            border-radius: 10px;
+        }
+
+        .test-question {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 30px;
+            border-radius: 25px;
+            margin-bottom: 25px;
+            border-left: 6px solid var(--primary);
+        }
+
+        .question-number {
+            background: var(--primary);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .question-arabic {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .test-options {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .test-option {
+            background: white;
+            padding: 20px 25px;
+            border-radius: 20px;
+            border: 3px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .test-option:hover {
+            border-color: var(--primary);
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .test-option.selected {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-color: var(--primary);
+            transform: scale(1.02);
+        }
+
+        .test-option.correct {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            border-color: var(--success);
+        }
+
+        .test-option.incorrect {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            border-color: var(--danger);
+        }
+
+        .option-letter {
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+
+        .option-text {
+            flex: 1;
+        }
+
+        .option-arabic {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1.3rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-next, .btn-submit, .btn-close-test {
+            padding: 18px 45px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--success), #00b894);
+            color: white;
+        }
+
+        .btn-close-test {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+
+        .btn-next:hover, .btn-submit:hover, .btn-close-test:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .test-results {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .results-score {
+            font-size: 6rem;
+            font-weight: 700;
+            color: var(--success);
+            margin: 20px 0;
+        }
+
+        .results-message {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .results-arabic {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 30px;
+        }
+
+        .results-details {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 30px;
+            border-radius: 25px;
+            margin: 30px 0;
+        }
+
+        .results-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 2px solid #dee2e6;
+            font-size: 1.6rem;
+        }
+
+        .results-stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+
+        .stat-value.correct {
+            color: var(--success);
+        }
+
+        .stat-value.incorrect {
+            color: var(--danger);
+        }
+
+        /* ===== RESPONSIVE DESIGN - MOBILE OPTIMIZED ===== */
+        
+        /* Large Tablets (768px - 1024px) */
+        @media (max-width: 1024px) {
+            body {
+                padding: 15px;
+            }
+            
+            .main-header {
+                padding: 35px 25px;
+            }
+            
+            .main-title {
+                font-size: 2.5rem;
+            }
+            
+            .main-subtitle {
+                font-size: 1.6rem;
+            }
+            
+            .lesson-tabs {
+                gap: 12px;
+            }
+            
+            .lesson-tab {
+                padding: 18px 30px;
+                font-size: 1.3rem;
+            }
+            
+            .kid-card {
+                padding: 30px;
+            }
+        }
+        
+        /* Tablets & Small Laptops (600px - 768px) */
         @media (max-width: 768px) {
-            .main-title { font-size: 2rem; }
-            .main-subtitle { font-size: 1.3rem; }
-            .lesson-tab { padding: 15px 25px; font-size: 1.2rem; }
-            .sentence-text { font-size: 1.4rem; }
-            .btn-audio, .btn-mic { font-size: 1.5rem; padding: 12px 25px; }
+            body {
+                padding: 10px;
+            }
+            
+            .main-header {
+                padding: 30px 20px;
+            }
+            
+            .main-header::before,
+            .main-header::after {
+                font-size: 3rem;
+            }
+            
+            .main-title {
+                font-size: 2rem;
+            }
+            
+            .main-subtitle {
+                font-size: 1.3rem;
+            }
+            
+            .arabic-title {
+                font-size: 1.4rem;
+            }
+            
+            .lesson-tabs {
+                gap: 10px;
+            }
+            
+            .lesson-tab {
+                padding: 15px 25px;
+                font-size: 1.2rem;
+                flex: 1 1 calc(50% - 10px);
+            }
+            
+            .kid-card {
+                padding: 25px;
+                margin-bottom: 25px;
+            }
+            
+            .section-header {
+                font-size: 1.8rem;
+                padding: 20px;
+            }
+            
+            .section-header div {
+                font-size: 1.3rem !important;
+            }
+            
+            /* Sentence Cards */
+            .sentence-card {
+                padding: 20px;
+            }
+            
+            .sentence-number {
+                width: 40px;
+                height: 40px;
+                font-size: 1.4rem;
+            }
+            
+            .sentence-text {
+                font-size: 1.4rem;
+            }
+            
+            .sentence-arabic {
+                font-size: 1.2rem;
+            }
+            
+            /* Buttons */
+            .btn-audio,
+            .btn-mic {
+                font-size: 1.5rem;
+                padding: 12px 25px;
+            }
+            
+            /* Pictures Grid */
+            .pictures-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .picture-card {
+                padding: 15px;
+            }
+            
+            /* Comments Quiz */
+            .comment-option {
+                padding: 15px;
+                font-size: 1.3rem;
+            }
+            
+            /* Grammar Tables */
+            .grammar-table {
+                font-size: 1.2rem;
+            }
+            
+            /* Drag Drop Areas */
+            .drop-zone {
+                min-height: 120px;
+                padding: 15px;
+            }
+            
+            .draggable-item {
+                padding: 12px 20px;
+                font-size: 1.2rem;
+            }
+        }
+        
+        /* Mobile Phones (480px - 600px) */
+        @media (max-width: 600px) {
+            body {
+                padding: 8px;
+            }
+            
+            .main-header {
+                padding: 25px 15px;
+                border-radius: 20px;
+            }
+            
+            .main-header::before,
+            .main-header::after {
+                font-size: 2.5rem;
+                top: 15px;
+            }
+            
+            .main-title {
+                font-size: 1.8rem;
+            }
+            
+            .main-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .arabic-title {
+                font-size: 1.2rem;
+            }
+            
+            .lesson-tabs {
+                gap: 8px;
+            }
+            
+            .lesson-tab {
+                padding: 12px 20px;
+                font-size: 1.1rem;
+                flex: 1 1 calc(50% - 8px);
+            }
+            
+            .kid-card {
+                padding: 20px;
+                border-radius: 25px;
+            }
+            
+            .section-header {
+                font-size: 1.6rem;
+                padding: 18px;
+                border-radius: 20px;
+            }
+            
+            .section-header div {
+                font-size: 1.2rem !important;
+            }
+            
+            .sentence-card {
+                padding: 18px;
+                margin-bottom: 15px;
+            }
+            
+            .sentence-number {
+                width: 38px;
+                height: 38px;
+                font-size: 1.3rem;
+                margin-right: 12px;
+            }
+            
+            .sentence-text {
+                font-size: 1.3rem;
+            }
+            
+            .sentence-arabic {
+                font-size: 1.1rem;
+            }
+            
+            .btn-audio,
+            .btn-mic {
+                font-size: 1.4rem;
+                padding: 10px 20px;
+            }
+            
+            /* Pictures Grid - 2 columns maintained */
+            .pictures-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .picture-card {
+                padding: 12px;
+            }
+            
+            .picture-emoji {
+                font-size: 3rem;
+            }
+            
+            .picture-label {
+                font-size: 1.2rem;
+            }
+            
+            /* Comments */
+            .comment-option {
+                padding: 12px;
+                font-size: 1.2rem;
+            }
+            
+            /* Grammar */
+            .grammar-table {
+                font-size: 1.1rem;
+            }
+            
+            .grammar-table td,
+            .grammar-table th {
+                padding: 10px 8px;
+            }
+            
+            /* Drag Drop */
+            .drop-zone {
+                min-height: 100px;
+                padding: 12px;
+            }
+            
+            .draggable-item {
+                padding: 10px 18px;
+                font-size: 1.1rem;
+            }
+            
+            /* Verb Cards */
+            .verb-card {
+                padding: 15px;
+            }
+            
+            /* Food Items */
+            .food-item {
+                padding: 12px;
+            }
+            
+            .food-emoji {
+                font-size: 2.5rem;
+            }
+        }
+        
+        /* Small Mobile Phones (< 480px) */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .main-header {
+                padding: 20px 12px;
+                border-radius: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .main-header::before,
+            .main-header::after {
+                font-size: 2rem;
+                top: 10px;
+            }
+            
+            .main-title {
+                font-size: 1.5rem;
+            }
+            
+            .main-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .arabic-title {
+                font-size: 1.1rem;
+            }
+            
+            .lesson-tabs {
+                gap: 6px;
+            }
+            
+            .lesson-tab {
+                padding: 10px 15px;
+                font-size: 1rem;
+                flex: 1 1 100%;
+                border-radius: 20px;
+            }
+            
+            .kid-card {
+                padding: 18px;
+                border-radius: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .section-header {
+                font-size: 1.4rem;
+                padding: 15px;
+                border-radius: 18px;
+            }
+            
+            .section-header div {
+                font-size: 1.1rem !important;
+                margin-top: 8px;
+            }
+            
+            .sentence-card {
+                padding: 15px;
+                margin-bottom: 12px;
+                border-radius: 15px;
+            }
+            
+            .sentence-number {
+                width: 35px;
+                height: 35px;
+                font-size: 1.2rem;
+                margin-right: 10px;
+            }
+            
+            .sentence-text {
+                font-size: 1.2rem;
+            }
+            
+            .sentence-arabic {
+                font-size: 1rem;
+            }
+            
+            .btn-audio,
+            .btn-mic {
+                font-size: 1.3rem;
+                padding: 8px 15px;
+                width: 100%;
+                margin-bottom: 8px;
+            }
+            
+            /* Pictures Grid - 1 column on very small screens */
+            .pictures-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .picture-card {
+                padding: 15px;
+            }
+            
+            .picture-emoji {
+                font-size: 3.5rem;
+            }
+            
+            .picture-label {
+                font-size: 1.3rem;
+            }
+            
+            /* Comments */
+            .comment-option {
+                padding: 12px;
+                font-size: 1.1rem;
+            }
+            
+            /* Grammar */
+            .grammar-table {
+                font-size: 1rem;
+            }
+            
+            .grammar-table td,
+            .grammar-table th {
+                padding: 8px 5px;
+            }
+            
+            /* Drag Drop */
+            .drop-zone {
+                min-height: 80px;
+                padding: 10px;
+                font-size: 1rem;
+            }
+            
+            .draggable-item {
+                padding: 8px 15px;
+                font-size: 1rem;
+                margin: 5px;
+            }
+            
+            /* Verb Cards */
+            .verb-card {
+                padding: 12px;
+            }
+            
+            .verb-card h4 {
+                font-size: 1.2rem;
+            }
+            
+            /* Food Items */
+            .food-item {
+                padding: 10px;
+            }
+            
+            .food-emoji {
+                font-size: 2.2rem;
+            }
+            
+            .food-name {
+                font-size: 1.1rem;
+            }
+            
+            /* I Can Goals */
+            .kid-card div[style*="background: white"] {
+                padding: 15px !important;
+                font-size: 1.2rem !important;
+            }
+            
+            /* Scale Labels */
+            #comments-scale div {
+                font-size: 0.9rem !important;
+            }
+        }
+        
+        /* Landscape Mode Optimization */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .main-header {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .main-title {
+                font-size: 1.4rem;
+            }
+            
+            .main-subtitle {
+                font-size: 1rem;
+            }
+            
+            .arabic-title {
+                font-size: 0.9rem;
+            }
+            
+            .main-header::before,
+            .main-header::after {
+                font-size: 1.5rem;
+            }
+            
+            .lesson-tabs {
+                padding: 8px;
+                gap: 5px;
+            }
+            
+            .lesson-tab {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .kid-card {
+                padding: 15px;
+            }
+            
+            .section-header {
+                padding: 12px;
+                font-size: 1.2rem;
+            }
+        }
+        
+        /* Touch-friendly improvements for all mobile devices */
+        @media (hover: none) and (pointer: coarse) {
+            .lesson-tab,
+            .btn-audio,
+            .btn-mic,
+            .comment-option,
+            .draggable-item,
+            .picture-card {
+                min-height: 44px; /* Apple's recommended touch target size */
+                touch-action: manipulation; /* Prevents double-tap zoom */
+            }
+            
+            /* Increase spacing for better touch targets */
+            .lesson-tabs {
+                gap: 12px;
+            }
+            
+            .sentence-card {
+                margin-bottom: 18px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
 <body>
+
+    <!-- BACK/HOME BUTTON -->
+    <a href="/" style="position:fixed; top:20px; left:20px; background:white; padding:12px; border-radius:50%; box-shadow:0 5px 15px rgba(0,0,0,0.1); z-index:200; color:#374151; transition:all 0.3s; text-decoration:none;">
+        <i class="fas fa-home"></i>
+    </a>
+
     <!-- Main Header -->
     <header class="main-header animate__animated animate__fadeInDown">
         <h1 class="main-title">Grade 3 - Unit 1 🎮</h1>
         <h2 class="main-subtitle">Fun on the Weekend!</h2>
         <p class="arabic-title">وقت المرح في نهاية الأسبوع</p>
     </header>
+
+    <!-- Test Buttons for Current Lesson -->
+    <div class="test-buttons-container" id="test-buttons-container">
+        <!-- Will be populated dynamically based on active lesson -->
+    </div>
 
     <!-- Lesson Tabs -->
     <div class="lesson-tabs">
@@ -478,12 +1367,17 @@
         </div>
 
         <div class="kid-card comments-practice">
-            <div class="section-header" style="background: linear-gradient(135deg, var(--orange), var(--secondary));">
-                💭 Practice Comments! 
-                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">تدرب على التعليقات</div>
             </div>
-
+            
             <div id="comments-quiz"></div>
+        </div>
+
+        <div class="kid-card">
+            <div class="section-header" style="background: linear-gradient(135deg, var(--purple), #d81b60);">
+                🧩 Sentence Puzzle! 
+                <div style="font-family: 'Tajawal'; font-size: 1.5rem; margin-top: 10px;">لغز الجمل - رتب الكلمات</div>
+            </div>
+            <div id="sentence-order-game"></div>
         </div>
     </div>
 
@@ -982,6 +1876,7 @@
             
             window.speechSynthesis.speak(utterance);
         };
+        window.speakText = window.speak; // Alias for compatibility
 
         function practicePronunciation(text, id) {
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -1012,8 +1907,16 @@
         }
 
         // Picture Selection
+        // Picture Selection
         function selectPicture(id) {
             const card = event.currentTarget;
+            
+            // Find the sentence object to get the word
+            const sentence = lesson1Sentences.find(s => s.id === id);
+            if (sentence) {
+                speak(sentence.pictureText);
+            }
+
             card.classList.toggle('matched');
             
             if (card.classList.contains('matched')) {
@@ -1142,11 +2045,17 @@
         function renderCommentsScale() {
             const container = document.getElementById('comments-scale');
             container.innerHTML = commentsScale.map((c, i) => `
-                <div style="flex: 1; text-align: center; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="speak('${c.text}')">
-                    <div style="font-size: 3rem; margin-bottom: 10px;">${c.emoji}</div>
+                <div style="flex: 1; text-align: center; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                    <div style="font-size: 3rem; margin-bottom: 10px; cursor: pointer;" onclick="speak('${c.text.replace(/'/g, "\\'")}')">${c.emoji}</div>
                     <div style="background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                        <p style="font-size: 1.3rem; font-weight: 700; color: var(--dark); margin-bottom: 5px;">${c.text}</p>
-                        <p style="font-family: 'Tajawal'; font-size: 1.2rem; color: #666;">${c.ar}</p>
+                        <div style="cursor: pointer;" onclick="speak('${c.text.replace(/'/g, "\\'")}')">
+                            <p style="font-size: 1.3rem; font-weight: 700; color: var(--dark); margin-bottom: 5px;">${c.text}</p>
+                            <p style="font-family: 'Tajawal'; font-size: 1.2rem; color: #666;">${c.ar}</p>
+                        </div>
+                        <div style="display: flex; gap: 5px; margin-top: 10px;">
+                            <button class="btn-audio" style="flex: 1; border-radius: 10px; padding: 8px; font-size: 0.9rem;" onclick="speak('${c.text.replace(/'/g, "\\'")}')">🔊 Listen</button>
+                            <button class="btn-mic" style="flex: 1; border-radius: 10px; padding: 8px; font-size: 0.9rem;" onclick="practicePronunciation('${c.text.replace(/'/g, "\\'")}', ${i})">🎤 Practice</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
@@ -1165,17 +2074,17 @@
                     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
                         <span style="font-size: 3rem;">${i % 2 === 0 ? '👦' : '👧'}</span>
                         <div style="flex: 1;">
-                            <p style="font-size: 1.6rem; font-weight: 600; color: var(--primary);"><strong>Q:</strong> ${conv.q}</p>
+                            <p style="font-size: 1.6rem; font-weight: 600; color: var(--primary); cursor: pointer;" onclick="speak('${conv.q}')"><strong>Q:</strong> ${conv.q}</p>
                             <p style="font-family: 'Tajawal'; font-size: 1.4rem; color: #000; font-weight: 700;">${conv.qAr}</p>
                         </div>
                     </div>
-                    <div style="background: linear-gradient(135deg, #e3f2fd, #bbdefb); padding: 20px; border-radius: 15px; margin-bottom: 15px;">
+                    <div style="background: linear-gradient(135deg, #e3f2fd, #bbdefb); padding: 20px; border-radius: 15px; margin-bottom: 15px; cursor: pointer;" onclick="speak('${conv.answer}')">
                         <p style="font-size: 1.5rem; color: #0d47a1;"><strong>A:</strong> ${conv.answer}</p>
                         <p style="font-family: 'Tajawal'; font-size: 1.3rem; color: #000; font-weight: 700; margin-top: 8px;">${conv.answerAr}</p>
                     </div>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="btn-audio" onclick="speak('${conv.q}. ${conv.answer}')">🔊 Listen</button>
-                        <button class="btn-mic" onclick="practicePronunciation('${conv.q}', ${i})">🎤 Practice</button>
+                        <button class="btn-audio" onclick="speak('${conv.q}. ${conv.answer}')">🔊 Listen All</button>
+                        <button class="btn-mic" onclick="practicePronunciation('${conv.answer}', ${i})">🎤 Practice Answer</button>
                     </div>
                 </div>
             `).join('');
@@ -1593,13 +2502,16 @@
                             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
                                 <span style="font-size: 3rem;">${line.emoji}</span>
                                 <div style="flex: 1;">
-                                    ${line.q ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--primary);"><strong>Q:</strong> ${line.q}</p>
+                                    ${line.q ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--primary); cursor: pointer;" onclick="speak('${line.q}')"><strong>Q:</strong> ${line.q}</p>
                                                <p style="font-family: 'Tajawal'; font-size: 1.4rem; color: #000; font-weight: 700;">${line.qAr}</p>` : ''}
-                                    ${line.answer ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--success);"><strong>A:</strong> ${line.answer}</p>
+                                    ${line.answer ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--success); cursor: pointer;" onclick="speak('${line.answer}')"><strong>A:</strong> ${line.answer}</p>
                                                     <p style="font-family: 'Tajawal'; font-size: 1.4rem; color: #000; font-weight: 700;">${line.answerAr}</p>` : ''}
                                 </div>
                             </div>
-                            <button class="btn-audio" onclick="speakText('${line.q || line.answer}')">🔊 Listen</button>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn-audio" onclick="speak('${line.q || line.answer}')">🔊 Listen</button>
+                                <button class="btn-mic" onclick="practicePronunciation('${line.q || line.answer}', ${i})">🎤 Practice</button>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -1755,13 +2667,16 @@
                             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
                                 <span style="font-size: 3rem;">${line.emoji}</span>
                                 <div style="flex: 1;">
-                                    ${line.q ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--primary);"><strong>Q:</strong> ${line.q}</p>
+                                    ${line.q ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--primary); cursor: pointer;" onclick="speak('${line.q}')"><strong>Q:</strong> ${line.q}</p>
                                                <p style="font-family: 'Tajawal'; font-size: 1.4rem; color: #000; font-weight: 700;">${line.qAr}</p>` : ''}
-                                    ${line.answer ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--success);"><strong>A:</strong> ${line.answer}</p>
+                                    ${line.answer ? `<p style="font-size: 1.6rem; font-weight: 600; color: var(--success); cursor: pointer;" onclick="speak('${line.answer}')"><strong>A:</strong> ${line.answer}</p>
                                                     <p style="font-family: 'Tajawal'; font-size: 1.4rem; color: #000; font-weight: 700;">${line.answerAr}</p>` : ''}
                                 </div>
                             </div>
-                            <button class="btn-audio" onclick="speakText('${(line.q || line.answer).replace(/'/g, "\\'")}')">🔊 Listen</button>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn-audio" onclick="speak('${(line.q || line.answer).replace(/'/g, "\\'")}')">🔊 Listen</button>
+                                <button class="btn-mic" onclick="practicePronunciation('${(line.q || line.answer).replace(/'/g, "\\'")}', ${i})">🎤 Practice</button>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -1774,6 +2689,557 @@
                 </div>
             `;
         }
+        // ==================== TEST SYSTEM ====================
+        
+        const lessonTests = {
+            lesson1: {
+                pre: [
+                    {q: "What did you do over the weekend?", qAr: "طبيعة السؤال: ماذا فعلت في عطلة نهاية الأسبوع؟", options: ["I cook breakfast", "I cooked breakfast", "I cooking breakfast", "I cooks breakfast"], optionsAr: ["أنا أطبخ الفطور (مضارع)", "أنا طبخت الفطور (ماضي صحيح)", "أنا أطبخ (غير صحيح)", "أنا أطبخ (غير صحيح)"], correct: 1},
+                    {q: "Meaning of 'kicked a ball'", qAr: "معنى عبارة 'kicked a ball'", options: ["رمى الكرة", "أمسك الكرة", "ركل الكرة", "ضرب الكرة"], correct: 2},
+                    {q: "Choose the correct past tense: play", qAr: "اختر الماضي الصحيح للفعل: play", options: ["played", "plaied", "playd", "plyed"], optionsAr: ["لعب (صحيح)", "كتابة خاطئة", "كتابة خاطئة", "كتابة خاطئة"], correct: 0},
+                    {q: "We _____ a big breakfast.", qAr: "نحن _____ فطوراً كبيراً.", options: ["cook", "cooked", "cooking", "cooks"], optionsAr: ["نطبخ", "طبخنا (ماضي)", "نطبخ (مستمر)", "يطبخ"], correct: 1},
+                    {q: "Cleaned my room means:", qAr: "معنى عبارة Cleaned my room:", options: ["نظفت غرفتي", "رتبت سريري", "كنست الأرض", "غسلت الملابس"], correct: 0}
+                ],
+                post: [
+                    {q: "I _____ computer games yesterday.", qAr: "أنا _____ ألعاب الكمبيوتر البارحة.", options: ["play", "playing", "played", "plays"], optionsAr: ["ألعب", "ألعب (مستمر)", "لعبت (ماضي)", "يلعب"], correct: 2},
+                    {q: "Did you _____ TV?", qAr: "هل _____ التلفاز؟ (السؤال بـ Did يتبعه الفعل بالمصدر)", options: ["watch", "watched", "watching", "watches"], optionsAr: ["تشاهد (مصدر)", "شاهدت", "تشاهد", "يشاهد"], correct: 0},
+                    {q: "What is the past of 'stay'?", qAr: "ما هو ماضي الفعل 'stay'؟", options: ["stayed", "staid", "stayd", "steid"], optionsAr: ["بقي (صحيح)", "كتابة خاطئة", "كتابة خاطئة", "كتابة خاطئة"], correct: 0},
+                    {q: "I studied for a test.", qAr: "أنا درست للاختبار.", options: ["True", "False"], optionsAr: ["صحيح (جملة صحيحة)", "خطأ"], correct: 0},
+                    {q: "Which word is an activity?", qAr: "أي كلمة تعبر عن نشاط؟", options: ["Happy", "Cat", "Cleaned", "Blue"], optionsAr: ["سعيد (صفة)", "قطة (اسم)", "نظف (فعل/نشاط)", "أزرق (لون)"], correct: 2}
+                ]
+            },
+            lesson2: {
+                pre: [
+                    {q: "Meaning of 'Fantastic'", qAr: "معنى كلمة 'Fantastic'", options: ["ممل", "رائع", "مخيف", "عادي"], correct: 1},
+                    {q: "When something is boring, you say:", qAr: "عندما يكون الشيء مملاً، تقول:", options: ["That's great!", "That's fantastic!", "That's boring.", "That's okay."], optionsAr: ["هذا عظيم!", "هذا رائع!", "هذا ممل.", "هذا جيد/حسن."], correct: 2},
+                    {q: "Meaning of 'Scary'", qAr: "معنى كلمة 'Scary'", options: ["مضحك", "جميل", "مخيف", "حزين"], correct: 2},
+                    {q: "Reaction to: 'I won a big prize!'", qAr: "رد فعلك على: 'فزت بجائزة كبيرة!'", options: ["That's boring.", "That's fantastic!", "That's scary.", "That's bad."], optionsAr: ["هذا ممل.", "هذا رائع!", "هذا مخيف.", "هذا سيء."], correct: 1},
+                    {q: "Reaction to: 'I saw a ghost!'", qAr: "رد فعلك على: 'رأيت شبحاً!'", options: ["That's okay.", "That's great!", "That's scary!", "That's boring."], optionsAr: ["هذا جيد.", "هذا عظيم!", "هذا مخيف!", "هذا ممل."], correct: 2}
+                ],
+                post: [
+                    {q: "What do you say if your friend is sick?", qAr: "ماذا تقول إذا كان صديقك مريضاً؟", options: ["That's great!", "That's fantastic!", "That's okay.", "That's too bad."], optionsAr: ["هذا عظيم!", "هذا رائع!", "هذا جيد.", "هذا مؤسف/سيء."], correct: 3},
+                    {q: "Meaning of 'Okay'", qAr: "معنى كلمة 'Okay'", options: ["مقبول / حسن", "سيء جداً", "رائع جداً", "مخيف"], correct: 0},
+                    {q: "Opposite of 'Boring'", qAr: "عكس كلمة 'Boring' (ممل)", options: ["Sad", "Note", "Fun", "Blue"], optionsAr: ["حزين", "ملاحظة", "ممتع", "أزرق"], correct: 2},
+                    {q: "I broke my leg.", qAr: "كسرت ساقي.", options: ["That's great!", "That's too bad.", "That's fantastic!", "That's okay."], optionsAr: ["هذا عظيم!", "هذا مؤسف.", "هذا رائع!", "هذا جيد."], correct: 1},
+                    {q: "We went to the big park.", qAr: "ذهبنا للمنتزه الكبير.", options: ["That's great!", "That's scary.", "That's boring.", "That's bad."], optionsAr: ["هذا عظيم!", "هذا مخيف.", "هذا ممل.", "هذا سيء."], correct: 0}
+                ]
+            },
+            lesson3: {
+                pre: [
+                    {q: "Past tense of 'practice'", qAr: "ماضي الفعل 'practice'", options: ["practicen", "practiced", "practicet", "patriced"], optionsAr: ["خطأ", "تدرب (صحيح)", "خطأ", "خطأ"], correct: 1},
+                    {q: "Past tense of 'kick'", qAr: "ماضي الفعل 'kick'", options: ["kicked", "kack", "kicken", "kickt"], optionsAr: ["ركل (صحيح)", "خطأ", "خطأ", "خطأ"], correct: 0},
+                    {q: "What sound does 'Cleaned' end with?", qAr: "ما هو الصوت الذي تنتهي به كلمة 'Cleaned'؟", options: ["/t/", "/d/", "/id/", "/z/"], optionsAr: ["صوت ت", "صوت د (صحيح)", "صوت إد", "صوت ز"], correct: 1},
+                    {q: "What sound does 'Cooked' end with?", qAr: "ما هو الصوت الذي تنتهي به كلمة 'Cooked'؟", options: ["/t/", "/d/", "/id/", "/z/"], optionsAr: ["صوت ت (صحيح)", "صوت د", "صوت إد", "صوت ز"], correct: 0},
+                    {q: "What sound does 'Painted' end with?", qAr: "ما هو الصوت الذي تنتهي به كلمة 'Painted'؟", options: ["/t/", "/d/", "/id/", "/z/"], optionsAr: ["صوت ت", "صوت د", "صوت إد (صحيح)", "صوت ز"], correct: 2}
+                ],
+                post: [
+                    {q: "Which word ends with /t/ sound?", qAr: "أي كلمة تنتهي بصوت /t/؟", options: ["Played", "Cleaned", "Watched", "Stayed"], optionsAr: ["لعب (د)", "نظف (د)", "شاهد (ت)", "بقي (د)"], correct: 2},
+                    {q: "Which word ends with /d/ sound?", qAr: "أي كلمة تنتهي بصوت /d/؟", options: ["Kicked", "Cooked", "Studied", "Painted"], optionsAr: ["ركل (ت)", "طبخ (ت)", "درس (د)", "دهن (إد)"], correct: 2},
+                    {q: "Which word ends with /id/ sound?", qAr: "أي كلمة تنتهي بصوت /id/؟", options: ["Walked", "Talked", "Waited", "Liked"], optionsAr: ["مشي (ت)", "تحدث (ت)", "انتظر (إد)", "أحب (ت)"], correct: 2},
+                    {q: "Past tense of 'study'", qAr: "ماضي الفعل 'study'", options: ["studyed", "studied", "studyd", "stayed"], optionsAr: ["خطأ", "درس (صحيح)", "خطأ", "بقي"], correct: 1},
+                    {q: "He _____ football yesterday.", qAr: "هو _____ كرة قدم البارحة.", options: ["plays", "play", "played", "playing"], optionsAr: ["يلعب", "يلعب", "لعب (ماضي)", "يلعب"], correct: 2}
+                ]
+            },
+            lesson4: {
+                pre: [
+                    {q: "Did you _____ well?", qAr: "هل _____ جيداً؟ (Did يأتي بعدها المصدر)", options: ["sleep", "slept", "sleeping", "sleeps"], optionsAr: ["تنام (مصدر)", "نمت", "تنام", "ينام"], correct: 0},
+                    {q: "Yes, I _____.", qAr: "نعم، أنا _____.", options: ["do", "did", "does", "done"], optionsAr: ["أفعل", "فعلت (ماضي)", "يفعل", "تم"], correct: 1},
+                    {q: "Did you beat your partner?", qAr: "هل هزمت زميلك؟", options: ["Yes, I did.", "Yes, I do.", "Yes, I does.", "Yes, I am."], optionsAr: ["نعم فعلت (صحيح)", "خطأ", "خطأ", "خطأ"], correct: 0},
+                    {q: "Meaning of 'Verb Game'", qAr: "معنى 'Verb Game'", options: ["لعبة الأسماء", "لعبة الأفعال", "لعبة الحروف", "لعبة الأرقام"], correct: 1},
+                    {q: "Lose a turn", qAr: "معنى 'Lose a turn'", options: ["Win a point", "Lose a turn", "Go back", "Start again"], optionsAr: ["اكسب نقطة", "اخسر دوراً", "عد للخلف", "ابدأ مجدداً"], correct: 1}
+                ],
+                post: [
+                    {q: "Go back 2 spaces", qAr: "معنى 'Go back 2 spaces'", options: ["Go forward 2", "Go back 2", "Stay here", "Finish"], optionsAr: ["تقدم 2", "ارجع 2", "ابق هنا", "نهاية"], correct: 1},
+                    {q: "Did they win?", qAr: "هل فازوا؟", options: ["Yes, they do.", "No, they didn't.", "Yes, they are.", "No, they isn't."], optionsAr: ["خطأ", "لا، لم يفوزوا (صحيح)", "خطأ", "خطأ"], correct: 1},
+                    {q: "Past of 'win'", qAr: "ماضي الفعل 'win'", options: ["wann", "won", "winned", "wan"], optionsAr: ["خطأ", "فاز (صحيح)", "خطأ", "خطأ"], correct: 1},
+                    {q: "Past of 'lose'", qAr: "ماضي الفعل 'lose'", options: ["losed", "lost", "lossed", "last"], optionsAr: ["خطأ", "خسر (صحيح)", "خطأ", "الأخير"], correct: 1},
+                    {q: "I _____ the game!", qAr: "أنا _____ اللعبة!", options: ["won", "win", "winned", "wins"], optionsAr: ["فزت بـ (ماضي)", "أفوز", "خطأ", "يفوز"], correct: 0}
+                ]
+            },
+            lesson5: {
+                pre: [
+                    {q: "Meaning of 'Flour'", qAr: "معنى كلمة 'Flour'", options: ["سكر", "بيض", "طحين", "حليب"], correct: 2},
+                    {q: "Meaning of 'Oil'", qAr: "معنى كلمة 'Oil'", options: ["ماء", "زيت", "عصير", "شاي"], correct: 1},
+                    {q: "Do we need _____ oil?", qAr: "هل نحتاج _____ زيت؟", options: ["some", "any", "a", "an"], optionsAr: ["بعض", "أي (للسؤال والنفي)", "أداة تنكير", "أداة تنكير"], correct: 1},
+                    {q: "We need _____ eggs.", qAr: "نحن نحتاج _____ بيض.", options: ["some", "any", "one", "much"], optionsAr: ["بعض (للإثبات)", "أي", "واحدة", "كثير"], correct: 0},
+                    {q: "Salt meaning", qAr: "معنى كلمة Salt", options: ["فلفل", "ملح", "سكر", "كمون"], correct: 1}
+                ],
+                post: [
+                    {q: "We don't have _____ sugar.", qAr: "ليس لدينا _____ سكر. (نفي)", options: ["some", "any", "many", "a"], optionsAr: ["بعض", "أي (للنفي)", "كثير", "أداة تنكير"], correct: 1},
+                    {q: "Do we have _____ milk?", qAr: "هل لدينا _____ حليب؟ (سؤال)", options: ["some", "any", "a", "an"], optionsAr: ["بعض", "أي (للسؤال)", "أداة تنكير", "أداة تنكير"], correct: 1},
+                    {q: "Yes, we have _____ apples.", qAr: "نعم، لدينا _____ تفاح. (إثبات)", options: ["some", "any", "much", "little"], optionsAr: ["بعض (صحيح)", "أي", "كثير", "قليل"], correct: 0},
+                    {q: "Meaning of 'Ingredients'", qAr: "معنى كلمة 'Ingredients'", options: ["أدوات", "مكونات", "طبخات", "أطباق"], correct: 1},
+                    {q: "How _____ flour do we need?", qAr: "كم _____ من الطحين نحتاج؟ (غير معدود)", options: ["much", "many", "any", "some"], optionsAr: ["كثير (لغير المعدود)", "كثير (للمعدود)", "أي", "بعض"], correct: 0}
+                ]
+            },
+            lesson6: {
+                pre: [
+                    {q: "Meaning of 'Appetizer'", qAr: "معنى 'Appetizer'", options: ["طبق رئيسي", "مقبلات", "حلى", "مشروب"], correct: 1},
+                    {q: "Meaning of 'Main Course'", qAr: "معنى 'Main Course'", options: ["مقبلات", "طبق رئيسي", "سلطة", "شوربة"], correct: 1},
+                    {q: "Example of a dessert:", qAr: "مثال على الحلى:", options: ["Soup", "Steak", "Ice Cream", "Salad"], optionsAr: ["حساء", "شريحة لحم", "آيس كريم", "سلطة"], correct: 2},
+                    {q: "Example of a drink:", qAr: "مثال على المشروب:", options: ["Cola", "Cake", "Pizza", "Rice"], optionsAr: ["كولا", "كيك", "بيتزا", "أرز"], correct: 0},
+                    {q: "I'd like potatoes.", qAr: "أود البطاطس.", options: ["True", "False"], optionsAr: ["صحيح", "خطأ"], correct: 0}
+                ],
+                post: [
+                    {q: "May I take your order?", qAr: "هل يمكنني أخذ طلبك؟", options: ["Yes, please.", "No, thank you.", "I am full.", "Goodbye."], optionsAr: ["نعم من فضلك.", "لا شكراً.", "أنا شبعان.", "وداعاً."], correct: 0},
+                    {q: "I would like _____ pizza, please.", qAr: "أود _____ بيتزا من فضلك.", options: ["any", "some", "many", "an"], optionsAr: ["أي", "بعض", "كثير", "أداة تنكير"], correct: 1},
+                    {q: "What would you like to drink?", qAr: "ماذا تود أن تشرب؟", options: ["Cake", "Pie", "Juice", "Burger"], optionsAr: ["كيك", "فطيرة", "عصير", "برجر"], correct: 2},
+                    {q: "Is that all?", qAr: "هل هذا كل شيء؟", options: ["Yes, that's all.", "No, I am hungry.", "Yes, please.", "No, thanks."], optionsAr: ["نعم، هذا كل شيء.", "لا، أنا جائع.", "نعم من فضلك.", "لا شكراً."], correct: 0},
+                    {q: " waiter means:", qAr: "معنى كلمة waiter:", options: ["طباخ", "ندل / جرسون", "زبون", "مدير"], correct: 1}
+                ]
+            },
+            lesson7: {
+                pre: [
+                    {q: "Word ending in -nd", qAr: "كلمة تنتهي بـ -nd", options: ["Tent", "Sand", "Went", "Ant"], optionsAr: ["خيمة (nt)", "رمل (nd)", "ذهب (nt)", "نملة (nt)"], correct: 1},
+                    {q: "Word ending in -nt", qAr: "كلمة تنتهي بـ -nt", options: ["Hand", "Stand", "Tent", "Land"], optionsAr: ["يد (nd)", "يقف (nd)", "خيمة (nt)", "أرض (nd)"], correct: 2},
+                    {q: "Meaning of 'Tent'", qAr: "معنى كلمة 'Tent'", options: ["منزل", "خيمة", "شقة", "غرفة"], correct: 1},
+                    {q: "Meaning of 'Hand'", qAr: "معنى كلمة 'Hand'", options: ["رأس", "يد", "قدم", "عين"], correct: 1},
+                    {q: "Sand is usually...", qAr: "الرمل عادة يكون لونه...", options: ["Green", "Blue", "Yellow/Golden", "Purple"], optionsAr: ["أخضر", "أزرق", "أصفر/ذهبي", "بنفسجي"], correct: 2}
+                ],
+                post: [
+                    {q: "Complete: The _____ is on the sand.", qAr: "أكمل: _____ على الرمل.", options: ["tint", "tent", "tant", "tunt"], optionsAr: ["خطأ", "خيمة", "خطأ", "خطأ"], correct: 1},
+                    {q: "Complete: I have sand in my _____.", qAr: "أكمل: لدي رمل في _____.", options: ["hant", "hand", "hend", "hind"], optionsAr: ["خطأ", "يدي (hand)", "خطأ", "خطأ"], correct: 1},
+                    {q: "Paint ends with...", qAr: "كلمة Paint تنتهي بـ...", options: ["nd", "nt", "ng", "nk"], optionsAr: ["nd (ن د)", "nt (ن ت)", "ng", "nk"], correct: 1},
+                    {q: "Stand ends with...", qAr: "كلمة Stand تنتهي بـ...", options: ["nd", "nt", "ng", "nk"], optionsAr: ["nd (ن د)", "nt", "ng", "nk"], correct: 0},
+                    {q: "Plant means:", qAr: "معنى كلمة Plant:", options: ["يزرع / نبات", "يلعب", "ينام", "يأكل"], correct: 0}
+                ]
+            },
+            lesson8: {
+                pre: [
+                    {q: "Meaning of 'Suit'", qAr: "معنى كلمة 'Suit'", options: ["حذاء", "بدلة", "قميص", "بنطال"], correct: 1},
+                    {q: "Meaning of 'Coat'", qAr: "معنى كلمة 'Coat'", options: ["قبعة", "معطف", "جوارب", "قفازات"], correct: 1},
+                    {q: "You buy apples at:", qAr: "تشتري التفاح من:", options: ["Shoe store", "Fruit store", "Sports store", "Clothes store"], optionsAr: ["محل الأحذية", "محل الفواكه", "محل الرياضة", "محل الملابس"], correct: 1},
+                    {q: "You buy skis at:", qAr: "تشتري الزلاجات من:", options: ["Snow Go", "Juicy Fruits", "Blue Bow", "Billy Goats"], optionsAr: ["سنو جو (رياضة)", "جوسي فروتس", "بلو بو", "بيلي جوتس"], correct: 0},
+                    {q: "Can I help you?", qAr: "هل يمكنني مساعدتك؟", options: ["Yes, please.", "No, go away.", "I don't know.", "Maybe."], optionsAr: ["نعم من فضلك.", "لا اذهب بعيداً.", "لا أعرف.", "ربما."], correct: 0}
+                ],
+                post: [
+                    {q: "Where can I get sandals?", qAr: "أين يمكنني الحصول على صنادل؟", options: ["Fruit store", "Shoe store", "Pet store", "Toy store"], optionsAr: ["محل فواكه", "محل أحذية", "محل حيوانات", "محل ألعاب"], correct: 1},
+                    {q: "Boots are for...", qAr: "الأحذية الطويلة (Boots) لـ...", options: ["Hands", "Head", "Feet", "Ears"], optionsAr: ["اليدين", "الرأس", "القدمين", "الأذنين"], correct: 2},
+                    {q: "Mango is a...", qAr: "المانجو يعتبر...", options: ["Vegetable", "Fruit", "Meat", "Drink"], optionsAr: ["خضار", "فاكهة", "لحم", "مشروب"], correct: 1},
+                    {q: "Snowboard is for...", qAr: "لوح التزلج يستخدم لـ...", options: ["Swimming", "Sleeping", "Snow sports", "Running"], optionsAr: ["السباحة", "النوم", "الرياضات الثلجية", "الجري"], correct: 2},
+                    {q: "I want to buy a coat.", qAr: "أريد شراء معطف. أين أذهب؟", options: ["Billy Goats", "Juicy Fruits", "Snow Go", "Blue Bow"], optionsAr: ["بيلي جوتس (ملابس)", "جوسي فروتس", "سنو جو", "بلو بو"], correct: 0}
+                ]
+            }
+        };
+
+        // Test System Variables
+        let currentTest = null;
+        let currentTestType = null; // 'pre' or 'post'
+        let currentLessonId = null;
+        let testScore = 0;
+        let currentTestQuestionIndex = 0;
+
+        function updateTestButtons(lessonNum) {
+            const container = document.getElementById('test-buttons-container');
+            
+            // 1. Update Top Buttons
+            if (container) {
+                const lessonKey = `lesson${lessonNum}`;
+                if (lessonTests[lessonKey]) {
+                    container.innerHTML = `
+                        <button class="btn-test pre-test" onclick="startTest('${lessonKey}', 'pre')">
+                            <i class="fas fa-clipboard-list"></i> Pre-Test / اختبار قبلي
+                        </button>
+                        <button class="btn-test post-test" onclick="startTest('${lessonKey}', 'post')">
+                            <i class="fas fa-check-circle"></i> Post-Test / اختبار بعدي
+                        </button>
+                    `;
+                    container.style.display = 'flex';
+                } else {
+                    container.style.display = 'none';
+                }
+            }
+
+            // 2. Update Bottom Post-Test Button
+            // Remove existing footer buttons first to avoid duplicates
+            document.querySelectorAll('.lesson-footer-btn').forEach(el => el.remove());
+
+            const lessonContent = document.getElementById(`lesson${lessonNum}`);
+            if (lessonContent && lessonTests[`lesson${lessonNum}`]) {
+                 const footerDiv = document.createElement('div');
+                 footerDiv.className = 'lesson-footer-btn';
+                 footerDiv.style.textAlign = 'center';
+                 footerDiv.style.marginTop = '40px';
+                 footerDiv.style.marginBottom = '20px';
+                 footerDiv.style.padding = '20px';
+                 footerDiv.innerHTML = `
+                    <div style="width: 100%; height: 2px; background: rgba(0,0,0,0.1); margin-bottom: 30px;"></div>
+                    <p style="font-size: 1.5rem; color: var(--primary); margin-bottom: 15px; font-weight: bold;">
+                        🎉 Finished the lesson? Take the test!
+                        <br>
+                        <span style="font-family: 'Tajawal'; color: #666;">هل أنهيت الدرس؟ اختبر معلوماتك!</span>
+                    </p>
+                    <button class="btn-test post-test" onclick="startTest('lesson${lessonNum}', 'post')" style="animation: pulse 2s infinite; font-size: 1.8rem; padding: 20px 50px;">
+                        <i class="fas fa-star"></i> Post-Test / الاختبار البعدي
+                    </button>
+                 `;
+                 lessonContent.appendChild(footerDiv);
+            }
+        }
+
+        // Override the existing switchLesson function
+        window.switchLesson = function(num) {
+            // Hide all lessons
+            document.querySelectorAll('.lesson-content').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.lesson-tab').forEach(t => t.classList.remove('active'));
+            
+            // Show selected lesson
+            const content = document.getElementById(`lesson${num}`);
+            if (content) content.classList.add('active');
+            
+            const tab = document.querySelector(`.lesson${num}`);
+            if (tab) tab.classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Update Test Buttons (Top & Bottom)
+            updateTestButtons(num);
+            
+            // Play sound
+            playSound('success');
+        };
+
+        // Initialize buttons for Lesson 1 on load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTestButtons(1);
+        });
+
+        function startTest(lessonId, type) {
+            currentLessonId = lessonId;
+            currentTestType = type;
+            currentTest = lessonTests[lessonId][type];
+            testScore = 0;
+            currentTestQuestionIndex = 0;
+            
+            if (!currentTest) {
+                alert("Test coming soon!");
+                return;
+            }
+
+            const modal = document.getElementById('test-modal');
+            modal.classList.add('show');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('test-container');
+            const question = currentTest[currentTestQuestionIndex];
+            const progress = ((currentTestQuestionIndex) / currentTest.length) * 100;
+            
+            // Fallback if optionsAr is missing
+            const optionsAr = question.optionsAr || question.options.map(() => "");
+
+            container.innerHTML = `
+                <div class="test-header">
+                    <div class="test-title">
+                        ${currentTestType === 'pre' ? 'Pre-Test' : 'Post-Test'}
+                    </div>
+                    <div class="test-subtitle">
+                        Question ${currentTestQuestionIndex + 1} of ${currentTest.length}
+                    </div>
+                    <div class="test-progress">
+                        <div class="test-progress-bar" style="width: ${progress}%"></div>
+                    </div>
+                </div>
+                
+                <div class="test-question animate__animated animate__fadeIn">
+                    <div class="question-number">${currentTestQuestionIndex + 1}</div>
+                    <div class="question-text">${question.q}</div>
+                    <div class="question-arabic">${question.qAr}</div>
+                    
+                    <button class="btn-audio" style="font-size: 1.2rem; padding: 8px 15px;" onclick="speakText('${question.q}')">
+                        🔊 Listen
+                    </button>
+                    
+                    <div class="test-options">
+                        ${question.options.map((opt, i) => `
+                            <div class="test-option" onclick="selectTestOption(${i})">
+                                <div class="option-letter">${String.fromCharCode(65 + i)}</div>
+                                <div style="flex: 1;">
+                                    <div class="option-text">${opt}</div>
+                                    ${optionsAr[i] ? `<div class="option-ar">${optionsAr[i]}</div>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="test-buttons">
+                    <button class="btn-close-test" onclick="closeTest()">Exit</button>
+                </div>
+            `;
+        }
+
+        function selectTestOption(selectedIndex) {
+            const question = currentTest[currentTestQuestionIndex];
+            const options = document.querySelectorAll('.test-option');
+            const isCorrect = selectedIndex === question.correct;
+            
+            // Disable all options
+            options.forEach(opt => opt.style.pointerEvents = 'none');
+            
+            // Highlight selected
+            if (isCorrect) {
+                options[selectedIndex].classList.add('correct');
+                testScore++;
+                playSound('success');
+            } else {
+                options[selectedIndex].classList.add('incorrect');
+                options[question.correct].classList.add('correct'); // Show correct answer
+                playSound('error');
+            }
+            
+            // Show Next button
+            const btnContainer = document.querySelector('.test-buttons');
+            btnContainer.innerHTML = `
+                <button class="btn-next" onclick="nextQuestion()">
+                    ${currentTestQuestionIndex < currentTest.length - 1 ? 'Next Question ➡️' : 'Finish Test 🏆'}
+                </button>
+            `;
+        }
+
+        function nextQuestion() {
+            currentTestQuestionIndex++;
+            if (currentTestQuestionIndex < currentTest.length) {
+                renderQuestion();
+            } else {
+                finishTest();
+            }
+        }
+
+        function finishTest() {
+            const container = document.getElementById('test-container');
+            const percentage = (testScore / currentTest.length) * 100;
+            let message = "";
+            let emoji = "";
+            let color = "var(--primary)";
+            
+            if (percentage === 100) {
+                message = "PERFECT! Full Marks!";
+                emoji = "🏆🎉";
+                color = "#00c853";
+                showCelebration("Perfect!", "ممتاز! درجة كاملة!");
+                createBalloons(); // Balloons Effect
+            } else if (percentage >= 80) {
+                message = "Great Job! You are amazing!";
+                emoji = "🌟";
+                color = "#2979ff";
+            } else if (percentage >= 60) {
+                message = "Good Effort! Keep going!";
+                emoji = "👍";
+                color = "#ff9100";
+            } else {
+                message = "Practice more and try again!";
+                emoji = "💪";
+                color = "#ff1744";
+            }
+            
+            container.innerHTML = `
+                <div class="test-results animate__animated animate__zoomIn">
+                    <div style="font-size: 6rem; margin-bottom: 20px;">${emoji}</div>
+                    <div class="results-message" style="color: ${color}; font-size: 2.5rem;">${message}</div>
+                    
+                    <div class="results-score" style="font-size: 4rem; color: ${color};">${testScore} / ${currentTest.length}</div>
+                    
+                    <div class="results-details">
+                        <div class="results-stat">
+                            <span class="stat-label">Percentage:</span>
+                            <span class="stat-value" style="color: ${color}">${percentage}%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="test-buttons">
+                        <button class="btn-submit" onclick="closeTest()">
+                            Close & Continue
+                        </button>
+                        <button class="btn-close-test" onclick="startTest('${currentLessonId}', '${currentTestType}')">
+                            Try Again 🔄
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeTest() {
+            document.getElementById('test-modal').classList.remove('show');
+            // Remove balloons if any
+            document.querySelectorAll('.balloon').forEach(b => b.remove());
+        }
+
+        function showCelebration(textEn, textAr) {
+            const overlay = document.getElementById('celebration');
+            overlay.querySelector('.celebration-text').textContent = textEn;
+            overlay.querySelector('.celebration-arabic').textContent = textAr;
+            overlay.classList.add('show');
+            
+            playSound('success');
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                hideCelebration();
+            }, 3000);
+        }
+        
+        function hideCelebration() {
+            document.getElementById('celebration').classList.remove('show');
+        }
+
+        function createBalloons() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#ff9f43', '#54a0ff', '#ff9ff3', '#feca57'];
+            for (let i = 0; i < 40; i++) {
+                const balloon = document.createElement('div');
+                balloon.className = 'balloon';
+                balloon.style.left = Math.random() * 95 + 'vw';
+                balloon.style.animationDuration = (Math.random() * 3 + 3) + 's'; // 3-6s
+                balloon.style.background = colors[Math.floor(Math.random() * colors.length)];
+                // Random size
+                const size = Math.random() * 30 + 40; // 40-70px
+                balloon.style.width = size + 'px';
+                balloon.style.height = (size * 1.2) + 'px';
+                
+                document.body.appendChild(balloon);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    balloon.remove();
+                }, 6000);
+            }
+        }
+
+        // Add speakText helper function if not already present or to ensure it uses our settings
+        window.speakText = function(text) {
+             window.speak(text);
+        };
+
+    </script>
+
+    <!-- Test Modal -->
+    <div class="test-modal" id="test-modal">
+        <div class="test-container" id="test-container">
+            <!-- Test content will be populated here -->
+        </div>
+    </div>
+
+    <!-- Celebration Overlay -->
+    <div class="celebration" id="celebration" onclick="hideCelebration()">
+        <div class="celebration-content">
+            <div class="celebration-emoji">🎉</div>
+            <div class="celebration-text">Great Job!</div>
+            <div class="celebration-arabic">عمل رائع!</div>
+        </div>
+    </div>
+    <script>
+        // ==================== SENTENCE ORDERING GAME ====================
+        
+         const sentenceOrderData = [
+            { id: 1, words: ["I", "cleaned", "my", "room"], ar: "أنا نظفت غرفتي" },
+            { id: 2, words: ["We", "cooked", "a", "big", "breakfast"], ar: "نحن طبخنا فطوراً كبيراً" },
+            { id: 3, words: ["He", "kicked", "a", "ball"], ar: "هو ركل كرة" },
+            { id: 4, words: ["They", "played", "computer", "games"], ar: "هم لعبوا ألعاب الكمبيوتر" }
+        ];
+
+        function renderSentenceOrderingGame() {
+            const container = document.getElementById('sentence-order-game');
+            if (!container) return;
+
+            container.innerHTML = sentenceOrderData.map((s, i) => `
+                <div class="sentence-card" id="game-card-${i}" style="margin-bottom: 25px;">
+                    <p style="font-family: 'Tajawal'; font-size: 1.4rem; color: #666; font-weight: 700; margin-bottom: 15px; text-align: center;">
+                        ${s.ar}
+                    </p>
+                    
+                    <!-- Sentence Building Area -->
+                    <div id="build-zone-${i}" class="build-zone" style="min-height: 60px; border: 2px dashed var(--primary); border-radius: 15px; background: #f0f4f8; display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; justify-content: center; margin-bottom: 15px; cursor: pointer;" onclick="returnWord(${i}, event)">
+                    </div>
+
+                    <!-- Word Bank -->
+                    <div id="word-bank-${i}" class="word-bank" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                        ${shuffleArray([...s.words]).map((word, wIndex) => `
+                            <button class="word-btn" onclick="moveWord(${i}, this, '${word}')" 
+                                    style="background: white; padding: 10px 20px; border-radius: 15px; border: 2px solid #ccc; font-weight: 600; font-size: 1.2rem; cursor: pointer;">
+                                ${word}
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button class="btn-submit" style="font-size: 1.2rem; padding: 8px 20px;" onclick="checkSentenceOrder(${i})">Check ✅</button>
+                    </div>
+                     <div id="feedback-order-${i}" style="text-align: center; margin-top: 10px; font-weight: 700; font-size: 1.4rem;"></div>
+                </div>
+            `).join('');
+        }
+
+        // Helper for shuffle (if not already defined)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function moveWord(gameIndex, btn, word) {
+            const buildZone = document.getElementById(`build-zone-${gameIndex}`);
+            // Clone button to build zone
+            const newBtn = btn.cloneNode(true);
+            newBtn.onclick = function() { removeWord(gameIndex, this, btn); };
+            newBtn.style.background = "var(--primary)";
+            newBtn.style.color = "white";
+            newBtn.style.border = "none";
+            newBtn.dataset.word = word; // Store word for checking
+            buildZone.appendChild(newBtn);
+            
+            // Hide original
+            btn.style.visibility = "hidden";
+            playSound('success'); 
+        }
+
+        function removeWord(gameIndex, btn, originalBtn) {
+            btn.remove();
+            originalBtn.style.visibility = "visible";
+            playSound('success');
+        }
+        
+        function checkSentenceOrder(index) {
+            const zone = document.getElementById(`build-zone-${index}`);
+            const items = zone.querySelectorAll('.word-btn');
+            const words = Array.from(items).map(item => item.dataset.word);
+            const correctWords = sentenceOrderData[index].words;
+            const feedback = document.getElementById(`feedback-order-${index}`);
+
+            if (JSON.stringify(words) === JSON.stringify(correctWords)) {
+                feedback.textContent = "Correct! 🎉";
+                feedback.style.color = "var(--success)";
+                playSound('success');
+                speakText(correctWords.join(' '));
+                
+                // Visual celebration
+                zone.style.borderColor = "var(--success)";
+                zone.style.background = "#e8f5e9";
+                
+                // Disable interaction
+                const bank = document.getElementById(`word-bank-${index}`);
+                bank.style.pointerEvents = "none";
+                items.forEach(i => i.onclick = null);
+                
+            } else {
+                feedback.textContent = "Try again! ❌";
+                feedback.style.color = "var(--danger)";
+                playSound('error');
+                
+                zone.style.borderColor = "var(--danger)";
+                setTimeout(() => {
+                     zone.style.borderColor = "var(--primary)";
+                }, 1000);
+            }
+        }
+        
+        // Initialize game
+        document.addEventListener('DOMContentLoaded', function() {
+             renderSentenceOrderingGame();
+        });
     </script>
 </body>
 </html>
