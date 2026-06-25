@@ -3250,6 +3250,7 @@
     <script src="/static/js/letters/progress.js"></script>
     <script src="/static/js/letters/drag_word_game.js"></script>
     <script src="/static/js/letters/certificate.js"></script>
+    <script src="/static/js/letters/assistant.js"></script>
 
     <script>
         // بيانات التطبيق
@@ -8785,6 +8786,10 @@
             window.installCertificateSystem(PhonicsGameLab);
         }
 
+        if (window.installLettersAssistantSystem) {
+            window.installLettersAssistantSystem(PhonicsGameLab);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             new PhonicsGameLab();
             
@@ -8879,7 +8884,7 @@ function sendAudioToServer(blob, letter){
     <!-- AI Assistant -->
     <div id="ai-assistant-container">
         <!-- Floating Button -->
-        <button id="ai-btn" class="ai-float-btn" onclick="toggleAI()">
+        <button id="ai-btn" class="ai-float-btn">
             <!-- New colorful robot image -->
             <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="AI" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
             <span class="pulse-ring"></span>
@@ -8894,7 +8899,7 @@ function sendAudioToServer(blob, letter){
                     </div>
                     <span>المساعد الذكي</span>
                 </div>
-                <button onclick="toggleAI()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">✖</button>
+                <button id="ai-close-btn" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">✖</button>
             </div>
             <div class="ai-body" id="ai-chat-body">
                 <div class="ai-msg bot">
@@ -8907,7 +8912,7 @@ function sendAudioToServer(blob, letter){
             </div>
             <div class="ai-footer">
                 <input type="text" id="ai-user-input" placeholder="اكتب سؤالك هنا..." style="width: 100%; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none;">
-                <button id="ai-send-btn" onclick="sendMessage()" style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 50%; margin-right: 5px; cursor: pointer; min-width: 45px;">
+                <button id="ai-send-btn" style="background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 50%; margin-right: 5px; cursor: pointer; min-width: 45px;">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
@@ -9060,111 +9065,7 @@ function sendAudioToServer(blob, letter){
             50% { transform: translateY(-5px); }
         }
     </style>
-
-    <script>
-        function toggleAI() {
-            const chatBox = document.getElementById('ai-chat-box');
-            chatBox.classList.toggle('active');
-            if (chatBox.classList.contains('active')) {
-                document.getElementById('ai-user-input').focus();
-            }
-        }
-
-        document.getElementById('ai-user-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        function sendMessage() {
-            const inputField = document.getElementById('ai-user-input');
-            const message = inputField.value.trim();
-            
-            if (message === "") return;
-            
-            // Add User Message
-            addMessage(message, 'user');
-            inputField.value = '';
-            
-            // Show Typing Indicator
-            showTyping();
-            
-            // Simple Bot Logic (Simulation)
-            setTimeout(() => {
-                removeTyping();
-                const response = getBotResponse(message);
-                addMessage(response, 'bot');
-            }, 1000);
-        }
-
-        function addMessage(text, sender) {
-            const chatBody = document.getElementById('ai-chat-body');
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('ai-msg', sender);
-            if (sender === 'user') {
-                msgDiv.textContent = text;
-            } else {
-                msgDiv.innerHTML = text; // Bot responses are fixed local strings with simple formatting.
-            }
-            chatBody.appendChild(msgDiv);
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }
-        
-        function showTyping() {
-            const chatBody = document.getElementById('ai-chat-body');
-            const typingDiv = document.createElement('div');
-            typingDiv.id = 'ai-typing';
-            typingDiv.className = 'typing-indicator';
-            typingDiv.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
-            chatBody.appendChild(typingDiv);
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }
-        
-        function removeTyping() {
-            const typingDiv = document.getElementById('ai-typing');
-            if (typingDiv) typingDiv.remove();
-        }
-
-        function getBotResponse(input) {
-            input = input.toLowerCase();
-            
-            // Greetings
-            if (input.includes('مرحبا') || input.includes('هلا') || input.includes('سلام') || input.includes('hi') || input.includes('hello')) {
-                return "أهلاً بك يا بطل! 🌟 أنا هنا لمساعدتك في رحلة التعلم الممتعة. ماذا تريد أن تتعلم اليوم؟";
-            }
-            
-            // Usage / How to
-            if (input.includes('كيف') || input.includes('استخدم') || input.includes('عمل') || input.includes('اعمل') || input.includes('how')) {
-                return "الأمر بسيط جداً! 🧩<br>1️⃣ اختر حرفاً أو درساً من القائمة.<br>2️⃣ استمتع بالألعاب والأنشطة التفاعلية.<br>3️⃣ جمع النقاط واحصل على الشهادات! 🏆<br>ابدأ باختيار حرف من الأعلى!";
-            }
-            
-            // Grade 2 Specific
-            if (input.includes('ثاني') || input.includes('حيوانات') || input.includes('wild') || input.includes('animals')) {
-                return "درس الحيوانات البرية 🦁 للصف الثاني موجود في القائمة الجانبية (أو الزر العائم). فيه ألعاب ممتعة مثل 'Animal Chart' و 'Guessing Game'!";
-            }
-            
-            // General Help
-            if (input.includes('مساعدة') || input.includes('help')) {
-                return "أكيد! لديك قائمة بالحروف في الأعلى، وقائمة بالصفوف في الجانب. اضغط على أي منها لتبدأ.";
-            }
-
-            // Games
-            if (input.includes('لعبة') || input.includes('game') || input.includes('لعب')) {
-                return "نحن نحب اللعب! 🎮 كل حرف ودرس يحتوي على ألعاب ممتعة. جرب درس الحيوانات للعب 'Find the Animal'!";
-            }
-            
-            // Thanks/Bye
-            if (input.includes('شكرا') || input.includes('شكراً') || input.includes('thanks')) {
-                return "عفواً يا بطل! استمتع بوقتك! 🎈";
-            }
-            if (input.includes('باي') || input.includes('مع السلامة')) {
-                return "إلى اللقاء! نراك قريباً! 👋";
-            }
-            
-            // Default Fallback
-            return "سؤال جميل! 😊<br>يمكنك تجربة الدروس الموجودة في الصفحة، أو سؤالي عن 'كيف أستخدم الموقع' أو 'أين درس الحيوانات'.";
-        }
-    </script>
+
 
     <div class="dropdown-menu" id="userDropdown">
         <button class="menu-item mobile-only" id="closeMenuBtn" style="display: none; color: var(--text-secondary);">
