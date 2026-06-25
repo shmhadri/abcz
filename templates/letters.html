@@ -978,6 +978,121 @@
             color: var(--error);
         }
 
+        .drag-word-card {
+            display: grid;
+            gap: 12px;
+            background: rgba(248, 250, 252, 0.9);
+            padding: 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+
+        .night-mode .drag-word-card {
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .drag-word-card.completed {
+            border-color: var(--success);
+            background: rgba(74, 222, 128, 0.12);
+        }
+
+        .drag-word-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .drag-word-target {
+            direction: ltr;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .drag-word-slot {
+            width: 52px;
+            height: 52px;
+            border: 2px dashed var(--border);
+            border-radius: 14px;
+            background: var(--surface);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 900;
+            font-family: Arial, sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .drag-word-slot.drag-over,
+        .drag-word-slot.selected {
+            border-color: var(--success);
+            background: rgba(74, 222, 128, 0.15);
+            transform: scale(1.04);
+        }
+
+        .drag-word-slot.filled {
+            border-style: solid;
+            border-color: var(--primary-light);
+            background: rgba(67, 97, 238, 0.1);
+        }
+
+        .scrambled-word-letters {
+            direction: ltr;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .drag-word-letter {
+            width: 52px;
+            height: 52px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #facc15, #fb923c);
+            color: #111827;
+            font-size: 24px;
+            font-weight: 900;
+            font-family: Arial, sans-serif;
+            cursor: grab;
+            box-shadow: 0 8px 18px rgba(234, 88, 12, 0.22);
+            transition: all 0.2s ease;
+        }
+
+        .drag-word-letter:hover {
+            transform: translateY(-2px) scale(1.04);
+        }
+
+        .drag-word-letter.selected {
+            outline: 3px solid var(--primary-light);
+            transform: scale(1.06);
+        }
+
+        .drag-word-letter.used {
+            opacity: 0.35;
+            pointer-events: none;
+            transform: scale(0.92);
+        }
+
+        .drag-word-feedback {
+            min-height: 28px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .drag-word-feedback.correct {
+            color: var(--success);
+        }
+
+        .drag-word-feedback.wrong {
+            color: var(--error);
+        }
+
         /* Quiz Section */
         .quiz-container {
             background: rgba(248, 250, 252, 0.9);
@@ -2747,7 +2862,7 @@
                     </div>
                     <div class="score-card">
                         <div class="score-label">كتابة الكلمات</div>
-                        <div class="score-value" id="wordsScore">0/6</div>
+                        <div class="score-value" id="wordsScore">0/5</div>
                     </div>
                     <div class="score-card">
                         <div class="score-label">الاختبار</div>
@@ -3131,9 +3246,13 @@
         });
     </script>
 
+    <script src="/static/js/letters/letter_data.js"></script>
+
     <script>
         // بيانات التطبيق
-        const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        const LETTERS = window.LETTERS || "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        const WORDS_PER_LETTER = window.WORDS_PER_LETTER || 5;
+        const MAX_WORD_LENGTH = window.MAX_WORD_LENGTH || 4;
         
         // نظام إدارة الصوت البريطاني المحسن
         class BritishSoundManager {
@@ -3336,163 +3455,31 @@
         };
 
         // بيانات الحروف والكلمات المحسنة
-        const LETTER_DATA = {};
-        
-        // تهيئة بيانات جميع الحروف
-        LETTERS.forEach(letter => {
-            let words = [];
-            let emojis = [];
-            let translations = [];
-            
-            switch(letter) {
-                case 'A':
-                    words = ["Apple", "Ant", "Airplane", "Arrow", "Astronaut", "Alligator", "Arm", "Anchor", "Axe", "Apricot"];
-                    emojis = ["🍎", "🐜", "✈️", "🏹", "🧑‍🚀", "🐊", "💪", "⚓", "🪓", "🍑"];
-                    translations = ["تفاحة", "نملة", "طائرة", "سهم", "رائد فضاء", "تمساح", "ذراع", "مرساة", "فأس", "مشمش"];
-                    break;
-                case 'B':
-                    words = ["Ball", "Banana", "Butterfly", "Book", "Bear", "Bird", "Bus", "Bee", "Balloon", "Bread"];
-                    emojis = ["⚽", "🍌", "🦋", "📖", "🐻", "🐦", "🚌", "🐝", "🎈", "🍞"];
-                    translations = ["كرة", "موزة", "فراشة", "كتاب", "دب", "طائر", "حافلة", "نحلة", "بالون", "خبز"];
-                    break;
-                case 'C':
-                    words = ["Cat", "Car", "Cake", "Candle", "Crown", "Cloud", "Cow", "Cup", "Camera", "Clock"];
-                    emojis = ["🐱", "🚗", "🍰", "🕯️", "👑", "☁️", "🐮", "☕", "📷", "⏰"];
-                    translations = ["قطة", "سيارة", "كعكة", "شمعة", "تاج", "سحابة", "بقرة", "كوب", "كاميرا", "ساعة"];
-                    break;
-                case 'D':
-                    words = ["Dog", "Duck", "Dolphin", "Door", "Diamond", "Drum", "Desk", "Doll", "Donut", "Dress"];
-                    emojis = ["🐶", "🦆", "🐬", "🚪", "💎", "🥁", "🖥️", "🎎", "🍩", "👗"];
-                    translations = ["كلب", "بطة", "دولفين", "باب", "ألماس", "طبل", "مكتب", "دمية", "دونات", "فستان"];
-                    break;
-                case 'E':
-                    words = ["Elephant", "Egg", "Eagle", "Earth", "Engine", "Eyes", "Ear", "Eight", "Envelope", "Eraser"];
-                    emojis = ["🐘", "🥚", "🦅", "🌍", "🚂", "👀", "👂", "8️⃣", "✉️", "✏️"];
-                    translations = ["فيل", "بيضة", "نسر", "أرض", "محرك", "عيون", "أذن", "ثمانية", "ظرف", "ممحاة"];
-                    break;
-                case 'F':
-                    words = ["Fish", "Flower", "Frog", "Flag", "Fire", "Fox", "Fan", "Fork", "Five", "Fruit"];
-                    emojis = ["🐟", "🌹", "🐸", "🚩", "🔥", "🦊", "🪭", "🍴", "5️⃣", "🍎"];
-                    translations = ["سمكة", "زهرة", "ضفدع", "علم", "نار", "ثعلب", "مروحة", "شوكة", "خمسة", "فاكهة"];
-                    break;
-                case 'G':
-                    words = ["Goat", "Grapes", "Guitar", "Glasses", "Garden", "Gift", "Girl", "Grass", "Green", "Giraffe"];
-                    emojis = ["🐐", "🍇", "🎸", "👓", "🌳", "🎁", "👧", "🌿", "🟢", "🦒"];
-                    translations = ["ماعز", "عنب", "جيتار", "نظارات", "حديقة", "هدية", "فتاة", "عشب", "أخضر", "زرافة"];
-                    break;
-                case 'H':
-                    words = ["House", "Horse", "Hat", "Heart", "Hand", "Honey", "Hippo", "Hammer", "Helicopter", "Hen"];
-                    emojis = ["🏠", "🐴", "🎩", "❤️", "✋", "🍯", "🦛", "🔨", "🚁", "🐔"];
-                    translations = ["منزل", "حصان", "قبعة", "قلب", "يد", "عسل", "فرس النهر", "مطرقة", "هليكوبتر", "دجاجة"];
-                    break;
-                case 'I':
-                    words = ["Ice", "Igloo", "Insect", "Island", "Ice Cream", "Ink", "Iron", "Idea", "Ill", "Inside"];
-                    emojis = ["🧊", "🧊", "🐛", "🏝️", "🍦", "🖋️", "🔥", "💡", "🤒", "🏠"];
-                    translations = ["جليد", "بيت جليدي", "حشرة", "جزيرة", "آيس كريم", "حبر", "مكواة", "فكرة", "مريض", "داخل"];
-                    break;
-                case 'J':
-                    words = ["Juice", "Jellyfish", "Jacket", "Jar", "Jewel", "Jet", "Jeep", "Jam", "Jump", "Jungle"];
-                    emojis = ["🧃", "🪼", "🧥", "🫙", "💎", "✈️", "🚙", "🍯", "🏃", "🌴"];
-                    translations = ["عصير", "قنديل بحر", "سترة", "جرة", "جوهرة", "طائرة نفاثة", "جيب", "مربى", "قفز", "غابة"];
-                    break;
-                case 'K':
-                    words = ["Key", "Kite", "Kangaroo", "King", "Kitchen", "Kitten", "Kiwi", "Koala", "Kettle", "Kick"];
-                    emojis = ["🔑", "🪁", "🦘", "🤴", "🍳", "🐱", "🥝", "🐨", "🫖", "⚽"];
-                    translations = ["مفتاح", "طائرة ورقية", "كنغر", "ملك", "مطبخ", "هريرة", "كيوي", "كوالا", "غلاية", "ركل"];
-                    break;
-                case 'L':
-                    words = ["Lion", "Lemon", "Leaf", "Ladder", "Light", "Lamp", "Lock", "Log", "Lips", "Ladybug"];
-                    emojis = ["🦁", "🍋", "🍃", "🪜", "💡", "🪔", "🔒", "🪵", "👄", "🐞"];
-                    translations = ["أسد", "ليمون", "ورقة", "سلم", "ضوء", "مصباح", "قفل", "جذع", "شفاه", "دعسوقة"];
-                    break;
-                case 'M':
-                    words = ["Monkey", "Moon", "Milk", "Mouse", "Mountain", "Music", "Map", "Man", "Mug", "Mushroom"];
-                    emojis = ["🐒", "🌙", "🥛", "🐭", "⛰️", "🎵", "🗺️", "👨", "☕", "🍄"];
-                    translations = ["قرد", "قمر", "حليب", "فأر", "جبل", "موسيقى", "خريطة", "رجل", "كوب", "فطر"];
-                    break;
-                case 'N':
-                    words = ["Nest", "Nose", "Nut", "Night", "Nurse", "Numbers", "Net", "Nine", "Neck", "Nail"];
-                    emojis = ["🪹", "👃", "🥜", "🌙", "👩‍⚕️", "🔢", "🥅", "9️⃣", "🧣", "💅"];
-                    translations = ["عش", "أنف", "مكسرات", "ليل", "ممرضة", "أرقام", "شبكة", "تسعة", "رقبة", "ظفر"];
-                    break;
-                case 'O':
-                    words = ["Orange", "Owl", "Octopus", "Ocean", "Onion", "Ostrich", "Olive", "Oven", "One", "Ox"];
-                    emojis = ["🍊", "🦉", "🐙", "🌊", "🧅", "🦤", "🫒", "🍳", "1️⃣", "🐂"];
-                    translations = ["برتقال", "بومة", "أخطبوط", "محيط", "بصل", "نعامة", "زيتون", "فرن", "واحد", "ثور"];
-                    break;
-                case 'P':
-                    words = ["Penguin", "Pizza", "Pencil", "Panda", "Pineapple", "Pear", "Pig", "Pen", "Pot", "Pumpkin"];
-                    emojis = ["🐧", "🍕", "✏️", "🐼", "🍍", "🍐", "🐷", "🖊️", "🍲", "🎃"];
-                    translations = ["بطريق", "بيتزا", "قلم رصاص", "باندا", "أناناس", "كمثرى", "خنزير", "قلم حبر", "قدر", "يقطين"];
-                    break;
-                case 'Q':
-                    words = ["Queen", "Quilt", "Question", "Quack", "Quarter", "Quiet", "Queue", "Quick", "Quiz", "Quill"];
-                    emojis = ["👸", "🛏️", "❓", "🦆", "🪙", "🤫", "🚶", "⚡", "📝", "🪶"];
-                    translations = ["ملكة", "لحاف", "سؤال", "صرخة بطة", "ربع", "هادئ", "طابور", "سريع", "اختبار", "ريشة"];
-                    break;
-                case 'R':
-                    words = ["Rabbit", "Rainbow", "Robot", "Rose", "Rocket", "Ring", "Rat", "Rain", "Red", "Radio"];
-                    emojis = ["🐰", "🌈", "🤖", "🌹", "🚀", "💍", "🐀", "🌧️", "🔴", "📻"];
-                    translations = ["أرنب", "قوس قزح", "روبوت", "وردة", "صاروخ", "خاتم", "جرذ", "مطر", "أحمر", "راديو"];
-                    break;
-                case 'S':
-                    words = ["Sun", "Star", "Snake", "Spider", "Strawberry", "Ship", "Spoon", "Sock", "Six", "Snow"];
-                    emojis = ["☀️", "⭐", "🐍", "🕷️", "🍓", "🚢", "🥄", "🧦", "6️⃣", "❄️"];
-                    translations = ["شمس", "نجمة", "ثعبان", "عنكبوت", "فراولة", "سفينة", "ملعقة", "جورب", "ستة", "ثلج"];
-                    break;
-                case 'T':
-                    words = ["Tiger", "Tree", "Table", "Train", "Tomato", "Turtle", "Ten", "Tent", "Taxi", "Tea"];
-                    emojis = ["🐯", "🌳", "🪑", "🚂", "🍅", "🐢", "🔟", "⛺", "🚕", "🍵"];
-                    translations = ["نمر", "شجرة", "طاولة", "قطار", "طماطم", "سلحفاة", "عشرة", "خيمة", "تاكسي", "شاي"];
-                    break;
-                case 'U':
-                    words = ["Umbrella", "Unicorn", "Uniform", "Ukulele", "Up", "Under", "Uncle", "Urn", "Umpire", "Unhappy"];
-                    emojis = ["☂️", "🦄", "👔", "🎵", "⬆️", "⬇️", "👨", "⚱️", "🕴️", "☹️"];
-                    translations = ["مظلة", "حصان وحيد القرن", "زي موحد", "عود", "أعلى", "تحت", "عم", "جرة", "حكم", "حزين"];
-                    break;
-                case 'V':
-                    words = ["Violin", "Volcano", "Vegetable", "Van", "Vase", "Vacuum", "Vest", "Vet", "Village", "Vulture"];
-                    emojis = ["🎻", "🌋", "🥦", "🚐", "🏺", "🧹", "🦺", "👨‍⚕️", "🏘️", "🦅"];
-                    translations = ["كمان", "بركان", "خضار", "شاحنة", "مزهرية", "مكنسة كهربائية", "سترة", "طبيب بيطري", "قرية", "نسر"];
-                    break;
-                case 'W':
-                    words = ["Watermelon", "Whale", "Wheel", "Wolf", "Window", "Watch", "Water", "Web", "Worm", "Wall"];
-                    emojis = ["🍉", "🐋", "🛞", "🐺", "🪟", "⌚", "💧", "🕸️", "🪱", "🧱"];
-                    translations = ["بطيخ", "حوت", "عجلة", "ذئب", "نافذة", "ساعة", "ماء", "شبكة", "دودة", "جدار"];
-                    break;
-                case 'X':
-                    words = ["Xylophone", "X-ray", "Xmas", "Box", "Six", "Fox", "Mix", "Wax", "Ox", "Taxi"];
-                    emojis = ["🎵", "📸", "🎄", "📦", "6️⃣", "🦊", "🥣", "🕯️", "🐂", "🚕"];
-                    translations = ["إكسيليفون", "أشعة إكس", "كريسماس", "صندوق", "ستة", "ثعلب", "خلط", "شمع", "ثور", "تاكسي"];
-                    break;
-                case 'Y':
-                    words = ["Yoyo", "Yacht", "Yogurt", "Yellow", "Yak", "Yarn", "Yard", "Year", "Yes", "Yolk"];
-                    emojis = ["🪀", "🚤", "🥛", "🟡", "🐂", "🧶", "🏡", "📅", "👍", "🥚"];
-                    translations = ["يويو", "يخت", "زبادي", "أصفر", "ياك", "خيط", "فناء", "سنة", "نعم", "صفار البيض"];
-                    break;
-                case 'Z':
-                    words = ["Zebra", "Zoo", "Zero", "Zipper", "Zigzag", "Zoom", "Zucchini", "Zone", "Zap", "Zeppelin"];
-                    emojis = ["🦓", "🐅", "0️⃣", "🤐", "⚡", "🔍", "🥒", "🚧", "⚡", "🎈"];
-                    translations = ["حمار وحشي", "حديقة حيوانات", "صفر", "سحاب", "متعرج", "تكبير", "كوسة", "منطقة", "صعق", "منطاد"];
-                    break;
-                default:
-                    words = ["Apple", "Ant", "Airplane", "Arrow", "Astronaut", "Alligator", "Arm", "Anchor", "Axe", "Apricot"];
-                    emojis = ["🍎", "🐜", "✈️", "🏹", "🧑‍🚀", "🐊", "💪", "⚓", "🪓", "🍑"];
-                    translations = ["تفاحة", "نملة", "طائرة", "سهم", "رائد فضاء", "تمساح", "ذراع", "مرساة", "فأس", "مشمش"];
-            }
-            
-            LETTER_DATA[letter] = {
-                words: words.map((word, index) => ({
-                    word: word.toLowerCase(),
-                    translation: translations[index] || word,
-                    emoji: emojis[index] || "🔤"
-                })),
-                quiz: generateQuizForLetter(letter, words, emojis, translations),
-                type: ["A", "E", "I", "O", "U"].includes(letter) ? "حرف متحرك" : "حرف ساكن"
-            };
-        });
+        // Letter data is loaded from /static/js/letters/letter_data.js
+        const LETTER_DATA = window.LETTER_DATA || {};
 
-        // مساعدات لبيانات الحروف
+        function finalizeLetterData() {
+            LETTERS.forEach(letter => {
+                if (!LETTER_DATA[letter]) {
+                    LETTER_DATA[letter] = { words: [], quiz: [], type: "" };
+                }
+
+                const limitedWords = (LETTER_DATA[letter].words || [])
+                    .filter(item => String(item.word || "").trim().length <= MAX_WORD_LENGTH)
+                    .slice(0, WORDS_PER_LETTER);
+
+                const words = limitedWords.map(item => String(item.word || "").trim());
+                const emojis = limitedWords.map(item => item.emoji || "\uD83D\uDD24");
+                const translations = limitedWords.map(item => item.translation || item.word);
+
+                LETTER_DATA[letter].words = limitedWords;
+                LETTER_DATA[letter].quiz = generateQuizForLetter(letter, words, emojis, translations);
+                LETTER_DATA[letter].type = LETTER_DATA[letter].type || (["A", "E", "I", "O", "U"].includes(letter) ? "\u062d\u0631\u0641 \u0645\u062a\u062d\u0631\u0643" : "\u062d\u0631\u0641 \u0633\u0627\u0643\u0646");
+            });
+        }
+
+        finalizeLetterData();
+
         function getLetterSound(letter) {
             const sounds = {
                 'A': 'æ', 'B': 'b', 'C': 'k', 'D': 'd', 'E': 'e', 
@@ -3506,8 +3493,14 @@
 
         function generateQuizForLetter(letter, words, emojis, translations) {
             // قائمة كلمات للتمويه (Distractors)
-            const commonDistractors = ["apple", "ball", "cat", "dog", "egg", "fish", "goat", "hat", "ice", "juice", "kite", "lion", "monkey", "nest", "orange", "pizza", "queen", "rabbit", "sun", "tiger", "umbrella", "van", "watch", "box", "yoyo", "zebra"];
-            const commonEmojis = ["🍎", "⚽", "🐱", "🐶", "🥚", "🐟", "🐐", "🎩", "🧊", "🧃", "🪁", "🦁", "🐒", "🪹", "🍊", "🍕", "👸", "🐰", "☀️", "🐯", "☂️", "🚐", "⌚", "📦", "🪀", "🦓"];
+            const distractorPairs = [
+                ["ant", "🐜"], ["ball", "⚽"], ["cat", "🐱"], ["dog", "🐶"], ["egg", "🥚"],
+                ["fish", "🐟"], ["goat", "🐐"], ["hat", "🎩"], ["ice", "🧊"], ["jam", "🍓"],
+                ["kite", "🪁"], ["lion", "🦁"], ["nest", "🪹"], ["sun", "☀️"], ["van", "🚐"],
+                ["box", "📦"], ["yoyo", "🪀"], ["zoo", "🐾"], ["pen", "🖊️"], ["web", "🕸️"]
+            ];
+            const commonDistractors = distractorPairs.map(pair => pair[0]);
+            const commonEmojis = distractorPairs.map(pair => pair[1]);
             
             // استبعاد كلمات الحرف الحالي من التمويه
             const validDistractors = commonDistractors.filter(w => !w.toLowerCase().startsWith(letter.toLowerCase()));
@@ -3596,7 +3589,7 @@
                 this.gameRunning = false;
                 this.activeAnimations = new Set();
                 
-                this.REQUIRED_SCORE = 14;
+                this.REQUIRED_SCORE = 13;
                 this.PROGRESS_KEY_PREFIX = 'phonicsProgress';
                 this.ANONYMOUS_ID_KEY = 'phonicsAnonymousId';
                 this.userIdentifier = this.resolveCurrentUserIdentifier();
@@ -4198,6 +4191,38 @@
                     entry.completed = true;
                     this.commitProgressUpdate();
                 }
+                this.postProgressToBackend(letter, entry.score || this.getCurrentLetterTotalScore());
+            }
+
+            getCSRFToken() {
+                const match = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/);
+                return match ? decodeURIComponent(match[1]) : '';
+            }
+
+            normalizeScoreForBackend(frontendScore) {
+                const safeScore = Math.max(0, Math.min(Number(frontendScore) || 0, this.REQUIRED_SCORE));
+                return Math.round((safeScore / this.REQUIRED_SCORE) * 20);
+            }
+
+            postProgressToBackend(letter, frontendScore) {
+                const student = (this.studentName || this.userIdentifier || 'Guest').trim();
+                const score = this.normalizeScoreForBackend(frontendScore);
+
+                fetch('/api/save-progress/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCSRFToken()
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ student, letter, score })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        console.warn('Progress save failed:', response.status);
+                    }
+                })
+                .catch(error => console.warn('Progress save error:', error));
             }
 
             markGameCompleted(letter, gameName) {
@@ -5697,6 +5722,266 @@
                 }
             }
 
+            renderWordWriting(letter, words) {
+                if (!this.wordWritingList) return;
+                this.wordWritingList.innerHTML = '';
+                if (!words || words.length === 0) return;
+
+                const letterProgress = this.ensureLetterRecord(letter);
+
+                words.forEach((wordData, wordIndex) => {
+                    const item = document.createElement('div');
+                    item.className = 'drag-word-card';
+                    item.dataset.word = wordData.word;
+
+                    const header = document.createElement('div');
+                    header.className = 'drag-word-header';
+
+                    const info = document.createElement('div');
+                    info.className = 'word-info';
+
+                    const emoji = document.createElement('span');
+                    emoji.className = 'word-emoji';
+                    emoji.textContent = wordData.emoji || '🔤';
+
+                    const translation = document.createElement('span');
+                    translation.textContent = wordData.translation || wordData.word;
+
+                    info.appendChild(emoji);
+                    info.appendChild(translation);
+
+                    const speakBtn = document.createElement('button');
+                    speakBtn.type = 'button';
+                    speakBtn.className = 'icon-btn speak-btn';
+                    speakBtn.title = 'نطق الكلمة';
+                    speakBtn.textContent = '🔊';
+                    speakBtn.addEventListener('click', () => this.soundManager.speak(wordData.word));
+
+                    header.appendChild(info);
+                    header.appendChild(speakBtn);
+
+                    const slots = document.createElement('div');
+                    slots.className = 'drag-word-target';
+
+                    const letters = String(wordData.word || '').trim().toUpperCase().split('');
+                    letters.forEach((_, slotIndex) => {
+                        slots.appendChild(this.createWordSlot(slotIndex));
+                    });
+
+                    const scrambled = document.createElement('div');
+                    scrambled.className = 'scrambled-word-letters';
+
+                    this.shuffleWordLetters(letters).forEach((char, letterIndex) => {
+                        scrambled.appendChild(this.createDragWordLetter(char, wordIndex, letterIndex));
+                    });
+
+                    const feedback = document.createElement('div');
+                    feedback.className = 'drag-word-feedback';
+
+                    item.appendChild(header);
+                    item.appendChild(slots);
+                    item.appendChild(scrambled);
+                    item.appendChild(feedback);
+
+                    if (letterProgress.exercises.words[wordData.word]) {
+                        this.markDragWordComplete(item, wordData.word, true);
+                    }
+
+                    this.wordWritingList.appendChild(item);
+                });
+            }
+
+            shuffleWordLetters(letters) {
+                const shuffled = [...letters];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+
+            createWordSlot(index) {
+                const slot = document.createElement('button');
+                slot.type = 'button';
+                slot.className = 'drag-word-slot';
+                slot.dataset.index = index;
+                slot.dataset.letter = '';
+
+                slot.addEventListener('dragover', (event) => {
+                    event.preventDefault();
+                    slot.classList.add('drag-over');
+                });
+                slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+                slot.addEventListener('drop', (event) => this.handleDragWordDrop(event, slot));
+                slot.addEventListener('click', () => this.handleWordSlotClick(slot));
+
+                return slot;
+            }
+
+            createDragWordLetter(char, wordIndex, letterIndex) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'drag-word-letter';
+                button.textContent = char;
+                button.draggable = true;
+                button.dataset.letter = char;
+                button.dataset.id = `drag-${wordIndex}-${letterIndex}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+                button.addEventListener('dragstart', (event) => {
+                    event.dataTransfer.setData('text/plain', JSON.stringify({
+                        id: button.dataset.id,
+                        letter: char
+                    }));
+                });
+                button.addEventListener('click', () => this.handleDragWordLetterClick(button));
+
+                return button;
+            }
+
+            handleDragWordLetterClick(button) {
+                if (button.classList.contains('used')) return;
+                const card = button.closest('.drag-word-card');
+                if (!card || card.classList.contains('completed')) return;
+
+                card.querySelectorAll('.drag-word-letter.selected').forEach(el => el.classList.remove('selected'));
+                button.classList.add('selected');
+            }
+
+            handleWordSlotClick(slot) {
+                const card = slot.closest('.drag-word-card');
+                if (!card || card.classList.contains('completed')) return;
+
+                if (slot.classList.contains('filled')) {
+                    this.clearDragWordSlot(slot);
+                    return;
+                }
+
+                const selected = card.querySelector('.drag-word-letter.selected:not(.used)');
+                if (selected) {
+                    this.placeDragLetterInSlot(slot, selected.dataset.letter, selected);
+                    selected.classList.remove('selected');
+                }
+            }
+
+            handleDragWordDrop(event, slot) {
+                event.preventDefault();
+                slot.classList.remove('drag-over');
+                if (slot.classList.contains('filled')) return;
+
+                let data = null;
+                try {
+                    data = JSON.parse(event.dataTransfer.getData('text/plain'));
+                } catch (error) {
+                    return;
+                }
+
+                const letterButton = document.querySelector(`[data-id="${data.id}"]`);
+                if (!letterButton || letterButton.classList.contains('used')) return;
+
+                this.placeDragLetterInSlot(slot, data.letter, letterButton);
+            }
+
+            placeDragLetterInSlot(slot, letter, sourceButton) {
+                slot.textContent = letter;
+                slot.dataset.letter = letter;
+                slot.dataset.sourceId = sourceButton.dataset.id;
+                slot.classList.add('filled');
+                sourceButton.classList.add('used');
+                sourceButton.classList.remove('selected');
+                this.checkDragWordItem(slot.closest('.drag-word-card'));
+            }
+
+            clearDragWordSlot(slot) {
+                const sourceId = slot.dataset.sourceId;
+                if (sourceId) {
+                    const sourceButton = document.querySelector(`[data-id="${sourceId}"]`);
+                    if (sourceButton) sourceButton.classList.remove('used');
+                }
+                slot.textContent = '';
+                slot.dataset.letter = '';
+                slot.dataset.sourceId = '';
+                slot.classList.remove('filled');
+
+                const feedback = slot.closest('.drag-word-card')?.querySelector('.drag-word-feedback');
+                if (feedback) {
+                    feedback.textContent = '';
+                    feedback.className = 'drag-word-feedback';
+                }
+            }
+
+            checkDragWordItem(card) {
+                if (!card || card.classList.contains('completed')) return;
+
+                const expected = card.dataset.word;
+                const slots = Array.from(card.querySelectorAll('.drag-word-slot'));
+                if (!slots.every(slot => slot.dataset.letter)) return;
+
+                const answer = slots.map(slot => slot.dataset.letter).join('').toLowerCase();
+                const feedback = card.querySelector('.drag-word-feedback');
+
+                if (answer === expected) {
+                    this.markDragWordComplete(card, expected);
+                } else {
+                    if (feedback) {
+                        feedback.textContent = '❌ حاول مرة ثانية';
+                        feedback.className = 'drag-word-feedback wrong';
+                    }
+                    this.soundManager.playSound('error');
+                    setTimeout(() => this.resetDragWordItem(card), 900);
+                }
+            }
+
+            resetDragWordItem(card) {
+                if (!card || card.classList.contains('completed')) return;
+                card.querySelectorAll('.drag-word-slot').forEach(slot => {
+                    slot.textContent = '';
+                    slot.dataset.letter = '';
+                    slot.dataset.sourceId = '';
+                    slot.classList.remove('filled', 'drag-over');
+                });
+                card.querySelectorAll('.drag-word-letter').forEach(letter => {
+                    letter.classList.remove('used', 'selected');
+                });
+                const feedback = card.querySelector('.drag-word-feedback');
+                if (feedback) {
+                    feedback.textContent = '';
+                    feedback.className = 'drag-word-feedback';
+                }
+            }
+
+            markDragWordComplete(card, expected, isLoading = false) {
+                const letter = this.progress.currentLetter;
+                const letterProgress = this.ensureLetterRecord(letter);
+                const word = String(expected || '').trim().toLowerCase();
+                if (!word) return;
+
+                letterProgress.exercises.words[word] = word;
+                card.classList.add('completed');
+
+                const slots = Array.from(card.querySelectorAll('.drag-word-slot'));
+                word.toUpperCase().split('').forEach((char, index) => {
+                    if (slots[index]) {
+                        slots[index].textContent = char;
+                        slots[index].dataset.letter = char;
+                        slots[index].classList.add('filled');
+                    }
+                });
+
+                card.querySelectorAll('.drag-word-letter').forEach(button => button.classList.add('used'));
+
+                const feedback = card.querySelector('.drag-word-feedback');
+                if (feedback) {
+                    feedback.textContent = '✅ صح! ممتاز';
+                    feedback.className = 'drag-word-feedback correct';
+                }
+
+                if (!isLoading) {
+                    this.updateAndCommitScores();
+                    this.soundManager.playSound('success');
+                    this.soundManager.speak(word);
+                }
+            }
+
             calculateCurrentWordsScore() {
                 const letter = this.progress.currentLetter;
                 if (!letter) return 0;
@@ -6335,6 +6620,14 @@
 
             resetLetter() {
                 if (confirm('هل تريد إعادة الحرف الحالي؟ سيتم مسح كل التقدم في هذا الحرف.')) {
+                    const letter = LETTERS[this.currentLetterIndex];
+                    const fresh = this.createInitialProgressState().letters[letter];
+                    fresh.unlocked = true;
+                    this.progress.letters[letter] = fresh;
+                    this.quizScore = 0;
+                    this.currentQuizIndex = 0;
+                    this.quizCompletedFlag = false;
+                    this.commitProgressUpdate();
                     this.loadLetter(this.currentLetterIndex);
                 }
             }
@@ -9413,7 +9706,12 @@
                 modal.style.display = 'none';
                 
                 // Show only certificate content
-                const certificate = document.querySelector('.certificate-content');
+                const certificate = document.querySelector('.certificate-content') || document.querySelector('.certificate-container');
+                if (!certificate) {
+                    this.showToast('Certificate not found', 3000, 'error');
+                    modal.style.display = originalDisplay;
+                    return;
+                }
                 const originalBody = document.body.innerHTML;
                 
                 document.body.innerHTML = certificate.outerHTML;
@@ -9608,14 +9906,23 @@
         });
     </script>
 <script>
+function getCSRFToken() {
+    const match = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
 function postProgress(letter, score, student) {
-    fetch("/api/save-progress/", {
+    return fetch("/api/save-progress/", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        credentials: "same-origin",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken()
+        },
         body: JSON.stringify({
             letter: letter,
             score: score,
-            student: student
+            student: student || localStorage.getItem('studentName') || localStorage.getItem('phonicsAnonymousId') || 'Guest'
         })
     })
     .then(res => res.json())
@@ -9862,7 +10169,11 @@ function sendAudioToServer(blob, letter){
             const chatBody = document.getElementById('ai-chat-body');
             const msgDiv = document.createElement('div');
             msgDiv.classList.add('ai-msg', sender);
-            msgDiv.innerHTML = text; // Using innerHTML to allow <br> or formatting
+            if (sender === 'user') {
+                msgDiv.textContent = text;
+            } else {
+                msgDiv.innerHTML = text; // Bot responses are fixed local strings with simple formatting.
+            }
             chatBody.appendChild(msgDiv);
             chatBody.scrollTop = chatBody.scrollHeight;
         }

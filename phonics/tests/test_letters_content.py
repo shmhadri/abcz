@@ -14,6 +14,7 @@ class LettersContentTests(SimpleTestCase):
     def setUp(self):
         self.project_root = Path(__file__).resolve().parents[2]
         self.letters_html = self.project_root / "templates" / "letters.html"
+        self.letter_data_js = self.project_root / "static" / "js" / "letters" / "letter_data.js"
 
     def test_letters_page_does_not_contain_banned_words(self):
         content_paths = [
@@ -42,7 +43,7 @@ class LettersContentTests(SimpleTestCase):
         self.assertEqual(failures, [])
 
     def test_short_letter_words_are_limited_and_non_empty(self):
-        text = self.letters_html.read_text(encoding="utf-8", errors="ignore")
+        text = self.letter_data_js.read_text(encoding="utf-8", errors="ignore")
         block_match = re.search(
             r"const\s+SHORT_LETTER_WORDS\s*=\s*{(?P<body>.*?)^\s*};",
             text,
@@ -65,3 +66,9 @@ class LettersContentTests(SimpleTestCase):
                     self.assertTrue(word.strip())
                     self.assertLessEqual(len(word), MAX_WORD_LENGTH)
                     self.assertNotIn(word.lower(), BANNED_WORDS)
+
+    def test_letters_page_loads_extracted_letter_data(self):
+        html = self.letters_html.read_text(encoding="utf-8", errors="ignore")
+
+        self.assertIn('/static/js/letters/letter_data.js', html)
+        self.assertTrue(self.letter_data_js.exists())
