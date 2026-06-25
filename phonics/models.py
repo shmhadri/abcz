@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 # قائمة الحروف من A إلى Z لاستخدامها كـ choices
@@ -6,6 +7,20 @@ LETTERS = [
     (chr(i), chr(i))
     for i in range(ord("A"), ord("Z") + 1)
 ]
+
+
+WORDWALL_ALLOWED_PREFIXES = (
+    "https://wordwall.net/resource/",
+    "https://wordwall.net/play/",
+)
+
+
+def validate_wordwall_activity_url(value):
+    if not any(str(value).startswith(prefix) for prefix in WORDWALL_ALLOWED_PREFIXES):
+        raise ValidationError(
+            "Only Wordwall resource and play links are allowed.",
+            code="invalid_wordwall_url",
+        )
 
 
 class Student(models.Model):
@@ -137,6 +152,65 @@ class LetterProgress(models.Model):
 
         # تحديث ملخص الطالب
         self.student.recalculate_progress()
+
+
+class ExternalGame(models.Model):
+    REVIEW_PENDING = "pending"
+    REVIEW_APPROVED = "approved"
+    REVIEW_REJECTED = "rejected"
+
+    REVIEW_STATUS_CHOICES = [
+        (REVIEW_PENDING, "Pending"),
+        (REVIEW_APPROVED, "Approved"),
+        (REVIEW_REJECTED, "Rejected"),
+    ]
+
+    letter = models.CharField(
+        "Letter",
+        max_length=1,
+        choices=LETTERS,
+        db_index=True,
+    )
+    title = models.CharField("Title", max_length=200)
+    activity_url = models.URLField(
+        "Activity URL",
+        max_length=500,
+        validators=[validate_wordwall_activity_url],
+        help_text="Allowed: https://wordwall.net/resource/ or https://wordwall.net/play/",
+    )
+    is_premium = models.BooleanField("Premium", default=False)
+    is_active = models.BooleanField("Active", default=True)
+    review_status = models.CharField(
+        "Review status",
+        max_length=20,
+        choices=REVIEW_STATUS_CHOICES,
+        default=REVIEW_PENDING,
+        db_index=True,
+    )
+    notes = models.TextField("Notes", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "External game"
+        verbose_name_plural = "External games"
+        ordering = ["letter", "title"]
+        indexes = [
+            models.Index(fields=["letter", "is_active", "review_status"]),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.letter:
+            self.letter = self.letter.upper()
+        if self.title:
+            self.title = self.title.strip()
+        if self.activity_url:
+            self.activity_url = self.activity_url.strip()
+            validate_wordwall_activity_url(self.activity_url)
+
+    def __str__(self):
+        return f"{self.letter} - {self.title}"
 
 
 # ============================================

@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (
     Student, LetterProgress, 
+    ExternalGame,
     CVCWord, CVCSentence, CVCStory, CVCProgress,
     TopGoalUnit, TopGoalVocabulary, TopGoalSentence, TopGoalQuiz
 )
@@ -20,6 +21,26 @@ class LetterProgressAdmin(admin.ModelAdmin):
     list_filter = ['letter', 'passed']
     search_fields = ['student__name']
     readonly_fields = ['timestamp']
+
+
+@admin.register(ExternalGame)
+class ExternalGameAdmin(admin.ModelAdmin):
+    list_display = ['letter', 'title', 'is_premium', 'is_active', 'review_status', 'updated_at']
+    list_filter = ['letter', 'is_premium', 'is_active', 'review_status']
+    search_fields = ['letter', 'title', 'activity_url', 'notes']
+    list_editable = ['is_active', 'review_status']
+    readonly_fields = ['created_at', 'updated_at']
+    fields = [
+        'letter',
+        'title',
+        'activity_url',
+        'is_premium',
+        'is_active',
+        'review_status',
+        'notes',
+        'created_at',
+        'updated_at',
+    ]
 
 
 @admin.register(CVCWord)

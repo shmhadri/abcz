@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordwall Games - Letter {{ letter }}</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        .page {
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 32px 16px;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .title {
+            margin: 0 0 8px;
+            color: #2563eb;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .games {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .game-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+        }
+
+        .game-title {
+            margin: 0 0 12px;
+            font-size: 18px;
+        }
+
+        .game-link {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            padding: 9px 14px;
+            font-weight: 700;
+        }
+
+        .badge {
+            display: inline-block;
+            margin-top: 12px;
+            color: #92400e;
+            background: #fef3c7;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 13px;
+        }
+
+        .empty {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header class="header">
+            <h1 class="title">Wordwall - Letter {{ letter }}</h1>
+            <p class="subtitle">ألعاب خارجية معتمدة لهذا الحرف.</p>
+        </header>
+
+        {% if games %}
+            <section class="games" aria-label="Wordwall games">
+                {% for game in games %}
+                    <article class="game-card">
+                        <h2 class="game-title">{{ game.title }}</h2>
+                        <a class="game-link" href="{{ game.activity_url }}" target="_blank" rel="noopener noreferrer">
+                            فتح اللعبة
+                        </a>
+                        {% if game.is_premium %}
+                            <div class="badge">Premium</div>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </section>
+        {% else %}
+            <div class="empty">لا توجد ألعاب Wordwall معتمدة لهذا الحرف حتى الآن.</div>
+        {% endif %}
+    </main>
+</body>
+</html>

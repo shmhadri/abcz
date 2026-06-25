@@ -9,6 +9,7 @@ Phonics App Views - SECURED & OPTIMIZED (SAFE VERSION)
 from __future__ import annotations
 
 import json
+import time
 from datetime import datetime
 
 from django.conf import settings
@@ -25,6 +26,7 @@ from xhtml2pdf import pisa
 from .models import (
     Student,
     LetterProgress,
+    ExternalGame,
     TopGoalUnit,
     CVCWord,
     CVCSentence,
@@ -312,6 +314,24 @@ def letter_data_api(request, letter):
     }, status=501)
 
 
+@require_GET
+def external_games_by_letter(request, letter):
+    letter, error = validate_letter(letter)
+    if error:
+        return error
+
+    games = ExternalGame.objects.filter(
+        letter=letter,
+        is_active=True,
+        review_status=ExternalGame.REVIEW_APPROVED,
+    ).order_by("title")
+
+    return render(request, "phonics/external_games.html", {
+        "letter": letter,
+        "games": games,
+    })
+
+
 # ============================================
 # CVC PAGES & APIs
 # ============================================
@@ -537,11 +557,12 @@ def top_goal_view(request):
             pass  # Continue with empty data
         
         return render(request, "phonics/top_goal_6_unit_1.html", {
-            "unit": unit, "vocab": vocab, "sentences": sentences, "quizzes_json": quizzes_json
+            "unit": unit, "vocab": vocab, "sentences": sentences, "quizzes_json": quizzes_json,
+            "timestamp": int(time.time())
         })
     except Exception as e:
         print(f"Error: {e}")
         import traceback
         traceback.print_exc()
-        return render(request, "phonics/top_goal_6_unit_1.html", {"vocab": [], "sentences": [], "quizzes_json": "[]"})
+        return render(request, "phonics/top_goal_6_unit_1.html", {"vocab": [], "sentences": [], "quizzes_json": "[]", "timestamp": int(time.time())})
 

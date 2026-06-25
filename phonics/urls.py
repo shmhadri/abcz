@@ -9,6 +9,7 @@ urlpatterns = [
     path('certificate/<int:student_id>/', views.generate_certificate, name='generate_certificate'),
     path('leaderboard/', views.leaderboard, name='leaderboard'),
     path('api/letter-data/<str:letter>/', views.letter_data_api, name='letter_data_api'),
+    path('letters/<str:letter>/external-games/', views.external_games_by_letter, name='external_games_by_letter'),
     path('cvc-reading/', views.cvc_reading_view, name='cvc_reading'),
     path('grade-2-unit-1/', views.grade_2_unit_1_view, name='grade_2_unit_1'),
     path('grade-3-unit-1/', views.grade_3_unit_1_view, name='grade_3_unit_1'),
