@@ -285,13 +285,16 @@ def leaderboard(request):
     try:
         students = (
             Student.objects.annotate(
-                total=models.Sum("letterprogress__score"),
+                total=models.Sum("progress_entries__score", default=0),
                 passed_letters=models.Count(
-                    "letterprogress",
-                    filter=models.Q(letterprogress__passed=True),
+                    "progress_entries",
+                    filter=models.Q(progress_entries__passed=True),
+                    distinct=True,
                 ),
+                class_name=models.Value("", output_field=models.CharField()),
+                school_name=models.F("school"),
             )
-            .filter(total__isnull=False)
+            .filter(progress_entries__isnull=False)
             .order_by("-total")[:50]
         )
         return render(request, "phonics/leaderboard.html", {"rows": students})

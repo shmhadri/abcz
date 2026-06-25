@@ -35,6 +35,7 @@ RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
+    "testserver",
 ]
 
 # دومينك الحالي في Render
