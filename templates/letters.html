@@ -3249,6 +3249,7 @@
     <script src="/static/js/letters/letter_data.js"></script>
     <script src="/static/js/letters/progress.js"></script>
     <script src="/static/js/letters/drag_word_game.js"></script>
+    <script src="/static/js/letters/certificate.js"></script>
 
     <script>
         // بيانات التطبيق
@@ -5213,10 +5214,14 @@
             
             updateProgress() {
                 const currentLetter = LETTERS[this.currentLetterIndex];
-                this.progressValueEl.textContent = `الحرف ${currentLetter}`;
+                if (this.progressValueEl) {
+                    this.progressValueEl.textContent = `الحرف ${currentLetter}`;
+                }
                 
                 const progress = ((this.currentLetterIndex + 1) / LETTERS.length) * 100;
-                this.progressBar.style.width = `${progress}%`;
+                if (this.progressBar) {
+                    this.progressBar.style.width = `${progress}%`;
+                }
             }
             
             renderAchievements() {
@@ -8707,109 +8712,6 @@
                 this.motivationModal.style.display = 'flex';
             }
             
-            showCertificate() {
-                // Check if all letters are truly completed
-                if (this.completedLetters.length !== LETTERS.length) {
-                    this.showToast('يجب إكمال جميع الحروف أولاً!');
-                    return;
-                }
-                
-                // Calculate total stars/points
-                const totalStars = this.calculateTotalStars();
-                const completionDate = new Date().toLocaleDateString('ar-SA');
-                
-                // Update certificate content
-                this.certificateName.textContent = this.studentName || 'الطالب المتميز';
-                document.getElementById('certificate-date').textContent = completionDate;
-                document.getElementById('certificate-stars').textContent = totalStars;
-                document.getElementById('certificate-letters-count').textContent = LETTERS.length;
-                
-                this.certificateModal.style.display = 'flex';
-                
-                // Save achievement
-                localStorage.setItem('certificateEarned', 'true');
-                localStorage.setItem('certificateDate', completionDate);
-                localStorage.setItem('certificateStars', totalStars);
-                this.soundManager.playSound('win');
-            }
-            
-            calculateTotalStars() {
-                let totalStars = 0;
-                LETTERS.forEach(letter => {
-                    const letterGames = this.passedGames[letter] || [];
-                    totalStars += letterGames.length;
-                });
-                return totalStars;
-            }
-            
-            printCertificate() {
-                // Hide modal temporarily for clean print
-                const modal = this.certificateModal;
-                const originalDisplay = modal.style.display;
-                modal.style.display = 'none';
-                
-                // Show only certificate content
-                const certificate = document.querySelector('.certificate-content') || document.querySelector('.certificate-container');
-                if (!certificate) {
-                    this.showToast('Certificate not found', 3000, 'error');
-                    modal.style.display = originalDisplay;
-                    return;
-                }
-                const originalBody = document.body.innerHTML;
-                
-                document.body.innerHTML = certificate.outerHTML;
-                window.print();
-                
-                // Restore original content
-                document.body.innerHTML = originalBody;
-                this.init(); // Re-initialize the app
-                modal.style.display = originalDisplay;
-            }
-
-            sendCertificateEmail() {
-                const email = prompt('أدخل عنوان البريد الإلكتروني:');
-                if (!email) return;
-                
-                // Generate email content
-                const subject = `شهادة إتقان الحروف الإنجليزية - ${this.studentName}`;
-                const body = `تهانينا! لقد أكمل ${this.studentName} جميع الحروف الإنجليزية بنجاح!\n\nعدد النجوم المحصل عليها: ${this.calculateTotalStars()}\nتاريخ الإنجاز: ${new Date().toLocaleDateString('ar-SA')}`;
-                
-                // Open email client
-                const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                window.open(mailtoLink);
-                
-                this.showToast('تم فتح برنامج البريد لإرسال الشهادة', 3000, 'success');
-            }
-
-            sendCertificateWhatsApp() {
-                const phone = prompt('أدخل رقم الواتساب (مع رمز الدولة):');
-                if (!phone) return;
-                
-                const message = `🎉 تهانينا! لقد أكمل ${this.studentName} جميع الحروف الإنجليزية بنجاح! \n\n⭐ عدد النجوم: ${this.calculateTotalStars()} \n📅 تاريخ الإنجاز: ${new Date().toLocaleDateString('ar-SA')} \n\n🎓 شهادة إتقان الحروف الإنجليزية`;
-                
-                const whatsappLink = `https://wa.me/${phone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(message)}`;
-                window.open(whatsappLink, '_blank');
-                
-                this.showToast('تم فتح واتساب لمشاركة الشهادة', 3000, 'success');
-            }
-            
-            showCompletionAnimation() {
-                for (let i = 0; i < 150; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.className = 'confetti';
-                    confetti.style.left = Math.random() * 100 + 'vw';
-                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                    confetti.style.animationDelay = Math.random() * 5 + 's';
-                    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
-                    
-                    this.completionAnimation.appendChild(confetti);
-                }
-                
-                setTimeout(() => {
-                    this.completionAnimation.innerHTML = '';
-                }, 7000);
-            }
-            
             setupScrollTop() {
                 window.addEventListener('scroll', () => {
                     if (window.pageYOffset > 300) {
@@ -8877,6 +8779,10 @@
 
         if (window.installDragWordGame) {
             window.installDragWordGame(PhonicsGameLab);
+        }
+
+        if (window.installCertificateSystem) {
+            window.installCertificateSystem(PhonicsGameLab);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
