@@ -1,7 +1,7 @@
 (function (window, document) {
     "use strict";
 
-    const STATES = ["idle", "talking", "happy", "wrong", "thinking"];
+    const STATES = ["idle", "talking", "happy", "sad", "wrong", "thinking", "jump", "celebrate"];
     const STATE_FILES = {
         idle: "/static/animations/bird/bird_idle.json",
         talking: "/static/animations/bird/bird_talk.json",
@@ -12,12 +12,16 @@
     const FALLBACK_EMOJI = "\uD83E\uDD9C";
     const REVIEW_STORAGE_KEY = "birdTutorReviewItems";
     const XP_STORAGE_KEY = "birdTutorXp";
-    const QUESTION_TYPES = [
+    const QUESTION_TYPES = window.BIRD_TUTOR_CONTENT?.questionTypes || [
         "starts_with_letter",
         "choose_word_for_letter",
         "listen_and_choose",
-        "find_missing_letter"
+        "find_missing_letter",
+        "choose_picture_for_word",
+        "choose_word_for_picture",
+        "meaning_match"
     ];
+    const INTRO_MESSAGE = "مرحبًا! أنا عصفور الفونيكس. سأساعدك في القراءة.";
     const BIRD_MESSAGES = {
         opening: [
             "هيا يا بطل، اضغط اسألني لنتمرن معًا.",
@@ -159,6 +163,13 @@
             this.birdReviewBtn = document.getElementById("birdReviewBtn");
             this.birdStatsEl = document.getElementById("birdStats");
             this.birdHintEl = document.getElementById("birdHint");
+            this.birdLessonIntroEl = document.getElementById("birdLessonIntro");
+            this.birdLessonMainEl = document.getElementById("birdLessonMain");
+            this.birdIntroBubbleEl = document.getElementById("birdIntroBubble");
+            this.birdIntroLottieEl = document.getElementById("birdIntroLottie");
+            this.birdIntroFallbackEl = document.getElementById("birdIntroFallback");
+            this.birdIntroContinueBtn = document.getElementById("birdIntroContinue");
+            this.birdVisualQuestionEl = document.getElementById("birdVisualQuestion");
 
             if (!this.birdTutor || !this.birdBubbleEl || !this.birdActionsEl) {
                 return;
@@ -172,6 +183,7 @@
             this.birdWrongAttempts = 0;
             this.birdLottieStatus = "fallback";
             this.birdQuestionCounter = 0;
+            this.birdIntroCompleted = false;
             this.birdXp = this.loadBirdXp();
             this.birdReviewItems = this.loadBirdReviewItems();
 
@@ -194,7 +206,12 @@
                 this.birdReviewBtn.dataset.bound = "true";
             }
 
-            this.typeMessage(pick(BIRD_MESSAGES.opening));
+            if (this.birdIntroContinueBtn && !this.birdIntroContinueBtn.dataset.bound) {
+                this.birdIntroContinueBtn.addEventListener("click", () => this.startBirdLesson());
+                this.birdIntroContinueBtn.dataset.bound = "true";
+            }
+
+            this.showBirdIntro();
             this.setBirdState("idle");
             this.updateBirdStats();
 
@@ -222,7 +239,8 @@
             }
 
             const availableFiles = window.BIRD_LOTTIE_FILES || {};
-            const path = availableFiles[nextState] || "";
+            const lottieState = (nextState === "celebrate" || nextState === "jump") ? "happy" : (nextState === "sad" ? "wrong" : nextState);
+            const path = availableFiles[nextState] || availableFiles[lottieState] || "";
             if (!path) {
                 this.showBirdFallback("missing state path");
                 return;
@@ -327,6 +345,103 @@
                     this.birdTypingTimer = null;
                 }
             }, 28);
+        };
+
+        AppClass.prototype.typeIntoElement = function (element, text) {
+            const message = String(text || "");
+            if (!element) {
+                return;
+            }
+
+            element.textContent = "";
+            let index = 0;
+            const timer = setInterval(() => {
+                element.textContent = message.slice(0, index + 1);
+                index += 1;
+                if (index >= message.length) {
+                    clearInterval(timer);
+                }
+            }, 28);
+        };
+
+        AppClass.prototype.showBirdIntro = function () {
+            if (this.birdLessonIntroEl) {
+                this.birdLessonIntroEl.hidden = false;
+            }
+            if (this.birdLessonMainEl) {
+                this.birdLessonMainEl.hidden = true;
+            }
+            if (this.birdActionsEl) {
+                this.birdActionsEl.replaceChildren();
+            }
+            this.setBirdHint("");
+            this.renderBirdVisualQuestion(null);
+            this.typeIntoElement(this.birdIntroBubbleEl, INTRO_MESSAGE);
+            this.loadBirdIntroAnimation();
+        };
+
+        AppClass.prototype.loadBirdIntroAnimation = function () {
+            if (!this.birdIntroLottieEl || !this.birdIntroFallbackEl) {
+                return;
+            }
+
+            const idlePath = (window.BIRD_LOTTIE_FILES || {}).idle || "";
+            if (!idlePath || !window.lottie || typeof window.lottie.loadAnimation !== "function") {
+                this.birdIntroLottieEl.hidden = true;
+                this.birdIntroFallbackEl.hidden = false;
+                return;
+            }
+
+            this.loadBirdAnimation(idlePath)
+                .then(animationData => {
+                    this.birdIntroLottieEl.replaceChildren();
+                    window.lottie.loadAnimation({
+                        container: this.birdIntroLottieEl,
+                        renderer: "svg",
+                        loop: true,
+                        autoplay: true,
+                        animationData
+                    });
+                    this.birdIntroLottieEl.hidden = false;
+                    this.birdIntroFallbackEl.hidden = true;
+                })
+                .catch(() => {
+                    this.birdIntroLottieEl.hidden = true;
+                    this.birdIntroFallbackEl.hidden = false;
+                });
+        };
+
+        AppClass.prototype.startBirdLesson = function () {
+            this.birdIntroCompleted = true;
+            if (this.birdLessonIntroEl) {
+                this.birdLessonIntroEl.hidden = true;
+            }
+            if (this.birdLessonMainEl) {
+                this.birdLessonMainEl.hidden = false;
+            }
+
+            const startFirstQuestion = () => {
+                const question = this.buildQuestionForCurrentLetter();
+                this.renderQuestion(question);
+            };
+
+            if (!("speechSynthesis" in window) || !window.SpeechSynthesisUtterance) {
+                startFirstQuestion();
+                return;
+            }
+
+            try {
+                window.speechSynthesis.cancel();
+                const utterance = new window.SpeechSynthesisUtterance(INTRO_MESSAGE);
+                utterance.lang = "ar-SA";
+                utterance.rate = 0.95;
+                utterance.onstart = () => this.setBirdState("talking");
+                utterance.onend = startFirstQuestion;
+                utterance.onerror = startFirstQuestion;
+                window.speechSynthesis.speak(utterance);
+            } catch (error) {
+                startFirstQuestion();
+            }
         };
 
         AppClass.prototype.speakText = function (text) {
@@ -583,13 +698,63 @@
 
         AppClass.prototype.getWordRecordsForLetter = function (letter) {
             const data = window.LETTER_DATA?.[letter] || { words: [] };
+            const content = window.BIRD_TUTOR_CONTENT || {};
             return (data.words || [])
                 .map(item => ({
                     word: cleanWord(item.word),
-                    translation: String(item.translation || "").trim(),
-                    emoji: String(item.emoji || "").trim()
+                    translation: String(item.translation || content.meanings?.[cleanWord(item.word)] || "").trim(),
+                    emoji: String(item.emoji || content.emojis?.[cleanWord(item.word)] || "").trim()
                 }))
                 .filter(item => item.word);
+        };
+
+        AppClass.prototype.getBirdWordEmoji = function (word) {
+            const key = cleanWord(word);
+            const contentEmoji = window.BIRD_TUTOR_CONTENT?.emojis?.[key];
+            if (contentEmoji) {
+                return contentEmoji;
+            }
+
+            for (const letter of getLetters()) {
+                const found = this.getWordRecordsForLetter(letter).find(item => item.word === key);
+                if (found?.emoji) {
+                    return found.emoji;
+                }
+            }
+
+            return "🔤";
+        };
+
+        AppClass.prototype.getBirdWordMeaning = function (word) {
+            const key = cleanWord(word);
+            const contentMeaning = window.BIRD_TUTOR_CONTENT?.meanings?.[key];
+            if (contentMeaning) {
+                return contentMeaning;
+            }
+
+            for (const letter of getLetters()) {
+                const found = this.getWordRecordsForLetter(letter).find(item => item.word === key);
+                if (found?.translation) {
+                    return found.translation;
+                }
+            }
+
+            return key;
+        };
+
+        AppClass.prototype.makeMeaningChoices = function (letter, correctWord) {
+            const words = uniqueWords([
+                correctWord,
+                ...this.getDistractorWords(letter, correctWord, 8)
+            ]).slice(0, 4);
+            const meanings = uniqueWords(words.map(word => this.getBirdWordMeaning(word))).slice(0, 4);
+            const correctMeaning = this.getBirdWordMeaning(correctWord);
+
+            if (!meanings.includes(correctMeaning)) {
+                meanings[0] = correctMeaning;
+            }
+
+            return shuffle(meanings);
         };
 
         AppClass.prototype.getDistractorWords = function (letter, correctWord, limit = 3) {
@@ -646,6 +811,8 @@
                 type,
                 letter: upperLetter,
                 targetWord: word,
+                targetEmoji: record?.emoji || this.getBirdWordEmoji(word),
+                targetMeaning: record?.translation || this.getBirdWordMeaning(word),
                 isReview,
                 reviewId,
                 correctExplanation: `ممتاز يا بطل! ${word} تبدأ بحرف ${upperLetter} وصوت /${upperLetter.toLowerCase()}/.`,
@@ -653,6 +820,49 @@
                 finalExplanation: `الإجابة الصحيحة هي ${word} لأنها تبدأ بحرف ${upperLetter}.`,
                 speakPrompt: `Listen carefully. ${word}.`
             };
+
+            if (type === "choose_picture_for_word") {
+                return {
+                    ...base,
+                    prompt: `اختر الصورة التي تمثل كلمة ${word}.`,
+                    correct: word,
+                    choices: this.makeWordChoices(upperLetter, word),
+                    visualMode: "picture_choices",
+                    wrongHint: `ابحث عن الصورة التي معناها ${this.getBirdWordMeaning(word)}.`,
+                    correctExplanation: `رائع! الصورة المناسبة لكلمة ${word} هي ${this.getBirdWordEmoji(word)}.`,
+                    finalExplanation: `الإجابة الصحيحة هي ${word} لأنها تمثل ${this.getBirdWordEmoji(word)}.`,
+                    speakPrompt: `Choose the picture for ${word}.`
+                };
+            }
+
+            if (type === "choose_word_for_picture") {
+                return {
+                    ...base,
+                    prompt: `ما الكلمة المناسبة لهذه الصورة؟`,
+                    correct: word,
+                    choices: this.makeWordChoices(upperLetter, word),
+                    visualMode: "target_picture",
+                    wrongHint: `انظر إلى الصورة ${this.getBirdWordEmoji(word)} ثم اختر الكلمة المناسبة.`,
+                    correctExplanation: `أحسنت! ${this.getBirdWordEmoji(word)} هي ${word}.`,
+                    finalExplanation: `الكلمة الصحيحة للصورة هي ${word}.`,
+                    speakPrompt: `Choose the word for this picture.`
+                };
+            }
+
+            if (type === "meaning_match") {
+                const meaning = this.getBirdWordMeaning(word);
+                return {
+                    ...base,
+                    prompt: `ما معنى كلمة ${word}؟`,
+                    correct: meaning,
+                    choices: this.makeMeaningChoices(upperLetter, word),
+                    visualMode: "meaning_match",
+                    wrongHint: `فكر في معنى كلمة ${word} بالعربية.`,
+                    correctExplanation: `ممتاز! معنى ${word} هو ${meaning}.`,
+                    finalExplanation: `الإجابة الصحيحة هي ${meaning}.`,
+                    speakPrompt: `What does ${word} mean?`
+                };
+            }
 
             if (type === "listen_and_choose") {
                 return {
@@ -710,6 +920,7 @@
             this.birdWrongAttempts = 0;
             this.birdActionsEl.replaceChildren();
             this.setBirdHint("");
+            this.renderBirdVisualQuestion(question);
             this.typeMessage(question.prompt);
             this.speakText(question.speakPrompt || question.prompt);
 
@@ -717,10 +928,68 @@
                 const button = document.createElement("button");
                 button.type = "button";
                 button.className = "bird-choice-btn";
-                button.textContent = choice;
+                button.textContent = this.getBirdChoiceLabel(choice, question);
                 button.addEventListener("click", () => this.handleAnswer(choice));
                 this.birdActionsEl.appendChild(button);
             });
+        };
+
+        AppClass.prototype.getBirdChoiceLabel = function (choice, question) {
+            const value = String(choice || "");
+            if (question?.visualMode === "picture_choices" || question?.visualMode === "target_picture") {
+                return `${this.getBirdWordEmoji(value)} ${value}`;
+            }
+            return value;
+        };
+
+        AppClass.prototype.renderBirdVisualQuestion = function (question) {
+            if (!this.birdVisualQuestionEl) {
+                return;
+            }
+
+            this.birdVisualQuestionEl.replaceChildren();
+
+            if (!question || !question.visualMode) {
+                this.birdVisualQuestionEl.hidden = true;
+                return;
+            }
+
+            const title = document.createElement("div");
+            title.className = "bird-visual-title";
+            title.textContent = question.prompt;
+            this.birdVisualQuestionEl.appendChild(title);
+
+            if (question.visualMode === "target_picture" || question.visualMode === "meaning_match") {
+                const target = document.createElement("div");
+                target.className = "bird-target-picture";
+                target.textContent = question.visualMode === "meaning_match"
+                    ? question.targetWord
+                    : this.getBirdWordEmoji(question.targetWord);
+                this.birdVisualQuestionEl.appendChild(target);
+            }
+
+            if (question.visualMode === "picture_choices") {
+                const grid = document.createElement("div");
+                grid.className = "bird-picture-grid";
+                (question.choices || []).forEach(choice => {
+                    const item = document.createElement("div");
+                    item.className = "bird-picture-choice";
+
+                    const image = document.createElement("span");
+                    image.className = "bird-picture-emoji";
+                    image.textContent = this.getBirdWordEmoji(choice);
+
+                    const label = document.createElement("span");
+                    label.className = "bird-picture-label";
+                    label.textContent = choice;
+
+                    item.append(image, label);
+                    grid.appendChild(item);
+                });
+                this.birdVisualQuestionEl.appendChild(grid);
+            }
+
+            this.birdVisualQuestionEl.hidden = false;
         };
 
         AppClass.prototype.handleAnswer = function (choice) {
@@ -742,7 +1011,7 @@
 
         AppClass.prototype.handleCorrectBirdAnswer = function (question) {
             const xpDelta = question.isReview ? 8 : 5;
-            this.setBirdState("happy");
+            this.setBirdState("celebrate");
             this.birdActionsEl.replaceChildren();
             this.typeMessage(`${pick(BIRD_MESSAGES.encouragement)} ${question.correctExplanation}`);
             this.setBirdHint(question.correctExplanation, "success");
@@ -844,6 +1113,7 @@
             item.successes = (item.successes || 0) + 1;
             if (item.successes >= 2) {
                 item.mastered = true;
+                this.setBirdState("jump");
                 this.typeMessage(`${pick(BIRD_MESSAGES.celebration)} تم إتقان ${item.word}.`);
             }
 

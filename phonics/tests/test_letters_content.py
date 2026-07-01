@@ -14,6 +14,7 @@ class LettersContentTests(SimpleTestCase):
     def setUp(self):
         self.project_root = Path(__file__).resolve().parents[2]
         self.letters_html = self.project_root / "templates" / "letters.html"
+        self.bird_tutor_partial = self.project_root / "templates" / "letters" / "_bird_tutor.html"
         self.letter_data_js = self.project_root / "static" / "js" / "letters" / "letter_data.js"
 
     def test_letters_page_does_not_contain_banned_words(self):
@@ -102,10 +103,15 @@ class LettersContentTests(SimpleTestCase):
 
     def test_letters_page_contains_bird_tutor(self):
         html = self.letters_html.read_text(encoding="utf-8", errors="ignore")
+        partial = self.bird_tutor_partial.read_text(encoding="utf-8", errors="ignore")
 
-        self.assertIn('id="birdTutor"', html)
-        self.assertIn('id="birdLottie"', html)
-        self.assertIn('id="birdAskBtn"', html)
+        self.assertIn('{% include "letters/_bird_tutor.html" %}', html)
+        self.assertIn('id="birdTutor"', partial)
+        self.assertIn('id="birdLottie"', partial)
+        self.assertIn('id="birdAskBtn"', partial)
+        self.assertIn('id="birdLessonIntro"', partial)
+        self.assertIn('id="birdVisualQuestion"', partial)
+        self.assertIn("/static/js/letters/bird_tutor_content.js", html)
         self.assertIn("/static/js/letters/bird_tutor.js", html)
         self.assertIn("window.installBirdTutor(PhonicsGameLab)", html)
         self.assertIn("lottie-web/5.12.2/lottie.min.js", html)

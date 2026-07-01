@@ -316,41 +316,7 @@
                     </div>
                 </div>
 
-                <!-- Bird Tutor -->
-                {% if is_vip_user %}
-                    <section class="bird-tutor-card" id="birdTutor" aria-label="Phonics Bird Tutor" data-lottie-status="fallback">
-                        <div class="bird-tutor-visual">
-                            <div id="birdLottie" class="bird-lottie" aria-hidden="true"></div>
-                            <div id="birdFallback" class="bird-fallback" aria-hidden="true">🦜</div>
-                        </div>
-                        <div class="bird-tutor-content">
-                            <div class="bird-tutor-name">Phonics Bird</div>
-                            <div id="birdStats" class="bird-stats" aria-live="polite"></div>
-                            <div id="birdBubble" class="bird-bubble" aria-live="polite"></div>
-                            <div id="birdHint" class="bird-hint" hidden></div>
-                            <div class="bird-controls">
-                                <button type="button" class="bird-control-btn" id="birdAskBtn">🦜 اسألني</button>
-                                <button type="button" class="bird-control-btn secondary" id="birdRepeatBtn">🔊 أعد قراءة السؤال</button>
-                                <button type="button" class="bird-control-btn secondary bird-review-btn" id="birdReviewBtn" hidden>راجع أخطائي</button>
-                            </div>
-                            <div id="birdActions" class="bird-actions" aria-label="اختيارات العصفور"></div>
-                        </div>
-                    </section>
-                {% else %}
-                    <section class="bird-tutor-card bird-tutor-locked" id="birdTutorLocked" aria-label="Phonics Bird Tutor VIP">
-                        <div class="bird-tutor-visual">
-                            <div class="bird-fallback locked" aria-hidden="true">🦜</div>
-                        </div>
-                        <div class="bird-tutor-content">
-                            <div class="bird-tutor-name">VIP Phonics Bird</div>
-                            <div class="bird-bubble">
-                                <strong>العصفور الذكي متاح في باقة VIP</strong>
-                                <span>يقرأ الأسئلة، يوجه الطفل، ويراجع الأخطاء خطوة بخطوة</span>
-                            </div>
-                            <a class="bird-upgrade-btn" href="/pricing/">ترقية إلى VIP</a>
-                        </div>
-                    </section>
-                {% endif %}
+                {% include "letters/_bird_tutor.html" %}
 
                 <!-- Footer Actions -->
                 <div class="footer-actions">
@@ -732,6 +698,7 @@
     <script src="/static/js/letters/assistant.js"></script>
     <script src="/static/js/letters/match_game.js"></script>
     <script src="/static/js/letters/balloons_game.js"></script>
+    <script src="/static/js/letters/bird_tutor_content.js"></script>
     <script src="/static/js/letters/bird_tutor.js"></script>
 
     <script>

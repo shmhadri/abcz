@@ -2882,6 +2882,79 @@ canvas {
     overflow: hidden;
 }
 
+.bird-lesson-shell {
+    display: block;
+}
+
+.bird-lesson-main {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+}
+
+.bird-lesson-intro {
+    min-height: 360px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    place-items: center;
+    gap: 18px;
+    padding: 22px;
+    text-align: center;
+}
+
+.bird-intro-bubble {
+    max-width: 620px;
+    min-height: 78px;
+    padding: 18px 22px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 2px solid rgba(67, 97, 238, 0.16);
+    color: #172033;
+    font-size: 1.15rem;
+    font-weight: 900;
+    line-height: 1.8;
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+}
+
+.bird-intro-character {
+    width: min(260px, 70vw);
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: radial-gradient(circle, #ffffff 0%, #ecfdf5 58%, #dbeafe 100%);
+    border: 2px solid rgba(16, 185, 129, 0.18);
+    box-shadow: 0 24px 46px rgba(15, 23, 42, 0.12);
+}
+
+.bird-intro-lottie {
+    width: min(220px, 62vw);
+    height: min(220px, 62vw);
+}
+
+.bird-intro-fallback {
+    width: min(220px, 62vw);
+    height: min(220px, 62vw);
+    font-size: clamp(6rem, 22vw, 11rem);
+    animation: birdFloat 2.4s ease-in-out infinite;
+}
+
+.bird-intro-continue {
+    min-width: 180px;
+    min-height: 48px;
+    border: 0;
+    border-radius: 8px;
+    padding: 12px 22px;
+    background: linear-gradient(135deg, #4361ee, #10b981);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 14px 28px rgba(67, 97, 238, 0.22);
+}
+
 .night-mode .bird-tutor-card {
     background: linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
     border-color: rgba(255, 255, 255, 0.12);
@@ -2918,6 +2991,19 @@ canvas {
     animation: birdBounce 0.8s ease-in-out infinite;
 }
 
+.bird-tutor-card[data-state="celebrate"] .bird-fallback {
+    animation: birdCelebrate 0.9s ease-in-out infinite;
+}
+
+.bird-tutor-card[data-state="jump"] .bird-fallback {
+    animation: birdJump 0.7s ease-in-out infinite;
+}
+
+.bird-tutor-card[data-state="sad"] .bird-fallback {
+    animation: birdSad 1s ease-in-out infinite;
+    filter: saturate(0.75);
+}
+
 .bird-tutor-card[data-state="wrong"] .bird-fallback {
     animation: birdShake 0.42s ease-in-out infinite;
 }
@@ -2952,6 +3038,21 @@ canvas {
     font-weight: 900;
     color: var(--primary);
     font-size: 0.95rem;
+}
+
+.developer-vip-preview-badge {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0;
 }
 
 .bird-stats {
@@ -3036,6 +3137,69 @@ canvas {
 
 .night-mode .bird-stat-badge,
 .night-mode .bird-hint {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e5e7eb;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.bird-visual-question {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid rgba(67, 97, 238, 0.14);
+}
+
+.bird-visual-title {
+    color: #334155;
+    font-weight: 900;
+    text-align: center;
+}
+
+.bird-target-picture {
+    min-height: 96px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #172033;
+    font-size: clamp(2rem, 10vw, 4.5rem);
+    font-weight: 900;
+}
+
+.bird-picture-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.bird-picture-choice {
+    min-height: 92px;
+    display: grid;
+    place-items: center;
+    gap: 4px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+}
+
+.bird-picture-emoji {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+.bird-picture-label {
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 900;
+}
+
+.night-mode .bird-visual-question,
+.night-mode .bird-target-picture,
+.night-mode .bird-picture-choice {
     background: rgba(255, 255, 255, 0.08);
     color: #e5e7eb;
     border-color: rgba(255, 255, 255, 0.12);
@@ -3126,11 +3290,47 @@ canvas {
     75% { transform: translateX(6px) rotate(3deg); }
 }
 
+@keyframes birdCelebrate {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    35% { transform: translateY(-12px) rotate(-8deg) scale(1.08); }
+    70% { transform: translateY(-4px) rotate(8deg) scale(1.05); }
+}
+
+@keyframes birdJump {
+    0%, 100% { transform: translateY(0) scale(1); }
+    45% { transform: translateY(-18px) scale(1.06); }
+}
+
+@keyframes birdSad {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(4px) rotate(-2deg); }
+}
+
 @media (max-width: 640px) {
     .bird-tutor-card {
         grid-template-columns: 1fr;
         text-align: center;
         justify-items: center;
+    }
+
+    .bird-lesson-main {
+        grid-template-columns: 1fr;
+        text-align: center;
+        justify-items: center;
+    }
+
+    .bird-lesson-intro {
+        min-height: 320px;
+        padding: 16px;
+    }
+
+    .bird-intro-bubble {
+        font-size: 1rem;
+        padding: 14px 16px;
+    }
+
+    .bird-picture-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .bird-controls,
