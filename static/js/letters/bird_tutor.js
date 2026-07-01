@@ -10,6 +10,41 @@
         thinking: "/static/animations/bird/bird_thinking.json"
     };
     const FALLBACK_EMOJI = "\uD83E\uDD9C";
+    const REVIEW_STORAGE_KEY = "birdTutorReviewItems";
+    const XP_STORAGE_KEY = "birdTutorXp";
+    const QUESTION_TYPES = [
+        "starts_with_letter",
+        "choose_word_for_letter",
+        "listen_and_choose",
+        "find_missing_letter"
+    ];
+    const BIRD_MESSAGES = {
+        opening: [
+            "هيا يا بطل، اضغط اسألني لنتمرن معًا.",
+            "أنا جاهز أساعدك خطوة بخطوة.",
+            "لنراجع الحروف والكلمات بطريقة ممتعة."
+        ],
+        encouragement: [
+            "ممتاز يا بطل!",
+            "رائع! تفكيرك يتحسن.",
+            "أحسنت، هذه إجابة ذكية."
+        ],
+        gentleWrong: [
+            "قريب جدًا، ركز على أول صوت في الكلمة.",
+            "محاولة جميلة، لنفكر بهدوء.",
+            "لا بأس، التلميح سيساعدك."
+        ],
+        review: [
+            "لنراجع كلمة أخطأت فيها سابقًا.",
+            "وقت المراجعة القصيرة.",
+            "هيا نثبت الكلمة في الذاكرة."
+        ],
+        celebration: [
+            "أحسنت! أنت تتحسن.",
+            "نجمة جديدة لك!",
+            "رائع، المراجعة صنعت فرقًا."
+        ]
+    };
 
     function shuffle(items) {
         return items
@@ -26,6 +61,25 @@
             seen.add(key);
             return true;
         });
+    }
+
+    function pick(items, fallback = "") {
+        if (!Array.isArray(items) || items.length === 0) {
+            return fallback;
+        }
+        return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function cleanWord(value) {
+        return String(value || "").trim().toLowerCase();
+    }
+
+    function normalizeAnswer(value) {
+        return String(value || "").trim().toLowerCase();
+    }
+
+    function getLetters() {
+        return window.LETTERS || "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     }
 
     function installBirdTutor(AppClass) {
@@ -49,6 +103,9 @@
             this.birdActionsEl = document.getElementById("birdActions");
             this.birdAskBtn = document.getElementById("birdAskBtn");
             this.birdRepeatBtn = document.getElementById("birdRepeatBtn");
+            this.birdReviewBtn = document.getElementById("birdReviewBtn");
+            this.birdStatsEl = document.getElementById("birdStats");
+            this.birdHintEl = document.getElementById("birdHint");
 
             if (!this.birdTutor || !this.birdBubbleEl || !this.birdActionsEl) {
                 return;
@@ -61,6 +118,9 @@
             this.birdLastQuestion = null;
             this.birdWrongAttempts = 0;
             this.birdLottieStatus = "fallback";
+            this.birdQuestionCounter = 0;
+            this.birdXp = this.loadBirdXp();
+            this.birdReviewItems = this.loadBirdReviewItems();
 
             if (this.birdAskBtn && !this.birdAskBtn.dataset.bound) {
                 this.birdAskBtn.addEventListener("click", () => {
@@ -76,7 +136,14 @@
             }
 
             this.typeMessage("هيا يا بطل، اضغط اسألني لنبدأ!");
+            if (this.birdReviewBtn && !this.birdReviewBtn.dataset.bound) {
+                this.birdReviewBtn.addEventListener("click", () => this.startBirdReview());
+                this.birdReviewBtn.dataset.bound = "true";
+            }
+
+            this.typeMessage(pick(BIRD_MESSAGES.opening));
             this.setBirdState("idle");
+            this.updateBirdStats();
 
             window.addEventListener("load", () => {
                 if (this.birdLottieStatus !== "lottie") {
@@ -318,6 +385,351 @@
             if (this.birdLastQuestion) {
                 this.typeMessage(this.birdLastQuestion.prompt);
                 this.speakText(this.birdLastQuestion.prompt);
+                return;
+            }
+
+            this.typeMessage("اضغط اسألني أولًا لنبدأ!");
+        };
+        AppClass.prototype.loadBirdXp = function () {
+            try {
+                return Math.max(0, Number(localStorage.getItem(XP_STORAGE_KEY) || 0));
+            } catch (error) {
+                return 0;
+            }
+        };
+
+        AppClass.prototype.saveBirdXp = function () {
+            try {
+                localStorage.setItem(XP_STORAGE_KEY, String(this.birdXp || 0));
+            } catch (error) {
+                // Local progress only; ignore storage failures.
+            }
+        };
+
+        AppClass.prototype.loadBirdReviewItems = function () {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(REVIEW_STORAGE_KEY) || "[]");
+                return Array.isArray(parsed) ? parsed.filter(item => item && item.word && item.letter) : [];
+            } catch (error) {
+                return [];
+            }
+        };
+
+        AppClass.prototype.saveBirdReviewItems = function () {
+            try {
+                localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(this.birdReviewItems || []));
+            } catch (error) {
+                // Local review only; ignore storage failures.
+            }
+        };
+
+        AppClass.prototype.getActiveBirdReviewItems = function () {
+            return (this.birdReviewItems || []).filter(item => !item.mastered);
+        };
+
+        AppClass.prototype.updateBirdStats = function () {
+            const reviewCount = this.getActiveBirdReviewItems().length;
+
+            if (this.birdStatsEl) {
+                this.birdStatsEl.replaceChildren();
+
+                const xpBadge = document.createElement("span");
+                xpBadge.className = "bird-stat-badge";
+                xpBadge.textContent = `⭐ Bird XP: ${this.birdXp || 0}`;
+
+                const reviewBadge = document.createElement("span");
+                reviewBadge.className = "bird-stat-badge bird-stat-review";
+                reviewBadge.textContent = `مراجعة: ${reviewCount}`;
+
+                this.birdStatsEl.append(xpBadge, reviewBadge);
+            }
+
+            if (this.birdReviewBtn) {
+                this.birdReviewBtn.hidden = reviewCount === 0;
+                this.birdReviewBtn.disabled = reviewCount === 0;
+            }
+        };
+
+        AppClass.prototype.setBirdHint = function (text, tone = "info") {
+            if (!this.birdHintEl) {
+                return;
+            }
+
+            const message = String(text || "").trim();
+            this.birdHintEl.textContent = message;
+            this.birdHintEl.hidden = !message;
+            this.birdHintEl.dataset.tone = tone;
+        };
+
+        AppClass.prototype.addBirdXp = function (amount) {
+            this.birdXp = Math.max(0, (this.birdXp || 0) + Number(amount || 0));
+            this.saveBirdXp();
+            this.updateBirdStats();
+        };
+
+        AppClass.prototype.getWordRecordsForLetter = function (letter) {
+            const data = window.LETTER_DATA?.[letter] || { words: [] };
+            return (data.words || [])
+                .map(item => ({
+                    word: cleanWord(item.word),
+                    translation: String(item.translation || "").trim(),
+                    emoji: String(item.emoji || "").trim()
+                }))
+                .filter(item => item.word);
+        };
+
+        AppClass.prototype.getDistractorWords = function (letter, correctWord, limit = 3) {
+            const distractors = [];
+            getLetters().forEach(otherLetter => {
+                if (otherLetter === letter) return;
+                this.getWordRecordsForLetter(otherLetter).forEach(item => {
+                    if (item.word !== correctWord) {
+                        distractors.push(item.word);
+                    }
+                });
+            });
+
+            return uniqueWords(shuffle(distractors)).slice(0, limit);
+        };
+
+        AppClass.prototype.makeWordChoices = function (letter, correctWord) {
+            const choices = uniqueWords([
+                correctWord,
+                ...this.getDistractorWords(letter, correctWord, 6)
+            ]).slice(0, 4);
+
+            if (!choices.includes(correctWord)) {
+                choices[0] = correctWord;
+            }
+
+            return shuffle(choices);
+        };
+
+        AppClass.prototype.makeLetterChoices = function (letter) {
+            const otherLetters = getLetters().filter(item => item !== letter);
+            return shuffle(uniqueWords([letter, ...shuffle(otherLetters).slice(0, 3)])).map(item => item.toUpperCase());
+        };
+
+        AppClass.prototype.buildQuestionForCurrentLetter = function () {
+            this.setBirdState("thinking");
+            this.setBirdHint("");
+
+            const letters = getLetters();
+            const letter = letters[this.currentLetterIndex] || this.progress?.currentLetter || "A";
+            const records = this.getWordRecordsForLetter(letter);
+            const record = pick(records, { word: letter.toLowerCase(), translation: "", emoji: "" });
+            const type = QUESTION_TYPES[this.birdQuestionCounter % QUESTION_TYPES.length];
+            this.birdQuestionCounter += 1;
+
+            return this.createBirdQuestion({ type, letter, record, isReview: false });
+        };
+
+        AppClass.prototype.createBirdQuestion = function ({ type, letter, record, isReview = false, reviewId = "" }) {
+            const word = cleanWord(record?.word) || cleanWord(letter);
+            const upperLetter = String(letter || "").toUpperCase();
+            const displayWord = `${record?.emoji ? `${record.emoji} ` : ""}${word}`;
+            const base = {
+                type,
+                letter: upperLetter,
+                targetWord: word,
+                isReview,
+                reviewId,
+                correctExplanation: `ممتاز يا بطل! ${word} تبدأ بحرف ${upperLetter} وصوت /${upperLetter.toLowerCase()}/.`,
+                wrongHint: `استمع إلى بداية الكلمة. نحن نبحث عن كلمة تبدأ بحرف ${upperLetter}.`,
+                finalExplanation: `الإجابة الصحيحة هي ${word} لأنها تبدأ بحرف ${upperLetter}.`,
+                speakPrompt: `Listen carefully. ${word}.`
+            };
+
+            if (type === "listen_and_choose") {
+                return {
+                    ...base,
+                    prompt: "استمع جيدًا، أي كلمة سمعت؟",
+                    correct: word,
+                    choices: this.makeWordChoices(upperLetter, word),
+                    wrongHint: "استمع للكلمة مرة أخرى، ثم اختر نفس الكلمة من الأزرار.",
+                    correctExplanation: `رائع! سمعت كلمة ${word} واخترتها بشكل صحيح.`,
+                    finalExplanation: `الكلمة التي سمعتها هي ${word}. سنراجعها مرة أخرى لاحقًا.`
+                };
+            }
+
+            if (type === "find_missing_letter") {
+                const missingWord = word.length > 1 ? `_${word.slice(1)}` : "_";
+                return {
+                    ...base,
+                    prompt: `ما الحرف الناقص في ${missingWord}؟`,
+                    correct: upperLetter,
+                    choices: this.makeLetterChoices(upperLetter),
+                    wrongHint: `انظر إلى الكلمة ${word}. ما أول حرف تسمعه؟`,
+                    correctExplanation: `صحيح! ${word} تبدأ بحرف ${upperLetter}، لذلك الحرف الناقص هو ${upperLetter}.`,
+                    finalExplanation: `الإجابة الصحيحة هي ${upperLetter} لأن ${word} تبدأ بهذا الحرف.`,
+                    speakPrompt: `What is the missing first letter in ${word}?`
+                };
+            }
+
+            if (type === "choose_word_for_letter") {
+                return {
+                    ...base,
+                    prompt: `اختر الكلمة التي تناسب حرف ${upperLetter}.`,
+                    correct: word,
+                    choices: this.makeWordChoices(upperLetter, word),
+                    wrongHint: `ابحث عن الكلمة التي يبدأ صوتها الأول بحرف ${upperLetter}.`,
+                    correctExplanation: `أحسنت! ${displayWord} هي كلمة مناسبة لحرف ${upperLetter}.`,
+                    speakPrompt: `Choose the word for letter ${upperLetter}.`
+                };
+            }
+
+            return {
+                ...base,
+                prompt: `أي كلمة تبدأ بحرف ${upperLetter}؟`,
+                correct: word,
+                choices: this.makeWordChoices(upperLetter, word),
+                speakPrompt: `What word starts with ${upperLetter}?`
+            };
+        };
+
+        AppClass.prototype.renderQuestion = function (question) {
+            if (!question || !this.birdActionsEl) {
+                return;
+            }
+
+            this.birdLastQuestion = question;
+            this.birdWrongAttempts = 0;
+            this.birdActionsEl.replaceChildren();
+            this.setBirdHint("");
+            this.typeMessage(question.prompt);
+            this.speakText(question.speakPrompt || question.prompt);
+
+            (question.choices || []).forEach(choice => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "bird-choice-btn";
+                button.textContent = choice;
+                button.addEventListener("click", () => this.handleAnswer(choice));
+                this.birdActionsEl.appendChild(button);
+            });
+        };
+
+        AppClass.prototype.handleAnswer = function (choice) {
+            if (!this.birdLastQuestion) {
+                return;
+            }
+
+            const question = this.birdLastQuestion;
+            const selected = normalizeAnswer(choice);
+            const correct = normalizeAnswer(question.correct);
+
+            if (selected === correct) {
+                this.handleCorrectBirdAnswer(question);
+                return;
+            }
+
+            this.handleWrongBirdAnswer(question);
+        };
+
+        AppClass.prototype.handleCorrectBirdAnswer = function (question) {
+            this.setBirdState("happy");
+            this.birdActionsEl.replaceChildren();
+            this.typeMessage(`${pick(BIRD_MESSAGES.encouragement)} ${question.correctExplanation}`);
+            this.setBirdHint(question.correctExplanation, "success");
+            this.speakText(question.correctExplanation);
+            this.addBirdXp(question.isReview ? 8 : 5);
+
+            if (question.isReview) {
+                this.markReviewSuccess(question.reviewId);
+            }
+        };
+
+        AppClass.prototype.handleWrongBirdAnswer = function (question) {
+            this.birdWrongAttempts += 1;
+            this.setBirdState("wrong");
+
+            if (this.birdWrongAttempts >= 2) {
+                this.birdActionsEl.replaceChildren();
+                this.typeMessage(question.finalExplanation);
+                this.setBirdHint(question.finalExplanation, "review");
+                this.speakText(question.targetWord || question.correct);
+                this.addBirdReviewItem(question);
+                return;
+            }
+
+            const hint = `${pick(BIRD_MESSAGES.gentleWrong)} ${question.wrongHint}`;
+            this.typeMessage(hint);
+            this.setBirdHint(question.wrongHint, "hint");
+            this.speakText("Try again.");
+        };
+
+        AppClass.prototype.addBirdReviewItem = function (question) {
+            if (!question || !question.targetWord || question.isReview) {
+                return;
+            }
+
+            const id = `${question.letter}:${question.targetWord}`;
+            const existing = (this.birdReviewItems || []).find(item => item.id === id);
+
+            if (existing) {
+                existing.mastered = false;
+                existing.misses = (existing.misses || 0) + 1;
+                existing.lastType = question.type;
+            } else {
+                this.birdReviewItems.push({
+                    id,
+                    letter: question.letter,
+                    word: question.targetWord,
+                    lastType: question.type,
+                    misses: 1,
+                    successes: 0,
+                    mastered: false
+                });
+            }
+
+            this.saveBirdReviewItems();
+            this.updateBirdStats();
+        };
+
+        AppClass.prototype.startBirdReview = function () {
+            const reviewItems = this.getActiveBirdReviewItems();
+            if (reviewItems.length === 0) {
+                this.typeMessage("لا توجد كلمات للمراجعة الآن. اسألني سؤالًا جديدًا.");
+                this.setBirdHint("", "info");
+                this.updateBirdStats();
+                return;
+            }
+
+            const item = pick(reviewItems);
+            const question = this.createBirdQuestion({
+                type: "starts_with_letter",
+                letter: item.letter,
+                record: { word: item.word },
+                isReview: true,
+                reviewId: item.id
+            });
+
+            question.prompt = `${pick(BIRD_MESSAGES.review)} أي كلمة تبدأ بحرف ${item.letter}؟`;
+            question.correctExplanation = `أحسنت! أنت تتحسن. ${item.word} تبدأ بحرف ${item.letter}.`;
+            question.finalExplanation = `لا بأس. الكلمة هي ${item.word} لأنها تبدأ بحرف ${item.letter}. سنحاول مرة أخرى.`;
+            this.renderQuestion(question);
+        };
+
+        AppClass.prototype.markReviewSuccess = function (reviewId) {
+            const item = (this.birdReviewItems || []).find(entry => entry.id === reviewId);
+            if (!item) {
+                return;
+            }
+
+            item.successes = (item.successes || 0) + 1;
+            if (item.successes >= 2) {
+                item.mastered = true;
+                this.typeMessage(`${pick(BIRD_MESSAGES.celebration)} تم إتقان ${item.word}.`);
+            }
+
+            this.saveBirdReviewItems();
+            this.updateBirdStats();
+        };
+
+        AppClass.prototype.repeatQuestion = function () {
+            if (this.birdLastQuestion) {
+                this.typeMessage(this.birdLastQuestion.prompt);
+                this.speakText(this.birdLastQuestion.speakPrompt || this.birdLastQuestion.prompt);
                 return;
             }
 

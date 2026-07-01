@@ -2927,6 +2927,21 @@ canvas {
     filter: saturate(0.85);
 }
 
+.bird-tutor-locked {
+    border-color: rgba(245, 158, 11, 0.28);
+    background: linear-gradient(135deg, #fff7ed 0%, #ffffff 54%, #fef3c7 100%);
+}
+
+.night-mode .bird-tutor-locked {
+    background: linear-gradient(135deg, rgba(69, 26, 3, 0.9), rgba(15, 23, 42, 0.96));
+}
+
+.bird-fallback.locked {
+    animation: birdFloat 3s ease-in-out infinite;
+    opacity: 0.82;
+    filter: grayscale(0.15);
+}
+
 .bird-tutor-content {
     display: grid;
     gap: 10px;
@@ -2937,6 +2952,34 @@ canvas {
     font-weight: 900;
     color: var(--primary);
     font-size: 0.95rem;
+}
+
+.bird-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.bird-stat-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #3730a3;
+    border: 1px solid rgba(67, 97, 238, 0.16);
+    font-size: 0.82rem;
+    font-weight: 900;
+    line-height: 1.25;
+}
+
+.bird-stat-review {
+    background: #ecfdf5;
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.22);
 }
 
 .bird-bubble {
@@ -2952,7 +2995,47 @@ canvas {
     overflow-wrap: anywhere;
 }
 
+.bird-bubble strong,
+.bird-bubble span {
+    display: block;
+}
+
+.bird-bubble span {
+    margin-top: 4px;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
 .night-mode .bird-bubble {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e5e7eb;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.bird-hint {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #fff7ed;
+    color: #9a3412;
+    border: 1px solid rgba(249, 115, 22, 0.2);
+    font-weight: 800;
+    line-height: 1.6;
+}
+
+.bird-hint[data-tone="success"] {
+    background: #ecfdf5;
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.24);
+}
+
+.bird-hint[data-tone="review"] {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: rgba(245, 158, 11, 0.28);
+}
+
+.night-mode .bird-stat-badge,
+.night-mode .bird-hint {
     background: rgba(255, 255, 255, 0.08);
     color: #e5e7eb;
     border-color: rgba(255, 255, 255, 0.12);
@@ -2984,10 +3067,28 @@ canvas {
     color: #ffffff;
 }
 
+.bird-upgrade-btn {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 12px 18px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    text-decoration: none;
+    font-weight: 900;
+    box-shadow: 0 10px 22px rgba(245, 158, 11, 0.25);
+}
+
 .bird-control-btn.secondary {
     background: #ffffff;
     color: var(--primary);
     border: 1px solid rgba(67, 97, 238, 0.2);
+}
+
+.bird-review-btn:not([hidden]) {
+    display: inline-flex;
 }
 
 .bird-choice-btn {
@@ -3034,6 +3135,10 @@ canvas {
 
     .bird-controls,
     .bird-actions {
+        justify-content: center;
+    }
+
+    .bird-stats {
         justify-content: center;
     }
 
