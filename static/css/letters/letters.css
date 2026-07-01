@@ -509,7 +509,7 @@ body {
 
 .letter-tab.locked {
     opacity: 0.5;
-    cursor: not-allowed;
+    cursor: pointer;
     background: rgba(248, 250, 252, 0.9);
 }
 
@@ -523,6 +523,14 @@ body {
     font-size: 12px;
     top: -5px;
     right: -5px;
+}
+
+.letter-tab.locked::before {
+    content: '\1F512';
+}
+
+.letter-tab.locked::after {
+    display: none;
 }
 
 /* Main Content */
@@ -862,6 +870,31 @@ body {
     flex-wrap: wrap;
 }
 
+.writing-practice-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.writing-mode {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.writing-mode-label {
+    min-width: 54px;
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    background: rgba(67, 97, 238, 0.12);
+    color: var(--primary-light);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+}
+
 .writing-box {
     width: 40px;
     height: 40px;
@@ -897,6 +930,79 @@ body {
     border-color: var(--error);
     background: rgba(239, 68, 68, 0.1);
     color: var(--error);
+}
+
+.writing-drag-practice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.writing-drag-slots,
+.writing-drag-bank {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.writing-drag-slot,
+.writing-drag-letter {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    font-weight: 800;
+    direction: ltr;
+    user-select: none;
+}
+
+.writing-drag-slot {
+    border: 1px dashed var(--border);
+    background: rgba(248, 250, 252, 0.55);
+    color: var(--text);
+}
+
+.writing-drag-slot.drag-over,
+.writing-drag-slot.selected {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+}
+
+.writing-drag-slot.correct {
+    border-style: solid;
+    border-color: var(--success);
+    background: rgba(74, 222, 128, 0.12);
+    color: var(--success);
+}
+
+.writing-drag-letter {
+    border: 1px solid rgba(67, 97, 238, 0.28);
+    background: var(--primary);
+    color: white;
+    cursor: grab;
+    box-shadow: 0 8px 18px rgba(67, 97, 238, 0.18);
+}
+
+.writing-drag-letter:active {
+    cursor: grabbing;
+}
+
+.writing-drag-letter.selected {
+    outline: 3px solid rgba(76, 201, 240, 0.45);
+    transform: translateY(-1px);
+}
+
+.writing-drag-letter.used {
+    opacity: 0.35;
+    cursor: default;
+    transform: none;
+}
+
+.night-mode .writing-drag-slot {
+    background: rgba(30, 41, 59, 0.75);
 }
 
 /* Word Writing */
@@ -1394,6 +1500,113 @@ body {
 .modal-btn.next {
     background: var(--gradient-success);
     color: white;
+}
+
+.parent-report-modal {
+    max-width: 560px;
+}
+
+#parentReportModal,
+#letterPaywallModal {
+    z-index: 2500;
+}
+
+.letter-paywall-modal {
+    max-width: 520px;
+}
+
+.letter-paywall-badge {
+    background: linear-gradient(135deg, #f59e0b, #f72585);
+}
+
+.letter-paywall-copy {
+    background: var(--surface-light);
+    border: 1px solid var(--border);
+    border-right: 4px solid var(--warning);
+    border-radius: var(--radius-md);
+    color: var(--text);
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding: 15px;
+}
+
+.parent-report-badge {
+    background: linear-gradient(135deg, #0ea5e9, #10b981);
+}
+
+.parent-report-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.parent-report-stat {
+    background: var(--surface-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    text-align: center;
+}
+
+.parent-report-stat strong {
+    display: block;
+    color: var(--primary);
+    font-size: 24px;
+    line-height: 1.2;
+    margin-top: 6px;
+}
+
+.parent-report-label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.parent-report-note,
+.parent-report-recommendation {
+    background: var(--surface-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-bottom: 12px;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.child-note {
+    border-right: 4px solid var(--success);
+}
+
+.parent-note {
+    border-right: 4px solid var(--primary);
+}
+
+.parent-report-recommendation {
+    border-right: 4px solid var(--warning);
+}
+
+.premium-preview-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 16px 0 20px;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.parent-report-upgrade {
+    background: linear-gradient(135deg, #f59e0b, #f72585);
+    color: white;
+    text-decoration: none;
+}
+
+@media (max-width: 520px) {
+    .parent-report-summary,
+    .premium-preview-list {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Game Modal */
@@ -2652,6 +2865,182 @@ canvas {
     font-size: 0.8rem;
     margin-top: 5px;
     opacity: 0.8;
+}
+
+/* Bird Tutor */
+.bird-tutor-card {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+    margin: 18px 0;
+    padding: 18px;
+    border-radius: 24px;
+    border: 2px solid rgba(67, 97, 238, 0.16);
+    background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 52%, #ecfdf5 100%);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.09);
+    overflow: hidden;
+}
+
+.night-mode .bird-tutor-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.bird-tutor-visual {
+    width: 120px;
+    min-height: 120px;
+    display: grid;
+    place-items: center;
+}
+
+.bird-lottie {
+    width: 110px;
+    height: 110px;
+}
+
+.bird-fallback {
+    width: 110px;
+    height: 110px;
+    display: grid;
+    place-items: center;
+    font-size: 4.4rem;
+    line-height: 1;
+    transform-origin: center bottom;
+    animation: birdFloat 2.8s ease-in-out infinite;
+}
+
+.bird-tutor-card[data-state="talking"] .bird-fallback {
+    animation: birdPulse 0.75s ease-in-out infinite;
+}
+
+.bird-tutor-card[data-state="happy"] .bird-fallback {
+    animation: birdBounce 0.8s ease-in-out infinite;
+}
+
+.bird-tutor-card[data-state="wrong"] .bird-fallback {
+    animation: birdShake 0.42s ease-in-out infinite;
+}
+
+.bird-tutor-card[data-state="thinking"] .bird-fallback {
+    animation: birdFloat 1.2s ease-in-out infinite;
+    filter: saturate(0.85);
+}
+
+.bird-tutor-content {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+}
+
+.bird-tutor-name {
+    font-weight: 900;
+    color: var(--primary);
+    font-size: 0.95rem;
+}
+
+.bird-bubble {
+    min-height: 58px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid rgba(67, 97, 238, 0.15);
+    color: #1e293b;
+    font-weight: 800;
+    line-height: 1.7;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+    overflow-wrap: anywhere;
+}
+
+.night-mode .bird-bubble {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e5e7eb;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.bird-controls,
+.bird-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.bird-control-btn,
+.bird-choice-btn {
+    border: 0;
+    border-radius: 999px;
+    padding: 11px 16px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 900;
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow: 0 8px 18px rgba(67, 97, 238, 0.16);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bird-control-btn {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.bird-control-btn.secondary {
+    background: #ffffff;
+    color: var(--primary);
+    border: 1px solid rgba(67, 97, 238, 0.2);
+}
+
+.bird-choice-btn {
+    min-width: 94px;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.bird-control-btn:hover,
+.bird-choice-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(67, 97, 238, 0.22);
+}
+
+@keyframes birdFloat {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+}
+
+@keyframes birdPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+@keyframes birdBounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    40% { transform: translateY(-14px) scale(1.08); }
+    70% { transform: translateY(2px) scale(0.98); }
+}
+
+@keyframes birdShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px) rotate(-3deg); }
+    75% { transform: translateX(6px) rotate(3deg); }
+}
+
+@media (max-width: 640px) {
+    .bird-tutor-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+        justify-items: center;
+    }
+
+    .bird-controls,
+    .bird-actions {
+        justify-content: center;
+    }
+
+    .bird-control-btn,
+    .bird-choice-btn {
+        flex: 1 1 150px;
+    }
 }
 
 /* Extracted from templates/letters.html style block 3 */

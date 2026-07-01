@@ -13,18 +13,25 @@ import time
 from datetime import datetime
 
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import login as auth_login, logout as auth_logout
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import models, transaction
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from xhtml2pdf import pisa
 
+from .forms import StudentProfileForm, StudentRegistrationForm
 from .models import (
     Student,
+    StudentProfile,
     LetterProgress,
     ExternalGame,
     TopGoalUnit,
@@ -113,6 +120,55 @@ def parse_json_safely(request):
         return None, _json_error("Invalid JSON format", 400, details=str(e))
     except Exception as e:
         return None, _json_error("Failed to parse request", 400, details=str(e))
+
+
+def get_or_create_student_profile(user):
+    if not user.is_authenticated:
+        return None
+
+    profile, _ = StudentProfile.objects.get_or_create(
+        user=user,
+        defaults={
+            "student_name": user.get_full_name() or user.username,
+            "school": "",
+            "parent_phone": "",
+        },
+    )
+    return profile
+
+
+def serialize_student_profile(profile):
+    if not profile:
+        return {
+            "student_name": "",
+            "school": "",
+            "parent_phone": "",
+            "is_premium": False,
+        }
+
+    return {
+        "student_name": profile.student_name,
+        "school": profile.school,
+        "parent_phone": profile.parent_phone,
+        "is_premium": profile.is_premium,
+    }
+
+
+def get_existing_bird_lottie_files():
+    animation_dir = settings.BASE_DIR / "static" / "animations" / "bird"
+    expected_files = {
+        "idle": "bird_idle.json",
+        "talking": "bird_talk.json",
+        "happy": "bird_happy.json",
+        "wrong": "bird_wrong.json",
+        "thinking": "bird_thinking.json",
+    }
+
+    return {
+        state: f"/static/animations/bird/{filename}"
+        for state, filename in expected_files.items()
+        if (animation_dir / filename).exists()
+    }
 
 
 def validate_int(value, *, min_val: int, max_val: int, field_name="value"):
@@ -277,9 +333,82 @@ def generate_certificate(request, student_id):
 # GENERAL PAGES
 # ============================================
 
+
+@require_http_methods(["GET", "POST"])
+def register(request):
+    if request.user.is_authenticated:
+        return redirect("index")
+
+    form = StudentRegistrationForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        user = form.save()
+        auth_login(request, user)
+        messages.success(request, "تم إنشاء الحساب بنجاح.")
+        return redirect("index")
+
+    return render(request, "accounts/register.html", {"form": form})
+
+
+@require_http_methods(["GET", "POST"])
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("index")
+
+    form = AuthenticationForm(request, data=request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        auth_login(request, form.get_user())
+        messages.success(request, "تم تسجيل الدخول بنجاح.")
+        return redirect(request.GET.get("next") or "index")
+
+    return render(request, "accounts/login.html", {"form": form})
+
+
+@require_GET
+def logout_view(request):
+    auth_logout(request)
+    messages.success(request, "تم تسجيل الخروج.")
+    return redirect("index")
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def profile_api(request):
+    profile = get_or_create_student_profile(request.user)
+
+    if request.method == "GET":
+        return JsonResponse({"profile": serialize_student_profile(profile)})
+
+    data, error = parse_json_safely(request)
+    if error:
+        return error
+
+    form = StudentProfileForm(data, instance=profile)
+    if not form.is_valid():
+        return JsonResponse({"errors": form.errors}, status=400)
+
+    profile = form.save()
+    return JsonResponse({"status": "ok", "profile": serialize_student_profile(profile)})
+
+
+@ensure_csrf_cookie
 @require_GET
 def index(request):
-    return render(request, "letters.html")
+    profile = get_or_create_student_profile(request.user)
+    profile_payload = serialize_student_profile(profile)
+
+    return render(request, "letters.html", {
+        "is_authenticated": request.user.is_authenticated,
+        "is_premium_user": profile.is_premium if profile else False,
+        "phonics_user_id": str(request.user.id) if request.user.is_authenticated else "",
+        "phonics_user_email": request.user.email if request.user.is_authenticated else "",
+        "student_profile_json": json.dumps(profile_payload, ensure_ascii=False),
+        "bird_lottie_files_json": json.dumps(get_existing_bird_lottie_files(), ensure_ascii=False),
+    })
+
+
+@require_GET
+def pricing(request):
+    return render(request, "pricing.html")
 
 
 @require_GET

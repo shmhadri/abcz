@@ -65,6 +65,10 @@ class LettersContentTests(SimpleTestCase):
                 for word in words:
                     self.assertTrue(word.strip())
                     self.assertLessEqual(len(word), MAX_WORD_LENGTH)
+                    self.assertTrue(
+                        word.lower().startswith(letter.lower()),
+                        f"{word} should start with {letter}",
+                    )
                     self.assertNotIn(word.lower(), BANNED_WORDS)
 
     def test_letters_page_loads_extracted_letter_data(self):
@@ -72,3 +76,36 @@ class LettersContentTests(SimpleTestCase):
 
         self.assertIn('/static/js/letters/letter_data.js', html)
         self.assertTrue(self.letter_data_js.exists())
+
+    def test_letter_x_uses_expected_words(self):
+        text = self.letter_data_js.read_text(encoding="utf-8", errors="ignore")
+        block_match = re.search(r"X:\s*\[(.*?)^\s*\]", text, flags=re.DOTALL | re.MULTILINE)
+
+        self.assertIsNotNone(block_match, "X words block was not found")
+        words = re.findall(r'word:\s*"([^"]+)"', block_match.group(1))
+
+        self.assertEqual(words, ["xray", "xmas", "xbox", "xeno", "xyst"])
+
+    def test_letters_page_links_to_external_games(self):
+        html = self.letters_html.read_text(encoding="utf-8", errors="ignore")
+
+        self.assertIn('id="externalGamesLink"', html)
+        self.assertIn('/letters/A/external-games/', html)
+        self.assertIn('/letters/${letter}/external-games/', html)
+
+    def test_letters_page_contains_free_letter_gate(self):
+        html = self.letters_html.read_text(encoding="utf-8", errors="ignore")
+
+        self.assertIn("const IS_PREMIUM_USER = {{ is_premium_user|yesno:", html)
+        self.assertIn('id="letterPaywallModal"', html)
+        self.assertIn('href="/pricing/"', html)
+
+    def test_letters_page_contains_bird_tutor(self):
+        html = self.letters_html.read_text(encoding="utf-8", errors="ignore")
+
+        self.assertIn('id="birdTutor"', html)
+        self.assertIn('id="birdLottie"', html)
+        self.assertIn('id="birdAskBtn"', html)
+        self.assertIn("/static/js/letters/bird_tutor.js", html)
+        self.assertIn("window.installBirdTutor(PhonicsGameLab)", html)
+        self.assertIn("lottie-web/5.12.2/lottie.min.js", html)

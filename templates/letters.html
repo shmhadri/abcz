@@ -9,9 +9,10 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' fill='%234361ee' rx='6'/><text x='16' y='22' fill='white' font-size='18' font-weight='bold' text-anchor='middle' font-family='Arial'>A</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <link rel="stylesheet" href="{% static 'css/letters/letters.css' %}">
 </head>
-<body data-phonics-user-id="" data-phonics-user-email="">
+<body data-phonics-user-id="{{ phonics_user_id|default:'' }}" data-phonics-user-email="{{ phonics_user_email|default:'' }}">
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
@@ -112,10 +113,9 @@
             </div>
             
             <div class="login-options">
-                <!-- Google Login Simulation -->
                 <button class="btn" id="googleLoginBtn" style="width: 100%; background: white; color: #444; border: 1px solid #ddd; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="Google">
-                    <span>تسجيل الدخول باستخدام Google</span>
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>تسجيل الدخول بحساب الموقع</span>
                 </button>
                 
                 <div style="display: flex; align-items: center; margin: 20px 0;">
@@ -184,6 +184,9 @@
                         <button class="btn btn-secondary" id="letterInfo">
                             <span>ℹ️</span> معلومات الحرف
                         </button>
+                        <a class="btn btn-success" id="externalGamesLink" href="/letters/A/external-games/" target="_blank" rel="noopener noreferrer">
+                            <span>&#127918;</span> &#1571;&#1604;&#1593;&#1575;&#1576; &#1573;&#1590;&#1575;&#1601;&#1610;&#1577;
+                        </a>
                         <button class="btn btn-secondary" id="resetLetter">
                             <span>🔄</span> إعادة المحاولة
                         </button>
@@ -206,15 +209,37 @@
                         <span>✍️</span> تدرب على كتابة الحرف
                     </h3>
                     <div class="writing-row">
-                        <div class="writing-label">الحرف الكبير (A) 10 مرات</div>
-                        <div class="writing-boxes" id="capitalWriting">
-                            <!-- Writing boxes will be generated here by JavaScript -->
+                        <div class="writing-label">الحرف الكبير (A) 5 مرات</div>
+                        <div class="writing-practice-group">
+                            <div class="writing-mode">
+                                <div class="writing-mode-label">يكتب</div>
+                                <div class="writing-boxes" id="capitalWriting">
+                                    <!-- Writing boxes will be generated here by JavaScript -->
+                                </div>
+                            </div>
+                            <div class="writing-mode">
+                                <div class="writing-mode-label">يسحب</div>
+                                <div class="writing-drag-practice" id="capitalDragWriting">
+                                    <!-- Drag writing boxes will be generated here by JavaScript -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="writing-row">
-                        <div class="writing-label">الحرف الصغير (a) 10 مرات</div>
-                        <div class="writing-boxes" id="smallWriting">
-                            <!-- Writing boxes will be generated here by JavaScript -->
+                        <div class="writing-label">الحرف الصغير (a) 5 مرات</div>
+                        <div class="writing-practice-group">
+                            <div class="writing-mode">
+                                <div class="writing-mode-label">يكتب</div>
+                                <div class="writing-boxes" id="smallWriting">
+                                    <!-- Writing boxes will be generated here by JavaScript -->
+                                </div>
+                            </div>
+                            <div class="writing-mode">
+                                <div class="writing-mode-label">يسحب</div>
+                                <div class="writing-drag-practice" id="smallDragWriting">
+                                    <!-- Drag writing boxes will be generated here by JavaScript -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -291,6 +316,23 @@
                     </div>
                 </div>
 
+                <!-- Bird Tutor -->
+                <section class="bird-tutor-card" id="birdTutor" aria-label="Phonics Bird Tutor" data-lottie-status="fallback">
+                    <div class="bird-tutor-visual">
+                        <div id="birdLottie" class="bird-lottie" aria-hidden="true"></div>
+                        <div id="birdFallback" class="bird-fallback" aria-hidden="true">🦜</div>
+                    </div>
+                    <div class="bird-tutor-content">
+                        <div class="bird-tutor-name">Phonics Bird</div>
+                        <div id="birdBubble" class="bird-bubble" aria-live="polite"></div>
+                        <div class="bird-controls">
+                            <button type="button" class="bird-control-btn" id="birdAskBtn">🦜 اسألني</button>
+                            <button type="button" class="bird-control-btn secondary" id="birdRepeatBtn">🔊 أعد قراءة السؤال</button>
+                        </div>
+                        <div id="birdActions" class="bird-actions" aria-label="اختيارات العصفور"></div>
+                    </div>
+                </section>
+
                 <!-- Footer Actions -->
                 <div class="footer-actions">
                     <button class="btn btn-secondary" id="prevLetter">
@@ -302,6 +344,88 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Free Letter Gate Modal -->
+    <div class="modal" id="letterPaywallModal">
+        <div class="modal-content letter-paywall-modal">
+            <button class="modal-close" id="closeLetterPaywall">×</button>
+            <div class="modal-header">
+                <div class="modal-badge letter-paywall-badge">خطة أساسية</div>
+                <h2 class="modal-title">افتح كل الحروف من A إلى Z</h2>
+                <p class="modal-subtitle">حرف <strong id="lockedLetterName">C</strong> متاح ضمن الخطة الأساسية مع التقارير والشهادة.</p>
+            </div>
+
+            <div class="letter-paywall-copy">
+                افتح كل الحروف من A إلى Z مع التقارير والشهادة، واجعل رحلة الطفل اليومية أوضح لولي الأمر.
+            </div>
+
+            <div class="premium-preview-list" aria-label="مزايا فتح كل الحروف">
+                <div>✅ كل الحروف A-Z</div>
+                <div>✅ تقارير ولي الأمر</div>
+                <div>✅ شهادة إنجاز</div>
+                <div>✅ ألعاب إضافية Wordwall</div>
+            </div>
+
+            <div class="modal-actions">
+                <a class="modal-btn parent-report-upgrade" href="/pricing/">اشترك الآن</a>
+                <button class="modal-btn next" id="tryFreeLetters">جرّب A و B مجانًا</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parent Report Modal -->
+    <div class="modal" id="parentReportModal">
+        <div class="modal-content parent-report-modal">
+            <button class="modal-close" id="closeParentReport">×</button>
+            <div class="modal-header">
+                <div class="modal-badge parent-report-badge">تقرير ولي الأمر</div>
+                <h2 class="modal-title">🎉 ممتاز!</h2>
+                <p class="modal-subtitle">طفلك أكمل حرف <strong id="parentReportLetter">A</strong></p>
+            </div>
+
+            <div class="parent-report-summary">
+                <div class="parent-report-stat">
+                    <span class="parent-report-label">الكلمات المتدرب عليها</span>
+                    <strong id="parentReportWords">0</strong>
+                </div>
+                <div class="parent-report-stat">
+                    <span class="parent-report-label">الدرجة الحالية</span>
+                    <strong id="parentReportScore">0</strong>
+                </div>
+                <div class="parent-report-stat">
+                    <span class="parent-report-label">حالة الحرف</span>
+                    <strong>مكتمل</strong>
+                </div>
+            </div>
+
+            <div class="parent-report-note child-note" id="parentReportChildMessage">
+                أحسنت يا بطل! خطوة جديدة في رحلة الإنجليزية.
+            </div>
+
+            <div class="parent-report-note parent-note">
+                <strong>لولي الأمر:</strong>
+                <span id="parentReportParentMessage">طفلك يتقدم بشكل جيد. التقرير الكامل يساعدك على معرفة نقاط القوة وما يحتاج إلى تدريب يومي قصير.</span>
+            </div>
+
+            <div class="parent-report-recommendation">
+                <strong>توصية تدريب قصيرة:</strong>
+                <span id="parentReportRecommendation">راجع نطق الكلمات بصوت عال ثم اكتب الحرف 3 مرات.</span>
+            </div>
+
+            <div class="premium-preview-list" aria-label="مزايا التقرير الكامل">
+                <div>✅ خطة يومية</div>
+                <div>✅ تقرير ولي الأمر</div>
+                <div>✅ شهادة QR لاحقًا</div>
+                <div>✅ ألعاب إضافية</div>
+                <div>✅ متابعة التقدم من أي جهاز</div>
+            </div>
+
+            <div class="modal-actions">
+                <a class="modal-btn parent-report-upgrade" href="/pricing/">اشترك لفتح التقرير الكامل</a>
+                <button class="modal-btn next" id="continueParentReport">أكمل التدريب</button>
+            </div>
+        </div>
     </div>
 
     <!-- Toast Notification -->
@@ -324,14 +448,8 @@
             <!-- Games Grid -->
             <div class="games-container-wrapper">
                 <div class="games-grid" id="gamesGrid">
-                    <div class="game-card" data-game="carRace">
-                        <div class="game-icon">🏎️</div>
-                        <div class="game-name">سباق السيارات</div>
-                    </div>
-                    <div class="game-card" data-game="racket">
-                        <div class="game-icon">🎾</div>
-                        <div class="game-name">لعبة المضرب</div>
-                    </div>
+
+
                     <div class="game-card" data-game="shooting">
                         <div class="game-icon">🎯</div>
                         <div class="game-name">اصطياد الحرف</div>
@@ -594,12 +712,20 @@
     <script src="/static/js/letters/certificate.js"></script>
     <script src="/static/js/letters/assistant.js"></script>
     <script src="/static/js/letters/match_game.js"></script>
+    <script src="/static/js/letters/balloons_game.js"></script>
+    <script src="/static/js/letters/bird_tutor.js"></script>
 
     <script>
         // بيانات التطبيق
         const LETTERS = window.LETTERS || "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         const WORDS_PER_LETTER = window.WORDS_PER_LETTER || 5;
         const MAX_WORD_LENGTH = window.MAX_WORD_LENGTH || 4;
+        const IS_AUTHENTICATED = {{ is_authenticated|yesno:"true,false" }};
+        const IS_PREMIUM_USER = {{ is_premium_user|yesno:"true,false" }};
+        const SERVER_STUDENT_PROFILE = {{ student_profile_json|default:"{}"|safe }};
+        const BIRD_LOTTIE_FILES = {{ bird_lottie_files_json|default:"{}"|safe }};
+        window.PHONICS_USER_ID = "{{ phonics_user_id|default:''|escapejs }}";
+        window.PHONICS_USER_EMAIL = "{{ phonics_user_email|default:''|escapejs }}";
         
         // نظام إدارة الصوت البريطاني المحسن
         class BritishSoundManager {
@@ -950,6 +1076,10 @@
                 this.syncProgressDerivedState();
 
                 this.currentLetterIndex = LETTERS.indexOf(this.progress.currentLetter) >= 0 ? LETTERS.indexOf(this.progress.currentLetter) : 0;
+                if (!this.isPremiumUser() && this.currentLetterIndex > 1) {
+                    this.currentLetterIndex = 0;
+                    this.progress.currentLetter = 'A';
+                }
                 this.currentQuizIndex = 0;
                 this.quizScore = 0;
                 this.writingScore = 0;
@@ -966,11 +1096,12 @@
                 // this.letterProgress = JSON.parse(localStorage.getItem('letterProgress')) || {}; // OLD: This was the cause of the bug
 
                 // Profile Data
-                this.studentName = localStorage.getItem('studentName') || '';
-                this.studentSchool = localStorage.getItem('studentSchool') || '';
+                const serverProfile = SERVER_STUDENT_PROFILE || {};
+                this.studentName = serverProfile.student_name || localStorage.getItem('studentName') || '';
+                this.studentSchool = serverProfile.school || localStorage.getItem('studentSchool') || '';
                 this.studentPhone = localStorage.getItem('studentPhone') || '';
-                this.parentPhone = localStorage.getItem('parentPhone') || '';
-                this.studentEmail = localStorage.getItem('studentEmail') || '';
+                this.parentPhone = serverProfile.parent_phone || localStorage.getItem('parentPhone') || '';
+                this.studentEmail = window.PHONICS_USER_EMAIL || localStorage.getItem('studentEmail') || '';
 
                 this.currentGame = null;
                 this.isNightMode = localStorage.getItem('nightMode') === 'true';
@@ -1066,9 +1197,12 @@
                 this.letterUpperEl = document.getElementById('letterUpper');
                 this.letterLowerEl = document.getElementById('letterLower');
                 this.letterForWordsEl = document.getElementById('letterForWords');
+                this.externalGamesLink = document.getElementById('externalGamesLink');
                 this.wordsGrid = document.getElementById('wordsGrid');
                 this.capitalWriting = document.getElementById('capitalWriting');
                 this.smallWriting = document.getElementById('smallWriting');
+                this.capitalDragWriting = document.getElementById('capitalDragWriting');
+                this.smallDragWriting = document.getElementById('smallDragWriting');
                 this.wordWritingList = document.getElementById('wordWritingList');
                 this.quizQuestion = document.getElementById('quizQuestion');
                 this.quizOptions = document.getElementById('quizOptions');
@@ -1109,6 +1243,19 @@
                 this.jumpToLetterBtn = document.getElementById('jumpToLetter');
                 
                 this.motivationModal = document.getElementById('motivationModal');
+                this.parentReportModal = document.getElementById('parentReportModal');
+                this.closeParentReportBtn = document.getElementById('closeParentReport');
+                this.continueParentReportBtn = document.getElementById('continueParentReport');
+                this.parentReportLetter = document.getElementById('parentReportLetter');
+                this.parentReportWords = document.getElementById('parentReportWords');
+                this.parentReportScore = document.getElementById('parentReportScore');
+                this.parentReportChildMessage = document.getElementById('parentReportChildMessage');
+                this.parentReportParentMessage = document.getElementById('parentReportParentMessage');
+                this.parentReportRecommendation = document.getElementById('parentReportRecommendation');
+                this.letterPaywallModal = document.getElementById('letterPaywallModal');
+                this.closeLetterPaywallBtn = document.getElementById('closeLetterPaywall');
+                this.tryFreeLettersBtn = document.getElementById('tryFreeLetters');
+                this.lockedLetterName = document.getElementById('lockedLetterName');
                 this.gameModal = document.getElementById('gameModal');
                 this.winModal = document.getElementById('winModal');
                 this.certificateModal = document.getElementById('certificateModal');
@@ -1210,6 +1357,25 @@
                 this.finishLetterBtn.addEventListener('touchend', (e) => e.preventDefault(), { passive: false }); // Prevent ghost clicks
                 
                 this.themeToggle.addEventListener('click', () => this.toggleTheme());
+
+                if (this.closeParentReportBtn) {
+                    this.closeParentReportBtn.addEventListener('click', () => this.hideParentReport());
+                }
+
+                if (this.continueParentReportBtn) {
+                    this.continueParentReportBtn.addEventListener('click', () => this.hideParentReport());
+                }
+
+                if (this.closeLetterPaywallBtn) {
+                    this.closeLetterPaywallBtn.addEventListener('click', () => this.hideLetterPaywall());
+                }
+
+                if (this.tryFreeLettersBtn) {
+                    this.tryFreeLettersBtn.addEventListener('click', () => {
+                        this.hideLetterPaywall();
+                        this.goToLetter('A');
+                    });
+                }
                 
                 // Mobile Menu Events
                 if (this.mobileMenuBtn) {
@@ -1342,19 +1508,12 @@
                 });
 
                 document.getElementById('googleLoginBtn').addEventListener('click', () => {
-                    // Simulation of Google Login
-                    const email = prompt("أدخل بريدك الإلكتروني (Google):", "student@gmail.com");
-                    if (email) {
-                        this.studentEmail = email;
-                        this.studentName = email.split('@')[0]; // Use part of email as name initially
-                        localStorage.setItem('studentEmail', this.studentEmail);
-                        localStorage.setItem('studentName', this.studentName);
-                        this.refreshUserIdentifier();
-                        this.updateProfileDisplay();
-                        this.profileModal.style.display = 'none';
-                        this.showToast("تم تسجيل الدخول بنجاح! يرجى إكمال بياناتك الشخصية.", 3000, 'success');
-                        this.openProfileModal(); // Re-open to fill other details
+                    if (!IS_AUTHENTICATED) {
+                        window.location.href = '/accounts/login/';
+                        return;
                     }
+
+                    this.showToast("أنت مسجل الدخول بالفعل.", 2000, 'success');
                 });
 
                 this.closeMotivationBtn.addEventListener('click', () => this.motivationModal.style.display = 'none');
@@ -1572,21 +1731,72 @@
                 this.profileModal.style.display = 'flex';
             }
 
-            saveProfile() {
-                this.studentName = document.getElementById('profileName').value;
-                this.studentSchool = document.getElementById('profileSchool').value;
-                this.studentPhone = document.getElementById('profilePhone').value;
-                this.parentPhone = document.getElementById('profileParentPhone').value;
+            getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+                return '';
+            }
 
-                localStorage.setItem('studentName', this.studentName);
-                localStorage.setItem('studentSchool', this.studentSchool);
-                localStorage.setItem('studentPhone', this.studentPhone);
-                localStorage.setItem('parentPhone', this.parentPhone);
+            storeProfileLocally(profileData) {
+                localStorage.setItem('studentName', profileData.student_name);
+                localStorage.setItem('studentSchool', profileData.school);
+                localStorage.setItem('studentPhone', profileData.student_phone || '');
+                localStorage.setItem('parentPhone', profileData.parent_phone);
+            }
 
-                this.refreshUserIdentifier();
-                this.updateProfileDisplay();
-                this.profileModal.style.display = 'none';
-                this.showToast("تم حفظ البيانات بنجاح!", 3000, 'success');
+            async saveProfileToServer(profileData) {
+                const response = await fetch('/accounts/profile/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        student_name: profileData.student_name,
+                        school: profileData.school,
+                        parent_phone: profileData.parent_phone
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'profile_save_failed');
+                }
+
+                return data.profile;
+            }
+
+            async saveProfile() {
+                const profileData = {
+                    student_name: document.getElementById('profileName').value.trim(),
+                    school: document.getElementById('profileSchool').value.trim(),
+                    student_phone: document.getElementById('profilePhone').value.trim(),
+                    parent_phone: document.getElementById('profileParentPhone').value.trim()
+                };
+
+                try {
+                    if (IS_AUTHENTICATED) {
+                        const savedProfile = await this.saveProfileToServer(profileData);
+                        profileData.student_name = savedProfile.student_name || profileData.student_name;
+                        profileData.school = savedProfile.school || profileData.school;
+                        profileData.parent_phone = savedProfile.parent_phone || profileData.parent_phone;
+                    }
+
+                    this.studentName = profileData.student_name;
+                    this.studentSchool = profileData.school;
+                    this.studentPhone = profileData.student_phone;
+                    this.parentPhone = profileData.parent_phone;
+
+                    this.storeProfileLocally(profileData);
+                    this.refreshUserIdentifier();
+                    this.updateProfileDisplay();
+                    this.profileModal.style.display = 'none';
+                    this.showToast("تم حفظ البيانات بنجاح!", 3000, 'success');
+                } catch (error) {
+                    console.error(error);
+                    this.showToast("تعذر حفظ البروفايل. حاول مرة أخرى.", 3000, 'error');
+                }
             }
 
             updateProfileDisplay() {
@@ -1797,6 +2007,36 @@
                 }
             }
             
+            isPremiumUser() {
+                return Boolean(window.__PHONICS_PREMIUM_OVERRIDE__ ?? IS_PREMIUM_USER);
+            }
+
+            isFreeLetter(letter) {
+                return ['A', 'B'].includes(String(letter || '').toUpperCase());
+            }
+
+            isLetterAvailableForPlan(letter) {
+                return this.isPremiumUser() || this.isFreeLetter(letter);
+            }
+
+            showLetterPaywall(letter) {
+                if (this.lockedLetterName) {
+                    this.lockedLetterName.textContent = letter;
+                }
+
+                if (this.letterPaywallModal) {
+                    this.letterPaywallModal.style.display = 'flex';
+                }
+
+                this.soundManager?.playSound('click');
+            }
+
+            hideLetterPaywall() {
+                if (this.letterPaywallModal) {
+                    this.letterPaywallModal.style.display = 'none';
+                }
+            }
+
             setupLetterJumpMenu() {
                 this.letterJumpMenu.innerHTML = '';
                 
@@ -1808,7 +2048,7 @@
                     
                     item.addEventListener('click', () => {
                         this.goToLetter(letter);
-                        if (this.isLetterUnlocked(letter)) {
+                        if (this.isLetterAvailableForPlan(letter)) {
                             this.letterJumpMenu.classList.remove('show');
                         }
                     });
@@ -1839,6 +2079,12 @@
                 if (nextIndex < LETTERS.length) {
                     // فتح الحرف التالي فقط
                     const nextLetter = LETTERS[nextIndex];
+                    if (!this.isLetterAvailableForPlan(nextLetter)) {
+                        this.renderLettersNav();
+                        this.showLetterPaywall(nextLetter);
+                        return;
+                    }
+
                     const entry = this.ensureLetterRecord(nextLetter);
 
                     if (!entry.unlocked) {
@@ -1865,6 +2111,16 @@
             goToLetter(letter) {
                 const index = LETTERS.indexOf(letter);
                 if (index === -1) return;
+
+                if (!this.isLetterAvailableForPlan(letter)) {
+                    this.showLetterPaywall(letter);
+                    return;
+                }
+
+                if (this.isPremiumUser() || this.isFreeLetter(letter)) {
+                    this.loadLetter(index);
+                    return;
+                }
                 
                 // السماح بالوصول للحرف A دائماً
                 if (index === 0) {
@@ -1911,7 +2167,18 @@
                         tab.classList.add('completed');
                     }
                     
-                    if (!this.isLetterUnlocked(letter)) {
+                    if (!this.isLetterAvailableForPlan(letter)) {
+                        tab.classList.add('locked');
+                        tab.title = 'اشترك لفتح هذا الحرف';
+                    } else {
+                        tab.title = `حرف ${letter}`;
+                    }
+
+                    if (!this.isLetterAvailableForPlan(letter) && this.isLetterCompleted(letter)) {
+                        tab.classList.remove('completed');
+                    }
+
+                    if (this.isLetterAvailableForPlan(letter) && !this.isPremiumUser() && !this.isFreeLetter(letter) && !this.isLetterUnlocked(letter)) {
                         tab.classList.add('locked');
                     }
                     
@@ -1948,7 +2215,12 @@
                         return;
                     }
 
-                    if (index !== 0 && !this.isLetterUnlocked(letter)) {
+                    if (!this.isLetterAvailableForPlan(letter)) {
+                        this.showLetterPaywall(letter);
+                        return;
+                    }
+
+                    if (!this.isPremiumUser() && !this.isFreeLetter(letter) && index !== 0 && !this.isLetterUnlocked(letter)) {
                         this.showToast('عذرًا، هذا الحرف مغلق. يجب إنهاء الحرف السابق أولًا.', 3000);
                         this.soundManager.playSound('error');
                         return;
@@ -2009,6 +2281,9 @@
                 if (this.letterUpperEl) this.letterUpperEl.textContent = letter.toUpperCase();
                 if (this.letterLowerEl) this.letterLowerEl.textContent = letter.toLowerCase();
                 if (this.letterForWordsEl) this.letterForWordsEl.textContent = letter;
+                if (this.externalGamesLink) {
+                    this.externalGamesLink.href = `/letters/${letter}/external-games/`;
+                }
                 
                 // إضافة زر تحميل ورقة العمل
                 if (this.currentLetterEl && this.currentLetterEl.parentElement) {
@@ -2303,15 +2578,41 @@
                 if (!this.capitalWriting || !this.smallWriting) return;
                 this.capitalWriting.innerHTML = '';
                 this.smallWriting.innerHTML = '';
+                if (this.capitalDragWriting) this.capitalDragWriting.innerHTML = '';
+                if (this.smallDragWriting) this.smallDragWriting.innerHTML = '';
+
                 const letterProgress = this.ensureLetterRecord(letter);
+                const writing = this.ensureWritingPracticeState(letterProgress);
+                const practiceCount = 5;
                 
-                for (let i = 0; i < 10; i++) {
-                    const capitalBox = this.createWritingBox(i, letter.toUpperCase(), true, letterProgress.exercises.writing.capital[i]);
+                for (let i = 0; i < practiceCount; i++) {
+                    const capitalBox = this.createWritingBox(i, letter.toUpperCase(), true, writing.capital[i]);
                     this.capitalWriting.appendChild(capitalBox);
                     
-                    const smallBox = this.createWritingBox(i, letter.toLowerCase(), false, letterProgress.exercises.writing.small[i]);
+                    const smallBox = this.createWritingBox(i, letter.toLowerCase(), false, writing.small[i]);
                     this.smallWriting.appendChild(smallBox);
                 }
+
+                if (this.capitalDragWriting) {
+                    this.renderWritingDragPractice(this.capitalDragWriting, letter.toUpperCase(), true, writing.dragCapital, practiceCount);
+                }
+
+                if (this.smallDragWriting) {
+                    this.renderWritingDragPractice(this.smallDragWriting, letter.toLowerCase(), false, writing.dragSmall, practiceCount);
+                }
+            }
+
+            ensureWritingPracticeState(letterProgress) {
+                if (!letterProgress.exercises) letterProgress.exercises = {};
+                if (!letterProgress.exercises.writing) letterProgress.exercises.writing = {};
+
+                const writing = letterProgress.exercises.writing;
+                if (!writing.capital) writing.capital = {};
+                if (!writing.small) writing.small = {};
+                if (!writing.dragCapital) writing.dragCapital = {};
+                if (!writing.dragSmall) writing.dragSmall = {};
+
+                return writing;
             }
 
             createWritingBox(index, expectedChar, isCapital, savedValue) {
@@ -2338,6 +2639,7 @@
                 const entered = box.value.trim();
                 const letter = this.progress.currentLetter;
                 const letterProgress = this.ensureLetterRecord(letter);
+                const writing = this.ensureWritingPracticeState(letterProgress);
                 const type = isCapital ? 'capital' : 'small';
 
                 // Strict equality check for case sensitivity
@@ -2345,7 +2647,7 @@
                     box.classList.add('correct');
                     box.classList.remove('incorrect');
                     box.disabled = true;
-                    letterProgress.exercises.writing[type][box.dataset.index] = entered;
+                    writing[type][box.dataset.index] = entered;
                     
                     if (!isLoading) {
                         this.updateAndCommitScores();
@@ -2361,7 +2663,7 @@
                 } else {
                     box.classList.add('incorrect');
                     box.classList.remove('correct');
-                    delete letterProgress.exercises.writing[type][box.dataset.index];
+                    delete writing[type][box.dataset.index];
                     
                     if (!isLoading && entered !== '') {
                         this.soundManager.playSound('error');
@@ -2381,13 +2683,134 @@
                 }
             }
 
+            renderWritingDragPractice(container, expectedChar, isCapital, savedValues = {}, count = 5) {
+                container.innerHTML = '';
+
+                const slots = document.createElement('div');
+                slots.className = 'writing-drag-slots';
+
+                const bank = document.createElement('div');
+                bank.className = 'writing-drag-bank';
+
+                for (let i = 0; i < count; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'writing-drag-slot';
+                    slot.dataset.index = i;
+                    slot.dataset.char = isCapital ? 'capital' : 'small';
+                    slot.dataset.expected = expectedChar;
+                    slot.setAttribute('role', 'button');
+                    slot.setAttribute('tabindex', '0');
+
+                    if (savedValues[i] === expectedChar) {
+                        slot.classList.add('correct');
+                        slot.textContent = expectedChar;
+                    }
+
+                    slot.addEventListener('dragover', (event) => {
+                        if (slot.classList.contains('correct')) return;
+                        event.preventDefault();
+                        slot.classList.add('drag-over');
+                    });
+
+                    slot.addEventListener('dragleave', () => {
+                        slot.classList.remove('drag-over');
+                    });
+
+                    slot.addEventListener('drop', (event) => {
+                        event.preventDefault();
+                        slot.classList.remove('drag-over');
+                        const tileId = event.dataTransfer.getData('text/plain');
+                        const tile = Array.from(container.querySelectorAll('.writing-drag-letter'))
+                            .find(item => item.dataset.dragTileId === tileId);
+                        this.completeWritingDragSlot(slot, tile, expectedChar, isCapital);
+                    });
+
+                    slot.addEventListener('click', () => {
+                        this.completeWritingDragSlot(slot, this.selectedWritingDragTile, expectedChar, isCapital);
+                    });
+
+                    slots.appendChild(slot);
+
+                    const tile = document.createElement('div');
+                    tile.className = 'writing-drag-letter';
+                    tile.textContent = expectedChar;
+                    tile.dataset.value = expectedChar;
+                    tile.dataset.dragTileId = `${isCapital ? 'capital' : 'small'}-${i}-${expectedChar}`;
+                    tile.draggable = savedValues[i] !== expectedChar;
+
+                    if (savedValues[i] === expectedChar) {
+                        tile.classList.add('used');
+                    }
+
+                    tile.addEventListener('dragstart', (event) => {
+                        if (tile.classList.contains('used')) {
+                            event.preventDefault();
+                            return;
+                        }
+                        event.dataTransfer.setData('text/plain', tile.dataset.dragTileId);
+                    });
+
+                    tile.addEventListener('click', () => {
+                        if (tile.classList.contains('used')) return;
+                        if (this.selectedWritingDragTile) {
+                            this.selectedWritingDragTile.classList.remove('selected');
+                        }
+                        this.selectedWritingDragTile = tile;
+                        tile.classList.add('selected');
+                    });
+
+                    bank.appendChild(tile);
+                }
+
+                container.appendChild(slots);
+                container.appendChild(bank);
+            }
+
+            completeWritingDragSlot(slot, tile, expectedChar, isCapital) {
+                if (!slot || !tile || slot.classList.contains('correct') || tile.classList.contains('used')) return;
+
+                const droppedValue = tile.dataset.value;
+                const letter = this.progress.currentLetter;
+                const letterProgress = this.ensureLetterRecord(letter);
+                const writing = this.ensureWritingPracticeState(letterProgress);
+                const storeKey = isCapital ? 'dragCapital' : 'dragSmall';
+
+                if (droppedValue === expectedChar) {
+                    slot.textContent = expectedChar;
+                    slot.classList.add('correct');
+                    tile.classList.add('used');
+                    tile.classList.remove('selected');
+                    tile.draggable = false;
+                    writing[storeKey][slot.dataset.index] = expectedChar;
+
+                    this.selectedWritingDragTile = null;
+                    this.updateAndCommitScores();
+                    this.soundManager.playSound('success');
+                    this.speakLetter(expectedChar, isCapital);
+                    return;
+                }
+
+                this.soundManager.playSound('error');
+                this.showToast('اسحب الحرف الصحيح إلى الخانة', 2000, 'warning');
+            }
+
             calculateCurrentWritingScore() {
                 const letter = this.progress.currentLetter;
                 if (!letter) return 0;
                 const letterProgress = this.ensureLetterRecord(letter);
-                const capitalCorrect = Object.keys(letterProgress.exercises.writing.capital || {}).length;
-                const smallCorrect = Object.keys(letterProgress.exercises.writing.small || {}).length;
-                return capitalCorrect + smallCorrect;
+                const writing = this.ensureWritingPracticeState(letterProgress);
+                const capitalCorrect = this.countWritingPracticeEntries(writing.capital);
+                const smallCorrect = this.countWritingPracticeEntries(writing.small);
+                const dragCapitalCorrect = this.countWritingPracticeEntries(writing.dragCapital);
+                const dragSmallCorrect = this.countWritingPracticeEntries(writing.dragSmall);
+                return capitalCorrect + smallCorrect + dragCapitalCorrect + dragSmallCorrect;
+            }
+
+            countWritingPracticeEntries(entries, limit = 5) {
+                return Object.keys(entries || {}).filter(index => {
+                    const numericIndex = Number(index);
+                    return Number.isInteger(numericIndex) && numericIndex >= 0 && numericIndex < limit;
+                }).length;
             }
 
 
@@ -3046,6 +3469,7 @@
                 }
 
                 const missingGames = this.getMissingRequiredGames(currentLetter);
+                let shouldShowParentReport = false;
                 
                 // تشغيل صوت التصفيق والاحتفال دائماً عند إنهاء التمارين
                 this.soundManager.playSound('success'); 
@@ -3064,6 +3488,7 @@
                         this.renderAchievements();
                     }
                     this.unlockNextLetter(currentLetter);
+                    shouldShowParentReport = true;
                     
                     this.motivationTitle.textContent = "إنجاز مذهل! 🌟";
                     this.motivationSubtitle.textContent = "لقد أتممت جميع المهام لهذا الحرف!";
@@ -3073,8 +3498,61 @@
                 // الانتقال فوراً لقائمة الألعاب دائماً
                 this.showGameSelection();
                 this.showToast('اختر لعبة للبدء أو انتقل للحرف التالي! 🚀', 3000, 'success');
+                if (shouldShowParentReport) {
+                    this.showParentReport(currentLetter, latestEntry);
+                }
             }
             
+            showParentReport(letter, entry) {
+                if (!this.parentReportModal) return;
+
+                const letterData = LETTER_DATA[letter] || { words: [] };
+                const practicedWords = Object.keys(entry?.exercises?.words || {}).length || letterData.words.length || 0;
+                const currentScore = entry?.score || this.getCurrentLetterTotalScore();
+
+                if (this.parentReportLetter) this.parentReportLetter.textContent = letter;
+                if (this.parentReportWords) this.parentReportWords.textContent = practicedWords;
+                if (this.parentReportScore) this.parentReportScore.textContent = currentScore;
+
+                if (this.parentReportChildMessage) {
+                    this.parentReportChildMessage.textContent = `أحسنت! أكملت حرف ${letter} وتدربت على كلمات جديدة. استمر بنفس الحماس.`;
+                }
+
+                if (this.parentReportParentMessage) {
+                    this.parentReportParentMessage.textContent = `طفلك أنهى حرف ${letter} بنجاح. التقرير الكامل يساعدك على متابعة التقدم، معرفة المهارات التي تحتاج دعمًا، وبناء تدريب يومي قصير.`;
+                }
+
+                if (this.parentReportRecommendation) {
+                    this.parentReportRecommendation.textContent = this.getParentReportRecommendation(entry);
+                }
+
+                this.parentReportModal.style.display = 'flex';
+            }
+
+            hideParentReport() {
+                if (this.parentReportModal) {
+                    this.parentReportModal.style.display = 'none';
+                }
+            }
+
+            getParentReportRecommendation(entry) {
+                const writing = entry?.exercises?.writing || {};
+                const writingCount = ['capital', 'small', 'dragCapital', 'dragSmall'].reduce((total, key) => {
+                    return total + Object.keys(writing[key] || {}).length;
+                }, 0);
+                const quizScore = entry?.exercises?.quiz?.score || 0;
+
+                if (writingCount < 20) {
+                    return 'ركز اليوم على كتابة الحرف الكبير والصغير 3 مرات ببطء ووضوح.';
+                }
+
+                if (quizScore < 4) {
+                    return 'راجع الكلمات مع الصور ثم أعد الاختبار بعد استراحة قصيرة.';
+                }
+
+                return 'راجع نطق الكلمات بصوت عال ثم اكتب الحرف 3 مرات لتعزيز التثبيت.';
+            }
+
             showMotivationModal(totalScore) {
                 const letter = LETTERS[this.currentLetterIndex];
                 const studentName = this.studentName || 'البطل';
@@ -3224,6 +3702,11 @@
                     const nextLetter = LETTERS[nextIndex];
                     
                     // التحقق من إكمال الألعاب المطلوبة لفتح الحرف التالي
+                    if (!this.isLetterAvailableForPlan(nextLetter)) {
+                        this.showLetterPaywall(nextLetter);
+                        return;
+                    }
+
                     const entry = this.ensureLetterRecord(currentLetter);
                     const games = entry.games || {};
                     
@@ -3380,8 +3863,8 @@
                 window.addEventListener('resize', this.resizeHandler);
                 
                 const instructions = {
-                    'carRace': '🏎️ تحكم في السيارة باستخدام الأسهم أو اللمس. اجمع الحروف الصحيحة (A و a) وتجنب الحروف الخاطئة!',
-                    'racket': '🎾 حرك المضرب باستخدام الأسهم وارتد الكرة عندما تحمل الحرف الصحيح Aa!',
+
+
                     'shooting': '🎯 استخدم الأسهم لتحريك المدفع ومسافة للرمي. اصطد الأسماك التي تحمل الحرف A أو a!',
                     'balloons': '🎈 اضغط على البالونات التي تحمل الحرف A أو a وتجنب البالونات الأخرى!',
                     'memory': '🧠 ابحث عن البطاقات المتطابقة التي تحمل الحرف A و a!',
@@ -3401,7 +3884,7 @@
                         this.gameTimerEl.textContent = this.gameTimeLeft;
                         
                         if (this.gameTimeLeft <= 0) {
-                            if (this.currentGame === 'carRace' || this.currentGame === 'shooting') {
+                            if (this.currentGame === 'shooting') {
                                 this.showWinGame();
                             } else {
                                 this.endGame();
@@ -3413,8 +3896,8 @@
             
             getGameName(gameType) {
                 const names = {
-                    'carRace': 'سباق السيارات',
-                    'racket': 'لعبة المضرب',
+
+
                     'shooting': 'اصطياد الحرف',
                     'balloons': 'لعبة البالونات',
                     'memory': 'لعبة الذاكرة',
@@ -3426,7 +3909,7 @@
             }
             
             setupGameControls() {
-                if (this.currentGame === 'carRace' || this.currentGame === 'racket' || this.currentGame === 'shooting') {
+                if (this.currentGame === 'shooting') {
                     this.touchControlsEl.style.display = 'flex';
                 } else {
                     this.touchControlsEl.style.display = 'none';
@@ -3476,12 +3959,8 @@
                 this.gameObjects = [];
                 
                 switch(gameType) {
-                    case 'carRace':
-                        this.initCarRaceGame(ctx, canvas);
-                        break;
-                    case 'racket':
-                        this.initRacketGame(ctx, canvas);
-                        break;
+
+
                     case 'shooting':
                         this.initShootingGame(ctx, canvas);
                         break;
@@ -3503,469 +3982,6 @@
                     default:
                         this.initDefaultGame(ctx, canvas);
                 }
-            }
-            
-            initCarRaceGame(ctx, canvas) {
-                const currentLetter = LETTERS[this.currentLetterIndex];
-                const app = this;
-                
-                // إظهار أزرار التحكم باللمس دائماً للألعاب التي تتطلب تحكم
-                this.touchControlsEl.style.display = 'flex';
-                canvas.style.touchAction = 'none'; // Prevent scrolling
-
-                // إعدادات اللعبة
-                const gameDuration = 60; // 60 ثانية
-                let timeLeft = gameDuration;
-                let lastTime = Date.now();
-                
-                // السيارة
-                const car = {
-                    x: canvas.width / 2 - 35,
-                    y: canvas.height - 120,
-                    width: 70,
-                    height: 110,
-                    speed: 7, // زيادة السرعة قليلاً
-                    emoji: '🏎️',
-                    draw: function() {
-                        ctx.font = '90px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(this.emoji, this.x + this.width/2, this.y + this.height/2);
-                    },
-                    move: function(direction) {
-                        if (direction === 'left' && this.x > 0) {
-                            this.x -= this.speed;
-                        }
-                        if (direction === 'right' && this.x < canvas.width - this.width) {
-                            this.x += this.speed;
-                        }
-                    }
-                };
-
-                // Touch Control for Car
-                canvas.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                    const rect = canvas.getBoundingClientRect();
-                    const touch = e.touches[0];
-                    const touchX = touch.clientX - rect.left;
-                    
-                    car.x = touchX - car.width / 2;
-                    
-                    if (car.x < 0) car.x = 0;
-                    if (car.x > canvas.width - car.width) car.x = canvas.width - car.width;
-                }, { passive: false });
-                
-                // العناصر المتساقطة (حروف وعوائق)
-                const items = [];
-                const allLetters = LETTERS.filter(l => l !== currentLetter);
-                const obstacles = ['🪨', '🚧', '🛢️', '🪵'];
-                
-                // إضافة عنصر جديد
-                const spawnItem = () => {
-                    const type = Math.random();
-                    let item = {
-                        x: Math.random() * (canvas.width - 40),
-                        y: -50,
-                        width: 40,
-                        height: 40,
-                        speed: 3 + Math.random() * 3,
-                        isCollected: false
-                    };
-
-                    if (type < 0.3) { // 30% عوائق
-                        item.type = 'obstacle';
-                        item.content = obstacles[Math.floor(Math.random() * obstacles.length)];
-                    } else { // 70% حروف
-                        item.type = 'letter';
-                        const isCorrect = Math.random() > 0.4; // 60% حروف صحيحة لتشجيع الطفل
-                        if (isCorrect) {
-                            item.content = Math.random() > 0.5 ? currentLetter : currentLetter.toLowerCase();
-                            item.isCorrect = true;
-                        } else {
-                            item.content = Math.random() > 0.5 ? 
-                                allLetters[Math.floor(Math.random() * allLetters.length)] : 
-                                allLetters[Math.floor(Math.random() * allLetters.length)].toLowerCase();
-                            item.isCorrect = false;
-                        }
-                    }
-                    items.push(item);
-                };
-                
-                // Explosion Effect
-                const explosions = [];
-                const createExplosion = (x, y, color) => {
-                    for (let i = 0; i < 15; i++) {
-                        explosions.push({
-                            x: x,
-                            y: y,
-                            vx: (Math.random() - 0.5) * 15,
-                            vy: (Math.random() - 0.5) * 15,
-                            life: 1.0,
-                            color: color,
-                            size: Math.random() * 5 + 2
-                        });
-                    }
-                };
-
-                // حلقة اللعبة
-                const gameLoop = () => {
-                    if (!app.gameRunning) return;
-                    
-                    if (app.isPaused) {
-                        this.gameAnimationFrame = requestAnimationFrame(gameLoop);
-                        return;
-                    }
-
-                    // حساب الوقت
-                    const now = Date.now();
-                    if (now - lastTime >= 1000) {
-                        timeLeft--;
-                        lastTime = now;
-                        app.gameTimerEl.textContent = timeLeft; // تحديث العداد في الواجهة
-                    }
-
-                    if (timeLeft <= 0) {
-                        app.showWinGame(); // انتهاء الوقت = فوز إذا صمد
-                        return;
-                    }
-
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    // رسم الطريق
-                    ctx.fillStyle = '#334155';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    // خطوط الطريق
-                    ctx.fillStyle = '#f8fafc';
-                    ctx.setLineDash([20, 20]);
-                    ctx.beginPath();
-                    ctx.moveTo(canvas.width / 2, 0);
-                    ctx.lineTo(canvas.width / 2, canvas.height);
-                    ctx.lineWidth = 4;
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-
-                    // تحريك السيارة
-                    if (this.touchControls.left) car.move('left');
-                    if (this.touchControls.right) car.move('right');
-                    
-                    // Ensure car stays within bounds (for resize)
-                    if (car.x > canvas.width - car.width) car.x = canvas.width - car.width;
-                    
-                    car.draw();
-
-                    // إدارة العناصر
-                    if (Math.random() < 0.08) spawnItem(); // Increased spawn rate (was 0.05)
-
-                    for (let i = items.length - 1; i >= 0; i--) {
-                        let item = items[i];
-                        item.y += item.speed;
-
-                        // رسم العنصر
-                        ctx.font = '30px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        
-                        if (item.type === 'letter') {
-                            // رسم خلفية للحرف
-                            ctx.fillStyle = item.isCorrect ? '#4ade80' : '#f87171';
-                            ctx.beginPath();
-                            ctx.arc(item.x + item.width/2, item.y + item.height/2, 20, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.fillStyle = '#ffffff';
-                            ctx.fillText(item.content, item.x + item.width/2, item.y + item.height/2);
-                        } else {
-                            ctx.fillText(item.content, item.x + item.width/2, item.y + item.height/2);
-                        }
-
-                        // التحقق من التصادم
-                        if (!item.isCollected && 
-                            item.y + item.height > car.y &&
-                            item.y < car.y + car.height &&
-                            item.x + item.width > car.x &&
-                            item.x < car.x + car.width) {
-                            
-                            item.isCollected = true;
-                            
-                            // Explosion Effect
-                            createExplosion(item.x + item.width/2, item.y + item.height/2, item.type === 'obstacle' ? '#ef4444' : '#fbbf24');
-
-                            if (item.type === 'obstacle') {
-                                app.soundManager.playSound('error');
-                                app.gameScoreEl.textContent = Math.max(0, parseInt(app.gameScoreEl.textContent) - 5);
-                                // تأثير اهتزاز أو وميض يمكن إضافته هنا
-                                canvas.style.transform = 'translateX(5px)';
-                                setTimeout(() => canvas.style.transform = 'none', 100);
-                            } else if (item.type === 'letter') {
-                                if (item.isCorrect) {
-                                    app.soundManager.playSound('success');
-                                    app.gameScoreEl.textContent = parseInt(app.gameScoreEl.textContent) + 10;
-                                    app.gameStats.successCount++;
-                                } else {
-                                    app.soundManager.playSound('error');
-                                    app.gameScoreEl.textContent = Math.max(0, parseInt(app.gameScoreEl.textContent) - 5);
-                                }
-                                app.gameStats.totalAttempts++;
-                                app.updateGameStats();
-                            }
-                            
-                            items.splice(i, 1);
-                            continue;
-                        }
-
-                        // حذف العناصر خارج الشاشة
-                        if (item.y > canvas.height) {
-                            items.splice(i, 1);
-                        }
-                    }
-
-                    // Update and draw explosions
-                    for (let i = explosions.length - 1; i >= 0; i--) {
-                        let p = explosions[i];
-                        p.x += p.vx;
-                        p.y += p.vy;
-                        p.life -= 0.05;
-                        
-                        if (p.life <= 0) {
-                            explosions.splice(i, 1);
-                        } else {
-                            ctx.globalAlpha = p.life;
-                            ctx.fillStyle = p.color;
-                            ctx.beginPath();
-                            ctx.arc(p.x, p.y, p.size || 3, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.globalAlpha = 1.0;
-                        }
-                    }
-                    
-                    this.gameAnimationFrame = requestAnimationFrame(gameLoop);
-                };
-                
-                gameLoop();
-                
-                const keyHandler = (e) => {
-                    if (e.key === 'ArrowLeft') this.touchControls.left = true;
-                    if (e.key === 'ArrowRight') this.touchControls.right = true;
-                };
-                
-                const keyUpHandler = (e) => {
-                    if (e.key === 'ArrowLeft') this.touchControls.left = false;
-                    if (e.key === 'ArrowRight') this.touchControls.right = false;
-                };
-                
-                document.addEventListener('keydown', keyHandler);
-                document.addEventListener('keyup', keyUpHandler);
-                
-                this.currentKeyHandlers = { keydown: keyHandler, keyup: keyUpHandler };
-            }
-            
-            initRacketGame(ctx, canvas) {
-                const currentLetter = LETTERS[this.currentLetterIndex];
-                const app = this;
-                
-                // إظهار أزرار التحكم باللمس
-                this.touchControlsEl.style.display = 'flex';
-                canvas.style.touchAction = 'none';
-
-                const racket = {
-                    x: canvas.width / 2 - 50,
-                    y: canvas.height - 30,
-                    width: 100,
-                    height: 20,
-                    speed: 12, // Increased speed for better button response
-                    color: '#f72585',
-                    draw: function() {
-                        ctx.fillStyle = this.color;
-                        ctx.fillRect(this.x, this.y, this.width, this.height);
-                        ctx.fillStyle = '#4cc9f0';
-                        ctx.fillRect(this.x + 10, this.y + 5, this.width - 20, 10);
-                    },
-                    move: function(direction) {
-                        if (direction === 'left' && this.x > 0) {
-                            this.x -= this.speed;
-                        }
-                        if (direction === 'right' && this.x < canvas.width - this.width) {
-                            this.x += this.speed;
-                        }
-                    },
-                    updatePosition: function() {
-                        // Update Y position in case of resize
-                        this.y = canvas.height - 30;
-                        // Ensure X is within bounds
-                        if (this.x > canvas.width - this.width) {
-                            this.x = canvas.width - this.width;
-                        }
-                    }
-                };
-                
-                // Touch Control for Racket
-                canvas.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                    const rect = canvas.getBoundingClientRect();
-                    const touch = e.touches[0];
-                    const touchX = touch.clientX - rect.left;
-                    
-                    // Center racket on touch
-                    racket.x = touchX - racket.width / 2;
-                    
-                    // Bounds check
-                    if (racket.x < 0) racket.x = 0;
-                    if (racket.x > canvas.width - racket.width) racket.x = canvas.width - racket.width;
-                }, { passive: false });
-                
-                let drops = 0; // Counter for dropped balls
-
-                const ball = {
-                    x: canvas.width / 2,
-                    y: canvas.height / 2,
-                    radius: 25, // Increased size
-                    speedX: 4, // Start slightly faster
-                    speedY: 4, // Start slightly faster
-                    letter: `${currentLetter}${currentLetter.toLowerCase()}`,
-                    color: '#4361ee',
-                    draw: function() {
-                        ctx.fillStyle = this.color;
-                        ctx.beginPath();
-                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                        ctx.fill();
-                        
-                        ctx.fillStyle = 'white';
-                        ctx.font = 'bold 20px Arial'; // Increased font size
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(this.letter, this.x, this.y);
-                    },
-                    update: function() {
-                        this.x += this.speedX;
-                        this.y += this.speedY;
-                        
-                        if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) {
-                            this.speedX = -this.speedX;
-                            // Keep ball inside
-                            if (this.x - this.radius < 0) this.x = this.radius;
-                            if (this.x + this.radius > canvas.width) this.x = canvas.width - this.radius;
-                        }
-                        if (this.y - this.radius < 0) {
-                            this.speedY = -this.speedY;
-                            this.y = this.radius;
-                        }
-                        
-                        if (this.y + this.radius > racket.y &&
-                            this.y - this.radius < racket.y + racket.height &&
-                            this.x + this.radius > racket.x &&
-                            this.x - this.radius < racket.x + racket.width) {
-                            
-                            // Increase speed progressively on hit
-                            const speedMultiplier = 1.1;
-                            this.speedY = -Math.abs(this.speedY) * speedMultiplier;
-                            this.speedX = this.speedX * speedMultiplier;
-                            
-                            // Cap max speed
-                            const maxSpeed = 15;
-                            if (Math.abs(this.speedY) > maxSpeed) this.speedY = maxSpeed * Math.sign(this.speedY);
-                            if (Math.abs(this.speedX) > maxSpeed) this.speedX = maxSpeed * Math.sign(this.speedX);
-
-                            const isCorrect = this.letter.includes(currentLetter) || this.letter.includes(currentLetter.toLowerCase());
-                            
-                            if (isCorrect) {
-                                app.gameStats.successCount++;
-                                app.gameStats.totalAttempts++;
-                                app.gameScoreEl.textContent = parseInt(app.gameScoreEl.textContent) + 5;
-                                app.soundManager.playSound('success');
-
-                                // Win condition: 10 returns
-                                if (app.gameStats.successCount >= 10) {
-                                    app.showWinGame();
-                                    return;
-                                }
-                            } else {
-                                app.gameStats.totalAttempts++;
-                                app.soundManager.playSound('error');
-                            }
-                            
-                            this.letter = Math.random() > 0.5 ? 
-                                `${currentLetter}${currentLetter.toLowerCase()}` : 
-                                `${LETTERS[Math.floor(Math.random() * LETTERS.length)]}${LETTERS[Math.floor(Math.random() * LETTERS.length)].toLowerCase()}`;
-                            this.color = isCorrect ? '#4ade80' : '#ef4444';
-                            
-                            app.updateGameStats();
-                        }
-                        
-                        if (this.y - this.radius > canvas.height) {
-                            drops++;
-                            if (drops >= 3) {
-                                app.endGame(); // Lose condition
-                                return;
-                            }
-
-                            this.x = canvas.width / 2;
-                            this.y = canvas.height / 2;
-                            // Reset speed on drop, but keep it challenging
-                            this.speedX = 4 * (Math.random() > 0.5 ? 1 : -1);
-                            this.speedY = 4;
-                            app.gameStats.totalAttempts++;
-                            app.updateGameStats();
-                            app.soundManager.playSound('error');
-                            app.showToast(`⚠️ انتبه! سقطت الكرة ${drops}/3 مرات`, 2000);
-                        }
-                    }
-                };
-                
-                const gameLoop = () => {
-                    if (!app.gameRunning) return; // Stop loop if game not running
-                    
-                    if (app.isPaused) {
-                        this.gameAnimationFrame = requestAnimationFrame(gameLoop);
-                        return;
-                    }
-
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    ctx.fillStyle = '#1e293b';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    ctx.strokeStyle = '#475569';
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([10, 10]);
-                    ctx.beginPath();
-                    ctx.moveTo(canvas.width/2, 0);
-                    ctx.lineTo(canvas.width/2, canvas.height);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    
-                    // Update racket position for resize
-                    racket.updatePosition();
-
-                    if (this.touchControls.left) racket.move('left');
-                    if (this.touchControls.right) racket.move('right');
-                    
-                    // Ensure racket stays within bounds
-                    if (racket.x > canvas.width - racket.width) racket.x = canvas.width - racket.width;
-                    
-                    ball.update();
-                    ball.draw();
-                    
-                    racket.draw();
-                    
-                    this.gameAnimationFrame = requestAnimationFrame(gameLoop);
-                };
-                
-                gameLoop();
-                
-                const keyHandler = (e) => {
-                    if (e.key === 'ArrowLeft') this.touchControls.left = true;
-                    if (e.key === 'ArrowRight') this.touchControls.right = true;
-                };
-                
-                const keyUpHandler = (e) => {
-                    if (e.key === 'ArrowLeft') this.touchControls.left = false;
-                    if (e.key === 'ArrowRight') this.touchControls.right = false;
-                };
-                
-                document.addEventListener('keydown', keyHandler);
-                document.addEventListener('keyup', keyUpHandler);
-                
-                this.currentKeyHandlers = { keydown: keyHandler, keyup: keyUpHandler };
             }
             
             initShootingGame(ctx, canvas) {
@@ -4256,263 +4272,6 @@
                 document.addEventListener('keyup', keyUpHandler);
                 
                 this.currentKeyHandlers = { keydown: keyHandler, keyup: keyUpHandler };
-            }
-            
-            initBalloonsGame(ctx, canvas) {
-                const currentLetter = LETTERS[this.currentLetterIndex];
-                const app = this;
-                
-                // Responsive configuration
-                const isMobile = canvas.width < 600;
-                const balloonCount = isMobile ? 15 : 20;
-                
-                // Timer Setup
-                const gameDuration = 60; // 60 seconds
-                let timeLeft = gameDuration;
-                let lastTime = Date.now();
-                
-                const balloons = [];
-                for (let i = 0; i < balloonCount; i++) {
-                    this.addNewBalloon(balloons, canvas, currentLetter);
-                }
-                
-                const clickHandler = (e) => {
-                    const rect = canvas.getBoundingClientRect();
-                    const mouseX = e.clientX - rect.left;
-                    const mouseY = e.clientY - rect.top;
-                    
-                    // Iterate backwards to handle overlapping balloons (top one first)
-                    for (let i = balloons.length - 1; i >= 0; i--) {
-                        if (balloons[i].checkClick(mouseX, mouseY)) {
-                            break; // Stop after clicking one balloon
-                        }
-                    }
-                };
-                
-                canvas.addEventListener('click', clickHandler);
-                canvas.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    const rect = canvas.getBoundingClientRect();
-                    // Use changedTouches for better touch handling
-                    const touch = e.changedTouches[0] || e.touches[0];
-                    const mouseX = touch.clientX - rect.left;
-                    const mouseY = touch.clientY - rect.top;
-                    
-                    for (let i = balloons.length - 1; i >= 0; i--) {
-                        if (balloons[i].checkClick(mouseX, mouseY)) {
-                            break;
-                        }
-                    }
-                }, { passive: false });
-
-                this.currentClickHandler = clickHandler;
-                
-                const gameLoop = () => {
-                    if (!this.gameRunning || this.isGameEnding) {
-                        return;
-                    }
-                    
-                    if (this.isPaused) {
-                        this.gameAnimationFrame = requestAnimationFrame(gameLoop);
-                        return;
-                    }
-                    
-                    try {
-                        // Timer Logic
-                        const now = Date.now();
-                        if (now - lastTime >= 1000) {
-                            timeLeft--;
-                            lastTime = now;
-                            app.gameTimerEl.textContent = timeLeft;
-                        }
-
-                        if (timeLeft <= 0) {
-                            app.showWinGame();
-                            app.showToast('🎉 انتهى الوقت! أحسنت!', 3000, 'success');
-                            return;
-                        }
-
-                        // Apply FPS limiting
-                        const perfNow = performance.now();
-                        const deltaTime = perfNow - this.lastFrameTime;
-                        
-                        if (deltaTime >= this.frameInterval) {
-                            this.lastFrameTime = perfNow - (deltaTime % this.frameInterval);
-                            
-                            ctx.clearRect(0, 0, canvas.width, canvas.height);
-                            
-                            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                            gradient.addColorStop(0, '#4cc9f0');
-                            gradient.addColorStop(1, '#4895ef');
-                            ctx.fillStyle = gradient;
-                            ctx.fillRect(0, 0, canvas.width, canvas.height);
-                            
-                            // Reduced cloud animation frequency for performance
-                            if (Math.floor(perfNow / 200) % 2 === 0) {
-                                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-                                for (let i = 0; i < 2; i++) {
-                                    const x = (perfNow/1000 * 15 + i * 120) % (canvas.width + 200) - 100;
-                                    ctx.beginPath();
-                                    ctx.arc(x, 100 + i * 40, 30, 0, Math.PI * 2);
-                                    ctx.arc(x + 25, 90 + i * 40, 25, 0, Math.PI * 2);
-                                    ctx.fill();
-                                }
-                            }
-                            
-                            // Update and draw balloons efficiently
-                            for (let i = balloons.length - 1; i >= 0; i--) {
-                                if (this.gameRunning && !this.isGameEnding) {
-                                    const balloon = balloons[i];
-                                    balloon.update();
-                                    balloon.draw();
-                                }
-                            }
-                        }
-                        
-                        if (this.gameRunning && !this.isGameEnding) {
-                            this.gameAnimationFrame = requestAnimationFrame(gameLoop);
-                        }
-                    } catch (error) {
-                        console.error('Error in balloon game loop:', error);
-                        this.gameRunning = false;
-                    }
-                };
-                
-                gameLoop();
-            }
-            
-            addNewBalloon(balloons, canvas, currentLetter) {
-                const isCorrect = Math.random() > 0.2;
-                const letter = isCorrect ? 
-                    (Math.random() > 0.5 ? currentLetter : currentLetter.toLowerCase()) : 
-                    LETTERS[Math.floor(Math.random() * LETTERS.length)];
-                const colors = ['#f72585', '#4361ee', '#4cc9f0', '#4ade80', '#f59e0b'];
-                
-                const app = this; // Capture this context
-                
-                // Responsive size
-                const isMobile = canvas.width < 600;
-                const baseRadius = isMobile ? 35 : 25;
-
-                balloons.push({
-                    x: Math.random() * canvas.width,
-                    y: canvas.height + Math.random() * 100,
-                    radius: baseRadius + Math.random() * 20,
-                    speed: 2 + Math.random() * 3,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    letter: letter,
-                    isCorrect: isCorrect || letter.toLowerCase() === currentLetter.toLowerCase(),
-                    popped: false,
-                    popTime: 0,
-                    draw: function() {
-                        // Same draw function as before
-                        const ctx = canvas.getContext('2d');
-                        if (this.popped) {
-                            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-                            for (let i = 0; i < 8; i++) {
-                                const angle = (i / 8) * Math.PI * 2;
-                                const distance = this.radius * 1.5;
-                                ctx.beginPath();
-                                ctx.arc(
-                                    this.x + Math.cos(angle) * distance,
-                                    this.y + Math.sin(angle) * distance,
-                                    5,
-                                    0,
-                                    Math.PI * 2
-                                );
-                                ctx.fill();
-                            }
-                            return;
-                        }
-                        
-                        ctx.fillStyle = this.color;
-                        ctx.beginPath();
-                        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                        ctx.fill();
-                        
-                        ctx.strokeStyle = this.color;
-                        ctx.lineWidth = 2;
-                        ctx.beginPath();
-                        ctx.moveTo(this.x, this.y + this.radius);
-                        ctx.lineTo(this.x, this.y + this.radius + 30);
-                        ctx.stroke();
-                        
-                        ctx.fillStyle = 'white';
-                        ctx.font = `bold ${Math.floor(this.radius * 0.8)}px Arial`;
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(this.letter, this.x, this.y);
-                    },
-                    update: function() {
-                        if (this.popped) {
-                            this.popTime++;
-                            if (this.popTime > 30) {
-                                const index = balloons.indexOf(this);
-                                if (index > -1) {
-                                    balloons.splice(index, 1);
-                                    app.addNewBalloon(balloons, canvas, currentLetter);
-                                }
-                            }
-                            return;
-                        }
-                        
-                        this.y -= this.speed;
-                        
-                        // Handle resize
-                        if (this.x > canvas.width) this.x = Math.random() * canvas.width;
-                        
-                        if (this.y < -this.radius) {
-                            const index = balloons.indexOf(this);
-                            if (index > -1) {
-                                balloons.splice(index, 1);
-                                app.addNewBalloon(balloons, canvas, currentLetter);
-                            }
-                        }
-                    },
-                    checkClick: function(mouseX, mouseY) {
-                        if (this.popped) return false;
-                        
-                        const dx = mouseX - this.x;
-                        const dy = mouseY - this.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        
-                        // Increased hit area slightly (radius * 1.2) for better touch
-                        if (distance < this.radius * 1.2) {
-                            this.popped = true;
-                            
-                            if (this.isCorrect) {
-                                // Chain Reaction: Pop all balloons with the same letter
-                                let extraPopped = 0;
-                                balloons.forEach(b => {
-                                    if (!b.popped && b.letter === this.letter && b !== this) {
-                                        b.popped = true;
-                                        extraPopped++;
-                                    }
-                                });
-                                
-                                app.gameStats.successCount += (1 + extraPopped);
-                                app.gameStats.totalAttempts++;
-                                app.gameScoreEl.textContent = parseInt(app.gameScoreEl.textContent) + 10 + (extraPopped * 5);
-                                app.soundManager.playSound('success');
-                                
-                                // Win condition: 16 correct pops
-                                if (app.gameStats.successCount >= 16) {
-                                    app.showWinGame();
-                                    app.showToast('🎉 أحسنت! لقد فجرت 16 بالوناً صحيحاً!', 3000, 'success');
-                                    return true;
-                                }
-                            } else {
-                                app.gameStats.totalAttempts++;
-                                app.gameScoreEl.textContent = Math.max(0, parseInt(app.gameScoreEl.textContent) - 5);
-                                app.soundManager.playSound('error');
-                            }
-                            
-                            app.updateGameStats();
-                            return true;
-                        }
-                        return false;
-                    }
-                });
             }
             
             initTypingGame(ctx, canvas) {
@@ -5518,12 +5277,7 @@
                         'هائل! تركيزك مدهش! 🎆',
                         'أنت سريع جداً! استمر هكذا! 🚀'
                     ],
-                    'racket': [
-                        'ممتاز! دقتك وتركيزك رائعين! 🏸',
-                        'رائع! لعب متقن! 🏆',
-                        'أحسنت! مهاراتك تتطور! ⭐',
-                        'أنت لاعب محترف! 🎾'
-                    ],
+
                     'memory': [
                         'عبقري! ذاكرتك قوية جداً! 🧠',
                         'رائع! تذكر بشكل ممتاز! ✨',
@@ -5566,8 +5320,8 @@
                     'match': 'لعبة المطابقة',
                     'balloons': 'لعبة البالونات',
                     'memory': 'لعبة الذاكرة',
-                    'carRace': 'سباق السيارات',
-                    'racket': 'لعبة المضرب',
+
+
                     'shooting': 'اصطياد الحرف',
                     'search': 'لعبة البحث',
                     'typing': 'الكتابة السريعة'
@@ -5845,6 +5599,14 @@
             window.installLettersMatchGame(PhonicsGameLab);
         }
 
+        if (window.installLettersBalloonsGame) {
+            window.installLettersBalloonsGame(PhonicsGameLab);
+        }
+
+        if (window.installBirdTutor) {
+            window.installBirdTutor(PhonicsGameLab);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             new PhonicsGameLab();
             
@@ -5973,7 +5735,8 @@ function sendAudioToServer(blob, letter){
             </div>
         </div>
     </div>
-
+
+
 
     <div class="dropdown-menu" id="userDropdown">
         <button class="menu-item mobile-only" id="closeMenuBtn" style="display: none; color: var(--text-secondary);">
@@ -6004,6 +5767,9 @@ function sendAudioToServer(blob, letter){
         
         <div class="menu-divider"></div>
         
+        <a href="{% url 'pricing' %}" class="menu-item" style="text-decoration:none; color: #f59e0b; font-weight: bold;">
+            <i class="fas fa-crown"></i> خطط الاشتراك
+        </a>
         <button class="menu-item" id="viewInstructions">
             <i class="fas fa-info-circle"></i> تعليمات الموقع
         </button>
