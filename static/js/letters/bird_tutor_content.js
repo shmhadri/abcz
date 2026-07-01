@@ -10,7 +10,8 @@
             "find_missing_letter",
             "choose_picture_for_word",
             "choose_word_for_picture",
-            "meaning_match"
+            "meaning_match",
+            "pronounce_word"
         ],
         meanings: {
             ant: "نملة",

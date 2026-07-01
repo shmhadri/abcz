@@ -19,7 +19,8 @@
         "find_missing_letter",
         "choose_picture_for_word",
         "choose_word_for_picture",
-        "meaning_match"
+        "meaning_match",
+        "pronounce_word"
     ];
     const INTRO_MESSAGE = "مرحبًا! أنا عصفور الفونيكس. سأساعدك في القراءة.";
     const BIRD_MESSAGES = {
@@ -80,6 +81,46 @@
 
     function normalizeAnswer(value) {
         return String(value || "").trim().toLowerCase();
+    }
+
+    function levenshteinDistance(a, b) {
+        const first = normalizeAnswer(a);
+        const second = normalizeAnswer(b);
+        const matrix = Array.from({ length: first.length + 1 }, () => []);
+
+        for (let i = 0; i <= first.length; i += 1) matrix[i][0] = i;
+        for (let j = 0; j <= second.length; j += 1) matrix[0][j] = j;
+
+        for (let i = 1; i <= first.length; i += 1) {
+            for (let j = 1; j <= second.length; j += 1) {
+                const cost = first[i - 1] === second[j - 1] ? 0 : 1;
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j - 1] + cost
+                );
+            }
+        }
+
+        return matrix[first.length][second.length];
+    }
+
+    function isCloseSpeechMatch(transcript, expectedWord) {
+        const heard = normalizeAnswer(transcript).replace(/[^a-z\s]/g, " ");
+        const expected = normalizeAnswer(expectedWord).replace(/[^a-z]/g, "");
+        if (!heard || !expected) {
+            return false;
+        }
+
+        if (heard.split(/\s+/).includes(expected) || heard.includes(expected)) {
+            return true;
+        }
+
+        return heard.split(/\s+/).some(part => (
+            part &&
+            Math.abs(part.length - expected.length) <= 1 &&
+            levenshteinDistance(part, expected) <= 1
+        ));
     }
 
     function getLetters() {
@@ -864,6 +905,20 @@
                 };
             }
 
+            if (type === "pronounce_word") {
+                return {
+                    ...base,
+                    prompt: `انطق كلمة ${word}`,
+                    correct: word,
+                    choices: [],
+                    visualMode: "pronounce_word",
+                    wrongHint: `استمع إلى كلمة ${word} ثم حاول نطقها مرة ثانية.`,
+                    correctExplanation: "رائع! نطقك ممتاز ⭐",
+                    finalExplanation: `الكلمة هي ${word}. سنراجع نطقها لاحقًا.`,
+                    speakPrompt: `Say ${word}.`
+                };
+            }
+
             if (type === "listen_and_choose") {
                 return {
                     ...base,
@@ -968,6 +1023,27 @@
                 this.birdVisualQuestionEl.appendChild(target);
             }
 
+            if (question.visualMode === "pronounce_word") {
+                const target = document.createElement("div");
+                target.className = "bird-target-picture bird-pronounce-target";
+                target.textContent = question.targetWord;
+
+                const micButton = document.createElement("button");
+                micButton.type = "button";
+                micButton.className = "bird-mic-btn";
+                micButton.id = "birdMicBtn";
+                micButton.textContent = "🎙️ انطق الكلمة";
+                micButton.addEventListener("click", () => this.startPronunciationPractice(question, micButton));
+
+                const status = document.createElement("div");
+                status.className = "bird-listening-status";
+                status.id = "birdListeningStatus";
+                status.textContent = "";
+                status.hidden = true;
+
+                this.birdVisualQuestionEl.append(target, micButton, status);
+            }
+
             if (question.visualMode === "picture_choices") {
                 const grid = document.createElement("div");
                 grid.className = "bird-picture-grid";
@@ -1049,6 +1125,112 @@
             this.typeMessage(hint);
             this.setBirdHint(question.wrongHint, "hint");
             this.speakText("Try again.");
+        };
+
+        AppClass.prototype.startPronunciationPractice = function (question, micButton) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const statusEl = document.getElementById("birdListeningStatus");
+
+            if (!SpeechRecognition) {
+                this.setBirdState("sad");
+                this.setBirdHint("النطق غير مدعوم في هذا المتصفح. جرّب Chrome.", "review");
+                if (statusEl) {
+                    statusEl.hidden = false;
+                    statusEl.textContent = "النطق غير مدعوم في هذا المتصفح. جرّب Chrome.";
+                }
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = "en-US";
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 3;
+
+            this.setBirdState("thinking");
+            if (micButton) {
+                micButton.classList.add("listening");
+                micButton.disabled = true;
+            }
+            if (statusEl) {
+                statusEl.hidden = false;
+                statusEl.textContent = "أستمع الآن...";
+            }
+
+            recognition.onresult = event => {
+                const alternatives = Array.from(event.results?.[0] || []);
+                const transcript = alternatives.map(item => item.transcript || "").join(" ");
+                this.handlePronunciationResult(question, transcript, statusEl);
+            };
+
+            recognition.onerror = () => {
+                this.setBirdState("sad");
+                this.setBirdHint("لم أسمع الكلمة بوضوح. حاول مرة ثانية.", "hint");
+                if (statusEl) {
+                    statusEl.textContent = "لم أسمع الكلمة بوضوح. حاول مرة ثانية.";
+                }
+            };
+
+            recognition.onend = () => {
+                if (micButton) {
+                    micButton.classList.remove("listening");
+                    micButton.disabled = false;
+                }
+            };
+
+            try {
+                recognition.start();
+            } catch (error) {
+                this.setBirdState("sad");
+                this.setBirdHint("تعذر تشغيل المايك الآن. حاول مرة ثانية.", "review");
+                if (statusEl) {
+                    statusEl.hidden = false;
+                    statusEl.textContent = "تعذر تشغيل المايك الآن. حاول مرة ثانية.";
+                }
+                if (micButton) {
+                    micButton.classList.remove("listening");
+                    micButton.disabled = false;
+                }
+            }
+        };
+
+        AppClass.prototype.handlePronunciationResult = function (question, transcript, statusEl) {
+            const isCorrect = isCloseSpeechMatch(transcript, question.targetWord);
+
+            if (isCorrect) {
+                const xpDelta = 7;
+                this.birdWrongAttempts = 0;
+                this.setBirdState("celebrate");
+                this.typeMessage("رائع! نطقك ممتاز ⭐");
+                this.setBirdHint(`سمعت: ${transcript}`, "success");
+                if (statusEl) {
+                    statusEl.textContent = `سمعت: ${transcript}`;
+                }
+                this.addBirdXp(xpDelta);
+                this.syncBirdProgress(question, true, xpDelta).catch(() => {
+                    // Local XP is already saved as fallback.
+                });
+                return;
+            }
+
+            this.birdWrongAttempts += 1;
+            this.setBirdState("sad");
+            this.typeMessage("قريب جدًا، اسمع الكلمة وحاول مرة ثانية.");
+            this.setBirdHint(`سمعت: ${transcript || "غير واضح"}. الكلمة الصحيحة: ${question.targetWord}`, "hint");
+            if (statusEl) {
+                statusEl.textContent = `سمعت: ${transcript || "غير واضح"}`;
+            }
+            this.speakText(question.targetWord);
+
+            if (this.birdWrongAttempts >= 2) {
+                this.addBirdReviewItem(question);
+                this.syncBirdProgress(question, false, 0).catch(() => {
+                    // Local review remains available as fallback.
+                });
+                this.syncBirdReviewItem(question, false).catch(() => {
+                    // addBirdReviewItem already persisted local fallback.
+                });
+            }
         };
 
         AppClass.prototype.addBirdReviewItem = function (question) {

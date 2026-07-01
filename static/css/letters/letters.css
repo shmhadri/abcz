@@ -3169,6 +3169,43 @@ canvas {
     font-weight: 900;
 }
 
+.bird-pronounce-target {
+    font-size: clamp(2rem, 12vw, 5rem);
+    letter-spacing: 0;
+    text-transform: lowercase;
+}
+
+.bird-mic-btn {
+    justify-self: center;
+    min-height: 48px;
+    min-width: 180px;
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 18px;
+    background: linear-gradient(135deg, #10b981, #4361ee);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 12px 26px rgba(16, 185, 129, 0.22);
+}
+
+.bird-mic-btn.listening {
+    animation: birdMicPulse 0.9s ease-in-out infinite;
+}
+
+.bird-mic-btn:disabled {
+    cursor: wait;
+    opacity: 0.82;
+}
+
+.bird-listening-status {
+    text-align: center;
+    color: #047857;
+    font-weight: 900;
+}
+
 .bird-picture-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3304,6 +3341,11 @@ canvas {
 @keyframes birdSad {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     50% { transform: translateY(4px) rotate(-2deg); }
+}
+
+@keyframes birdMicPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 12px 26px rgba(16, 185, 129, 0.22); }
+    50% { transform: scale(1.04); box-shadow: 0 16px 34px rgba(67, 97, 238, 0.28); }
 }
 
 @media (max-width: 640px) {

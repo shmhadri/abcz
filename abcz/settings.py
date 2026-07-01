@@ -26,6 +26,11 @@ SECRET_KEY = os.getenv(
 # (Render عادة يضبط DEBUG في Environment)
 DEBUG = os.getenv("DEBUG", "False").strip().lower() in ("1", "true", "yes", "on")
 
+# Developer preview only. Never enable in production.
+DEV_UNLOCK_VIP_BIRD = DEBUG and (
+    os.getenv("DEV_UNLOCK_VIP_BIRD", "False").strip().lower() in ("1", "true", "yes", "on")
+)
+
 # ==========================
 # السماح بالمضيفين (ALLOWED_HOSTS)
 # ==========================
@@ -204,3 +209,7 @@ if not DEBUG:
 # الإعداد الافتراضي لمفاتيح PK
 # ==========================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
