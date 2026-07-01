@@ -20,9 +20,11 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import models, transaction
+from django.db.models import F
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
@@ -32,6 +34,8 @@ from .forms import StudentProfileForm, StudentRegistrationForm
 from .models import (
     Student,
     StudentProfile,
+    BirdTutorProgress,
+    BirdReviewItem,
     LetterProgress,
     ExternalGame,
     TopGoalUnit,
@@ -144,6 +148,7 @@ def serialize_student_profile(profile):
             "school": "",
             "parent_phone": "",
             "is_premium": False,
+            "is_vip": False,
         }
 
     return {
@@ -151,6 +156,7 @@ def serialize_student_profile(profile):
         "school": profile.school,
         "parent_phone": profile.parent_phone,
         "is_premium": profile.is_premium,
+        "is_vip": profile.is_vip,
     }
 
 
@@ -192,6 +198,24 @@ def validate_letter(letter):
     if not (isinstance(letter, str) and len(letter) == 1 and letter.isalpha()):
         return None, _json_error("Letter must be a single alphabetic character", 400)
     return letter.upper(), None
+
+
+def normalize_bird_word(value):
+    word = (value or "").strip().lower()
+    return word[:50]
+
+
+def serialize_bird_review_item(item):
+    return {
+        "id": item.id,
+        "letter": item.letter,
+        "word": item.word,
+        "question_type": item.question_type,
+        "mistakes_count": item.mistakes_count,
+        "success_count": item.success_count,
+        "mastered": item.mastered,
+        "last_reviewed_at": item.last_reviewed_at.isoformat() if item.last_reviewed_at else None,
+    }
 
 
 # ============================================
@@ -266,6 +290,125 @@ def save_progress(request):
 
     except Exception as e:
         return _json_error("Database error", 500, details=str(e))
+
+
+@login_required
+@require_POST
+def bird_tutor_progress_api(request):
+    data, error = parse_json_safely(request)
+    if error:
+        return error
+
+    xp_delta, error = validate_int(data.get("xp_delta", 0), min_val=0, max_val=100, field_name="xp_delta")
+    if error:
+        return error
+
+    question_type = (data.get("question_type") or "").strip()[:40]
+    is_correct = bool(data.get("is_correct"))
+    letter, error = validate_letter(data.get("letter"))
+    if error:
+        return error
+
+    word = normalize_bird_word(data.get("word"))
+    if not word:
+        return _json_error("word is required", 400)
+
+    now = timezone.now()
+
+    try:
+        with transaction.atomic():
+            progress, _ = BirdTutorProgress.objects.select_for_update().get_or_create(user=request.user)
+            progress.xp = F("xp") + xp_delta
+            progress.total_questions = F("total_questions") + 1
+            if is_correct:
+                progress.correct_answers = F("correct_answers") + 1
+            else:
+                progress.wrong_answers = F("wrong_answers") + 1
+            progress.last_used_at = now
+            progress.save(update_fields=[
+                "xp",
+                "total_questions",
+                "correct_answers",
+                "wrong_answers",
+                "last_used_at",
+                "updated_at",
+            ])
+            progress.refresh_from_db()
+
+        return JsonResponse({
+            "status": "ok",
+            "progress": {
+                "xp": progress.xp,
+                "total_questions": progress.total_questions,
+                "correct_answers": progress.correct_answers,
+                "wrong_answers": progress.wrong_answers,
+                "last_used_at": progress.last_used_at.isoformat() if progress.last_used_at else None,
+            },
+        })
+    except Exception as e:
+        return _json_error("Failed to save bird tutor progress", 500, details=str(e))
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def bird_tutor_review_api(request):
+    if request.method == "GET":
+        items = (
+            BirdReviewItem.objects
+            .filter(user=request.user, mastered=False)
+            .order_by("-updated_at", "letter", "word")[:50]
+        )
+        return JsonResponse({"items": [serialize_bird_review_item(item) for item in items]})
+
+    data, error = parse_json_safely(request)
+    if error:
+        return error
+
+    letter, error = validate_letter(data.get("letter"))
+    if error:
+        return error
+
+    word = normalize_bird_word(data.get("word"))
+    if not word:
+        return _json_error("word is required", 400)
+
+    question_type = (data.get("question_type") or "").strip()[:40]
+    is_correct = bool(data.get("is_correct"))
+    now = timezone.now()
+
+    try:
+        with transaction.atomic():
+            item, _ = BirdReviewItem.objects.select_for_update().get_or_create(
+                user=request.user,
+                letter=letter,
+                word=word,
+                defaults={"question_type": question_type},
+            )
+
+            if question_type:
+                item.question_type = question_type
+
+            if is_correct:
+                item.success_count += 1
+                if item.success_count >= 2:
+                    item.mastered = True
+            else:
+                item.mistakes_count += 1
+                item.mastered = False
+
+            item.last_reviewed_at = now
+            item.save(update_fields=[
+                "question_type",
+                "mistakes_count",
+                "success_count",
+                "mastered",
+                "last_reviewed_at",
+                "updated_at",
+            ])
+
+        return JsonResponse({"status": "ok", "item": serialize_bird_review_item(item)})
+    except Exception as e:
+        return _json_error("Failed to update bird tutor review item", 500, details=str(e))
 
 
 # هذا endpoint خارجي (لاحقًا حطي API KEY)
@@ -399,6 +542,7 @@ def index(request):
     return render(request, "letters.html", {
         "is_authenticated": request.user.is_authenticated,
         "is_premium_user": profile.is_premium if profile else False,
+        "is_vip_user": profile.is_vip if profile else False,
         "phonics_user_id": str(request.user.id) if request.user.is_authenticated else "",
         "phonics_user_email": request.user.email if request.user.is_authenticated else "",
         "student_profile_json": json.dumps(profile_payload, ensure_ascii=False),

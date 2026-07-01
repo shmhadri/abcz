@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
-    Student, LetterProgress, 
-    ExternalGame,
+    Student, StudentProfile, LetterProgress,
+    BirdTutorProgress, BirdReviewItem, ExternalGame,
     CVCWord, CVCSentence, CVCStory, CVCProgress,
     TopGoalUnit, TopGoalVocabulary, TopGoalSentence, TopGoalQuiz
 )
@@ -13,6 +13,29 @@ class StudentAdmin(admin.ModelAdmin):
     search_fields = ['name', 'school']
     list_filter = ['created_at', 'letters_completed']
     readonly_fields = ['total_score', 'letters_completed', 'created_at', 'updated_at']
+
+
+@admin.register(StudentProfile)
+class StudentProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'student_name', 'school', 'parent_phone', 'is_premium', 'is_vip', 'updated_at']
+    search_fields = ['user__username', 'user__email', 'student_name', 'school', 'parent_phone']
+    list_filter = ['is_premium', 'is_vip', 'created_at']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(BirdTutorProgress)
+class BirdTutorProgressAdmin(admin.ModelAdmin):
+    list_display = ['user', 'xp', 'total_questions', 'correct_answers', 'wrong_answers', 'last_used_at']
+    search_fields = ['user__username', 'user__email']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(BirdReviewItem)
+class BirdReviewItemAdmin(admin.ModelAdmin):
+    list_display = ['user', 'letter', 'word', 'question_type', 'mistakes_count', 'success_count', 'mastered', 'last_reviewed_at']
+    list_filter = ['letter', 'question_type', 'mastered']
+    search_fields = ['user__username', 'user__email', 'word']
+    readonly_fields = ['created_at', 'updated_at']
 
 
 @admin.register(LetterProgress)

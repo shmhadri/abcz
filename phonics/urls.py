@@ -3,8 +3,15 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('pricing/', views.pricing, name='pricing'),
+    path('accounts/login/', views.login_view, name='login'),
+    path('accounts/logout/', views.logout_view, name='logout'),
+    path('accounts/register/', views.register, name='register'),
+    path('accounts/profile/', views.profile_api, name='profile_api'),
     path('top-goal-6-unit-1/', views.top_goal_view, name='top_goal_unit_1'),
     path('api/save-progress/', views.save_progress, name='save_progress'),
+    path('api/bird-tutor/progress/', views.bird_tutor_progress_api, name='bird_tutor_progress_api'),
+    path('api/bird-tutor/review/', views.bird_tutor_review_api, name='bird_tutor_review_api'),
     path('api/speech/', views.speech_check, name='speech_check'),
     path('certificate/<int:student_id>/', views.generate_certificate, name='generate_certificate'),
     path('leaderboard/', views.leaderboard, name='leaderboard'),

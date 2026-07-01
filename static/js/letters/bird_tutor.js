@@ -82,6 +82,59 @@
         return window.LETTERS || "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     }
 
+    function getCookie(name) {
+        const cookieValue = `; ${document.cookie || ""}`;
+        const parts = cookieValue.split(`; ${name}=`);
+        if (parts.length === 2) {
+            return parts.pop().split(";").shift();
+        }
+        return "";
+    }
+
+    function isAuthenticatedForBirdTutor() {
+        return Boolean(window.PHONICS_USER_ID || window.phonicsUserId || window.currentUserId);
+    }
+
+    function postBirdTutorJson(url, payload) {
+        if (!isAuthenticatedForBirdTutor()) {
+            return Promise.reject(new Error("bird_tutor_not_authenticated"));
+        }
+
+        return fetch(url, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: JSON.stringify(payload)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`bird_tutor_request_failed_${response.status}`);
+            }
+            return response.json();
+        });
+    }
+
+    function getBirdTutorJson(url) {
+        if (!isAuthenticatedForBirdTutor()) {
+            return Promise.reject(new Error("bird_tutor_not_authenticated"));
+        }
+
+        return fetch(url, {
+            method: "GET",
+            credentials: "same-origin",
+            headers: {
+                "Accept": "application/json"
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`bird_tutor_request_failed_${response.status}`);
+            }
+            return response.json();
+        });
+    }
+
     function installBirdTutor(AppClass) {
         if (!AppClass || !AppClass.prototype || AppClass.prototype.__birdTutorInstalled) {
             return;
@@ -467,6 +520,67 @@
             this.updateBirdStats();
         };
 
+        AppClass.prototype.applyServerProgress = function (progress) {
+            if (!progress || typeof progress.xp !== "number") {
+                return;
+            }
+
+            this.birdXp = Math.max(0, progress.xp);
+            this.saveBirdXp();
+            this.updateBirdStats();
+        };
+
+        AppClass.prototype.syncBirdProgress = function (question, isCorrect, xpDelta) {
+            return postBirdTutorJson("/api/bird-tutor/progress/", {
+                xp_delta: Math.max(0, Number(xpDelta || 0)),
+                question_type: question?.type || "",
+                is_correct: Boolean(isCorrect),
+                letter: question?.letter || "",
+                word: question?.targetWord || question?.correct || ""
+            }).then(data => {
+                this.applyServerProgress(data.progress);
+                return data;
+            });
+        };
+
+        AppClass.prototype.syncBirdReviewItem = function (question, isCorrect) {
+            return postBirdTutorJson("/api/bird-tutor/review/", {
+                letter: question?.letter || "",
+                word: question?.targetWord || question?.correct || "",
+                question_type: question?.type || "",
+                is_correct: Boolean(isCorrect)
+            });
+        };
+
+        AppClass.prototype.mapServerReviewItem = function (item) {
+            return {
+                id: item.id ? `server:${item.id}` : `${item.letter}:${item.word}`,
+                serverId: item.id || null,
+                letter: item.letter,
+                word: item.word,
+                lastType: item.question_type || "starts_with_letter",
+                misses: item.mistakes_count || 0,
+                successes: item.success_count || 0,
+                mastered: Boolean(item.mastered),
+                source: "server"
+            };
+        };
+
+        AppClass.prototype.fetchBirdReviewItems = function () {
+            return getBirdTutorJson("/api/bird-tutor/review/")
+                .then(data => {
+                    if (!Array.isArray(data.items)) {
+                        return this.getActiveBirdReviewItems();
+                    }
+
+                    this.birdReviewItems = data.items.map(item => this.mapServerReviewItem(item));
+                    this.saveBirdReviewItems();
+                    this.updateBirdStats();
+                    return this.getActiveBirdReviewItems();
+                })
+                .catch(() => this.getActiveBirdReviewItems());
+        };
+
         AppClass.prototype.getWordRecordsForLetter = function (letter) {
             const data = window.LETTER_DATA?.[letter] || { words: [] };
             return (data.words || [])
@@ -627,12 +741,16 @@
         };
 
         AppClass.prototype.handleCorrectBirdAnswer = function (question) {
+            const xpDelta = question.isReview ? 8 : 5;
             this.setBirdState("happy");
             this.birdActionsEl.replaceChildren();
             this.typeMessage(`${pick(BIRD_MESSAGES.encouragement)} ${question.correctExplanation}`);
             this.setBirdHint(question.correctExplanation, "success");
             this.speakText(question.correctExplanation);
-            this.addBirdXp(question.isReview ? 8 : 5);
+            this.addBirdXp(xpDelta);
+            this.syncBirdProgress(question, true, xpDelta).catch(() => {
+                // Local XP is already saved as fallback.
+            });
 
             if (question.isReview) {
                 this.markReviewSuccess(question.reviewId);
@@ -649,6 +767,12 @@
                 this.setBirdHint(question.finalExplanation, "review");
                 this.speakText(question.targetWord || question.correct);
                 this.addBirdReviewItem(question);
+                this.syncBirdProgress(question, false, 0).catch(() => {
+                    // Local review remains available as fallback.
+                });
+                this.syncBirdReviewItem(question, false).catch(() => {
+                    // addBirdReviewItem already persisted local fallback.
+                });
                 return;
             }
 
@@ -687,7 +811,7 @@
         };
 
         AppClass.prototype.startBirdReview = function () {
-            const reviewItems = this.getActiveBirdReviewItems();
+            this.fetchBirdReviewItems().then(reviewItems => {
             if (reviewItems.length === 0) {
                 this.typeMessage("لا توجد كلمات للمراجعة الآن. اسألني سؤالًا جديدًا.");
                 this.setBirdHint("", "info");
@@ -708,6 +832,7 @@
             question.correctExplanation = `أحسنت! أنت تتحسن. ${item.word} تبدأ بحرف ${item.letter}.`;
             question.finalExplanation = `لا بأس. الكلمة هي ${item.word} لأنها تبدأ بحرف ${item.letter}. سنحاول مرة أخرى.`;
             this.renderQuestion(question);
+            });
         };
 
         AppClass.prototype.markReviewSuccess = function (reviewId) {
@@ -724,6 +849,21 @@
 
             this.saveBirdReviewItems();
             this.updateBirdStats();
+            this.syncBirdReviewItem({
+                letter: item.letter,
+                targetWord: item.word,
+                correct: item.word,
+                type: item.lastType || "starts_with_letter"
+            }, true).then(data => {
+                if (data && data.item) {
+                    const serverItem = this.mapServerReviewItem(data.item);
+                    Object.assign(item, serverItem);
+                    this.saveBirdReviewItems();
+                    this.updateBirdStats();
+                }
+            }).catch(() => {
+                // Local success/mastered state remains as fallback.
+            });
         };
 
         AppClass.prototype.repeatQuestion = function () {

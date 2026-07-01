@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -12,6 +13,8 @@ LETTERS = [
 WORDWALL_ALLOWED_PREFIXES = (
     "https://wordwall.net/resource/",
     "https://wordwall.net/play/",
+    "https://wordwall.net/ar/resource/",
+    "https://www.wordwall.net/ar/resource/",
 )
 
 
@@ -76,6 +79,81 @@ class Student(models.Model):
         self.total_score = sum(p.score for p in progress_qs)
         self.letters_completed = progress_qs.filter(passed=True).count()
         self.save(update_fields=["total_score", "letters_completed", "updated_at"])
+
+
+class StudentProfile(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="student_profile",
+        verbose_name="User",
+    )
+    student_name = models.CharField("اسم الطالب", max_length=200)
+    school = models.CharField("المدرسة", max_length=200, blank=True)
+    parent_phone = models.CharField("جوال ولي الأمر", max_length=30, blank=True)
+    is_premium = models.BooleanField("Premium user", default=False)
+    is_vip = models.BooleanField("VIP user", default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Student profile"
+        verbose_name_plural = "Student profiles"
+
+    def __str__(self):
+        return f"{self.student_name} ({self.user.username})"
+
+
+class BirdTutorProgress(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="bird_tutor_progress",
+    )
+    xp = models.PositiveIntegerField(default=0)
+    total_questions = models.PositiveIntegerField(default=0)
+    correct_answers = models.PositiveIntegerField(default=0)
+    wrong_answers = models.PositiveIntegerField(default=0)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Bird tutor progress"
+        verbose_name_plural = "Bird tutor progress"
+
+    def __str__(self):
+        return f"{self.user.username} - Bird XP {self.xp}"
+
+
+class BirdReviewItem(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="bird_review_items",
+    )
+    letter = models.CharField(max_length=1, choices=LETTERS, db_index=True)
+    word = models.CharField(max_length=50, db_index=True)
+    question_type = models.CharField(max_length=40, blank=True)
+    mistakes_count = models.PositiveIntegerField(default=0)
+    success_count = models.PositiveIntegerField(default=0)
+    mastered = models.BooleanField(default=False, db_index=True)
+    last_reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Bird review item"
+        verbose_name_plural = "Bird review items"
+        unique_together = ("user", "letter", "word")
+        ordering = ["mastered", "-updated_at", "letter", "word"]
+        indexes = [
+            models.Index(fields=["user", "mastered"]),
+            models.Index(fields=["user", "letter", "word"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.letter}:{self.word}"
 
 
 class LetterProgress(models.Model):
@@ -176,7 +254,7 @@ class ExternalGame(models.Model):
         "Activity URL",
         max_length=500,
         validators=[validate_wordwall_activity_url],
-        help_text="Allowed: https://wordwall.net/resource/ or https://wordwall.net/play/",
+        help_text="Allowed: Wordwall resource and play links.",
     )
     is_premium = models.BooleanField("Premium", default=False)
     is_active = models.BooleanField("Active", default=True)
