@@ -1,7 +1,7 @@
 (function (window, document) {
     "use strict";
 
-    const STATES = ["idle", "talking", "happy", "sad", "wrong", "thinking", "jump", "celebrate"];
+    const STATES = ["idle", "talking", "happy", "sad", "wrong", "thinking", "listening", "jump", "celebrate"];
     const STATE_FILES = {
         idle: "/static/animations/bird/bird_idle.json",
         talking: "/static/animations/bird/bird_talk.json",
@@ -12,6 +12,22 @@
     const FALLBACK_EMOJI = "\uD83E\uDD9C";
     const REVIEW_STORAGE_KEY = "birdTutorReviewItems";
     const XP_STORAGE_KEY = "birdTutorXp";
+    const SPEECH_LISTENING_MESSAGE = "\u0623\u0633\u062a\u0645\u0639 \u0627\u0644\u0622\u0646... \u0642\u0644 \u0627\u0644\u0643\u0644\u0645\u0629 \u0628\u0627\u0644\u0625\u0646\u062c\u0644\u064a\u0632\u064a\u0629";
+    const SPEECH_HEARD_PREFIX = "\u0633\u0645\u0639\u062a: ";
+    const SPEECH_UNCLEAR = "\u063a\u064a\u0631 \u0648\u0627\u0636\u062d";
+    const SPEECH_ALIASES = {
+        air: ["air", "heir", "ear"],
+        ant: ["ant", "and"],
+        axe: ["axe", "acts", "ax"],
+        art: ["art", "heart"]
+    };
+    const SPEECH_ERROR_MESSAGES = {
+        "not-allowed": "\u0627\u0644\u0645\u0627\u064a\u0643 \u063a\u064a\u0631 \u0645\u0633\u0645\u0648\u062d. \u0641\u0639\u0651\u0644 \u0625\u0630\u0646 \u0627\u0644\u0645\u064a\u0643\u0631\u0648\u0641\u0648\u0646 \u0645\u0646 \u0627\u0644\u0645\u062a\u0635\u0641\u062d.",
+        "no-speech": "\u0644\u0645 \u0623\u0633\u0645\u0639 \u0635\u0648\u062a\u064b\u0627. \u0642\u0631\u0651\u0628 \u0627\u0644\u0645\u064a\u0643\u0631\u0648\u0641\u0648\u0646 \u0648\u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629.",
+        "audio-capture": "\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0639\u062b\u0648\u0631 \u0639\u0644\u0649 \u0645\u064a\u0643\u0631\u0648\u0641\u0648\u0646.",
+        network: "\u062d\u062f\u062b\u062a \u0645\u0634\u0643\u0644\u0629 \u0641\u064a \u062e\u062f\u0645\u0629 \u0627\u0644\u062a\u0639\u0631\u0641 \u0639\u0644\u0649 \u0627\u0644\u0635\u0648\u062a.",
+        default: "\u062a\u0639\u0630\u0631 \u0627\u0644\u062a\u0639\u0631\u0641 \u0639\u0644\u0649 \u0627\u0644\u0635\u0648\u062a. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649."
+    };
     const QUESTION_TYPES = window.BIRD_TUTOR_CONTENT?.questionTypes || [
         "starts_with_letter",
         "choose_word_for_letter",
@@ -83,6 +99,30 @@
         return String(value || "").trim().toLowerCase();
     }
 
+    function normalizeSpeechText(value) {
+        return normalizeAnswer(value)
+            .replace(/[^\p{L}\p{N}\s]/gu, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+
+    function normalizeSpeechToken(value) {
+        return normalizeSpeechText(value).replace(/\s+/g, "");
+    }
+
+    function isBirdSpeechDebugEnabled() {
+        const host = window.location?.hostname || "";
+        return Boolean(
+            document.querySelector(".developer-vip-preview-badge") ||
+            host === "localhost" ||
+            host === "127.0.0.1"
+        );
+    }
+
+    function getSpeechErrorMessage(errorType) {
+        return SPEECH_ERROR_MESSAGES[errorType] || SPEECH_ERROR_MESSAGES.default;
+    }
+
     function levenshteinDistance(a, b) {
         const first = normalizeAnswer(a);
         const second = normalizeAnswer(b);
@@ -106,21 +146,36 @@
     }
 
     function isCloseSpeechMatch(transcript, expectedWord) {
-        const heard = normalizeAnswer(transcript).replace(/[^a-z\s]/g, " ");
-        const expected = normalizeAnswer(expectedWord).replace(/[^a-z]/g, "");
+        const heard = normalizeSpeechText(transcript);
+        const expected = normalizeSpeechToken(expectedWord);
         if (!heard || !expected) {
             return false;
         }
 
-        if (heard.split(/\s+/).includes(expected) || heard.includes(expected)) {
+        const heardTokens = heard.split(/\s+/).filter(Boolean);
+        const heardCompact = heardTokens.join("");
+        const aliases = new Set([expected, ...(SPEECH_ALIASES[expected] || [])].map(normalizeSpeechToken));
+
+        if (
+            aliases.has(heardCompact) ||
+            heardTokens.some(token => aliases.has(normalizeSpeechToken(token))) ||
+            heard.includes(expected) ||
+            (heardCompact && expected.includes(heardCompact))
+        ) {
             return true;
         }
 
-        return heard.split(/\s+/).some(part => (
+        return heardTokens.some(part => (
             part &&
             Math.abs(part.length - expected.length) <= 1 &&
             levenshteinDistance(part, expected) <= 1
         ));
+    }
+
+    function collectSpeechAlternatives(event) {
+        return Array.from(event?.results?.[0] || [])
+            .map(item => normalizeSpeechText(item?.transcript || ""))
+            .filter(Boolean);
     }
 
     function getLetters() {
@@ -280,7 +335,9 @@
             }
 
             const availableFiles = window.BIRD_LOTTIE_FILES || {};
-            const lottieState = (nextState === "celebrate" || nextState === "jump") ? "happy" : (nextState === "sad" ? "wrong" : nextState);
+            const lottieState = (nextState === "celebrate" || nextState === "jump")
+                ? "happy"
+                : (nextState === "sad" ? "wrong" : (nextState === "listening" ? "talking" : nextState));
             const path = availableFiles[nextState] || availableFiles[lottieState] || "";
             if (!path) {
                 this.showBirdFallback("missing state path");
@@ -997,6 +1054,48 @@
             return value;
         };
 
+        AppClass.prototype.renderSpeechStatus = function (statusEl, message, options = {}) {
+            if (!statusEl) {
+                return;
+            }
+
+            const {
+                level = "info",
+                heard = "",
+                expectedWord = "",
+                alternatives = [],
+                testOnly = false
+            } = options;
+
+            statusEl.hidden = false;
+            statusEl.classList.toggle("error", level === "error");
+            statusEl.classList.toggle("success", level === "success");
+            statusEl.replaceChildren();
+
+            const main = document.createElement("div");
+            main.className = "bird-speech-heard";
+            main.textContent = message;
+            statusEl.appendChild(main);
+
+            if (!isBirdSpeechDebugEnabled()) {
+                return;
+            }
+
+            const debug = document.createElement("div");
+            debug.className = "bird-speech-debug";
+            [
+                `expected: ${expectedWord || "-"}`,
+                `transcript: ${heard || "-"}`,
+                `alternatives: ${alternatives.length ? alternatives.join(" | ") : "-"}`,
+                `mode: ${testOnly ? "microphone test" : "evaluation"}`
+            ].forEach(line => {
+                const item = document.createElement("div");
+                item.textContent = line;
+                debug.appendChild(item);
+            });
+            statusEl.appendChild(debug);
+        };
+
         AppClass.prototype.renderBirdVisualQuestion = function (question) {
             if (!this.birdVisualQuestionEl) {
                 return;
@@ -1041,7 +1140,18 @@
                 status.textContent = "";
                 status.hidden = true;
 
-                this.birdVisualQuestionEl.append(target, micButton, status);
+                this.birdVisualQuestionEl.append(target, micButton);
+
+                if (isBirdSpeechDebugEnabled()) {
+                    const testButton = document.createElement("button");
+                    testButton.type = "button";
+                    testButton.className = "bird-mic-test-btn";
+                    testButton.textContent = "\u0627\u062e\u062a\u0628\u0627\u0631 \u0627\u0644\u0645\u064a\u0643\u0631\u0648\u0641\u0648\u0646";
+                    testButton.addEventListener("click", () => this.startPronunciationPractice(question, testButton, { testOnly: true }));
+                    this.birdVisualQuestionEl.appendChild(testButton);
+                }
+
+                this.birdVisualQuestionEl.appendChild(status);
             }
 
             if (question.visualMode === "picture_choices") {
@@ -1127,48 +1237,67 @@
             this.speakText("Try again.");
         };
 
-        AppClass.prototype.startPronunciationPractice = function (question, micButton) {
+        AppClass.prototype.startPronunciationPractice = function (question, micButton, options = {}) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const statusEl = document.getElementById("birdListeningStatus");
+            const testOnly = Boolean(options.testOnly);
+            let receivedResult = false;
+            let receivedError = false;
 
             if (!SpeechRecognition) {
+                const message = "\u0627\u0644\u0646\u0637\u0642 \u063a\u064a\u0631 \u0645\u062f\u0639\u0648\u0645 \u0641\u064a \u0647\u0630\u0627 \u0627\u0644\u0645\u062a\u0635\u0641\u062d. \u062c\u0631\u0651\u0628 Chrome.";
                 this.setBirdState("sad");
-                this.setBirdHint("النطق غير مدعوم في هذا المتصفح. جرّب Chrome.", "review");
-                if (statusEl) {
-                    statusEl.hidden = false;
-                    statusEl.textContent = "النطق غير مدعوم في هذا المتصفح. جرّب Chrome.";
-                }
+                this.setBirdHint(message, "review");
+                this.renderSpeechStatus(statusEl, message, { level: "error", expectedWord: question.targetWord, testOnly });
                 return;
             }
 
             const recognition = new SpeechRecognition();
             recognition.lang = "en-US";
-            recognition.continuous = false;
             recognition.interimResults = false;
             recognition.maxAlternatives = 3;
+            recognition.continuous = false;
 
-            this.setBirdState("thinking");
+            this.setBirdState("listening");
             if (micButton) {
                 micButton.classList.add("listening");
                 micButton.disabled = true;
             }
-            if (statusEl) {
-                statusEl.hidden = false;
-                statusEl.textContent = "أستمع الآن...";
-            }
+            this.renderSpeechStatus(statusEl, SPEECH_LISTENING_MESSAGE, {
+                expectedWord: question.targetWord,
+                testOnly
+            });
 
             recognition.onresult = event => {
-                const alternatives = Array.from(event.results?.[0] || []);
-                const transcript = alternatives.map(item => item.transcript || "").join(" ");
-                this.handlePronunciationResult(question, transcript, statusEl);
+                receivedResult = true;
+                const alternatives = collectSpeechAlternatives(event);
+                const transcript = alternatives[0] || "";
+
+                if (testOnly) {
+                    const heard = transcript || SPEECH_UNCLEAR;
+                    this.setBirdState("thinking");
+                    this.renderSpeechStatus(statusEl, `${SPEECH_HEARD_PREFIX}${heard}`, {
+                        heard,
+                        expectedWord: question.targetWord,
+                        alternatives,
+                        testOnly
+                    });
+                    return;
+                }
+
+                this.handlePronunciationResult(question, transcript, statusEl, alternatives);
             };
 
-            recognition.onerror = () => {
+            recognition.onerror = event => {
+                receivedError = true;
+                const message = getSpeechErrorMessage(event?.error);
                 this.setBirdState("sad");
-                this.setBirdHint("لم أسمع الكلمة بوضوح. حاول مرة ثانية.", "hint");
-                if (statusEl) {
-                    statusEl.textContent = "لم أسمع الكلمة بوضوح. حاول مرة ثانية.";
-                }
+                this.setBirdHint(message, "hint");
+                this.renderSpeechStatus(statusEl, message, {
+                    level: "error",
+                    expectedWord: question.targetWord,
+                    testOnly
+                });
             };
 
             recognition.onend = () => {
@@ -1176,17 +1305,30 @@
                     micButton.classList.remove("listening");
                     micButton.disabled = false;
                 }
+                if (!receivedResult && !receivedError) {
+                    const message = "\u0627\u0646\u062a\u0647\u0649 \u0627\u0644\u0627\u0633\u062a\u0645\u0627\u0639 \u0648\u0644\u0645 \u0623\u0633\u0645\u0639 \u0643\u0644\u0645\u0629 \u0648\u0627\u0636\u062d\u0629.";
+                    this.setBirdState("thinking");
+                    this.setBirdHint(message, "hint");
+                    this.renderSpeechStatus(statusEl, message, {
+                        level: "error",
+                        expectedWord: question.targetWord,
+                        testOnly
+                    });
+                }
             };
 
             try {
                 recognition.start();
             } catch (error) {
+                const message = SPEECH_ERROR_MESSAGES.default;
+                receivedError = true;
                 this.setBirdState("sad");
-                this.setBirdHint("تعذر تشغيل المايك الآن. حاول مرة ثانية.", "review");
-                if (statusEl) {
-                    statusEl.hidden = false;
-                    statusEl.textContent = "تعذر تشغيل المايك الآن. حاول مرة ثانية.";
-                }
+                this.setBirdHint(message, "review");
+                this.renderSpeechStatus(statusEl, message, {
+                    level: "error",
+                    expectedWord: question.targetWord,
+                    testOnly
+                });
                 if (micButton) {
                     micButton.classList.remove("listening");
                     micButton.disabled = false;
@@ -1194,18 +1336,25 @@
             }
         };
 
-        AppClass.prototype.handlePronunciationResult = function (question, transcript, statusEl) {
-            const isCorrect = isCloseSpeechMatch(transcript, question.targetWord);
+        AppClass.prototype.handlePronunciationResult = function (question, transcript, statusEl, alternatives = []) {
+            const heard = normalizeSpeechText(transcript);
+            const heardLabel = heard || SPEECH_UNCLEAR;
+            const isCorrect = isCloseSpeechMatch(heard, question.targetWord);
+
+            this.renderSpeechStatus(statusEl, `${SPEECH_HEARD_PREFIX}${heardLabel}`, {
+                level: isCorrect ? "success" : "info",
+                heard,
+                expectedWord: question.targetWord,
+                alternatives,
+                testOnly: false
+            });
 
             if (isCorrect) {
                 const xpDelta = 7;
                 this.birdWrongAttempts = 0;
                 this.setBirdState("celebrate");
-                this.typeMessage("رائع! نطقك ممتاز ⭐");
-                this.setBirdHint(`سمعت: ${transcript}`, "success");
-                if (statusEl) {
-                    statusEl.textContent = `سمعت: ${transcript}`;
-                }
+                this.typeMessage("\u0631\u0627\u0626\u0639! \u0646\u0637\u0642\u0643 \u0645\u0645\u062a\u0627\u0632 \u2b50");
+                this.setBirdHint(`${SPEECH_HEARD_PREFIX}${heardLabel}`, "success");
                 this.addBirdXp(xpDelta);
                 this.syncBirdProgress(question, true, xpDelta).catch(() => {
                     // Local XP is already saved as fallback.
@@ -1215,11 +1364,8 @@
 
             this.birdWrongAttempts += 1;
             this.setBirdState("sad");
-            this.typeMessage("قريب جدًا، اسمع الكلمة وحاول مرة ثانية.");
-            this.setBirdHint(`سمعت: ${transcript || "غير واضح"}. الكلمة الصحيحة: ${question.targetWord}`, "hint");
-            if (statusEl) {
-                statusEl.textContent = `سمعت: ${transcript || "غير واضح"}`;
-            }
+            this.typeMessage("\u0642\u0631\u064a\u0628 \u062c\u062f\u064b\u0627\u060c \u0627\u0633\u0645\u0639 \u0627\u0644\u0643\u0644\u0645\u0629 \u0648\u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629.");
+            this.setBirdHint(`${SPEECH_HEARD_PREFIX}${heardLabel}`, "hint");
             this.speakText(question.targetWord);
 
             if (this.birdWrongAttempts >= 2) {

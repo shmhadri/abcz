@@ -3013,6 +3013,11 @@ canvas {
     filter: saturate(0.85);
 }
 
+.bird-tutor-card[data-state="listening"] .bird-fallback {
+    animation: birdListen 0.9s ease-in-out infinite;
+    filter: drop-shadow(0 0 14px rgba(16, 185, 129, 0.36));
+}
+
 .bird-tutor-locked {
     border-color: rgba(245, 158, 11, 0.28);
     background: linear-gradient(135deg, #fff7ed 0%, #ffffff 54%, #fef3c7 100%);
@@ -3200,10 +3205,59 @@ canvas {
     opacity: 0.82;
 }
 
+.bird-mic-test-btn {
+    justify-self: center;
+    min-height: 40px;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    padding: 9px 14px;
+    background: #ffffff;
+    color: #334155;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.bird-mic-test-btn.listening {
+    animation: birdMicPulse 0.9s ease-in-out infinite;
+    border-color: #10b981;
+    color: #047857;
+}
+
 .bird-listening-status {
+    display: grid;
+    gap: 6px;
     text-align: center;
     color: #047857;
     font-weight: 900;
+}
+
+.bird-listening-status.error {
+    color: #b91c1c;
+}
+
+.bird-listening-status.success {
+    color: #047857;
+}
+
+.bird-speech-heard {
+    line-height: 1.5;
+}
+
+.bird-speech-debug {
+    display: grid;
+    gap: 2px;
+    margin-top: 4px;
+    padding: 8px;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #475569;
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: left;
+    direction: ltr;
 }
 
 .bird-picture-grid {
@@ -3313,6 +3367,11 @@ canvas {
 @keyframes birdPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.08); }
+}
+
+@keyframes birdListen {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-5px) scale(1.05); }
 }
 
 @keyframes birdBounce {
