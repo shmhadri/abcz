@@ -111,7 +111,10 @@ def _json_error(message: str, status: int = 400, **extra):
 
 @require_GET
 def health(request):
-    return JsonResponse({"status": "ok"})
+    return JsonResponse({
+        "status": "ok",
+        "release": "startup-migrations-20260710",
+    })
 
 
 def parse_json_safely(request):
