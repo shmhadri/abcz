@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ورقة عمل المحادثات</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 24px; background: #f8fafc; color: #172033; font-family: "Tajawal", "Cairo", Arial, sans-serif; }
+        .toolbar { max-width: 980px; margin: 0 auto 14px; display: flex; gap: 8px; justify-content: flex-end; }
+        .btn { border: 0; border-radius: 8px; padding: 10px 14px; background: #7c3aed; color: #fff; font-weight: 800; cursor: pointer; text-decoration: none; }
+        .sheet { max-width: 980px; margin: 0 auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 24px; }
+        h1, h2 { margin: 0 0 12px; color: #6d28d9; }
+        h2 { margin-top: 26px; font-size: 21px; }
+        .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0 20px; }
+        .line { min-height: 32px; border-bottom: 1px solid #94a3b8; }
+        table { width: 100%; border-collapse: collapse; direction: ltr; margin: 12px 0 22px; }
+        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; vertical-align: top; }
+        th { background: #f5f3ff; color: #5b21b6; }
+        .answer { min-height: 36px; border-bottom: 1px dashed #94a3b8; }
+        .teacher-box { min-height: 90px; border: 1px dashed #94a3b8; border-radius: 8px; }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .toolbar { display: none; }
+            .sheet { border: 0; border-radius: 0; max-width: none; }
+            h2 { break-after: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <a class="btn" href="/conversations/">رجوع</a>
+        <button class="btn" type="button" onclick="window.print()">طباعة</button>
+    </div>
+    <main class="sheet">
+        <h1>ورقة عمل المحادثات</h1>
+        <div class="meta">
+            <div>اسم الطالب<div class="line"></div></div>
+            <div>الصف<div class="line"></div></div>
+            <div>التاريخ<div class="line"></div></div>
+        </div>
+
+        <h2>اختر الرد الصحيح</h2>
+        <table>
+            <thead><tr><th>Prompt</th><th>Choices</th><th>Answer</th></tr></thead>
+            <tbody>
+                <tr><td>Good morning. How are you?</td><td>I am fine, thank you. / It is under the table. / I am eleven.</td><td><div class="answer"></div></td></tr>
+                <tr><td>Can I see the menu, please?</td><td>Sure. Here you are. / I go by bus. / It is sunny.</td><td><div class="answer"></div></td></tr>
+                <tr><td>Where is the library?</td><td>Go straight and turn left. / I like football. / Yes, I can.</td><td><div class="answer"></div></td></tr>
+                <tr><td>What size do you need?</td><td>Medium, please. / At seven. / My name is Ali.</td><td><div class="answer"></div></td></tr>
+                <tr><td>How is the weather today?</td><td>It is sunny and warm. / I want rice. / I am at school.</td><td><div class="answer"></div></td></tr>
+                <tr><td>May I help you?</td><td>Yes, I need help. / I am eating. / The ticket is blue.</td><td><div class="answer"></div></td></tr>
+                <tr><td>What is your hobby?</td><td>I like drawing. / It is next to the bank. / Yes, please.</td><td><div class="answer"></div></td></tr>
+                <tr><td>Do you have a reservation?</td><td>Yes, under Ahmed. / I am sick. / It costs ten riyals.</td><td><div class="answer"></div></td></tr>
+                <tr><td>What time does the bus leave?</td><td>It leaves at five. / I am fine. / This is my bag.</td><td><div class="answer"></div></td></tr>
+                <tr><td>What do you want to be?</td><td>I want to be an engineer. / I need a doctor. / It is raining.</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>رتب الحوار</h2>
+        <table>
+            <tbody>
+                <tr><td>A: Are you ready for English class? / B: Yes, I am ready. / A: Good morning. How are you? / B: I am fine, thank you.</td><td><div class="answer"></div></td></tr>
+                <tr><td>B: Sure. Here you are. / A: I would like chicken and rice. / A: Can I see the menu, please? / B: Your order will be ready soon.</td><td><div class="answer"></div></td></tr>
+                <tr><td>A: Where is the library? / B: You are welcome. / B: Go straight and turn left. / A: Thank you very much.</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>ترجم الجمل</h2>
+        <table>
+            <tbody>
+                <tr><td>Open your book, please.</td><td><div class="answer"></div></td></tr>
+                <tr><td>I would like chicken and rice.</td><td><div class="answer"></div></td></tr>
+                <tr><td>The library is next to the school.</td><td><div class="answer"></div></td></tr>
+                <tr><td>I have a fever.</td><td><div class="answer"></div></td></tr>
+                <tr><td>Can you help me, please?</td><td><div class="answer"></div></td></tr>
+                <tr><td>I want to buy this shirt.</td><td><div class="answer"></div></td></tr>
+                <tr><td>The weather is cloudy today.</td><td><div class="answer"></div></td></tr>
+                <tr><td>I usually wake up at six.</td><td><div class="answer"></div></td></tr>
+                <tr><td>Where is the bus station?</td><td><div class="answer"></div></td></tr>
+                <tr><td>I dream of becoming a doctor.</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>أكمل الحوار</h2>
+        <table>
+            <tbody>
+                <tr><td>A: Hello. Can I help you? B: ____.</td><td><div class="answer"></div></td></tr>
+                <tr><td>A: What is your name? B: ____.</td><td><div class="answer"></div></td></tr>
+                <tr><td>A: Would you like water? B: ____.</td><td><div class="answer"></div></td></tr>
+                <tr><td>A: Is the airport far? B: ____.</td><td><div class="answer"></div></td></tr>
+                <tr><td>A: Thank you very much. B: ____.</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>اكتب حوارًا قصيرًا بين شخصين</h2>
+        <table>
+            <tbody>
+                <tr><td>A:</td><td><div class="answer"></div></td></tr>
+                <tr><td>B:</td><td><div class="answer"></div></td></tr>
+                <tr><td>A:</td><td><div class="answer"></div></td></tr>
+                <tr><td>B:</td><td><div class="answer"></div></td></tr>
+                <tr><td>A:</td><td><div class="answer"></div></td></tr>
+                <tr><td>B:</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>تقييم المعلم</h2>
+        <div class="teacher-box"></div>
+    </main>
+</body>
+</html>

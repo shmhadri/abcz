@@ -48,7 +48,7 @@
                 const slots = document.createElement("div");
                 slots.className = "drag-word-target";
 
-                const letters = String(wordData.word || "").trim().toUpperCase().split("");
+                const letters = String(wordData.word || "").trim().toLowerCase().split("");
                 letters.forEach((_, slotIndex) => {
                     slots.appendChild(this.createWordSlot(slotIndex));
                 });
@@ -124,12 +124,27 @@
         },
 
         handleDragWordLetterClick(button) {
-            if (button.classList.contains("used")) return;
             const card = button.closest(".drag-word-card");
             if (!card || card.classList.contains("completed")) return;
 
+            if (button.classList.contains("used")) {
+                this.clearSlotForDragWordLetter(button);
+                return;
+            }
+
             card.querySelectorAll(".drag-word-letter.selected").forEach(el => el.classList.remove("selected"));
             button.classList.add("selected");
+        },
+
+        clearSlotForDragWordLetter(button) {
+            const card = button.closest(".drag-word-card");
+            if (!card) return;
+
+            const slot = Array.from(card.querySelectorAll(".drag-word-slot"))
+                .find(item => item.dataset.sourceId === button.dataset.id);
+            if (slot) {
+                this.clearDragWordSlot(slot);
+            }
         },
 
         handleWordSlotClick(slot) {
@@ -151,7 +166,6 @@
         handleDragWordDrop(event, slot) {
             event.preventDefault();
             slot.classList.remove("drag-over");
-            if (slot.classList.contains("filled")) return;
 
             let data = null;
             try {
@@ -160,9 +174,13 @@
                 return;
             }
 
-            const letterButton = document.querySelector(`[data-id="${data.id}"]`);
+            const card = slot.closest(".drag-word-card");
+            const letterButton = card?.querySelector(`[data-id="${data.id}"]`);
             if (!letterButton || letterButton.classList.contains("used")) return;
 
+            if (slot.classList.contains("filled")) {
+                this.clearDragWordSlot(slot);
+            }
             this.placeDragLetterInSlot(slot, data.letter, letterButton);
         },
 
@@ -173,14 +191,20 @@
             slot.classList.add("filled");
             sourceButton.classList.add("used");
             sourceButton.classList.remove("selected");
+            sourceButton.setAttribute("aria-pressed", "true");
+            sourceButton.title = "\u0627\u0636\u063a\u0637 \u0644\u0625\u0631\u062c\u0627\u0639 \u0627\u0644\u062d\u0631\u0641";
             this.checkDragWordItem(slot.closest(".drag-word-card"));
         },
 
         clearDragWordSlot(slot) {
             const sourceId = slot.dataset.sourceId;
+            const card = slot.closest(".drag-word-card");
             if (sourceId) {
-                const sourceButton = document.querySelector(`[data-id="${sourceId}"]`);
-                if (sourceButton) sourceButton.classList.remove("used");
+                const sourceButton = card?.querySelector(`[data-id="${sourceId}"]`);
+                if (sourceButton) {
+                    sourceButton.classList.remove("used");
+                    sourceButton.setAttribute("aria-pressed", "false");
+                }
             }
             slot.textContent = "";
             slot.dataset.letter = "";
@@ -208,11 +232,10 @@
                 this.markDragWordComplete(card, expected);
             } else {
                 if (feedback) {
-                    feedback.textContent = wrongMessage;
+                    feedback.textContent = "\u274c \u062d\u0627\u0648\u0644 \u062a\u0628\u062f\u064a\u0644 \u062d\u0631\u0641 \u0623\u0648 \u0627\u0636\u063a\u0637 \u0639\u0644\u0649 \u0627\u0644\u062e\u0627\u0646\u0629 \u0644\u0625\u0631\u062c\u0627\u0639\u0647";
                     feedback.className = "drag-word-feedback wrong";
                 }
                 this.soundManager.playSound("error");
-                setTimeout(() => this.resetDragWordItem(card), 900);
             }
         },
 
@@ -226,6 +249,7 @@
             });
             card.querySelectorAll(".drag-word-letter").forEach(letter => {
                 letter.classList.remove("used", "selected");
+                letter.setAttribute("aria-pressed", "false");
             });
             const feedback = card.querySelector(".drag-word-feedback");
             if (feedback) {
@@ -244,7 +268,7 @@
             card.classList.add("completed");
 
             const slots = Array.from(card.querySelectorAll(".drag-word-slot"));
-            word.toUpperCase().split("").forEach((char, index) => {
+            word.toLowerCase().split("").forEach((char, index) => {
                 if (slots[index]) {
                     slots[index].textContent = char;
                     slots[index].dataset.letter = char;

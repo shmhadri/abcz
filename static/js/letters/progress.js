@@ -203,10 +203,14 @@
                         exercises: {
                             writing: {
                                 capital: {}, // { 0: 'A', 1: 'a', ... }
-                                small: {}
+                                small: {},
+                                dragCapital: {},
+                                dragSmall: {}
                             },
                             words: {}, // { 'apple': 'apple', 'ant': 'ant', ... }
                             quiz: {
+                                letter,
+                                quizId: `letter_knowledge_quiz_${letter}`,
                                 answers: {}, // { 0: 1, 1: 2, ... }
                                 score: 0,
                                 completed: false
@@ -256,9 +260,13 @@
                                         parsed.letters[letter].exercises = this.createInitialProgressState().letters[letter].exercises;
                                     } else {
                                         // Ensure all sub-structures exist
-                                        parsed.letters[letter].exercises.writing = parsed.letters[letter].exercises.writing || { capital: {}, small: {} };
+                                        parsed.letters[letter].exercises.writing = parsed.letters[letter].exercises.writing || { capital: {}, small: {}, dragCapital: {}, dragSmall: {} };
                                         parsed.letters[letter].exercises.words = parsed.letters[letter].exercises.words || {};
-                                        parsed.letters[letter].exercises.quiz = parsed.letters[letter].exercises.quiz || { answers: {}, score: 0, completed: false };
+                                        parsed.letters[letter].exercises.quiz = parsed.letters[letter].exercises.quiz || { letter, quizId: `letter_knowledge_quiz_${letter}`, answers: {}, score: 0, completed: false };
+                                        if (parsed.letters[letter].exercises.quiz.letter && parsed.letters[letter].exercises.quiz.letter !== letter) {
+                                            parsed.letters[letter].exercises.quiz = { letter, quizId: `letter_knowledge_quiz_${letter}`, answers: {}, score: 0, completed: false };
+                                        }
+                                        parsed.letters[letter].exercises.quiz.quizId = parsed.letters[letter].exercises.quiz.quizId || `letter_knowledge_quiz_${letter}`;
                                     }
                                 }
                             });
@@ -393,9 +401,9 @@
                         score: 0,
                         games: { match: false, balloons: false, memory: false },
                         exercises: {
-                            writing: { capital: {}, small: {} },
+                            writing: { capital: {}, small: {}, dragCapital: {}, dragSmall: {} },
                             words: {},
-                            quiz: { answers: {}, score: 0, completed: false }
+                            quiz: { letter, quizId: `letter_knowledge_quiz_${letter}`, answers: {}, score: 0, completed: false }
                         }
                     };
                 }
@@ -406,13 +414,19 @@
                 if (!record.games) record.games = { match: false, balloons: false, memory: false };
                 if (!record.exercises) record.exercises = {};
                 
-                if (!record.exercises.writing) record.exercises.writing = { capital: {}, small: {} };
+                if (!record.exercises.writing) record.exercises.writing = { capital: {}, small: {}, dragCapital: {}, dragSmall: {} };
                 if (!record.exercises.writing.capital) record.exercises.writing.capital = {};
                 if (!record.exercises.writing.small) record.exercises.writing.small = {};
+                if (!record.exercises.writing.dragCapital) record.exercises.writing.dragCapital = {};
+                if (!record.exercises.writing.dragSmall) record.exercises.writing.dragSmall = {};
                 
                 if (!record.exercises.words) record.exercises.words = {};
                 
-                if (!record.exercises.quiz) record.exercises.quiz = { answers: {}, score: 0, completed: false };
+                if (!record.exercises.quiz) record.exercises.quiz = { letter, quizId: `letter_knowledge_quiz_${letter}`, answers: {}, score: 0, completed: false };
+                if (record.exercises.quiz.letter && record.exercises.quiz.letter !== letter) {
+                    record.exercises.quiz = { letter, quizId: `letter_knowledge_quiz_${letter}`, answers: {}, score: 0, completed: false };
+                }
+                record.exercises.quiz.quizId = record.exercises.quiz.quizId || `letter_knowledge_quiz_${letter}`;
                 if (!record.exercises.quiz.answers) record.exercises.quiz.answers = {};
                 
                 // Fix legacy field name if present
@@ -443,8 +457,7 @@
                     const games = data.games || {};
                     const exercisesDone = data.exercisesCompleted === true;
                     const scoreReached = (data.score || 0) >= this.REQUIRED_SCORE;
-                    const gamesCompleted = (this.requiredGames || []).every(game => games[game] === true);
-                    const fullyCompleted = exercisesDone && scoreReached && gamesCompleted;
+                    const fullyCompleted = exercisesDone && scoreReached;
 
                     if (data.unlocked) {
                         this.unlockedLetters.push(index);
@@ -481,6 +494,9 @@
                     this.commitProgressUpdate();
                 }
                 this.postProgressToBackend(letter, entry.score || this.getCurrentLetterTotalScore());
+                this.postLetterProgressToAccount(letter, entry).catch(error => {
+                    console.warn('Account letter progress fallback: localStorage remains active.', error);
+                });
             }
 
             getCSRFToken() {
@@ -514,6 +530,85 @@
                 .catch(error => console.warn('Progress save error:', error));
             }
 
+            hasAuthenticatedAccount() {
+                return !!(window.PHONICS_USER_ID || window.phonicsUserId || window.currentUserId);
+            }
+
+            getWordsPracticedForLetter(letter, entry) {
+                const practiced = Object.keys(entry?.exercises?.words || {}).filter(Boolean);
+                if (practiced.length > 0) {
+                    return practiced;
+                }
+
+                const staticWords = (window.LETTER_DATA?.[letter]?.words || [])
+                    .map(item => item && item.word ? item.word : '')
+                    .filter(Boolean);
+
+                return entry?.completed ? staticWords : [];
+            }
+
+            getLetterMistakes(letter, entry) {
+                const staticData = window.LETTER_DATA?.[letter] || {};
+                const quiz = entry?.exercises?.quiz || {};
+                const answers = quiz.answers || {};
+                const quizMistakes = [];
+
+                (staticData.quiz || []).forEach((question, index) => {
+                    if (answers[index] === undefined || question.correct === undefined) return;
+                    if (Number(answers[index]) !== Number(question.correct)) {
+                        quizMistakes.push({
+                            index,
+                            selected: Number(answers[index]),
+                            correct: Number(question.correct)
+                        });
+                    }
+                });
+
+                const practicedWords = new Set(this.getWordsPracticedForLetter(letter, entry));
+                const missingWords = (staticData.words || [])
+                    .map(item => item && item.word ? item.word : '')
+                    .filter(word => word && !practicedWords.has(word));
+
+                return {
+                    quiz: quizMistakes,
+                    missing_words: missingWords
+                };
+            }
+
+            buildLetterProgressPayload(letter, entry) {
+                return {
+                    letter,
+                    writing_score: this.writingScore || 0,
+                    words_score: this.wordsScore || 0,
+                    quiz_score: this.quizScore || entry?.exercises?.quiz?.score || 0,
+                    total_score: entry?.score || this.getCurrentLetterTotalScore(),
+                    completed: true,
+                    words_practiced: this.getWordsPracticedForLetter(letter, entry),
+                    mistakes: this.getLetterMistakes(letter, entry)
+                };
+            }
+
+            postLetterProgressToAccount(letter, entry) {
+                if (!this.hasAuthenticatedAccount()) {
+                    return Promise.resolve({ skipped: true, reason: 'anonymous_user' });
+                }
+
+                return fetch('/api/letter-progress/save/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCSRFToken()
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(this.buildLetterProgressPayload(letter, entry))
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error(`letter_progress_save_failed_${response.status}`);
+                    }
+                    return response.json();
+                });
+            }
+
             markGameCompleted(letter, gameName) {
                 const entry = this.ensureLetterRecord(letter);
                 if (entry.games[gameName] !== true) {
@@ -531,25 +626,22 @@
             }
 
             getMissingRequiredGames(letter) {
-                const entry = this.ensureLetterRecord(letter);
-                return this.requiredGames.filter(game => entry.games[game] !== true);
+                this.ensureLetterRecord(letter);
+                return [];
             }
 
             isLetterCompleted(letter) {
                 const entry = this.ensureLetterRecord(letter);
-                const games = entry.games || {};
                 const passedExercises = entry.exercisesCompleted === true;
                 const passedScore = (entry.score || 0) >= this.REQUIRED_SCORE;
-                const passedGames = this.requiredGames.every(game => games[game] === true);
-                return passedExercises && passedScore && passedGames;
+                return passedExercises && passedScore;
             }
 
             updateLetterExerciseProgress(letter) {
                 const entry = this.ensureLetterRecord(letter);
                 const totalScore = this.getCurrentLetterTotalScore();
                 const exercisesCompleted = this.areExercisesCompleted();
-                const games = entry.games || {};
-                const fullyCompleted = exercisesCompleted && totalScore >= this.REQUIRED_SCORE && (this.requiredGames || []).every(game => games[game] === true);
+                const fullyCompleted = exercisesCompleted && totalScore >= this.REQUIRED_SCORE;
 
                 const needsUpdate = entry.exercisesCompleted !== exercisesCompleted || (entry.score || 0) !== totalScore || entry.completed !== fullyCompleted;
 
@@ -568,11 +660,20 @@
                 const staticData = LETTER_DATA[letter];
                 const letterProgress = this.ensureLetterRecord(letter);
 
-                // Check Writing (Capital + Small)
-                const capitalCorrect = Object.keys(letterProgress.exercises.writing.capital || {}).length;
-                const smallCorrect = Object.keys(letterProgress.exercises.writing.small || {}).length;
-                const totalWriting = capitalCorrect + smallCorrect;
-                const maxWritingScore = 20; // 10 capital + 10 small
+                // Check Writing (2 typed + 5 dragged for capital and small)
+                const writing = letterProgress.exercises.writing || {};
+                const handwritingLimit = this.HANDWRITING_COUNT || 2;
+                const dragLimit = this.DRAG_WRITING_COUNT || 5;
+                const countPracticeEntries = (entries, limit = 5) => Object.keys(entries || {}).filter(index => {
+                    const numericIndex = Number(index);
+                    return Number.isInteger(numericIndex) && numericIndex >= 0 && numericIndex < limit;
+                }).length;
+                const capitalCorrect = countPracticeEntries(writing.capital, handwritingLimit);
+                const smallCorrect = countPracticeEntries(writing.small, handwritingLimit);
+                const dragCapitalCorrect = countPracticeEntries(writing.dragCapital, dragLimit);
+                const dragSmallCorrect = countPracticeEntries(writing.dragSmall, dragLimit);
+                const totalWriting = capitalCorrect + smallCorrect + dragCapitalCorrect + dragSmallCorrect;
+                const maxWritingScore = this.MAX_WRITING_SCORE || ((handwritingLimit * 2) + (dragLimit * 2));
                 const writingComplete = totalWriting >= maxWritingScore;
 
                 // Check Words
@@ -581,9 +682,11 @@
                 const wordsComplete = wordsCorrect >= maxWordScore;
 
                 // Check Quiz (Completed all questions, regardless of score)
-                const answeredCount = Object.keys(letterProgress.exercises.quiz.answers || {}).length;
+                const quizState = letterProgress.exercises.quiz || {};
+                const answeredCount = Object.keys(quizState.answers || {}).length;
                 const quizLength = staticData ? staticData.quiz.length : 6;
-                const quizComplete = this.quizCompletedFlag === true || answeredCount >= quizLength;
+                const quizBelongsToLetter = quizState.letter === letter;
+                const quizComplete = quizBelongsToLetter && (this.quizCompletedFlag === true || answeredCount >= quizLength);
 
                 return writingComplete && wordsComplete && quizComplete;
             }

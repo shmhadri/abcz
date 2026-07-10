@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ورقة عمل قراءة CVC - ABCZ</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #eef3f8;
+            color: #111827;
+            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            font-size: 18px;
+            line-height: 1.65;
+        }
+        .page { width: min(1120px, calc(100% - 28px)); margin: 0 auto; padding: 20px 0 42px; }
+        .toolbar, .filters, .actions, .options { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .toolbar { justify-content: space-between; margin-bottom: 16px; }
+        .btn, .filter-btn {
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 9px 14px;
+            border: 1px solid #cfdbea;
+            border-radius: 8px;
+            background: #fff;
+            color: #2255d8;
+            font-weight: 900;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn.primary, .filter-btn.active { color: #fff; background: #2255d8; border-color: #2255d8; }
+        .btn.gold { color: #684005; background: #fff7df; border-color: #efcf82; }
+        .sheet {
+            display: grid;
+            gap: 18px;
+            padding: 30px;
+            border: 1px solid #cfdbea;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+        }
+        .header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 280px;
+            gap: 16px;
+            border-bottom: 3px solid #2255d8;
+            padding-bottom: 16px;
+        }
+        h1 { margin: 0 0 6px; color: #12327c; font-size: 2.5rem; line-height: 1.15; }
+        h2 { margin: 0 0 12px; color: #0f8b75; font-size: 1.55rem; }
+        p { margin-top: 0; }
+        .name-line { display: grid; gap: 8px; font-weight: 900; }
+        .line, .write-line { height: 32px; border-bottom: 2px solid #94a3b8; }
+        .worksheet {
+            position: relative;
+            padding: 22px;
+            border: 1px solid #cfdbea;
+            border-radius: 12px;
+            background: #fff;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        .worksheet::before {
+            content: "";
+            position: absolute;
+            inset-inline-start: 0;
+            top: 0;
+            width: 6px;
+            height: 100%;
+            border-radius: 12px 0 0 12px;
+            background: linear-gradient(180deg, #2255d8, #0f8b75);
+        }
+        .worksheet-tools { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #cfdbea; padding: 11px; text-align: center; }
+        th { background: #eaf2ff; color: #12327c; font-weight: 950; }
+        .word-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+        .word-box {
+            min-height: 150px;
+            display: grid;
+            align-content: center;
+            justify-items: center;
+            gap: 8px;
+            padding: 14px;
+            border: 1px solid #cfdbea;
+            border-radius: 8px;
+            text-align: center;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        .pic { font-size: 3rem; }
+        .word { direction: ltr; unicode-bidi: isolate; font-size: 1.5rem; font-weight: 950; }
+        .chip {
+            display: inline-flex;
+            min-height: 34px;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #eaf2ff;
+            color: #12327c;
+            font-weight: 900;
+        }
+        .question {
+            padding: 13px;
+            border: 1px solid #cfdbea;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .sentence-task-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .draw-box { min-height: 86px; border: 2px dashed #94a3b8; border-radius: 8px; display: grid; place-items: center; color: #64748b; font-weight: 900; }
+        .order-words { direction: ltr; unicode-bidi: isolate; display: flex; flex-wrap: wrap; gap: 6px; }
+        .order-words span { padding: 5px 9px; border-radius: 999px; background: #eaf2ff; color: #12327c; font-weight: 900; }
+        .option { min-width: 96px; padding: 8px 12px; border: 1px solid #cfdbea; border-radius: 999px; text-align: center; font-weight: 900; }
+        .worksheet.hidden { display: none; }
+        @media print {
+            body { background: #fff; font-size: 15px; }
+            .page { width: 100%; padding: 0; }
+            .toolbar, .filters, .print-one { display: none !important; }
+            .sheet { border: 0; box-shadow: none; border-radius: 0; padding: 0; gap: 0; }
+            .header { margin-bottom: 12px; }
+            .worksheet { border: 0; border-radius: 0; padding: 0; break-after: page; page-break-after: always; }
+            .worksheet::before { display: none; }
+            body.print-single .worksheet:not(.print-target) { display: none !important; }
+            body.print-single .worksheet.print-target { break-after: auto; page-break-after: auto; }
+            .word-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+            .word-box { min-height: 120px; padding: 8px; }
+            @page { size: A4; margin: 12mm; }
+        }
+        @media (max-width: 760px) {
+            .header, .word-grid { grid-template-columns: 1fr; }
+            .sheet, .worksheet { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <div class="toolbar">
+            <a class="btn" href="{% url 'cvc_reading' %}">العودة لقراءة CVC</a>
+            <div class="actions">
+                <button class="btn primary" type="button" id="printAll">طباعة كل أوراق CVC</button>
+                <button class="btn" type="button" id="printFluency">طباعة كل أوراق Fluency</button>
+                <button class="btn gold" type="button" id="savePdf">حفظ PDF من المتصفح</button>
+            </div>
+        </div>
+
+        <article class="sheet">
+            <header class="header">
+                <div>
+                    <h1>ورقة عمل قراءة CVC</h1>
+                    <p>أوراق مستقلة للكلمات القصيرة، عائلات الكلمات، الجمل، والقصص.</p>
+                </div>
+                <div class="name-line">
+                    <span>اسم المتعلم</span><div class="line"></div>
+                    <span>التاريخ</span><div class="line"></div>
+                </div>
+            </header>
+
+            <nav class="filters" aria-label="أقسام أوراق CVC">
+                <button class="filter-btn active" type="button" data-sheet="all">كل الأوراق</button>
+                <button class="filter-btn" type="button" data-sheet="short-a">Short A</button>
+                <button class="filter-btn" type="button" data-sheet="short-e">Short E</button>
+                <button class="filter-btn" type="button" data-sheet="short-i">Short I</button>
+                <button class="filter-btn" type="button" data-sheet="short-o">Short O</button>
+                <button class="filter-btn" type="button" data-sheet="short-u">Short U</button>
+                <button class="filter-btn" type="button" data-sheet="families">Word Families</button>
+                <button class="filter-btn" type="button" data-sheet="sentences">Sentences</button>
+                <button class="filter-btn" type="button" data-sheet="common-sentences">Common</button>
+                <button class="filter-btn" type="button" data-sheet="numbers">Numbers</button>
+                <button class="filter-btn" type="button" data-sheet="days">Days</button>
+                <button class="filter-btn" type="button" data-sheet="months">Months</button>
+                <button class="filter-btn" type="button" data-sheet="stories">Stories</button>
+                <button class="filter-btn" type="button" data-sheet="pronouns">Pronouns</button>
+                <button class="filter-btn" type="button" data-sheet="pronoun-subject">Subject</button>
+                <button class="filter-btn" type="button" data-sheet="pronoun-object">Object</button>
+                <button class="filter-btn" type="button" data-sheet="pronoun-possessive">Possessive</button>
+                <button class="filter-btn" type="button" data-sheet="pronoun-mixed">Mixed Pronouns</button>
+                <button class="filter-btn" type="button" data-sheet="sight-words">Sight Words</button>
+                <button class="filter-btn" type="button" data-sheet="fluency">Fluency</button>
+                <button class="filter-btn" type="button" data-sheet="question-words">Question Words</button>
+                <button class="filter-btn" type="button" data-sheet="conversations">Conversations</button>
+                <button class="filter-btn" type="button" data-sheet="action-verbs">Action Verbs</button>
+                <button class="filter-btn" type="button" data-sheet="adjectives">Adjectives</button>
+            </nav>
+
+            {% for vowel, items in word_groups.items %}
+                <section class="worksheet" data-sheet="short-{{ vowel }}">
+                    <div class="worksheet-tools">
+                        <h2>Short {{ vowel|upper }} Words</h2>
+                        <button class="btn print-one" type="button">طباعة هذه الورقة</button>
+                    </div>
+                    <div class="word-grid">
+                        {% for item in items|slice:":12" %}
+                            <div class="word-box">
+                                <div class="pic">{{ item.emoji }}</div>
+                                <div>{{ item.arabic_meaning }}</div>
+                                <div class="write-line"></div>
+                                <span class="chip">{{ item.word_family|default:"CVC" }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endfor %}
+
+            <section class="worksheet" data-sheet="families">
+                <div class="worksheet-tools">
+                    <h2 id="familiesTitle">Word Families</h2>
+                    <button class="btn print-one" type="button">طباعة هذه الورقة</button>
+                </div>
+                <table>
+                    <thead><tr><th>الكلمة</th><th>العائلة</th><th>أكمل الحرف الناقص</th><th>اكتبها مرة أخرى</th></tr></thead>
+                    <tbody>
+                        {% for item in words|slice:":28" %}
+                            <tr data-family-row data-family="{{ item.word_family }}">
+                                <td class="word">{{ item.word }}</td>
+                                <td><span class="chip">{{ item.word_family }}</span></td>
+                                <td>_{{ item.word|slice:"1:" }}</td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="worksheet" data-sheet="sentences">
+                <div class="worksheet-tools">
+                    <h2>CVC Sentences</h2>
+                    <button class="btn print-one" type="button">طباعة هذه الورقة</button>
+                </div>
+                {% for item in sentences|slice:":8" %}
+                    <div class="question">
+                        <strong class="word">{{ item.sentence }}</strong>
+                        <div>{{ item.arabic_translation }}</div>
+                        <div class="sentence-task-grid">
+                            <div>
+                                <strong>رتب الكلمات:</strong>
+                                <div class="order-words">
+                                    {% for word in item.sentence.split %}
+                                        <span>{{ word }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="draw-box">ارسم معنى الجملة</div>
+                        </div>
+                        <div class="write-line"></div>
+                    </div>
+                {% endfor %}
+            </section>
+
+            <section class="worksheet" data-sheet="common-sentences">
+                <div class="worksheet-tools">
+                    <h2>Common Sentences Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة الجمل الشائعة</button>
+                </div>
+                <div class="question"><strong class="word">May I come in?</strong><div>اختر الموقف الصحيح: دخول الفصل / شرب الماء / إنهاء العمل</div><div class="write-line"></div></div>
+                <div class="question"><strong class="word">I need help.</strong><div>صل الجملة بمعناها: أحتاج مساعدة.</div><div class="write-line"></div></div>
+                <div class="question"><strong class="word">Please repeat.</strong><div>اكتب جملة مشابهة تستخدمها داخل الفصل.</div><div class="write-line"></div></div>
+                <div class="question"><strong class="word">Open your book.</strong><div class="draw-box">ارسم الأمر</div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="numbers">
+                <div class="worksheet-tools">
+                    <h2>Numbers Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة الأرقام</button>
+                </div>
+                <div class="question"><strong class="word">I have one pen.</strong><div>أكمل: I have ___ pen.</div><div class="options"><span class="option">one</span><span class="option">two</span><span class="option">three</span></div></div>
+                <div class="question"><strong class="word">I see two cats.</strong><div>اختر الرقم الصحيح: 1 / 2 / 3</div><div class="draw-box">ارسم قطتين</div></div>
+                <div class="question"><strong class="word">Ten pens are red.</strong><div>صل الكلمة بالرقم: ten = ___</div><div class="write-line"></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="days">
+                <div class="worksheet-tools">
+                    <h2>Days of the Week Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة الأيام</button>
+                </div>
+                <div class="question"><strong class="word">Today is Monday.</strong><div>أكمل: Today is ______.</div><div class="write-line"></div></div>
+                <div class="question"><strong class="word">We read on Tuesday.</strong><div>ما اليوم بعد Monday؟</div><div class="options"><span class="option">Tuesday</span><span class="option">Friday</span><span class="option">Sunday</span></div></div>
+                <div class="question"><strong class="word">I play on Friday.</strong><div>اختر الترجمة الصحيحة.</div><div class="write-line"></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="months">
+                <div class="worksheet-tools">
+                    <h2>Months of the Year Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة الشهور</button>
+                </div>
+                <div class="question"><strong class="word">My birthday is in January.</strong><div>أكمل: My birthday is in ______.</div><div class="write-line"></div></div>
+                <div class="question"><strong class="word">School starts in September.</strong><div>صل الشهر برقمه في السنة.</div><div class="write-line"></div></div>
+                <div class="question"><strong class="word">The year has twelve months.</strong><div>صح أو خطأ: السنة فيها 12 شهرًا.</div><div class="options"><span class="option">True</span><span class="option">False</span></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="stories">
+                <div class="worksheet-tools">
+                    <h2>Story Worksheets</h2>
+                    <div class="actions">
+                        <button class="btn print-one" type="button">طباعة كل أوراق القصص</button>
+                    </div>
+                </div>
+                {% for story in stories %}
+                    <div class="question">
+                        <strong>{{ story.title }}</strong>
+                        <p>{{ story.content|linebreaksbr }}</p>
+                        <p>{{ story.arabic_explanation|truncatechars:160 }}</p>
+                        <div class="sentence-task-grid">
+                            <div>
+                                <strong>أكمل الكلمة الناقصة:</strong>
+                                <div class="word">The ___ is in the story.</div>
+                                <div class="write-line"></div>
+                            </div>
+                            <div class="draw-box">ارسم مشهدًا من القصة</div>
+                        </div>
+                        <div style="margin-top:10px;">
+                            <strong>رتب أحداث القصة:</strong>
+                            <div class="line"></div>
+                            <div class="line"></div>
+                            <div class="line"></div>
+                        </div>
+                        <div class="options">
+                            <span class="option">قرأت القصة</span>
+                            <span class="option">أجبت الأسئلة</span>
+                            <span class="option">صح أو خطأ</span>
+                            <span class="option">اكتب نهاية مختلفة</span>
+                        </div>
+                        <div class="write-line"></div>
+                    </div>
+                {% endfor %}
+            </section>
+
+            <section class="worksheet" data-sheet="pronouns">
+                <div class="worksheet-tools">
+                    <h2>Pronouns Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة ورقة الضمائر</button>
+                </div>
+                <table>
+                    <thead><tr><th>Subject</th><th>Object</th><th>Possessive Adj</th><th>Possessive Pronoun</th></tr></thead>
+                    <tbody>
+                        <tr><td>I</td><td>me</td><td>my</td><td>mine</td></tr>
+                        <tr><td>you</td><td>you</td><td>your</td><td>yours</td></tr>
+                        <tr><td>he</td><td>him</td><td>his</td><td>his</td></tr>
+                        <tr><td>she</td><td>her</td><td>her</td><td>hers</td></tr>
+                        <tr><td>it</td><td>it</td><td>its</td><td>-</td></tr>
+                        <tr><td>we</td><td>us</td><td>our</td><td>ours</td></tr>
+                        <tr><td>they</td><td>them</td><td>their</td><td>theirs</td></tr>
+                    </tbody>
+                </table>
+                <div class="question"><strong>صل الضمير بالمعنى:</strong><div class="options"><span class="option">I = أنا</span><span class="option">we = نحن</span><span class="option">they = هم</span></div></div>
+                <div class="question"><strong>صنّف الضمير:</strong> him / my / mine / she<div class="write-line"></div></div>
+                <div class="question"><strong>اكتب جملة باستخدام ضمير من اختيارك.</strong><div class="write-line"></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="pronoun-subject">
+                <div class="worksheet-tools">
+                    <h2>Subject Pronouns Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة Subject</button>
+                </div>
+                <div class="question"><strong class="word">____ am happy.</strong><div class="options"><span class="option">I</span><span class="option">He</span><span class="option">They</span></div></div>
+                <div class="question"><strong class="word">____ is a boy.</strong><div class="options"><span class="option">He</span><span class="option">Her</span><span class="option">Them</span></div></div>
+                <div class="question"><strong>استبدل الاسم بضمير:</strong> Sara can read. <div class="write-line"></div></div>
+                <div class="question"><strong>رتب الكلمات:</strong><div class="order-words"><span>happy</span><span>am</span><span>I</span></div><div class="write-line"></div></div>
+                <div class="question"><div class="draw-box">اقرأ الجملة وارسمها: We are friends.</div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="pronoun-object">
+                <div class="worksheet-tools">
+                    <h2>Object Pronouns Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة Object</button>
+                </div>
+                <div class="question"><strong class="word">I see ____.</strong><div class="options"><span class="option">him</span><span class="option">he</span><span class="option">his</span></div></div>
+                <div class="question"><strong class="word">The teacher helps ____.</strong><div class="options"><span class="option">us</span><span class="option">we</span><span class="option">our</span></div></div>
+                <div class="question"><strong>اختر الضمير الصحيح:</strong> I help _____. <span class="chip">her</span> <span class="chip">she</span><div class="write-line"></div></div>
+                <div class="question"><strong>صنّف:</strong> me / him / them / it<div class="write-line"></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="pronoun-possessive">
+                <div class="worksheet-tools">
+                    <h2>Possessive Pronouns Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة Possessive</button>
+                </div>
+                <div class="question"><strong class="word">This is my book.</strong><div>my = Possessive Adjective</div><div class="write-line"></div></div>
+                <div class="question"><strong class="word">This book is mine.</strong><div>mine = Possessive Pronoun</div><div class="write-line"></div></div>
+                <div class="question"><strong>أكمل الفراغ:</strong> This is ____ pen. <div class="options"><span class="option">your</span><span class="option">yours</span><span class="option">you</span></div></div>
+                <div class="question"><strong>اختر ضمير الملكية:</strong> This hat is ____.<div class="options"><span class="option">hers</span><span class="option">her</span><span class="option">she</span></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="pronoun-mixed">
+                <div class="worksheet-tools">
+                    <h2>Mixed Pronouns Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة Mixed</button>
+                </div>
+                <div class="question"><strong>Replace the Name:</strong> Ali is happy. <div class="write-line"></div></div>
+                <div class="question"><strong>Replace the Names:</strong> Ali and Sara can play. <div class="write-line"></div></div>
+                <div class="question"><strong>Picture Pronoun:</strong><div class="options"><span class="option">👦 = he</span><span class="option">👧 = she</span><span class="option">🐱 = it</span><span class="option">👥 = they/we</span></div></div>
+                <div class="question"><strong>رتب الكلمات:</strong><div class="order-words"><span>book</span><span>my</span><span>is</span><span>This</span></div><div class="write-line"></div></div>
+                <div class="question"><strong>اختبار قصير:</strong> This school is ____.<div class="options"><span class="option">theirs</span><span class="option">their</span><span class="option">them</span></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="sight-words">
+                <div class="worksheet-tools">
+                    <h2>Sight Words Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة Sight Words</button>
+                </div>
+                <div class="word-grid">
+                    <div class="word-box"><div class="word">the</div><div>أداة تعريف</div><div class="write-line"></div></div>
+                    <div class="word-box"><div class="word">I</div><div>أنا</div><div class="write-line"></div></div>
+                    <div class="word-box"><div class="word">you</div><div>أنت</div><div class="write-line"></div></div>
+                    <div class="word-box"><div class="word">we</div><div>نحن</div><div class="write-line"></div></div>
+                    <div class="word-box"><div class="word">said</div><div>قال</div><div class="write-line"></div></div>
+                    <div class="word-box"><div class="word">come</div><div>تعال</div><div class="write-line"></div></div>
+                    <div class="word-box"><div class="word">there</div><div>هناك</div><div class="write-line"></div></div>
+                    <div class="word-box"><div class="word">read</div><div>يقرأ</div><div class="write-line"></div></div>
+                </div>
+                <div class="question"><strong>أكمل الفراغ:</strong> ___ cat is big.<div class="options"><span class="option">The</span><span class="option">My</span><span class="option">He</span></div></div>
+                <div class="question"><strong>ضع دائرة حول sight word:</strong> I see the cat on the mat.</div>
+                <div class="question"><strong>اكتب جملة باستخدام:</strong> with<div class="write-line"></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="fluency">
+                <div class="worksheet-tools">
+                    <h2>Fluency Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة Fluency</button>
+                </div>
+                <div class="question">
+                    <strong class="word">The cat sat on the mat.</strong>
+                    <table><thead><tr><th>Read</th><th>Time</th><th>WPM</th><th>Best?</th></tr></thead><tbody><tr><td>1</td><td></td><td></td><td></td></tr><tr><td>2</td><td></td><td></td><td></td></tr><tr><td>3</td><td></td><td></td><td></td></tr></tbody></table>
+                </div>
+                <div class="question"><strong>سؤال فهم:</strong> Where is the cat?<div class="write-line"></div></div>
+                <div class="question"><strong class="word">I see the cat.</strong><div>اقرأ الجملة 3 مرات وسجل أفضل قراءة.</div><div class="write-line"></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="question-words">
+                <div class="worksheet-tools">
+                    <h2>Question Words Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة Question Words</button>
+                </div>
+                <div class="question"><strong>صل السؤال بالمعنى:</strong><div class="options"><span class="option">who = من</span><span class="option">where = أين</span><span class="option">how = كيف</span></div></div>
+                <div class="question"><strong>أكمل:</strong> ___ is the cat?<div class="options"><span class="option">Where</span><span class="option">Who</span><span class="option">Why</span></div></div>
+                <div class="question"><strong class="word">How are you?</strong><div>اكتب الإجابة المناسبة.</div><div class="write-line"></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="conversations">
+                <div class="worksheet-tools">
+                    <h2>Mini Conversations Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة Conversations</button>
+                </div>
+                <div class="question"><strong>رتب الحوار:</strong><div class="order-words"><span>B: I am fine.</span><span>A: How are you?</span></div><div class="write-line"></div></div>
+                <div class="question"><strong>اختر الرد المناسب:</strong> A: Can I play?<div class="options"><span class="option">Yes, you can.</span><span class="option">It is red.</span><span class="option">I see a cat.</span></div></div>
+                <div class="question"><strong>اكتب ردًا قصيرًا:</strong> A: What is your name?<div class="write-line"></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="action-verbs">
+                <div class="worksheet-tools">
+                    <h2>Action Verbs Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة Action Verbs</button>
+                </div>
+                <div class="question"><strong>صل الفعل بالمعنى:</strong><div class="options"><span class="option">run = يركض</span><span class="option">read = يقرأ</span><span class="option">open = يفتح</span></div></div>
+                <div class="question"><strong>أكمل:</strong> I can ____.<div class="options"><span class="option">run</span><span class="option">blue</span><span class="option">little</span></div></div>
+                <div class="question"><strong>اكتب فعلًا مناسبًا للصورة:</strong><div class="draw-box">ارسم فعلًا</div><div class="write-line"></div></div>
+            </section>
+
+            <section class="worksheet" data-sheet="adjectives">
+                <div class="worksheet-tools">
+                    <h2>Adjectives Worksheet</h2>
+                    <button class="btn print-one" type="button">طباعة Adjectives</button>
+                </div>
+                <div class="question"><strong>صل الصفة بالمعنى:</strong><div class="options"><span class="option">big = كبير</span><span class="option">small = صغير</span><span class="option">happy = سعيد</span></div></div>
+                <div class="question"><strong>اختر الصفة المناسبة:</strong> The sun is ____.<div class="options"><span class="option">hot</span><span class="option">slow</span><span class="option">blue</span></div></div>
+                <div class="question"><strong>اكتب جملة باستخدام:</strong> fast<div class="write-line"></div></div>
+            </section>
+        </article>
+    </main>
+
+    <script>
+        const worksheets = Array.from(document.querySelectorAll(".worksheet"));
+        const filterButtons = Array.from(document.querySelectorAll("[data-sheet].filter-btn"));
+        function setSheet(key) {
+            worksheets.forEach(sheet => sheet.classList.toggle("hidden", key !== "all" && sheet.dataset.sheet !== key));
+            filterButtons.forEach(button => button.classList.toggle("active", button.dataset.sheet === key));
+            const url = new URL(window.location.href);
+            if (key === "all") url.searchParams.delete("sheet");
+            else url.searchParams.set("sheet", key);
+            if (key !== "families") url.searchParams.delete("family");
+            history.replaceState(null, "", `${url.pathname}${url.search}`);
+            applyFamilyFilter();
+        }
+        function applyFamilyFilter() {
+            const family = new URLSearchParams(window.location.search).get("family");
+            document.querySelectorAll("[data-family-row]").forEach(row => {
+                row.style.display = family && row.dataset.family !== family ? "none" : "";
+            });
+            const title = document.getElementById("familiesTitle");
+            if (title) title.textContent = family ? `Word Families -${family}` : "Word Families";
+        }
+        function cleanupPrint() {
+            document.body.classList.remove("print-single");
+            worksheets.forEach(sheet => sheet.classList.remove("print-target"));
+        }
+        document.querySelectorAll(".print-one").forEach(button => {
+            button.addEventListener("click", () => {
+                cleanupPrint();
+                document.body.classList.add("print-single");
+                button.closest(".worksheet").classList.add("print-target");
+                window.print();
+            });
+        });
+        filterButtons.forEach(button => button.addEventListener("click", () => setSheet(button.dataset.sheet)));
+        document.getElementById("printAll").addEventListener("click", () => { cleanupPrint(); setSheet("all"); window.print(); });
+        document.getElementById("printFluency").addEventListener("click", () => {
+            cleanupPrint();
+            document.body.classList.add("print-single");
+            ["sight-words", "fluency", "question-words", "conversations", "action-verbs", "adjectives"].forEach(key => {
+                document.querySelector(`.worksheet[data-sheet="${key}"]`)?.classList.add("print-target");
+            });
+            window.print();
+        });
+        document.getElementById("savePdf").addEventListener("click", () => { cleanupPrint(); setSheet("all"); window.print(); });
+        window.addEventListener("afterprint", cleanupPrint);
+        setSheet(new URLSearchParams(window.location.search).get("sheet") || "all");
+        applyFamilyFilter();
+    </script>
+</body>
+</html>

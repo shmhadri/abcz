@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>القواعد التأسيسية | Grammar Foundation</title>
+    <link rel="stylesheet" href="{% static 'css/grammar_foundation.css' %}">
+</head>
+<body>
+    <main class="gf-page">
+        <div class="gf-topbar" aria-label="Grammar page actions">
+            <a class="gf-back-btn" href="{% url 'english_foundation' %}">← العودة للتأسيس</a>
+            <button class="gf-theme-toggle" type="button" id="gfThemeToggle" aria-pressed="false">
+                الوضع الداكن
+            </button>
+        </div>
+
+        <header class="gf-hero">
+            <div>
+                <div class="gf-eyebrow">English Foundation</div>
+                <h1>القواعد التأسيسية</h1>
+                <p>30 درس Grammar Foundation للأعمار من 10 إلى 16 سنة، مع شرح عربي، أمثلة، أخطاء شائعة، تدريبات، ألعاب، نطق، مايك، وورقة عمل للطباعة.</p>
+                <nav class="gf-links" aria-label="English foundation links">
+                    <a href="{% url 'english_foundation' %}">كل الأقسام</a>
+                    <a href="{% url 'vocabulary_foundation' %}">المفردات</a>
+                    <a href="{% url 'conversations' %}">المحادثات</a>
+                    <a href="{% url 'common_sentences' %}">الجمل الشائعة</a>
+                    <a href="{% url 'profile_dashboard' %}">ملف الطالب</a>
+                    <a href="{% url 'leaderboard' %}">لوحة الشرف</a>
+                </nav>
+            </div>
+            <div class="gf-hero-mark">✓</div>
+        </header>
+
+        <section class="gf-stats" aria-label="Grammar progress">
+            <article class="gf-stat">
+                <span>نقاط هذا القسم</span>
+                <strong id="gfPoints">{{ points }}</strong>
+            </article>
+            <article class="gf-stat">
+                <span>عدد التفاعلات</span>
+                <strong id="gfActions">{{ actions_count }}</strong>
+            </article>
+            <article class="gf-stat">
+                <span>الحالة</span>
+                <strong id="gfStatus">{% if completed %}متقن{% else %}قيد التدريب{% endif %}</strong>
+            </article>
+            <article class="gf-stat">
+                <span>دروس متقنة</span>
+                <strong id="gfMastered">0 / 30</strong>
+            </article>
+            <div class="gf-progress" aria-label="Progress bar">
+                <div id="gfProgressFill"></div>
+            </div>
+        </section>
+
+        <section class="gf-toolbar" aria-label="Grammar filters">
+            <input id="gfSearch" type="search" placeholder="ابحث عن Present Simple أو pronouns">
+            <select id="gfCategory">
+                <option value="">كل التصنيفات</option>
+            </select>
+            <select id="gfLevel">
+                <option value="">كل المستويات</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Challenge">Challenge</option>
+            </select>
+            <button class="gf-btn" type="button" data-filter-category="">كل الدروس</button>
+            <button class="gf-btn" type="button" data-filter-category="Pronouns">الضمائر</button>
+            <button class="gf-btn" type="button" data-filter-category="Tenses">الأزمنة</button>
+            <button class="gf-btn" type="button" data-filter-category="Questions">الأسئلة</button>
+            <button class="gf-btn" type="button" data-filter-category="Prepositions">حروف الجر</button>
+            <button class="gf-btn" type="button" data-filter-category="Modals">الأفعال المساعدة</button>
+            <button class="gf-btn" type="button" data-filter-level="Challenge">التحدي</button>
+            <a class="gf-btn primary" href="{% url 'grammar_foundation_worksheet' %}" target="_blank">ورقة عمل القواعد</a>
+        </section>
+
+        <section class="gf-games" aria-label="Grammar games">
+            <button class="gf-game-btn" type="button" data-game="fix">Grammar Fix</button>
+            <button class="gf-game-btn" type="button" data-game="builder">Sentence Builder</button>
+            <button class="gf-game-btn" type="button" data-game="tense">Tense Race</button>
+            <button class="gf-game-btn" type="button" data-game="pronoun">Pronoun Match</button>
+            <button class="gf-game-btn" type="button" data-game="be">Verb to be Challenge</button>
+            <button class="gf-game-btn" type="button" data-game="question">Question Builder</button>
+            <button class="gf-game-btn" type="button" data-game="hunter">Error Hunter</button>
+            <button class="gf-game-btn" type="button" data-game="speed">Grammar Speed Challenge</button>
+        </section>
+
+        <section class="gf-game-panel" id="gfGamePanel" hidden></section>
+
+        <section class="gf-grid" id="gfGrid" aria-label="Grammar lessons"></section>
+        <div class="gf-empty" id="gfEmpty" hidden>لا توجد قواعد مطابقة لهذا البحث.</div>
+        <div hidden>Subject Pronouns Present Simple Comparative and Superlative Grammar Speed Challenge</div>
+
+        <button class="gf-complete" id="gfCompleteSection" type="button">إتقان القسم +50</button>
+    </main>
+
+    <div class="gf-modal" id="gfModal" hidden>
+        <div class="gf-modal-panel" role="dialog" aria-modal="true" aria-labelledby="gfModalTitle">
+            <button class="gf-modal-close" type="button" id="gfModalClose">×</button>
+            <div id="gfModalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        window.GRAMMAR_INITIAL_PROGRESS = {
+            points: Number("{{ points|default:0 }}"),
+            actions: Number("{{ actions_count|default:0 }}"),
+            completed: {% if completed %}true{% else %}false{% endif %}
+        };
+        window.GRAMMAR_PROGRESS_URL = "{% url 'english_foundation_progress_api' %}";
+    </script>
+    <script src="{% static 'js/speech_service.js' %}"></script>
+    <script src="{% static 'js/grammar_foundation.js' %}"></script>
+</body>
+</html>

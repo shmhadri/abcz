@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>المفردات الإنجليزية | Vocabulary Foundation</title>
+    <link rel="stylesheet" href="{% static 'css/vocabulary_foundation.css' %}">
+</head>
+<body>
+    <main class="vf-page">
+        <header class="vf-hero">
+            <div>
+                <div class="vf-eyebrow">English Foundation</div>
+                <h1>المفردات الإنجليزية</h1>
+                <p>80 كلمة مهمة للأعمار من 10 إلى 16 سنة، مع ترجمة، شرح، نطق، مايك، تدريبات، ألعاب، وورقة عمل للطباعة.</p>
+                <nav class="vf-links" aria-label="English foundation links">
+                    <a href="{% url 'english_foundation' %}">كل الأقسام</a>
+                    <a href="{% url 'grammar_foundation' %}">القواعد</a>
+                    <a href="{% url 'conversations' %}">المحادثات</a>
+                    <a href="{% url 'common_sentences' %}">الجمل الشائعة</a>
+                    <a href="{% url 'profile_dashboard' %}">ملف الطالب</a>
+                    <a href="{% url 'leaderboard' %}">لوحة الشرف</a>
+                </nav>
+            </div>
+            <div class="vf-hero-mark">📘</div>
+        </header>
+
+        <section class="vf-stats" aria-label="Vocabulary progress">
+            <article class="vf-stat">
+                <span>نقاط هذا القسم</span>
+                <strong id="vfPoints">{{ points }}</strong>
+            </article>
+            <article class="vf-stat">
+                <span>عدد التفاعلات</span>
+                <strong id="vfActions">{{ actions_count }}</strong>
+            </article>
+            <article class="vf-stat">
+                <span>الحالة</span>
+                <strong id="vfStatus">{% if completed %}متقن{% else %}قيد التدريب{% endif %}</strong>
+            </article>
+            <article class="vf-stat">
+                <span>كلمات متقنة</span>
+                <strong id="vfMastered">0 / 80</strong>
+            </article>
+            <div class="vf-progress" aria-label="Progress bar">
+                <div id="vfProgressFill"></div>
+            </div>
+        </section>
+
+        <section class="vf-toolbar" aria-label="Vocabulary filters">
+            <input id="vfSearch" type="search" placeholder="ابحث عن كلمة مثل computer أو responsibility">
+            <select id="vfCategory">
+                <option value="">كل التصنيفات</option>
+            </select>
+            <select id="vfLevel">
+                <option value="">كل المستويات</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Challenge">Challenge</option>
+            </select>
+            <button class="vf-btn" type="button" data-filter-level="">عرض الكل</button>
+            <button class="vf-btn" type="button" data-filter-level="Easy">السهلة</button>
+            <button class="vf-btn" type="button" data-filter-level="Medium">المتوسطة</button>
+            <button class="vf-btn" type="button" data-filter-level="Challenge">التحدي</button>
+            <button class="vf-btn" type="button" id="vfReviewOnly">تحتاج مراجعة</button>
+            <button class="vf-btn" type="button" id="vfMasteredOnly">المتقنة</button>
+            <a class="vf-btn primary" href="{% url 'vocabulary_foundation_worksheet' %}" target="_blank">ورقة عمل المفردات</a>
+        </section>
+
+        <section class="vf-games" aria-label="Vocabulary games">
+            <button class="vf-game-btn" type="button" data-game="flashcards">Flashcards</button>
+            <button class="vf-game-btn" type="button" data-game="match">Word Match</button>
+            <button class="vf-game-btn" type="button" data-game="emoji">Emoji Choice</button>
+            <button class="vf-game-btn" type="button" data-game="listen">Listen and Choose</button>
+            <button class="vf-game-btn" type="button" data-game="blank">Fill in the Blank</button>
+            <button class="vf-game-btn" type="button" data-game="speed">Speed Vocabulary Challenge</button>
+            <button class="vf-game-btn" type="button" data-game="memory">Memory Game</button>
+            <button class="vf-game-btn" type="button" data-game="builder">Word Builder</button>
+        </section>
+
+        <section class="vf-game-panel" id="vfGamePanel" hidden></section>
+
+        <section class="vf-grid" id="vfGrid" aria-label="Vocabulary cards"></section>
+        <div class="vf-empty" id="vfEmpty" hidden>لا توجد كلمات مطابقة لهذا البحث.</div>
+        <div hidden>classroom responsibility Speed Vocabulary Challenge</div>
+
+        <button class="vf-complete" id="vfCompleteSection" type="button">إتقان القسم +50</button>
+    </main>
+
+    <div class="vf-modal" id="vfModal" hidden>
+        <div class="vf-modal-panel" role="dialog" aria-modal="true" aria-labelledby="vfModalTitle">
+            <button class="vf-modal-close" type="button" id="vfModalClose">×</button>
+            <div id="vfModalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        window.VOCABULARY_INITIAL_PROGRESS = {
+            points: Number("{{ points|default:0 }}"),
+            actions: Number("{{ actions_count|default:0 }}"),
+            completed: {% if completed %}true{% else %}false{% endif %}
+        };
+        window.VOCABULARY_PROGRESS_URL = "{% url 'english_foundation_progress_api' %}";
+    </script>
+    <script src="{% static 'js/speech_service.js' %}"></script>
+    <script src="{% static 'js/vocabulary_foundation.js' %}"></script>
+</body>
+</html>

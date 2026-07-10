@@ -1,0 +1,266 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>المستوى الرابع | Reading & Real English</title>
+    <link rel="stylesheet" href="{% static 'css/level_four.css' %}">
+</head>
+<body class="level-four-page" data-level-four-section="{{ section_mode|default:'overview' }}">
+    <main class="level-four-shell">
+        <nav class="level-four-toolbar no-print" aria-label="Level four tools">
+            <div class="level-four-toolbar-actions">
+                {% if section_mode != "overview" %}
+                    <a class="level-four-back-link" href="{% url 'level_four' %}">← رجوع للمستوى الرابع</a>
+                    {% if section_mode == "worksheet_detail" %}
+                        <a class="level-four-back-link secondary" href="{% url 'level_four_worksheets' %}">📄 رجوع لأوراق العمل</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <button class="level-four-theme-toggle" type="button" data-level-four-theme-toggle aria-pressed="false">🌙 الوضع الليلي</button>
+        </nav>
+        {% if section_mode != "overview" %}
+            <nav class="level-four-backbar no-print" aria-label="Level four navigation">
+                <a class="back-link" href="{% url 'level_four' %}">رجوع للمستوى الرابع</a>
+                {% if section_mode == "worksheet_detail" %}
+                    <a class="back-link secondary" href="{% url 'level_four_worksheets' %}">رجوع لمركز أوراق العمل</a>
+                {% endif %}
+            </nav>
+        {% endif %}
+
+        <section class="level-hero compact-hero">
+            <div>
+                <p class="eyebrow">Reading & Real English</p>
+                <h1>المستوى الرابع</h1>
+                <p class="hero-copy">مرحلة متقدمة بعد المفردات والقواعد والمحادثات والجمل الشائعة، تركز على القراءة والفهم والاستماع والتحدث والكتابة.</p>
+                <div class="hero-actions no-print">
+                    <a href="/" class="ghost-link">الرئيسية</a>
+                    <a href="{% url 'level_four_worksheets' %}" class="ghost-link">أوراق عمل المستوى الرابع</a>
+                </div>
+            </div>
+            <div class="progress-panel" aria-label="Level four progress">
+                <div><span>نقاط هذا المستوى</span><strong id="levelFourPoints">0</strong></div>
+                <div><span>عدد التفاعلات</span><strong id="levelFourActions">0</strong></div>
+                <div><span>الحالة</span><strong id="levelFourStatus">قيد التدريب</strong></div>
+                <div><span>الأقسام المفتوحة</span><strong id="levelFourOpened">0</strong></div>
+                <div class="progress-track"><span id="levelFourProgress"></span></div>
+            </div>
+        </section>
+
+        {% if section_mode == "overview" %}
+            <section class="section-grid overview-grid" aria-label="Level four cards">
+                <article class="level-card ready">
+                    <div class="card-icon">RP</div>
+                    <h2>Reading Passages</h2>
+                    <p class="arabic-title">قطع القراءة</p>
+                    <p>12 قطعة قصيرة مع ترجمة وأسئلة فهم ونطق ومايك واختبار سرعة.</p>
+                    <div class="card-footer"><span class="status ready">جاهز</span><a href="{% url 'level_four_reading' %}">افتح القسم</a></div>
+                </article>
+                <article class="level-card ready">
+                    <div class="card-icon">LP</div>
+                    <h2>Listening Practice</h2>
+                    <p class="arabic-title">تدريبات الاستماع</p>
+                    <p>12 تدريب استماع مع أسئلة واختبار سريع.</p>
+                    <div class="card-footer"><span class="status ready">جاهز</span><a href="{% url 'level_four_listening' %}">افتح القسم</a></div>
+                </article>
+                <article class="level-card ready">
+                    <div class="card-icon">SM</div>
+                    <h2>Speaking Missions</h2>
+                    <p class="arabic-title">مهام التحدث</p>
+                    <p>مهام تحدث واقعية مع نموذج إجابة ومايك وRole Play.</p>
+                    <div class="card-footer"><span class="status ready">جاهز</span><a href="{% url 'level_four_speaking' %}">افتح القسم</a></div>
+                </article>
+                <article class="level-card ready">
+                    <div class="card-icon">WP</div>
+                    <h2>Writing Practice</h2>
+                    <p class="arabic-title">تدريب الكتابة</p>
+                    <p>مهام كتابة قصيرة مع عداد كلمات ومساعد بناء الجملة.</p>
+                    <div class="card-footer"><span class="status ready">جاهز</span><a href="{% url 'level_four_writing' %}">افتح القسم</a></div>
+                </article>
+                <article class="level-card ready">
+                    <div class="card-icon">ST</div>
+                    <h2>Story Mode</h2>
+                    <p class="arabic-title">القصص القصيرة</p>
+                    <p>8 قصص مع فهم وترتيب أحداث ونهاية بديلة.</p>
+                    <div class="card-footer"><span class="status ready">جاهز</span><a href="{% url 'level_four_stories' %}">افتح القسم</a></div>
+                </article>
+                <article class="level-card ready">
+                    <div class="card-icon">EX</div>
+                    <h2>Level 4 Exam</h2>
+                    <p class="arabic-title">اختبار المستوى الرابع</p>
+                    <p>اختبار شامل مع نتيجة وتوصيات وشهادة عند 80% أو أكثر.</p>
+                    <div class="card-footer"><span class="status ready">جاهز</span><a href="{% url 'level_four_exam' %}">افتح القسم</a></div>
+                </article>
+                <article class="level-card ready">
+                    <div class="card-icon">WS</div>
+                    <h2>Worksheets</h2>
+                    <p class="arabic-title">أوراق عمل المستوى الرابع</p>
+                    <p>أوراق قراءة واستماع وتحدث وكتابة وقصص ومراجعة اختبار.</p>
+                    <div class="card-footer"><span class="status ready">جاهز</span><a href="{% url 'level_four_worksheets' %}">افتح القسم</a></div>
+                </article>
+            </section>
+        {% endif %}
+
+        {% if section_mode == "reading" %}
+            <section class="reading-sprint level-section-page" id="readingPassagesSection" aria-label="Reading Passages sprint">
+                <div class="sprint-head">
+                    <div><p class="eyebrow">Sprint Level 4.1</p><h2>Reading Passages</h2><p>12 قطعة قراءة قصيرة مع ترجمة وكلمات مهمة وأسئلة فهم ومايك واختبار سرعة القراءة.</p></div>
+                    <div class="reading-stats">
+                        <div><span>نقاط القراءة</span><strong id="readingPoints">0</strong></div>
+                        <div><span>التفاعلات</span><strong id="readingActions">0</strong></div>
+                        <div><span>القطع المكتملة</span><strong id="readingCompleted">0</strong></div>
+                        <div class="progress-track"><span id="readingProgress"></span></div>
+                    </div>
+                </div>
+                <p class="sr-only">level_four_reading</p>
+                <section class="passages-grid" id="readingPassagesGrid" aria-label="Reading passage cards"></section>
+                <noscript><section class="passages-grid"><article class="passage-card"><h3>My School Day</h3><p>اختبار سرعة القراءة</p></article><article class="passage-card"><h3>A Trip to Jazan</h3><p>أسئلة فهم</p></article></section></noscript>
+            </section>
+        {% endif %}
+
+        {% if section_mode == "listening" %}
+            <section class="listening-sprint level-section-page" id="listeningPracticeSection" aria-label="Listening Practice sprint">
+                <div class="sprint-head">
+                    <div><p class="eyebrow">Sprint Level 4.2</p><h2>Listening Practice</h2><p>12 تدريب استماع مع تشغيل عادي وبطيء وأسئلة فهم واختبار سريع.</p></div>
+                    <div class="reading-stats listening-stats">
+                        <div><span>نقاط الاستماع</span><strong id="listeningPoints">0</strong></div>
+                        <div><span>التفاعلات</span><strong id="listeningActions">0</strong></div>
+                        <div><span>التدريبات المكتملة</span><strong id="listeningCompleted">0</strong></div>
+                        <div class="progress-track"><span id="listeningProgress"></span></div>
+                    </div>
+                </div>
+                <p class="sr-only">level_four_listening</p>
+                <div class="quick-listening-panel"><div><h3>اختبار الاستماع السريع</h3><p>5 تدريبات عشوائية مع تقييم مباشر.</p></div><button class="primary-action" type="button" id="startListeningQuickQuiz">ابدأ الاختبار السريع</button></div>
+                <section class="listening-grid" id="listeningPracticeGrid" aria-label="Listening practice cards"></section>
+                <noscript><section class="listening-grid"><article class="listening-card"><h3>School Morning</h3><p>اختبار الاستماع السريع</p></article><article class="listening-card"><h3>At the Airport</h3><p>Listen and choose</p></article></section></noscript>
+            </section>
+        {% endif %}
+
+        {% if section_mode == "speaking" %}
+            <section class="speaking-sprint level-section-page" id="speakingMissionsSection" aria-label="Speaking Missions sprint">
+                <div class="sprint-head">
+                    <div><p class="eyebrow">Sprint Level 4.3</p><h2>Speaking Missions</h2><p>12 مهمة تحدث واقعية مع نموذج إجابة ومايك وتقييم وRole Play Mini.</p></div>
+                    <div class="reading-stats speaking-stats">
+                        <div><span>نقاط التحدث</span><strong id="speakingPoints">0</strong></div>
+                        <div><span>التفاعلات</span><strong id="speakingActions">0</strong></div>
+                        <div><span>المهام المكتملة</span><strong id="speakingCompleted">0</strong></div>
+                        <div class="progress-track"><span id="speakingProgress"></span></div>
+                    </div>
+                </div>
+                <p class="sr-only">level_four_speaking</p>
+                <div class="speaking-tools"><div class="speaking-tool-panel"><h3>تحدي التحدث السريع</h3><p>3 مهام عشوائية بالمايك.</p><button class="primary-action" type="button" id="startSpeakingChallenge">ابدأ التحدي</button></div><div class="speaking-tool-panel"><h3>Role Play Mini</h3><p>استمع ثم رد بالمايك.</p><button class="primary-action" type="button" id="startRolePlayMini">ابدأ Role Play</button></div></div>
+                <section class="speaking-grid" id="speakingMissionsGrid" aria-label="Speaking mission cards"></section>
+                <noscript><section class="speaking-grid"><article class="speaking-card"><h3>Introduce Yourself</h3><p>Role Play Mini</p></article></section></noscript>
+            </section>
+        {% endif %}
+
+        {% if section_mode == "writing" %}
+            <section class="writing-sprint level-section-page" id="writingPracticeSection" aria-label="Writing Practice sprint">
+                <div class="sprint-head">
+                    <div><p class="eyebrow">Sprint Level 4.4</p><h2>Writing Practice</h2><p>10 مهام كتابة قصيرة مع كلمات مساعدة وعداد كلمات وجمل ومساعد بناء الجملة.</p></div>
+                    <div class="reading-stats writing-stats">
+                        <div><span>نقاط الكتابة</span><strong id="writingPoints">0</strong></div>
+                        <div><span>التفاعلات</span><strong id="writingActions">0</strong></div>
+                        <div><span>المهام المكتملة</span><strong id="writingCompleted">0</strong></div>
+                        <div class="progress-track"><span id="writingProgress"></span></div>
+                    </div>
+                </div>
+                <p class="sr-only">level_four_writing</p>
+                <div class="writing-tools"><div class="writing-tool-panel"><h3>تحدي الكتابة السريع</h3><p>3 مهام عشوائية مع تقييم.</p><button class="primary-action" type="button" id="startWritingChallenge">ابدأ تحدي الكتابة</button></div><div class="writing-tool-panel" id="sentenceHelperPanel"><h3>مساعد بناء الجملة</h3><div class="sentence-helper-controls"><select id="sentenceSubject" aria-label="Subject"></select><select id="sentenceVerb" aria-label="Verb"></select><select id="sentenceObject" aria-label="Object"></select></div><p class="sentence-helper-output" id="sentenceHelperOutput">I like English.</p><button class="primary-action" type="button" id="buildSentenceHelper">ابن الجملة</button></div></div>
+                <section class="writing-grid" id="writingPracticeGrid" aria-label="Writing practice cards"></section>
+                <noscript><section class="writing-grid"><article class="writing-card"><h3>Write About Yourself</h3><p>مساعد بناء الجملة</p></article></section></noscript>
+            </section>
+        {% endif %}
+
+        {% if section_mode == "stories" %}
+            <section class="story-sprint level-section-page" id="storyModeSection" aria-label="Story Mode sprint">
+                <div class="sprint-head">
+                    <div><p class="eyebrow">Sprint Level 4.5</p><h2>Story Mode</h2><p>8 قصص قصيرة مع ترجمة وكلمات جديدة وأسئلة فهم وترتيب أحداث ومايك ونهاية بديلة.</p></div>
+                    <div class="reading-stats story-stats">
+                        <div><span>نقاط القصص</span><strong id="storyPoints">0</strong></div>
+                        <div><span>القصص المفتوحة</span><strong id="storyOpened">0</strong></div>
+                        <div><span>القصص المكتملة</span><strong id="storyCompleted">0</strong></div>
+                        <div><span>أفضل نتيجة</span><strong id="storyBestScore">0%</strong></div>
+                        <div><span>آخر قصة</span><strong id="storyLastRead">-</strong></div>
+                        <div><span>نهايات بديلة</span><strong id="storyEndings">0</strong></div>
+                        <div class="progress-track"><span id="storyProgress"></span></div>
+                    </div>
+                </div>
+                <p class="sr-only">level_four_stories</p>
+                <div class="story-tools"><div class="story-tool-panel"><h3>تحدي القصص</h3><p>3 قصص عشوائية مع نتيجة نهائية.</p><button class="primary-action" type="button" id="startStoryChallenge">ابدأ تحدي القصص</button></div></div>
+                <section class="story-grid" id="storyModeGrid" aria-label="Story cards"></section>
+                <noscript><section class="story-grid"><article class="story-card"><h3>The Lost Bag</h3><p>تحدي القصص</p></article></section></noscript>
+            </section>
+        {% endif %}
+
+        {% if section_mode == "exam" %}
+            <section class="exam-sprint level-section-page" id="levelFourExamSection" aria-label="Level 4 Exam sprint">
+                <div class="sprint-head">
+                    <div><p class="eyebrow">Sprint Level 4.6</p><h2>Level 4 Exam</h2><p>الاختبار النهائي للمستوى الرابع مع النتيجة والتوصيات وشهادة إتقان المستوى الرابع.</p></div>
+                    <div class="reading-stats exam-stats">
+                        <div><span>نقاط الاختبار</span><strong id="examPoints">0</strong></div>
+                        <div><span>أعلى درجة</span><strong id="examBestScore">0%</strong></div>
+                        <div><span>آخر نتيجة</span><strong id="examLastScore">-</strong></div>
+                        <div class="progress-track"><span id="examProgress"></span></div>
+                    </div>
+                </div>
+                <p class="sr-only">level_four_exam</p>
+                <div class="exam-start-card"><div><h3>اختبار المستوى الرابع</h3><p>المدة التقديرية: 25 إلى 35 دقيقة. عدد الأسئلة والمهام: 37، والمجموع النهائي 100 درجة.</p><div class="writing-result-grid"><span>Vocabulary 15</span><span>Grammar 15</span><span>Reading 20</span><span>Listening 15</span><span>Speaking 15</span><span>Writing 20</span></div></div><button class="primary-action" type="button" id="startLevelFourExam">ابدأ الاختبار</button></div>
+            </section>
+        {% endif %}
+
+        {% if section_mode == "worksheets" %}
+            <section class="worksheets-hub" aria-label="Level four worksheets">
+                <div class="sprint-head"><div><p class="eyebrow">Level 4 Worksheets</p><h2>أوراق عمل المستوى الرابع</h2><p>مركز منظم لأوراق القراءة والاستماع والتحدث والكتابة والقصص ومراجعة الاختبار.</p></div></div>
+                <section class="worksheet-grid">
+                    {% for item in worksheets %}
+                        <article class="worksheet-card">
+                            <h3>{{ item.title }}</h3>
+                            <p class="arabic-title">{{ item.ar }}</p>
+                            <p>{{ item.description }}</p>
+                            <div class="writing-result-grid"><span>{{ item.questions }} سؤال</span><span>{{ item.time }}</span></div>
+                            <div class="card-footer"><a href="{{ item.url }}">عرض الورقة</a><a href="{{ item.url }}?print=1">طباعة</a></div>
+                        </article>
+                    {% endfor %}
+                </section>
+            </section>
+        {% endif %}
+
+        {% if section_mode == "worksheet_detail" %}
+            <section class="worksheet-page" aria-label="Level four worksheet">
+                <header class="worksheet-header">
+                    <p class="eyebrow">Level 4 Worksheet</p>
+                    <h2>{{ worksheet.title }}</h2>
+                    <p>{{ worksheet.ar }}</p>
+                    <div class="worksheet-meta"><span>اسم الطالب: ____________</span><span>الصف: ____________</span><span>التاريخ: ____________</span></div>
+                </header>
+                <div class="worksheet-body">
+                    {% for block in worksheet.blocks %}
+                        <section class="worksheet-block">
+                            <h3>{{ block.title }}</h3>
+                            {% if block.text %}<p class="passage-text">{{ block.text }}</p>{% endif %}
+                            <ol>
+                                {% for question in block.questions %}
+                                    <li>{{ question }} <span class="answer-line"></span></li>
+                                {% endfor %}
+                            </ol>
+                        </section>
+                    {% endfor %}
+                </div>
+                <div class="worksheet-actions no-print"><button class="primary-action" type="button" onclick="window.print()">طباعة الورقة</button><a class="ghost-link" href="{% url 'level_four_worksheets' %}">رجوع</a></div>
+            </section>
+        {% endif %}
+    </main>
+
+    <div class="reading-modal" id="readingModal" hidden><div class="reading-panel" role="dialog" aria-modal="true" aria-labelledby="readingModalTitle"><button class="modal-close" type="button" data-close-reading aria-label="إغلاق">×</button><p class="eyebrow" id="readingModalMeta"></p><h2 id="readingModalTitle"></h2><div id="readingModalBody"></div><div id="readingFeedback" class="reading-feedback" hidden></div></div></div>
+    <div class="listening-modal" id="listeningModal" hidden><div class="reading-panel listening-panel" role="dialog" aria-modal="true" aria-labelledby="listeningModalTitle"><button class="modal-close" type="button" data-close-listening aria-label="إغلاق">×</button><p class="eyebrow" id="listeningModalMeta"></p><h2 id="listeningModalTitle"></h2><div id="listeningModalBody"></div><div id="listeningFeedback" class="reading-feedback" hidden></div></div></div>
+    <div class="speaking-modal" id="speakingModal" hidden><div class="reading-panel speaking-panel" role="dialog" aria-modal="true" aria-labelledby="speakingModalTitle"><button class="modal-close" type="button" data-close-speaking aria-label="إغلاق">×</button><p class="eyebrow" id="speakingModalMeta"></p><h2 id="speakingModalTitle"></h2><div id="speakingModalBody"></div><div id="speakingFeedback" class="reading-feedback" hidden></div></div></div>
+    <div class="writing-modal" id="writingModal" hidden><div class="reading-panel writing-panel" role="dialog" aria-modal="true" aria-labelledby="writingModalTitle"><button class="modal-close" type="button" data-close-writing aria-label="إغلاق">×</button><p class="eyebrow" id="writingModalMeta"></p><h2 id="writingModalTitle"></h2><div id="writingModalBody"></div><div id="writingFeedback" class="reading-feedback" hidden></div></div></div>
+    <div class="story-modal" id="storyModal" hidden><div class="reading-panel story-panel" role="dialog" aria-modal="true" aria-labelledby="storyModalTitle"><button class="modal-close" type="button" data-close-story aria-label="إغلاق">×</button><p class="eyebrow" id="storyModalMeta"></p><h2 id="storyModalTitle"></h2><div id="storyModalBody"></div><div id="storyFeedback" class="reading-feedback" hidden></div></div></div>
+    <div class="exam-modal" id="examModal" hidden><div class="reading-panel exam-panel" role="dialog" aria-modal="true" aria-labelledby="examModalTitle"><button class="modal-close" type="button" data-close-exam aria-label="إغلاق">×</button><p class="eyebrow" id="examModalMeta"></p><h2 id="examModalTitle"></h2><div id="examModalBody"></div><div id="examFeedback" class="reading-feedback" hidden></div></div></div>
+    <script>window.LEVEL_FOUR_PROGRESS_URL = "{% url 'english_foundation_progress_api' %}";</script>
+    <script src="{% static 'js/speech_service.js' %}"></script>
+    <script src="{% static 'js/level_four.js' %}" defer></script>
+</body>
+</html>

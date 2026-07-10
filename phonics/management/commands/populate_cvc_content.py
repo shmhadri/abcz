@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Management command لإضافة كلمات وجمل وقصص CVC مناسبة للثقافة العربية
-تأكد من عدم وجود محتوى غير مناسب (خنزير، الخ)
+تأكد من عدم وجود محتوى غير مناسب
 """
 from django.core.management.base import BaseCommand
 from phonics.models import CVCWord, CVCSentence, CVCStory

@@ -40,12 +40,23 @@ class Command(BaseCommand):
 
                 try:
                     game.full_clean()
-                    game.save()
                 except Exception as exc:
                     skipped_count += 1
                     self.stderr.write(f"Skipped row {row_number}: {exc}")
                     continue
 
+                existing_game = ExternalGame.objects.filter(
+                    letter=game.letter,
+                    activity_url=game.activity_url,
+                ).first()
+                if existing_game:
+                    skipped_count += 1
+                    self.stdout.write(
+                        f"Skipped existing row {row_number}: {game.letter} {game.activity_url}"
+                    )
+                    continue
+
+                game.save()
                 created_count += 1
 
         self.stdout.write(

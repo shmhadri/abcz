@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ورقة عمل القواعد</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 24px; background: #f8fafc; color: #172033; font-family: "Tajawal", "Cairo", Arial, sans-serif; }
+        .toolbar { max-width: 980px; margin: 0 auto 14px; display: flex; gap: 8px; justify-content: flex-end; }
+        .btn { border: 0; border-radius: 8px; padding: 10px 14px; background: #2563eb; color: #fff; font-weight: 800; cursor: pointer; text-decoration: none; }
+        .sheet { max-width: 980px; margin: 0 auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 24px; }
+        h1, h2 { margin: 0 0 12px; color: #4f46e5; }
+        h2 { margin-top: 26px; font-size: 21px; }
+        .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0 20px; }
+        .line { min-height: 30px; border-bottom: 1px solid #94a3b8; }
+        table { width: 100%; border-collapse: collapse; direction: ltr; margin: 12px 0 22px; }
+        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; vertical-align: top; }
+        th { background: #eef2ff; color: #3730a3; }
+        .answer { min-height: 34px; border-bottom: 1px dashed #94a3b8; }
+        .writing-grid { display: grid; grid-template-columns: 1fr; gap: 12px; direction: ltr; }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .toolbar { display: none; }
+            .sheet { border: 0; border-radius: 0; max-width: none; }
+            h2 { break-after: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <a class="btn" href="/grammar-foundation/">رجوع</a>
+        <button class="btn" type="button" onclick="window.print()">طباعة</button>
+    </div>
+    <main class="sheet">
+        <h1>ورقة عمل القواعد</h1>
+        <div class="meta">
+            <div>اسم الطالب<div class="line"></div></div>
+            <div>الصف<div class="line"></div></div>
+            <div>التاريخ<div class="line"></div></div>
+        </div>
+
+        <h2>اختر الإجابة الصحيحة</h2>
+        <table>
+            <thead><tr><th>Question</th><th>Choices</th><th>Answer</th></tr></thead>
+            <tbody>
+                <tr><td>She ____ happy.</td><td>am / is / are / be</td><td><div class="answer"></div></td></tr>
+                <tr><td>____ you like English?</td><td>Do / Does / Is / Are</td><td><div class="answer"></div></td></tr>
+                <tr><td>I ____ football yesterday.</td><td>play / played / plays / playing</td><td><div class="answer"></div></td></tr>
+                <tr><td>This book is ____.</td><td>mine / my / me / I</td><td><div class="answer"></div></td></tr>
+                <tr><td>There ____ three students.</td><td>is / are / am / be</td><td><div class="answer"></div></td></tr>
+                <tr><td>He ____ watching TV now.</td><td>am / is / are / do</td><td><div class="answer"></div></td></tr>
+                <tr><td>You ____ run in the classroom.</td><td>must / mustn't / should / can</td><td><div class="answer"></div></td></tr>
+                <tr><td>The cat is ____ the table.</td><td>under / happy / went / bigger</td><td><div class="answer"></div></td></tr>
+                <tr><td>Ali is ____ than Omar.</td><td>tall / taller / tallest / more tall</td><td><div class="answer"></div></td></tr>
+                <tr><td>____ do you live?</td><td>Where / Who / Why / When</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>املأ الفراغ</h2>
+        <table>
+            <tbody>
+                <tr><td>I ____ a student.</td><td><div class="answer"></div></td></tr>
+                <tr><td>She ____ books every day.</td><td><div class="answer"></div></td></tr>
+                <tr><td>They are ____ TV now.</td><td><div class="answer"></div></td></tr>
+                <tr><td>I did not ____ TV.</td><td><div class="answer"></div></td></tr>
+                <tr><td>We ____ visit our cousins tomorrow.</td><td><div class="answer"></div></td></tr>
+                <tr><td>This is ____ bag.</td><td><div class="answer"></div></td></tr>
+                <tr><td>____ are my shoes.</td><td><div class="answer"></div></td></tr>
+                <tr><td>I drink ____ water.</td><td><div class="answer"></div></td></tr>
+                <tr><td>He ____ swim.</td><td><div class="answer"></div></td></tr>
+                <tr><td>This is the ____ book.</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>صح أو خطأ</h2>
+        <table>
+            <tbody>
+                <tr><td>I am a student.</td><td>True / False</td></tr>
+                <tr><td>She are happy.</td><td>True / False</td></tr>
+                <tr><td>Do he play football?</td><td>True / False</td></tr>
+                <tr><td>They are watching TV.</td><td>True / False</td></tr>
+                <tr><td>I went to school yesterday.</td><td>True / False</td></tr>
+                <tr><td>He did not watched TV.</td><td>True / False</td></tr>
+                <tr><td>You should drink water.</td><td>True / False</td></tr>
+                <tr><td>The bag is under the chair.</td><td>True / False</td></tr>
+                <tr><td>Mine bag is blue.</td><td>True / False</td></tr>
+                <tr><td>Where do you live?</td><td>True / False</td></tr>
+            </tbody>
+        </table>
+
+        <h2>رتب الجملة</h2>
+        <table>
+            <tbody>
+                <tr><td>books / reads / She</td><td><div class="answer"></div></td></tr>
+                <tr><td>ready / Are / you</td><td><div class="answer"></div></td></tr>
+                <tr><td>school / went / I / to</td><td><div class="answer"></div></td></tr>
+                <tr><td>will / tomorrow / study / I</td><td><div class="answer"></div></td></tr>
+                <tr><td>under / is / table / the / cat / the</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>صحح الخطأ</h2>
+        <table>
+            <tbody>
+                <tr><td>He are tired.</td><td><div class="answer"></div></td></tr>
+                <tr><td>She read books every day.</td><td><div class="answer"></div></td></tr>
+                <tr><td>I did not watched TV.</td><td><div class="answer"></div></td></tr>
+                <tr><td>Do he like English?</td><td><div class="answer"></div></td></tr>
+                <tr><td>This is mine bag.</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>اكتب 5 جمل من عندك باستخدام قاعدة اليوم</h2>
+        <div class="writing-grid">
+            <div class="answer"></div>
+            <div class="answer"></div>
+            <div class="answer"></div>
+            <div class="answer"></div>
+            <div class="answer"></div>
+        </div>
+    </main>
+</body>
+</html>

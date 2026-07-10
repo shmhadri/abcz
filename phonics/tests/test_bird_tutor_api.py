@@ -134,7 +134,7 @@ class BirdTutorApiTests(TestCase):
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0]["word"], "ant")
 
-    def test_vip_page_still_renders_bird_tutor(self):
+    def test_vip_page_shows_bird_tutor(self):
         self.login()
 
         response = self.client.get("/")
@@ -145,7 +145,7 @@ class BirdTutorApiTests(TestCase):
         self.assertContains(response, 'id="birdReviewBtn"')
         self.assertNotContains(response, 'id="birdTutorLocked"')
 
-    def test_non_vip_page_still_shows_locked_bird(self):
+    def test_non_vip_page_hides_locked_bird(self):
         user = User.objects.create_user(username="notvip", password="StrongPass123!")
         StudentProfile.objects.create(user=user, student_name="Not VIP", is_vip=False)
         self.client.login(username="notvip", password="StrongPass123!")
@@ -153,5 +153,75 @@ class BirdTutorApiTests(TestCase):
         response = self.client.get("/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'id="birdTutorLocked"')
+        self.assertNotContains(response, 'id="birdTutorLocked"')
         self.assertNotContains(response, 'id="birdTutor" aria-label="Phonics Bird Tutor"')
+
+    def test_profile_dashboard_requires_login(self):
+        response = self.client.get("/profile/")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/accounts/login/", response["Location"])
+
+    def test_vip_profile_dashboard_shows_bird_stats(self):
+        self.login()
+        BirdTutorProgress.objects.create(
+            user=self.user,
+            xp=21,
+            total_questions=5,
+            correct_answers=4,
+            wrong_answers=1,
+        )
+
+        response = self.client.get("/profile/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "VIP: نشط")
+        self.assertContains(response, "Bird XP")
+        self.assertContains(response, "21")
+        self.assertContains(response, "عدد الأسئلة")
+        self.assertContains(response, "نسبة النجاح")
+        self.assertContains(response, "80%")
+
+    def test_non_vip_profile_dashboard_shows_upgrade_prompt(self):
+        user = User.objects.create_user(username="profile_notvip", password="StrongPass123!")
+        StudentProfile.objects.create(user=user, student_name="Profile Not VIP", is_vip=False)
+        self.client.login(username="profile_notvip", password="StrongPass123!")
+
+        response = self.client.get("/profile/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "VIP: غير نشط")
+        self.assertContains(response, "فعّل VIP لفتح العصفور الذكي وتقارير المراجعة")
+        self.assertContains(response, "/pricing/")
+
+    def test_profile_dashboard_shows_review_and_mastered_words(self):
+        self.login()
+        BirdTutorProgress.objects.create(
+            user=self.user,
+            xp=10,
+            total_questions=2,
+            correct_answers=1,
+            wrong_answers=1,
+        )
+        BirdReviewItem.objects.create(
+            user=self.user,
+            letter="A",
+            word="ant",
+            mistakes_count=2,
+            mastered=False,
+        )
+        BirdReviewItem.objects.create(
+            user=self.user,
+            letter="B",
+            word="bat",
+            success_count=2,
+            mastered=True,
+        )
+
+        response = self.client.get("/profile/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "كلمات تحتاج مراجعة")
+        self.assertContains(response, "A - ant")
+        self.assertContains(response, "كلمات تم إتقانها")
+        self.assertContains(response, "B - bat")

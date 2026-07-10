@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ورقة عمل الجمل الشائعة</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 24px; background: #f8fafc; color: #172033; font-family: "Tajawal", "Cairo", Arial, sans-serif; }
+        .toolbar { max-width: 980px; margin: 0 auto 14px; display: flex; gap: 8px; justify-content: flex-end; }
+        .btn { border: 0; border-radius: 8px; padding: 10px 14px; background: #0891b2; color: #fff; font-weight: 800; cursor: pointer; text-decoration: none; }
+        .sheet { max-width: 980px; margin: 0 auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 24px; }
+        h1, h2 { margin: 0 0 12px; color: #0e7490; }
+        h2 { margin-top: 26px; font-size: 21px; }
+        .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0 20px; }
+        .line { min-height: 32px; border-bottom: 1px solid #94a3b8; }
+        table { width: 100%; border-collapse: collapse; direction: ltr; margin: 12px 0 22px; }
+        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; vertical-align: top; }
+        th { background: #ecfeff; color: #155e75; }
+        .answer { min-height: 36px; border-bottom: 1px dashed #94a3b8; }
+        .teacher-box { min-height: 90px; border: 1px dashed #94a3b8; border-radius: 8px; }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .toolbar { display: none; }
+            .sheet { border: 0; border-radius: 0; max-width: none; }
+            h2 { break-after: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <a class="btn" href="/common-sentences/">رجوع</a>
+        <button class="btn" type="button" onclick="window.print()">طباعة</button>
+    </div>
+    <main class="sheet">
+        <h1>ورقة عمل الجمل الشائعة</h1>
+        <div class="meta">
+            <div>اسم الطالب<div class="line"></div></div>
+            <div>الصف<div class="line"></div></div>
+            <div>التاريخ<div class="line"></div></div>
+        </div>
+
+        <h2>ترجم 10 جمل</h2>
+        <table>
+            <tbody>
+                <tr><td>Good morning.</td><td><div class="answer"></div></td></tr>
+                <tr><td>How are you today?</td><td><div class="answer"></div></td></tr>
+                <tr><td>Can you help me, please?</td><td><div class="answer"></div></td></tr>
+                <tr><td>I want to improve my reading.</td><td><div class="answer"></div></td></tr>
+                <tr><td>I am worried about the exam.</td><td><div class="answer"></div></td></tr>
+                <tr><td>Can I pay by card?</td><td><div class="answer"></div></td></tr>
+                <tr><td>Where is the airport?</td><td><div class="answer"></div></td></tr>
+                <tr><td>I have a headache.</td><td><div class="answer"></div></td></tr>
+                <tr><td>Practice makes progress.</td><td><div class="answer"></div></td></tr>
+                <tr><td>Never give up.</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>صح أو خطأ</h2>
+        <table>
+            <tbody>
+                <tr><td>Good morning. = صباح الخير.</td><td>True / False</td></tr>
+                <tr><td>I need a taxi. = أحتاج طبيبًا.</td><td>True / False</td></tr>
+                <tr><td>Raise your hand. = ارفع يدك.</td><td>True / False</td></tr>
+                <tr><td>I feel sick. = أشعر بالسعادة.</td><td>True / False</td></tr>
+                <tr><td>Can you speak slowly? = هل يمكنك التحدث ببطء؟</td><td>True / False</td></tr>
+                <tr><td>I lost my bag. = فقدت حقيبتي.</td><td>True / False</td></tr>
+                <tr><td>It is too expensive. = إنه رخيص جدًا.</td><td>True / False</td></tr>
+                <tr><td>Drink more water. = اشرب ماءً أكثر.</td><td>True / False</td></tr>
+                <tr><td>My favorite subject is English. = مادتي المفضلة هي الإنجليزية.</td><td>True / False</td></tr>
+                <tr><td>Never give up. = لا تستسلم أبدًا.</td><td>True / False</td></tr>
+            </tbody>
+        </table>
+
+        <h2>اختر الترجمة</h2>
+        <table>
+            <thead><tr><th>Sentence</th><th>Choices</th><th>Answer</th></tr></thead>
+            <tbody>
+                <tr><td>Nice to meet you.</td><td>سعيد بلقائك / أين تسكن؟ / لدي صداع</td><td><div class="answer"></div></td></tr>
+                <tr><td>I do not understand.</td><td>أنا لا أفهم / صباح الخير / أحتاج سيارة</td><td><div class="answer"></div></td></tr>
+                <tr><td>How much is this?</td><td>بكم هذا؟ / افتح كتابك / لا تقلق</td><td><div class="answer"></div></td></tr>
+                <tr><td>You should rest.</td><td>يجب أن ترتاح / اسمي أحمد / أعيش في السعودية</td><td><div class="answer"></div></td></tr>
+                <tr><td>Why are you late?</td><td>لماذا أنت متأخر؟ / ماذا اسمك؟ / أحب الإنجليزية</td><td><div class="answer"></div></td></tr>
+                <tr><td>I usually wake up early.</td><td>عادة أستيقظ مبكرًا / أود شراء هذا / لدي تذكرة</td><td><div class="answer"></div></td></tr>
+                <tr><td>Repeat after me.</td><td>كرر بعدي / أين مقعدي؟ / أنا متحمس</td><td><div class="answer"></div></td></tr>
+                <tr><td>I am proud of myself.</td><td>أنا فخور بنفسي / أشعر بالتعب / خذ الدواء</td><td><div class="answer"></div></td></tr>
+                <tr><td>Do you have a cheaper one?</td><td>هل لديك واحد أرخص؟ / أين المطار؟ / أذهب بالحافلة</td><td><div class="answer"></div></td></tr>
+                <tr><td>I go to school by bus.</td><td>أذهب إلى المدرسة بالحافلة / أحتاج مساعدة / مساء الخير</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>أكمل الجملة</h2>
+        <table>
+            <tbody>
+                <tr><td>Can you ____ me, please?</td><td><div class="answer"></div></td></tr>
+                <tr><td>Please ____ your book.</td><td><div class="answer"></div></td></tr>
+                <tr><td>I need a ____.</td><td><div class="answer"></div></td></tr>
+                <tr><td>Where is the ____?</td><td><div class="answer"></div></td></tr>
+                <tr><td>Never ____ up.</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>رتب الجملة</h2>
+        <table>
+            <tbody>
+                <tr><td>morning / Good</td><td><div class="answer"></div></td></tr>
+                <tr><td>you / help / Can / me / please</td><td><div class="answer"></div></td></tr>
+                <tr><td>to / school / go / I / bus / by</td><td><div class="answer"></div></td></tr>
+                <tr><td>my / Where / seat / is</td><td><div class="answer"></div></td></tr>
+                <tr><td>makes / progress / Practice</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>اكتب 5 جمل تستخدمها في حياتك اليومية</h2>
+        <div class="answer"></div><div class="answer"></div><div class="answer"></div><div class="answer"></div><div class="answer"></div>
+
+        <h2>تقييم المعلم</h2>
+        <div class="teacher-box"></div>
+    </main>
+</body>
+</html>

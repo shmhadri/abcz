@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ورقة عمل الصوتيات - ABCZ</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #eef3f8;
+            color: #111827;
+            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            font-size: 18px;
+            line-height: 1.65;
+        }
+
+        .page {
+            width: min(1120px, calc(100% - 28px));
+            margin: 0 auto;
+            padding: 20px 0 40px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            min-height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border: 1px solid #cfdbea;
+            border-radius: 8px;
+            background: #2255d8;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 900;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn.secondary {
+            background: #fff;
+            color: #2255d8;
+        }
+
+        .btn.gold {
+            border-color: #efcf82;
+            background: #fff7df;
+            color: #684005;
+        }
+
+        .sheet {
+            display: grid;
+            gap: 18px;
+            background: #fff;
+            border: 1px solid #cfdbea;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+        }
+
+        .header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            align-items: start;
+            border-bottom: 3px solid #2255d8;
+            padding-bottom: 18px;
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 2.65rem;
+            color: #12327c;
+            line-height: 1.15;
+        }
+
+        h2 {
+            margin: 0 0 12px;
+            color: #0f8b75;
+            font-size: 1.65rem;
+            line-height: 1.25;
+        }
+
+        p { margin-top: 0; }
+
+        .lesson-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 14px;
+            border: 1px solid #cfdbea;
+            border-radius: 12px;
+            background: #f8fbff;
+        }
+
+        .lesson-nav button,
+        .lesson-print {
+            min-height: 38px;
+            padding: 7px 11px;
+            border: 1px solid #cfdbea;
+            border-radius: 999px;
+            background: #fff;
+            color: #2255d8;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .lesson-nav button.active {
+            color: #fff;
+            border-color: #2255d8;
+            background: #2255d8;
+        }
+
+        .sheet.filtering > section:not(.active-sheet) {
+            display: none;
+        }
+
+        .sheet > section {
+            position: relative;
+            padding: 22px;
+            border: 1px solid #cfdbea;
+            border-radius: 12px;
+            background: #fff;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .sheet > section::before {
+            content: "";
+            position: absolute;
+            inset-inline-start: 0;
+            top: 0;
+            width: 6px;
+            height: 100%;
+            border-radius: 12px 0 0 12px;
+            background: linear-gradient(180deg, #2255d8, #0f8b75);
+        }
+
+        .lesson-tools {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .lesson-tools h2 {
+            margin: 0;
+        }
+
+        .name-line {
+            display: grid;
+            gap: 8px;
+            min-width: 260px;
+            font-weight: 900;
+        }
+
+        .line {
+            height: 30px;
+            border-bottom: 2px solid #111827;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        th,
+        td {
+            border: 1px solid #cfdbea;
+            padding: 12px;
+            text-align: center;
+            font-size: 1.05rem;
+        }
+
+        th {
+            background: #eaf2ff;
+            color: #12327c;
+            font-weight: 950;
+        }
+
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .word-box {
+            min-height: 158px;
+            display: grid;
+            align-content: center;
+            justify-items: center;
+            gap: 8px;
+            border: 1px solid #cfdbea;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .pic {
+            font-size: 3rem;
+        }
+
+        .word {
+            font-size: 1.6rem;
+            font-weight: 900;
+        }
+
+        .family {
+            direction: ltr;
+            unicode-bidi: isolate;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 72px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: #eaf2ff;
+            color: #12327c;
+            font-weight: 900;
+        }
+
+        .write-line {
+            width: 100%;
+            height: 34px;
+            border-bottom: 2px solid #94a3b8;
+        }
+
+        .questions {
+            display: grid;
+            gap: 10px;
+        }
+
+        .question {
+            border: 1px solid #cfdbea;
+            border-radius: 8px;
+            padding: 14px;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .option {
+            min-width: 110px;
+            padding: 9px 12px;
+            border: 1px solid #cfdbea;
+            border-radius: 999px;
+            text-align: center;
+            font-weight: 900;
+            font-size: 1.05rem;
+        }
+
+        .footer-note {
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #fff7df;
+            color: #684005;
+            font-weight: 850;
+        }
+
+        .vowel-word {
+            direction: ltr;
+            unicode-bidi: isolate;
+            font-weight: 900;
+            font-size: 1.35rem;
+        }
+
+        .blank-line {
+            display: inline-block;
+            width: 72px;
+            height: 20px;
+            border-bottom: 2px solid #111827;
+            vertical-align: middle;
+        }
+
+        .sort-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .sort-box {
+            min-height: 110px;
+            border: 1px solid #cfdbea;
+            border-radius: 8px;
+            padding: 9px;
+            background: #fbfdff;
+        }
+
+        .sort-box strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #12327c;
+            text-align: center;
+        }
+
+        .pattern-sheet-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .pattern-sheet-card {
+            border: 1px solid #cfdbea;
+            border-radius: 8px;
+            padding: 12px;
+            background: #fbfdff;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .pattern-sheet-symbol {
+            direction: ltr;
+            unicode-bidi: isolate;
+            display: inline-flex;
+            min-width: 58px;
+            justify-content: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #eaf2ff;
+            color: #12327c;
+            font-size: 1.25rem;
+            font-weight: 950;
+        }
+
+        @media print {
+            body { background: #fff; font-size: 16px; }
+            .page { width: 100%; padding: 0; }
+            .toolbar,
+            .lesson-nav,
+            .lesson-print { display: none !important; }
+            .sheet { border: 0; box-shadow: none; border-radius: 0; padding: 0; gap: 0; }
+            .header { margin-bottom: 12px; }
+            .sheet > section {
+                border: 0;
+                border-radius: 0;
+                padding: 0;
+                margin: 0;
+                break-after: page;
+                page-break-after: always;
+            }
+            .sheet > section::before { display: none; }
+            body.print-all .sheet.filtering > section {
+                display: block;
+            }
+            body.print-single .sheet > section:not(.print-target),
+            body.print-single .footer-note {
+                display: none !important;
+            }
+            body.print-single .sheet > section.print-target {
+                break-after: auto;
+                page-break-after: auto;
+            }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.45rem; margin-bottom: 10px; }
+            .word-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+            .word-box { min-height: 128px; padding: 8px; }
+            .pic { font-size: 2.2rem; }
+            th,
+            td { padding: 8px; }
+            .sort-grid { grid-template-columns: repeat(5, 1fr); }
+            @page { size: A4; margin: 12mm; }
+        }
+
+        @media (max-width: 720px) {
+            .header,
+            .word-grid,
+            .sort-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sheet {
+                padding: 16px;
+            }
+
+            .sheet > section {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <div class="toolbar">
+            <a class="btn secondary" href="{% url 'sounds' %}">العودة للصوتيات</a>
+            <a class="btn secondary" href="{% url 'curriculum' %}">المنهج</a>
+            <a class="btn secondary" href="{% url 'pricing' %}">الباقات</a>
+            {% if request.user.is_authenticated %}
+                <a class="btn secondary" href="{% url 'profile_dashboard' %}">ملف المتعلم</a>
+                <a class="btn secondary" href="{% url 'logout' %}">خروج</a>
+            {% else %}
+                <a class="btn secondary" href="{% url 'login' %}">تسجيل الدخول</a>
+            {% endif %}
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn" type="button" id="printAllBtn">طباعة كل أوراق العمل</button>
+                <button class="btn gold" type="button" id="saveAllPdfBtn">حفظ الكل PDF من المتصفح</button>
+            </div>
+        </div>
+
+        <article class="sheet">
+            <header class="header">
+                <div>
+                    <h1>ورقة عمل الصوتيات</h1>
+                    <p>كل درس في ورقة مستقلة: اطبع درسًا واحدًا للتدريب السريع، أو اطبع كل أوراق العمل من الزر العلوي.</p>
+                </div>
+                <div class="name-line">
+                    <span>اسم المتعلم</span>
+                    <div class="line"></div>
+                    <span>التاريخ</span>
+                    <div class="line"></div>
+                </div>
+            </header>
+
+            <nav class="lesson-nav" id="lessonNav" aria-label="أوراق العمل"></nav>
+
+            <section data-sheet="syllables">
+                <h2>1. اقرأ المقاطع الصوتية</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الحرف</th>
+                            <th>a</th>
+                            <th>e</th>
+                            <th>i</th>
+                            <th>o</th>
+                            <th>u</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in syllable_rows|slice:":10" %}
+                            <tr>
+                                <td><strong>{{ row.letter }}</strong> / {{ row.arabic }}</td>
+                                {% for sound in row.sounds %}
+                                    <td>{{ sound }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <section data-sheet="cvc">
+                <h2>2. اكتب الكلمة تحت الصورة</h2>
+                <div class="word-grid">
+                    {% for item in cvc_words %}
+                        <div class="word-box">
+                            <div class="pic">{{ item.image }}</div>
+                            <div>{{ item.arabic }}</div>
+                            <div class="write-line"></div>
+                            <div>العائلة: <span class="family">{{ item.family }}</span></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section data-sheet="cvc">
+                <h2>3. صل الكلمة بعائلتها</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الكلمة</th>
+                            <th>العائلة</th>
+                            <th>اكتبها مرة أخرى</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cvc_words %}
+                            <tr>
+                                <td><strong>{{ item.word }}</strong></td>
+                                <td><span class="family">{{ item.family }}</span></td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <section data-sheet="cvc">
+                <h2>4. ضع دائرة حول حرف العلة</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الكلمة</th>
+                            <th>حرف العلة</th>
+                            <th>اكتب الكلمة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cvc_words|slice:":20" %}
+                            <tr>
+                                <td><strong>{{ item.word }}</strong></td>
+                                <td>a / e / i / o / u</td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <section data-sheet="cvc">
+                <h2>5. أكمل الحرف الناقص</h2>
+                <div class="word-grid">
+                    {% for item in cvc_words|slice:":16" %}
+                        <div class="word-box">
+                            <div class="pic">{{ item.image }}</div>
+                            <div class="word">_{{ item.word|slice:"1:" }}</div>
+                            <div class="write-line"></div>
+                            <div>{{ item.arabic }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section data-sheet="activities">
+                <h2>6. اقرأ ولوّن</h2>
+                <p>اقرأ الكلمات التالية، ثم لوّن الكلمات التي تنتمي إلى نفس العائلة بنفس اللون.</p>
+                <div class="options">
+                    {% for item in cvc_words|slice:"16:36" %}
+                        <span class="option">{{ item.word }} <span class="family">{{ item.family }}</span></span>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section data-sheet="quiz">
+                <h2>7. اختبار قصير</h2>
+                <div class="questions">
+                    {% for question in quiz_questions %}
+                        <div class="question">
+                            <strong>{{ forloop.counter }}. {{ question.question }}</strong>
+                            <div class="options">
+                                {% for option in question.options %}
+                                    <span class="option">{{ option }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section data-sheet="mic">
+                <h2>ورقة تدريب المايك والنطق</h2>
+                <p>اختر كلمة، استمع لها في صفحة الصوتيات، ثم انطقها وسجّل تقييم النطق.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الكلمة</th>
+                            <th>استمعت؟</th>
+                            <th>نطقتها؟</th>
+                            <th>النتيجة</th>
+                            <th>ملاحظة ولي الأمر</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cvc_words|slice:":12" %}
+                            <tr>
+                                <td><strong>{{ item.word }}</strong> {{ item.image }}</td>
+                                <td>○</td>
+                                <td>○</td>
+                                <td>ممتاز / جيد / حاول مرة أخرى</td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="footer-note" style="margin-top: 8px;">
+                    الميكروفون يعمل غالبًا على Chrome أو Edge ويتطلب السماح من المتصفح. بعد النشر يجب استخدام HTTPS.
+                </div>
+            </section>
+
+            <section data-sheet="vowels">
+                <h2>ورقة عمل حروف العلة</h2>
+                <p>تدريبات A / E / I / O / U و Y كحرف علة: ضع دائرة، أكمل، صل، صنّف، ثم اقرأ.</p>
+            </section>
+
+            <section data-sheet="vowels">
+                <h2>8. ضع دائرة حول حرف العلة</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الكلمة</th>
+                            <th>حرف العلة</th>
+                            <th>نوع الصوت</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lesson in vowel_lessons %}
+                            {% for example in lesson.examples|slice:":3" %}
+                                <tr>
+                                    <td class="vowel-word">{{ example.word }}</td>
+                                    <td>A / E / I / O / U / Y</td>
+                                    <td>short / long / silent</td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <section data-sheet="vowels">
+                <h2>9. اكتب الحرف الناقص</h2>
+                <div class="word-grid">
+                    {% for lesson in vowel_lessons %}
+                        {% for example in lesson.examples|slice:":2" %}
+                            <div class="word-box">
+                                <div class="pic">{{ example.visual_hint }}</div>
+                                <div>{{ example.arabic }}</div>
+                                <div class="vowel-word"><span class="blank-line"></span> {{ example.word|slice:"1:" }}</div>
+                                <div class="write-line"></div>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section data-sheet="vowels">
+                <h2>10. صل الصورة بالكلمة</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الصورة</th>
+                            <th>الكلمة</th>
+                            <th>خط التوصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lesson in vowel_lessons %}
+                            {% for example in lesson.examples|slice:":2" %}
+                                <tr>
+                                    <td class="pic">{{ example.visual_hint }}</td>
+                                    <td class="vowel-word">{{ example.word }}</td>
+                                    <td><div class="line"></div></td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <section data-sheet="vowels">
+                <h2>11. هل الصوت قصير أم طويل؟</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الكلمة</th>
+                            <th>short</th>
+                            <th>long</th>
+                            <th>silent / weak</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lesson in vowel_lessons %}
+                            {% for example in lesson.examples|slice:"3:6" %}
+                                <tr>
+                                    <td class="vowel-word">{{ example.word }}</td>
+                                    <td>○</td>
+                                    <td>○</td>
+                                    <td>○</td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <section data-sheet="vowels">
+                <h2>12. ضع خطًا تحت Silent E</h2>
+                <div class="options">
+                    <span class="option">cake</span>
+                    <span class="option">bike</span>
+                    <span class="option">home</span>
+                    <span class="option">name</span>
+                    <span class="option">time</span>
+                    <span class="option">cute</span>
+                    <span class="option">cube</span>
+                </div>
+            </section>
+
+            <section data-sheet="vowels">
+                <h2>13. صنّف الكلمات تحت A/E/I/O/U</h2>
+                <div class="sort-grid">
+                    <div class="sort-box"><strong>A</strong><div class="write-line"></div><div class="write-line"></div><div class="write-line"></div></div>
+                    <div class="sort-box"><strong>E</strong><div class="write-line"></div><div class="write-line"></div><div class="write-line"></div></div>
+                    <div class="sort-box"><strong>I</strong><div class="write-line"></div><div class="write-line"></div><div class="write-line"></div></div>
+                    <div class="sort-box"><strong>O</strong><div class="write-line"></div><div class="write-line"></div><div class="write-line"></div></div>
+                    <div class="sort-box"><strong>U</strong><div class="write-line"></div><div class="write-line"></div><div class="write-line"></div></div>
+                </div>
+                <div class="options" style="margin-top:10px;">
+                    <span class="option">cat</span>
+                    <span class="option">pen</span>
+                    <span class="option">sit</span>
+                    <span class="option">dog</span>
+                    <span class="option">sun</span>
+                    <span class="option">cake</span>
+                    <span class="option">tree</span>
+                    <span class="option">bike</span>
+                    <span class="option">boat</span>
+                    <span class="option">cube</span>
+                </div>
+            </section>
+
+            <section data-sheet="vowels">
+                <h2>14. اقرأ ولوّن short a</h2>
+                <div class="options">
+                    <span class="option">cat</span>
+                    <span class="option">hat</span>
+                    <span class="option">map</span>
+                    <span class="option">cake</span>
+                    <span class="option">name</span>
+                    <span class="option">pen</span>
+                    <span class="option">dog</span>
+                </div>
+            </section>
+
+            <section data-sheet="vowels">
+                <h2>15. اكتب 3 كلمات فيها حرف العلة في الوسط</h2>
+                <div class="questions">
+                    <div class="question">1. <span class="blank-line"></span></div>
+                    <div class="question">2. <span class="blank-line"></span></div>
+                    <div class="question">3. <span class="blank-line"></span></div>
+                </div>
+            </section>
+
+            <section data-sheet="vowels">
+                <h2>16. اكتب 3 كلمات فيها حرف العلة في البداية</h2>
+                <div class="questions">
+                    <div class="question">1. <span class="blank-line"></span></div>
+                    <div class="question">2. <span class="blank-line"></span></div>
+                    <div class="question">3. <span class="blank-line"></span></div>
+                </div>
+            </section>
+
+            <section data-sheet="vowels">
+                <h2>17. اختبار حروف العلة</h2>
+                <div class="questions">
+                    {% for activity in vowel_activities|slice:":6" %}
+                        <div class="question">
+                            <strong>{{ forloop.counter }}. {{ activity.prompt }}</strong>
+                            <div class="options">
+                                {% for option in activity.options %}
+                                    <span class="option">{{ option }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section data-sheet="digraphs">
+                <h2>18. Digraphs Worksheet: اقرأ، صل، أكمل، وصنف</h2>
+                {% for group in sound_pattern_groups %}
+                    {% if group.id == "digraphs" %}
+                        <h3>1. اقرأ الصوت</h3>
+                        <div class="pattern-sheet-grid">
+                            {% for pattern in group.patterns %}
+                                <div class="pattern-sheet-card">
+                                    <span class="pattern-sheet-symbol">{{ pattern.pattern }}</span>
+                                    <strong>{{ pattern.sound }} · {{ pattern.arabic_sound }}</strong>
+                                    <p>{{ pattern.rule }}</p>
+                                    <div class="options">
+                                        {% for example in pattern.examples|slice:":4" %}
+                                            <span class="option">{{ example.word }} · {{ example.arabic }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="questions" style="margin-top:12px;">
+                            <div class="question">
+                                <strong>2. صل الصوت بالكلمة.</strong>
+                                <div class="options">
+                                    <span class="option">sh → ship</span>
+                                    <span class="option">ch → chair</span>
+                                    <span class="option">th → thin</span>
+                                    <span class="option">ph → phone</span>
+                                    <span class="option">wh → whale</span>
+                                    <span class="option">ck → duck</span>
+                                </div>
+                            </div>
+                            <div class="question">
+                                <strong>3. أكمل الكلمة بالصوت المناسب.</strong>
+                                <p>__ip = ship · __air = chair · __in = thin · __one = phone · __ale = whale · du__ = duck</p>
+                                <div class="options">
+                                    <span class="option">sh</span>
+                                    <span class="option">ch</span>
+                                    <span class="option">th</span>
+                                    <span class="option">ph</span>
+                                    <span class="option">wh</span>
+                                    <span class="option">ck</span>
+                                </div>
+                            </div>
+                            <div class="question">
+                                <strong>4. ضع دائرة حول الصوت في الكلمة.</strong>
+                                <div class="options">
+                                    <span class="option">fish</span>
+                                    <span class="option">chair</span>
+                                    <span class="option">phone</span>
+                                    <span class="option">duck</span>
+                                    <span class="option">where</span>
+                                </div>
+                            </div>
+                            <div class="question">
+                                <strong>5. بداية أم نهاية؟</strong>
+                                <p>fish = <span class="blank-line"></span> · ship = <span class="blank-line"></span> · lunch = <span class="blank-line"></span> · duck = <span class="blank-line"></span></p>
+                            </div>
+                            <div class="question">
+                                <strong>6. صنف الكلمات حسب الصوت.</strong>
+                                <div class="options">
+                                    <span class="option">ship</span>
+                                    <span class="option">fish</span>
+                                    <span class="option">dish</span>
+                                    <span class="option">chair</span>
+                                    <span class="option">chick</span>
+                                    <span class="option">lunch</span>
+                                    <span class="option">thin</span>
+                                    <span class="option">three</span>
+                                    <span class="option">this</span>
+                                    <span class="option">phone</span>
+                                    <span class="option">whale</span>
+                                    <span class="option">duck</span>
+                                </div>
+                                <p>sh: <span class="blank-line"></span></p>
+                                <p>ch: <span class="blank-line"></span></p>
+                                <p>th: <span class="blank-line"></span></p>
+                                <p>ph / wh / ck: <span class="blank-line"></span></p>
+                            </div>
+                            <div class="question">
+                                <strong>7. اكتب الكلمة تحت الصورة.</strong>
+                                <div class="options">
+                                    <span class="option">🚢 <span class="blank-line"></span></span>
+                                    <span class="option">🪑 <span class="blank-line"></span></span>
+                                    <span class="option">🐬 <span class="blank-line"></span></span>
+                                    <span class="option">🦆 <span class="blank-line"></span></span>
+                                </div>
+                            </div>
+                            <div class="question">
+                                <strong>8. اختبار قصير.</strong>
+                                <p>ما صوت ship؟ <span class="blank-line"></span></p>
+                                <p>اختر كلمة فيها ch: ship / chair / phone <span class="blank-line"></span></p>
+                                <p>أكمل du__: sh / ch / ck <span class="blank-line"></span></p>
+                                <p>أين sh في fish؟ <span class="blank-line"></span></p>
+                                <p>الكلمة المختلفة: ship / shop / chair / fish <span class="blank-line"></span></p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </section>
+
+            <section data-sheet="digraph-sh">
+                <h2>19. ورقة تدريب sh</h2>
+                <div class="questions">
+                    <div class="question"><strong>اقرأ:</strong> sh · ship · shop · fish · dish · shut</div>
+                    <div class="question"><strong>اكتب sh:</strong> __ip · __op · fi__ · di__ · __ut</div>
+                    <div class="question"><strong>بداية أم نهاية؟</strong> ship <span class="blank-line"></span> · fish <span class="blank-line"></span> · dish <span class="blank-line"></span></div>
+                </div>
+            </section>
+
+            <section data-sheet="digraph-ch">
+                <h2>20. ورقة تدريب ch</h2>
+                <div class="questions">
+                    <div class="question"><strong>اقرأ:</strong> ch · chair · cheese · chick · chip · lunch</div>
+                    <div class="question"><strong>اكتب ch:</strong> __air · __eese · __ick · __ip · lun__</div>
+                    <div class="question"><strong>ضع دائرة حول ch:</strong> chair · lunch · chick</div>
+                </div>
+            </section>
+
+            <section data-sheet="digraph-th">
+                <h2>21. ورقة تدريب th</h2>
+                <div class="questions">
+                    <div class="question"><strong>اقرأ:</strong> th · thin · think · three · this · that · mother</div>
+                    <div class="question"><strong>خفيف أم مهتز؟</strong> thin <span class="blank-line"></span> · this <span class="blank-line"></span> · that <span class="blank-line"></span></div>
+                    <div class="question"><strong>اكتب th:</strong> __in · __ink · __ree · __is · mo__er</div>
+                </div>
+            </section>
+
+            <section data-sheet="digraph-review">
+                <h2>22. مراجعة Digraphs</h2>
+                <div class="questions">
+                    <div class="question"><strong>اختر الصوت:</strong> ship <span class="blank-line"></span> · chair <span class="blank-line"></span> · phone <span class="blank-line"></span> · whale <span class="blank-line"></span> · duck <span class="blank-line"></span></div>
+                    <div class="question"><strong>صل:</strong> sh → fish · ch → lunch · th → three · ph → photo · wh → where · ck → sock</div>
+                    <div class="question"><strong>اكتب 3 كلمات من ذاكرتك فيها Digraphs:</strong><br>1. <span class="blank-line"></span><br>2. <span class="blank-line"></span><br>3. <span class="blank-line"></span></div>
+                </div>
+            </section>
+
+            <section data-sheet="ending-sounds">
+                <h2>23. ورقة Ending Sounds: صنف نهاية الكلمة</h2>
+                {% for group in sound_pattern_groups %}
+                    {% if group.id == "ending_sounds" %}
+                        <div class="pattern-sheet-grid">
+                            {% for pattern in group.patterns %}
+                                <div class="pattern-sheet-card">
+                                    <span class="pattern-sheet-symbol">{{ pattern.pattern }}</span>
+                                    <strong>نهاية الكلمة · {{ pattern.sound }}</strong>
+                                    <p>{{ pattern.rule }}</p>
+                                    <div class="options">
+                                        {% for example in pattern.examples|slice:":4" %}
+                                            <span class="option">{{ example.word }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="questions" style="margin-top:12px;">
+                            <div class="question">
+                                <strong>صنف الكلمات حسب النهاية: ck / ng / nk / ll / ss / ff / zz</strong>
+                                <div class="options">
+                                    <span class="option">duck</span>
+                                    <span class="option">ring</span>
+                                    <span class="option">bank</span>
+                                    <span class="option">bell</span>
+                                    <span class="option">kiss</span>
+                                    <span class="option">off</span>
+                                    <span class="option">buzz</span>
+                                </div>
+                                <p>اكتب كل كلمة تحت الصوت المناسب: <span class="blank-line"></span></p>
+                            </div>
+                            {% for pattern in group.patterns %}
+                                {% with example=pattern.examples.0 %}
+                                    <div class="question">
+                                        <strong>{{ forloop.counter }}. أكمل آخر حرفين في {{ example.word }}</strong>
+                                        <p>{{ example.word }} → <span class="blank-line"></span> · النهاية: {{ pattern.pattern }}</p>
+                                    </div>
+                                {% endwith %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </section>
+
+            <section data-sheet="trigraphs">
+                <h2>24. Trigraphs Worksheet: اقرأ، صل، أكمل، وابن الكلمة</h2>
+                {% for group in sound_pattern_groups %}
+                    {% if group.id == "trigraphs" %}
+                        <h3>1. اقرأ النمط</h3>
+                        <div class="pattern-sheet-grid">
+                            {% for pattern in group.patterns %}
+                                <div class="pattern-sheet-card">
+                                    <span class="pattern-sheet-symbol">{{ pattern.pattern }}</span>
+                                    <strong>{{ pattern.sound }} · {{ pattern.arabic_sound }}</strong>
+                                    <p>{{ pattern.rule }}</p>
+                                    <div class="options">
+                                        {% for example in pattern.examples|slice:":3" %}
+                                            <span class="option">{{ example.word }} · {{ example.arabic }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="questions" style="margin-top:12px;">
+                            <div class="question">
+                                <strong>2. صل النمط بالكلمة.</strong>
+                                <div class="options">
+                                    <span class="option">tch → catch</span>
+                                    <span class="option">dge → bridge</span>
+                                    <span class="option">str → street</span>
+                                    <span class="option">spr → spring</span>
+                                    <span class="option">spl → splash</span>
+                                    <span class="option">shr → shrimp</span>
+                                </div>
+                            </div>
+                            <div class="question">
+                                <strong>3. أكمل الكلمة بالنمط المناسب.</strong>
+                                <p>ca__ = catch · bri__ = bridge · __eet = street · __ing = spring · __ash = splash · __imp = shrimp</p>
+                                <div class="options">
+                                    <span class="option">tch</span>
+                                    <span class="option">dge</span>
+                                    <span class="option">str</span>
+                                    <span class="option">spr</span>
+                                    <span class="option">spl</span>
+                                    <span class="option">shr</span>
+                                </div>
+                            </div>
+                            <div class="question">
+                                <strong>4. ضع دائرة حول Trigraph.</strong>
+                                <div class="options">
+                                    <span class="option">watch</span>
+                                    <span class="option">badge</span>
+                                    <span class="option">strong</span>
+                                    <span class="option">splash</span>
+                                    <span class="option">shrimp</span>
+                                </div>
+                            </div>
+                            <div class="question">
+                                <strong>5. بداية أم نهاية؟</strong>
+                                <p>catch = <span class="blank-line"></span> · bridge = <span class="blank-line"></span> · street = <span class="blank-line"></span> · spring = <span class="blank-line"></span> · splash = <span class="blank-line"></span> · shrimp = <span class="blank-line"></span></p>
+                            </div>
+                            <div class="question">
+                                <strong>6. صنّف الكلمات حسب النمط.</strong>
+                                <div class="options">
+                                    <span class="option">catch</span>
+                                    <span class="option">watch</span>
+                                    <span class="option">match</span>
+                                    <span class="option">bridge</span>
+                                    <span class="option">badge</span>
+                                    <span class="option">judge</span>
+                                    <span class="option">street</span>
+                                    <span class="option">strong</span>
+                                    <span class="option">string</span>
+                                    <span class="option">spring</span>
+                                    <span class="option">spray</span>
+                                    <span class="option">sprint</span>
+                                    <span class="option">splash</span>
+                                    <span class="option">split</span>
+                                    <span class="option">splat</span>
+                                    <span class="option">shrimp</span>
+                                    <span class="option">shrub</span>
+                                    <span class="option">shrink</span>
+                                </div>
+                                <p>tch: <span class="blank-line"></span></p>
+                                <p>dge: <span class="blank-line"></span></p>
+                                <p>str / spr / spl / shr: <span class="blank-line"></span></p>
+                            </div>
+                            <div class="question">
+                                <strong>7. اكتب الكلمة تحت الصورة.</strong>
+                                <div class="options">
+                                    <span class="option">🎣 <span class="blank-line"></span></span>
+                                    <span class="option">🌉 <span class="blank-line"></span></span>
+                                    <span class="option">🛣️ <span class="blank-line"></span></span>
+                                    <span class="option">🌱 <span class="blank-line"></span></span>
+                                    <span class="option">💦 <span class="blank-line"></span></span>
+                                    <span class="option">🦐 <span class="blank-line"></span></span>
+                                </div>
+                            </div>
+                            <div class="question">
+                                <strong>8. Build the Word.</strong>
+                                <p>ca + tch = <span class="blank-line"></span> · bri + dge = <span class="blank-line"></span> · s + tr + eet = <span class="blank-line"></span> · s + pl + ash = <span class="blank-line"></span></p>
+                            </div>
+                            <div class="question">
+                                <strong>9. اختبار قصير.</strong>
+                                <p>ما النمط في catch؟ <span class="blank-line"></span></p>
+                                <p>اختر كلمة فيها dge: catch / bridge / street <span class="blank-line"></span></p>
+                                <p>أكمل __ash: spl / spr / str <span class="blank-line"></span></p>
+                                <p>أين str في street؟ <span class="blank-line"></span></p>
+                                <p>الكلمة المختلفة: catch / watch / bridge / match <span class="blank-line"></span></p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </section>
+
+            <section data-sheet="tch">
+                <h2>25. ورقة تدريب tch</h2>
+                <div class="questions">
+                    <div class="question"><strong>اقرأ:</strong> tch · catch · watch · match · pitch · stitch</div>
+                    <div class="question"><strong>اكتب tch:</strong> ca__ · wa__ · ma__ · pi__ · sti__</div>
+                    <div class="question"><strong>بداية أم نهاية؟</strong> catch <span class="blank-line"></span> · watch <span class="blank-line"></span> · stitch <span class="blank-line"></span></div>
+                </div>
+            </section>
+
+            <section data-sheet="dge">
+                <h2>26. ورقة تدريب dge</h2>
+                <div class="questions">
+                    <div class="question"><strong>اقرأ:</strong> dge · bridge · badge · judge · edge · fridge</div>
+                    <div class="question"><strong>اكتب dge:</strong> bri__ · ba__ · ju__ · e__ · fri__</div>
+                    <div class="question"><strong>ضع دائرة حول dge:</strong> bridge · badge · fridge</div>
+                </div>
+            </section>
+
+            <section data-sheet="trigraph-blends">
+                <h2>27. ورقة str / spr / spl / shr</h2>
+                <div class="questions">
+                    <div class="question"><strong>اقرأ:</strong> street · strong · spring · spray · splash · split · shrimp · shrub</div>
+                    <div class="question"><strong>أكمل:</strong> __eet · __ing · __ash · __imp</div>
+                    <div class="question"><strong>صنف:</strong> str <span class="blank-line"></span> · spr <span class="blank-line"></span> · spl <span class="blank-line"></span> · shr <span class="blank-line"></span></div>
+                </div>
+            </section>
+
+            <section data-sheet="trigraphs-review">
+                <h2>28. مراجعة Trigraphs</h2>
+                <div class="questions">
+                    <div class="question"><strong>صل:</strong> tch → catch · dge → bridge · str → street · spr → spring · spl → splash · shr → shrimp</div>
+                    <div class="question"><strong>اختر النمط:</strong> watch <span class="blank-line"></span> · badge <span class="blank-line"></span> · strong <span class="blank-line"></span> · spray <span class="blank-line"></span> · shrink <span class="blank-line"></span></div>
+                    <div class="question"><strong>اكتب 3 كلمات فيها Trigraphs:</strong><br>1. <span class="blank-line"></span><br>2. <span class="blank-line"></span><br>3. <span class="blank-line"></span></div>
+                </div>
+            </section>
+
+            <section data-sheet="advanced-preview">
+                <h2>29. ورقة معاينة الأصوات المتقدمة</h2>
+                <div class="questions">
+                    <div class="question">
+                        <strong>ملاحظة:</strong>
+                        هذه الورقة للمعاينة فقط، وليست مطلوبة لإتقان المستوى الأول.
+                    </div>
+                    <div class="question">
+                        <strong>1. اقرأ النمط.</strong>
+                        <div class="options">
+                            <span class="option">tion</span>
+                            <span class="option">ture</span>
+                            <span class="option">sion</span>
+                            <span class="option">ssion</span>
+                            <span class="option">ough</span>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <strong>2. صل النمط بالكلمة.</strong>
+                        <div class="options">
+                            <span class="option">tion → station</span>
+                            <span class="option">ture → picture</span>
+                            <span class="option">sion → television</span>
+                            <span class="option">ssion → mission</span>
+                            <span class="option">ough → through</span>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <strong>3. ضع دائرة حول النمط داخل الكلمة.</strong>
+                        <p>station · picture · television · mission · through · rough · education · discussion</p>
+                    </div>
+                    <div class="question">
+                        <strong>4. أكمل النمط.</strong>
+                        <p>sta____ = station · pic____ = picture · televi____ = television · mi____ = mission · thr____ = through</p>
+                    </div>
+                    <div class="question">
+                        <strong>5. صنف الكلمات.</strong>
+                        <p>tion: action, station, motion</p>
+                        <p>ture: picture, nature, future</p>
+                        <p>sion: television, decision, vision</p>
+                        <p>ssion: mission, passion, discussion</p>
+                        <p>ough: though, through, rough</p>
+                    </div>
+                    <div class="question">
+                        <strong>6. اكتشف الكلمة الطويلة.</strong>
+                        <p>education → <span class="blank-line"></span> · adventure → <span class="blank-line"></span> · discussion → <span class="blank-line"></span> · through → <span class="blank-line"></span></p>
+                    </div>
+                    <div class="question">
+                        <strong>7. ترجمة سريعة.</strong>
+                        <p>station = محطة · picture = صورة · mission = مهمة · rough = خشن</p>
+                    </div>
+                </div>
+            </section>
+
+            <section data-sheet="tion-ture">
+                <h2>30. ورقة tion / ture</h2>
+                <div class="questions">
+                    <div class="question"><strong>اقرأ:</strong> tion · action · station · motion · education</div>
+                    <div class="question"><strong>اقرأ:</strong> ture · picture · nature · future · adventure</div>
+                    <div class="question"><strong>أكمل:</strong> sta____ · educa____ · pic____ · fu____</div>
+                    <div class="question"><strong>صل:</strong> station → محطة · picture → صورة · future → مستقبل</div>
+                    <div class="question"><strong>اكتب النمط:</strong> action <span class="blank-line"></span> · nature <span class="blank-line"></span> · adventure <span class="blank-line"></span></div>
+                </div>
+            </section>
+
+            <section data-sheet="sion-ssion">
+                <h2>31. ورقة sion / ssion</h2>
+                <div class="questions">
+                    <div class="question"><strong>اقرأ:</strong> sion · television · decision · vision · explosion</div>
+                    <div class="question"><strong>اقرأ:</strong> ssion · mission · passion · discussion · session</div>
+                    <div class="question"><strong>لا تخلط:</strong> mission تحتوي ssion، وليس sion فقط.</div>
+                    <div class="question"><strong>صنف:</strong> television · mission · decision · discussion · vision · passion</div>
+                    <div class="question"><strong>ترجمة:</strong> television = تلفاز · mission = مهمة · decision = قرار</div>
+                </div>
+            </section>
+
+            <section data-sheet="ough">
+                <h2>32. ورقة ough</h2>
+                <div class="questions">
+                    <div class="question"><strong>ملاحظة:</strong> ough ليس له صوت واحد ثابت.</div>
+                    <div class="question"><strong>اقرأ:</strong> though · through · rough · thought · bough</div>
+                    <div class="question"><strong>صل:</strong> through → خلال / عبر · rough → خشن · thought → فكرة</div>
+                    <div class="question"><strong>ضع دائرة حول ough:</strong> though · through · rough · thought</div>
+                    <div class="question"><strong>اكتب كلمة:</strong> معنى "خشن" هو <span class="blank-line"></span></div>
+                </div>
+            </section>
+
+            <section data-sheet="advanced-review">
+                <h2>33. مراجعة Advanced Preview</h2>
+                <div class="questions">
+                    <div class="question"><strong>اختر النمط:</strong> station <span class="blank-line"></span> · picture <span class="blank-line"></span> · mission <span class="blank-line"></span> · through <span class="blank-line"></span></div>
+                    <div class="question"><strong>Advanced أم Basic؟</strong> cat <span class="blank-line"></span> · ship <span class="blank-line"></span> · station <span class="blank-line"></span> · picture <span class="blank-line"></span></div>
+                    <div class="question"><strong>اكتشف النمط:</strong> education → tion · adventure → ture · discussion → ssion · rough → ough</div>
+                    <div class="question"><strong>ملاحظة للولي/المعلم:</strong> هذه مراجعة مشاهدة فقط، وليست شرطًا لشهادة المستوى الأول.</div>
+                </div>
+            </section>
+
+            {% for category in foundation_vocabulary %}
+                <section data-sheet="{{ category.worksheet }}">
+                    <h2>ورقة {{ category.title_ar }} — {{ category.title_en }}</h2>
+                    <div class="questions">
+                        <div class="question">
+                            <strong>1. اقرأ الكلمة واكتب الترجمة.</strong>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>الرمز</th>
+                                        <th>Word</th>
+                                        <th>الترجمة</th>
+                                        <th>اكتبها</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in category.words %}
+                                        <tr>
+                                            <td class="pic">{{ item.icon }}</td>
+                                            <td><strong>{{ item.word }}</strong></td>
+                                            <td>{{ item.arabic }}</td>
+                                            <td><div class="line"></div></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="question">
+                            <strong>2. صل الكلمة بالصورة.</strong>
+                            <div class="options">
+                                {% for item in category.words|slice:":8" %}
+                                    <span class="option">{{ item.word }} → {{ item.icon }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="question">
+                            <strong>3. ضع دائرة حول الترجمة الصحيحة.</strong>
+                            {% for item in category.words|slice:":5" %}
+                                <p>{{ item.word }} = {{ item.arabic }} / مراجعة / غير ذلك</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="question">
+                            <strong>4. أكمل الكلمة.</strong>
+                            {% for item in category.words|slice:":6" %}
+                                <p>{{ item.word|slice:":1" }}__{{ item.word|slice:"2:" }} = {{ item.arabic }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="question">
+                            <strong>5. اقرأ المثال واكتب جملة قصيرة.</strong>
+                            {% for item in category.words|slice:":4" %}
+                                <p>{{ item.example }} — {{ item.example_ar }}</p>
+                                <p>جملتي: <span class="blank-line"></span></p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="question">
+                            <strong>6. صنّف الكلمات.</strong>
+                            <p>التصنيف: {{ category.title_en }} / {{ category.title_ar }}</p>
+                            <div class="options">
+                                {% for item in category.words|slice:":8" %}
+                                    <span class="option">{{ item.word }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if category.id == "animals" %}
+                            <div class="question">
+                                <strong>7. صنّف الحيوانات حسب المجموعة.</strong>
+                                {% for group in category.groups %}
+                                    <p><strong>{{ group.title_en }} — {{ group.title_ar }}:</strong></p>
+                                    <div class="options">
+                                        {% for item in group.words|slice:":6" %}
+                                            <span class="option">{{ item.icon }} {{ item.word }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="question">
+                                <strong>8. أكمل الكلمات.</strong>
+                                <p>c _ t = cat</p>
+                                <p>d _ g = dog</p>
+                                <p>f _ sh = fish</p>
+                                <p>l _ on = lion</p>
+                                <p>h _ rse = horse</p>
+                            </div>
+
+                            <div class="question">
+                                <strong>9. اختر المكان الصحيح.</strong>
+                                <p>shark lives in: sea / farm / house</p>
+                                <p>cow lives on: farm / sea / bedroom</p>
+                                <p>bee lives in: garden / sea / bedroom</p>
+                                <p>lion lives in: forest / sea / house</p>
+                            </div>
+
+                            <div class="question">
+                                <strong>10. قصة قصيرة — Animal Mini Story.</strong>
+                                <p>I see a cat. The cat is small.</p>
+                                <p>I see a dog. The dog can run.</p>
+                                <p>I see a bird. The bird can fly.</p>
+                                <p>What animal is small? <span class="blank-line"></span></p>
+                                <p>What animal can run? <span class="blank-line"></span></p>
+                            </div>
+
+                            <div class="question">
+                                <strong>11. اكتب جملة قصيرة.</strong>
+                                <p>I see a <span class="blank-line"></span>.</p>
+                                <p>The <span class="blank-line"></span> can run.</p>
+                                <p>The <span class="blank-line"></span> can swim.</p>
+                            </div>
+
+                            <div class="question">
+                                <strong>12. مراجعة الحيوانات.</strong>
+                                <p>اكتب 3 حيوانات تعرفها بالإنجليزية.</p>
+                                <p>1. <span class="blank-line"></span></p>
+                                <p>2. <span class="blank-line"></span></p>
+                                <p>3. <span class="blank-line"></span></p>
+                            </div>
+                        {% endif %}
+
+                        {% if category.id == "foods" %}
+                            <div class="question">
+                                <strong>7. صنّف الأطعمة حسب المجموعة.</strong>
+                                {% for group in category.groups %}
+                                    <p><strong>{{ group.title_en }} — {{ group.title_ar }}:</strong></p>
+                                    <div class="options">
+                                        {% for item in group.words|slice:":6" %}
+                                            <span class="option">{{ item.icon }} {{ item.word }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="question">
+                                <strong>8. أكمل الكلمات.</strong>
+                                <p>a _ ple = apple</p>
+                                <p>b _ ead = bread</p>
+                                <p>r _ ce = rice</p>
+                                <p>c _ ke = cake</p>
+                                <p>m _ lk = milk</p>
+                            </div>
+
+                            <div class="question">
+                                <strong>9. اختر التصنيف الصحيح.</strong>
+                                <p>apple is: fruit / drink / animal</p>
+                                <p>carrot is: vegetable / sweet / number</p>
+                                <p>cake is: sweet / animal / family</p>
+                                <p>pizza is: snack / number / feeling</p>
+                            </div>
+
+                            <div class="question">
+                                <strong>10. صحي أم حلوى؟</strong>
+                                <p>salad = <span class="blank-line"></span></p>
+                                <p>cake = <span class="blank-line"></span></p>
+                                <p>yogurt = <span class="blank-line"></span></p>
+                                <p>chocolate = <span class="blank-line"></span></p>
+                            </div>
+
+                            <div class="question">
+                                <strong>11. قصة قصيرة — Food Mini Story.</strong>
+                                <p>I am hungry. I eat bread.</p>
+                                <p>I eat an apple. I drink milk.</p>
+                                <p>The apple is sweet. The milk is white.</p>
+                                <p>What fruit do I eat? <span class="blank-line"></span></p>
+                                <p>What do I drink? <span class="blank-line"></span></p>
+                            </div>
+
+                            <div class="question">
+                                <strong>12. اكتب جملة قصيرة.</strong>
+                                <p>I like <span class="blank-line"></span>.</p>
+                                <p>I eat <span class="blank-line"></span>.</p>
+                                <p>The <span class="blank-line"></span> is sweet.</p>
+                            </div>
+
+                            <div class="question">
+                                <strong>13. مراجعة الأطعمة.</strong>
+                                <p>اكتب 5 أطعمة تعرفها بالإنجليزية.</p>
+                                <p>1. <span class="blank-line"></span></p>
+                                <p>2. <span class="blank-line"></span></p>
+                                <p>3. <span class="blank-line"></span></p>
+                                <p>4. <span class="blank-line"></span></p>
+                                <p>5. <span class="blank-line"></span></p>
+                            </div>
+                        {% endif %}
+
+                        {% if category.id == "calendar" %}
+                            <div class="question">
+                                <strong>7. صنّف الكلمات: Days أو Months.</strong>
+                                {% for group in category.groups %}
+                                    <p><strong>{{ group.title_en }} — {{ group.title_ar }}:</strong></p>
+                                    <div class="options">
+                                        {% for item in group.words|slice:":8" %}
+                                            <span class="option">{{ item.icon }} {{ item.word }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="question">
+                                <strong>8. أكمل الكلمات.</strong>
+                                <p>M _ nday = Monday</p>
+                                <p>Fr _ day = Friday</p>
+                                <p>J _ nuary = January</p>
+                                <p>M _ rch = March</p>
+                                <p>D _ cember = December</p>
+                            </div>
+
+                            <div class="question">
+                                <strong>9. اختر: Day أو Month.</strong>
+                                <p>Monday is: Day / Month</p>
+                                <p>Friday is: Day / Month</p>
+                                <p>March is: Day / Month</p>
+                                <p>December is: Day / Month</p>
+                            </div>
+
+                            <div class="question">
+                                <strong>10. رتّب أو أكمل.</strong>
+                                <p>Monday, Tuesday, <span class="blank-line"></span></p>
+                                <p>Friday comes before <span class="blank-line"></span></p>
+                                <p>January is the <span class="blank-line"></span> month.</p>
+                                <p>December is the <span class="blank-line"></span> month.</p>
+                            </div>
+
+                            <div class="question">
+                                <strong>11. قصة قصيرة — Calendar Mini Story.</strong>
+                                <p>Today is Monday. I go to school.</p>
+                                <p>My birthday is in March.</p>
+                                <p>Summer starts in June.</p>
+                                <p>December is the last month.</p>
+                                <p>What day is today? <span class="blank-line"></span></p>
+                                <p>What month is my birthday? <span class="blank-line"></span></p>
+                            </div>
+
+                            <div class="question">
+                                <strong>12. اكتب جملة قصيرة.</strong>
+                                <p>Today is <span class="blank-line"></span>.</p>
+                                <p>My birthday is in <span class="blank-line"></span>.</p>
+                                <p>School starts in <span class="blank-line"></span>.</p>
+                            </div>
+
+                            <div class="question">
+                                <strong>13. مراجعة الأيام والأشهر.</strong>
+                                <p>اكتب 7 أيام أو 5 أشهر تعرفها بالإنجليزية.</p>
+                                <p>1. <span class="blank-line"></span></p>
+                                <p>2. <span class="blank-line"></span></p>
+                                <p>3. <span class="blank-line"></span></p>
+                                <p>4. <span class="blank-line"></span></p>
+                                <p>5. <span class="blank-line"></span></p>
+                                <p>6. <span class="blank-line"></span></p>
+                                <p>7. <span class="blank-line"></span></p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+            {% endfor %}
+
+            <section data-sheet="vocabulary-foundation">
+                <h2>ورقة مفردات التأسيس — Foundation Vocabulary</h2>
+                <div class="questions">
+                    <div class="question"><strong>1. صل التصنيف بالمثال.</strong></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>التصنيف</th>
+                                <th>مثال</th>
+                                <th>خط التوصيل</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in foundation_vocabulary %}
+                                <tr>
+                                    <td><strong>{{ category.title_ar }}</strong><br>{{ category.title_en }}</td>
+                                    <td>{{ category.words.0.icon }} {{ category.words.0.word }} = {{ category.words.0.arabic }}</td>
+                                    <td><div class="line"></div></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="question">
+                        <strong>2. اكتب كلمة واحدة من كل تصنيف.</strong>
+                        {% for category in foundation_vocabulary %}
+                            <p>{{ category.title_ar }}: <span class="blank-line"></span></p>
+                        {% endfor %}
+                    </div>
+                    <div class="question">
+                        <strong>3. مراجعة عامة.</strong>
+                        <p>red = <span class="blank-line"></span></p>
+                        <p>cat = <span class="blank-line"></span></p>
+                        <p>family = <span class="blank-line"></span></p>
+                        <p>I am happy = <span class="blank-line"></span></p>
+                        <p>I drink water = <span class="blank-line"></span></p>
+                    </div>
+                </div>
+            </section>
+
+            <section data-sheet="level-two-grammar">
+                <h2>ورقة قواعد المستوى الثاني — Level 2 Grammar</h2>
+                <div class="questions">
+                    <div class="question">
+                        <strong>1. اقرأ الدروس واكتب مثالًا لكل قاعدة.</strong>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>الدرس</th>
+                                    <th>Rule</th>
+                                    <th>مثالي</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lesson in level_two_grammar_lessons %}
+                                    <tr>
+                                        <td><strong>{{ lesson.title_ar }}</strong><br>{{ lesson.title_en }}</td>
+                                        <td>{{ lesson.structure }}</td>
+                                        <td><div class="line"></div></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="question">
+                        <strong>2. صل الدرس بالاستخدام الصحيح.</strong>
+                        <p>Demonstratives → this / that / these / those</p>
+                        <p>Pronouns → I / he / she / they / me / him</p>
+                        <p>Possessive Nouns → Ali's bag / the students' books</p>
+                    </div>
+                    <div class="question">
+                        <strong>3. اقرأ بالمايك في صفحة الصوتيات.</strong>
+                        <p>This is my pen. <span class="blank-line"></span></p>
+                        <p>She reads books. <span class="blank-line"></span></p>
+                        <p>Ali's bag is blue. <span class="blank-line"></span></p>
+                    </div>
+                </div>
+            </section>
+
+            {% for lesson in level_two_grammar_lessons %}
+                <section data-sheet="{{ lesson.worksheet }}">
+                    <h2>ورقة {{ lesson.title_ar }} — {{ lesson.title_en }}</h2>
+                    <div class="questions">
+                        <div class="question">
+                            <strong>1. القاعدة.</strong>
+                            <p>{{ lesson.summary_ar }}</p>
+                            <p><strong>{{ lesson.rule_en }}</strong></p>
+                            <p>{{ lesson.structure }}</p>
+                        </div>
+
+                        <div class="question">
+                            <strong>2. اقرأ العناصر واكتب الترجمة.</strong>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Group</th>
+                                        <th>Term</th>
+                                        <th>المعنى</th>
+                                        <th>اكتب مثالًا</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for group in lesson.groups %}
+                                        {% for item in group.entries %}
+                                            <tr>
+                                                <td>{{ group.title_en }}</td>
+                                                <td><strong>{{ item.term }}</strong></td>
+                                                <td>{{ item.arabic }}</td>
+                                                <td><div class="line"></div></td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="question">
+                            <strong>3. استمع في الصفحة ثم اقرأ الجمل.</strong>
+                            {% for group in lesson.groups %}
+                                {% for item in group.entries|slice:":4" %}
+                                    <p>{{ item.example }} — {{ item.example_ar }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="question">
+                            <strong>4. حل التدريبات.</strong>
+                            {% for activity in lesson.activities %}
+                                <p>{{ activity.prompt }} <span class="blank-line"></span></p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="question">
+                            <strong>5. اختر الإجابة الصحيحة.</strong>
+                            {% for activity in lesson.activities %}
+                                {% if activity.options %}
+                                    <p>{{ activity.title }}: {{ activity.options|join:" / " }}</p>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="question">
+                            <strong>6. اكتب 3 جمل من عندك.</strong>
+                            <p>1. <span class="blank-line"></span></p>
+                            <p>2. <span class="blank-line"></span></p>
+                            <p>3. <span class="blank-line"></span></p>
+                        </div>
+                    </div>
+                </section>
+            {% endfor %}
+
+            <section data-sheet="vocabulary-quiz">
+                <h2>اختبار مفردات التأسيس</h2>
+                <div class="questions">
+                    <div class="question"><strong>1. red = ؟</strong><div class="options"><span class="option">أحمر</span><span class="option">أزرق</span><span class="option">أخضر</span></div></div>
+                    <div class="question"><strong>2. اختر صورة blue.</strong><div class="options"><span class="option">🔴</span><span class="option">🔵</span><span class="option">🟢</span></div></div>
+                    <div class="question"><strong>3. cat = ؟</strong><div class="options"><span class="option">قط</span><span class="option">كلب</span><span class="option">سمكة</span></div></div>
+                    <div class="question"><strong>4. mother = ؟</strong><div class="options"><span class="option">أم</span><span class="option">أب</span><span class="option">أخ</span></div></div>
+                    <div class="question"><strong>5. happy = ؟</strong><div class="options"><span class="option">سعيد</span><span class="option">حزين</span><span class="option">غاضب</span></div></div>
+                    <div class="question"><strong>6. أكمل: b__ue</strong><span class="blank-line"></span></div>
+                    <div class="question"><strong>7. صل water مع التصنيف الصحيح.</strong><div class="options"><span class="option">Drink</span><span class="option">Food</span><span class="option">Animal</span></div></div>
+                    <div class="question"><strong>8. اكتب جملة قصيرة فيها apple.</strong><span class="blank-line"></span></div>
+                    <div class="question"><strong>9. قل بالمايك في صفحة الصوتيات: I am happy.</strong><span class="blank-line"></span></div>
+                    <div class="question"><strong>10. صنّف: one / red / dog / milk.</strong><span class="blank-line"></span></div>
+                </div>
+            </section>
+
+            <section data-sheet="review">
+                <h2>34. مراجعة صوتيات مختلطة</h2>
+                <div class="questions">
+                    <div class="question">
+                        <strong>صل الكلمة بالصوت الصحيح.</strong>
+                        <div class="options">
+                            <span class="option">ship → sh</span>
+                            <span class="option">chair → ch</span>
+                            <span class="option">thin → th</span>
+                            <span class="option">duck → ck</span>
+                            <span class="option">ring → ng</span>
+                            <span class="option">catch → tch</span>
+                        </div>
+                    </div>
+                    {% for activity in sound_pattern_activities %}
+                        <div class="question">
+                            <strong>{{ forloop.counter }}. {{ activity.prompt }}</strong>
+                            {% if activity.options %}
+                                <div class="options">
+                                    {% for option in activity.options %}
+                                        <span class="option">{{ option }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if activity.items %}
+                                <div class="options">
+                                    {% for item in activity.items %}
+                                        <span class="option">{{ item.word }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <p>الإجابة: <span class="blank-line"></span></p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <div class="footer-note">
+                ملاحظة للولي/المعلم: اقرأ الكلمة للطفل، ثم اطلب منه تحديد الصوت الأوسط وكتابتها مرة واحدة ببطء.
+            </div>
+        </article>
+    </main>
+    <script>
+        const sheet = document.querySelector(".sheet");
+        const printableSections = Array.from(document.querySelectorAll(".sheet > section"));
+        const lessonNav = document.getElementById("lessonNav");
+        const sheetFilters = [
+            { key: "all", label: "كل أوراق العمل" },
+            { key: "syllables", label: "المقاطع" },
+            { key: "cvc", label: "كلمات CVC المصورة" },
+            { key: "activities", label: "تدريبات ممتعة" },
+            { key: "quiz", label: "اختبار سريع" },
+            { key: "mic", label: "المايك والنطق" },
+            { key: "vowels", label: "حروف العلة" },
+            { key: "digraphs", label: "ورقة Digraphs" },
+            { key: "digraph-sh", label: "تدريب sh" },
+            { key: "digraph-ch", label: "تدريب ch" },
+            { key: "digraph-th", label: "تدريب th" },
+            { key: "digraph-review", label: "مراجعة Digraphs" },
+            { key: "ending-sounds", label: "ورقة Ending Sounds" },
+            { key: "trigraphs", label: "ورقة Trigraphs" },
+            { key: "tch", label: "تدريب tch" },
+            { key: "dge", label: "تدريب dge" },
+            { key: "trigraph-blends", label: "str/spr/spl/shr" },
+            { key: "trigraphs-review", label: "مراجعة Trigraphs" },
+            { key: "advanced-preview", label: "Advanced Preview" },
+            { key: "tion-ture", label: "tion/ture" },
+            { key: "sion-ssion", label: "sion/ssion" },
+            { key: "ough", label: "ough" },
+            { key: "advanced-review", label: "مراجعة Advanced" },
+            { key: "colors", label: "ورقة الألوان" },
+            { key: "animals", label: "ورقة الحيوانات" },
+            { key: "family", label: "ورقة العائلة" },
+            { key: "feelings", label: "ورقة المشاعر" },
+            { key: "daily-verbs", label: "ورقة الأفعال اليومية" },
+            { key: "foods", label: "ورقة الأطعمة" },
+            { key: "drinks", label: "ورقة المشروبات" },
+            { key: "numbers", label: "ورقة الأرقام" },
+            { key: "calendar", label: "ورقة الأيام والأشهر" },
+            { key: "vocabulary-foundation", label: "مفردات التأسيس" },
+            { key: "level-two-grammar", label: "قواعد المستوى الثاني" },
+            { key: "demonstratives", label: "أسماء الإشارة" },
+            { key: "pronouns", label: "الضمائر" },
+            { key: "possessive-nouns", label: "أسماء الملكية" },
+            { key: "vocabulary-quiz", label: "اختبار المفردات" },
+            { key: "review", label: "مراجعة الصوتيات" },
+        ];
+
+        function setActiveSheetFilter(filterKey, updateUrl = true) {
+            const key = sheetFilters.some(item => item.key === filterKey) ? filterKey : "all";
+            sheet.classList.toggle("filtering", key !== "all");
+            printableSections.forEach(section => {
+                section.classList.toggle("active-sheet", key === "all" || section.dataset.sheet === key);
+            });
+            lessonNav.querySelectorAll("button").forEach(button => {
+                button.classList.toggle("active", button.dataset.sheetFilter === key);
+            });
+            if (updateUrl) {
+                const url = new URL(window.location.href);
+                if (key === "all") url.searchParams.delete("sheet");
+                else url.searchParams.set("sheet", key);
+                history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+            }
+        }
+
+        function cleanupPrintMode() {
+            document.body.classList.remove("print-single", "print-all");
+            printableSections.forEach(section => section.classList.remove("print-target"));
+        }
+
+        function printAllWorksheets() {
+            cleanupPrintMode();
+            document.body.classList.add("print-all");
+            window.print();
+        }
+
+        function printSingleWorksheet(section) {
+            cleanupPrintMode();
+            document.body.classList.add("print-single");
+            section.classList.add("print-target");
+            window.print();
+        }
+
+        sheetFilters.forEach(filter => {
+            const navButton = document.createElement("button");
+            navButton.type = "button";
+            navButton.dataset.sheetFilter = filter.key;
+            navButton.textContent = filter.label;
+            navButton.addEventListener("click", () => setActiveSheetFilter(filter.key));
+            lessonNav.appendChild(navButton);
+        });
+
+        printableSections.forEach((section, index) => {
+            section.id = section.id || `worksheet-lesson-${index + 1}`;
+            const title = section.querySelector("h2");
+
+            if (title) {
+                const tools = document.createElement("div");
+                tools.className = "lesson-tools";
+                title.parentNode.insertBefore(tools, title);
+                tools.appendChild(title);
+
+                const printButton = document.createElement("button");
+                printButton.type = "button";
+                printButton.className = "lesson-print";
+                printButton.textContent = "طباعة هذا الدرس";
+                printButton.addEventListener("click", () => printSingleWorksheet(section));
+                tools.appendChild(printButton);
+            }
+        });
+
+        document.getElementById("printAllBtn").addEventListener("click", printAllWorksheets);
+        document.getElementById("saveAllPdfBtn").addEventListener("click", printAllWorksheets);
+        window.addEventListener("afterprint", cleanupPrintMode);
+        setActiveSheetFilter(new URLSearchParams(window.location.search).get("sheet") || "all", false);
+    </script>
+</body>
+</html>

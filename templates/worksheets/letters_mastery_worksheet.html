@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Letters Mastery Worksheet</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #f3f6fb; color: #111827; font-family: Arial, sans-serif; }
+        .page { max-width: 920px; margin: 0 auto; padding: 18px; }
+        .tools { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+        .tools a, .tools button { min-height: 40px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #111827; padding: 0 14px; text-decoration: none; font: inherit; font-weight: 900; cursor: pointer; }
+        .sheet { background: #fff; border: 1px solid #d1d5db; border-radius: 8px; padding: 22px; }
+        h1 { margin: 0 0 14px; text-align: center; letter-spacing: 0; }
+        .info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+        .info div { border: 1px solid #9ca3af; border-radius: 6px; padding: 8px; min-height: 38px; font-weight: 800; }
+        .letters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .letter-row { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; display: grid; gap: 8px; break-inside: avoid; }
+        .letter-head { direction: ltr; text-align: left; font-size: 22px; font-weight: 900; }
+        .trace { direction: ltr; letter-spacing: 0; color: #6b7280; font-size: 20px; border-bottom: 1px solid #111827; padding-bottom: 6px; }
+        .write { min-height: 34px; border-bottom: 1px solid #111827; }
+        @media (max-width: 720px) { .letters, .info { grid-template-columns: 1fr; } }
+        @media print { body { background: #fff; } .page { max-width: none; padding: 0; } .tools { display: none; } .sheet { border: 0; border-radius: 0; padding: 0; } }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <div class="tools">
+            <a href="/worksheets/">مركز أوراق العمل</a>
+            <button type="button" onclick="window.print()">طباعة</button>
+        </div>
+        <article class="sheet">
+            <h1>Letters Mastery Worksheet - ورقة إتقان الحروف</h1>
+            <div class="info">
+                <div>اسم الطالب:</div>
+                <div>الصف:</div>
+                <div>التاريخ:</div>
+            </div>
+            <section class="letters">
+                {% for letter in letters %}
+                    <div class="letter-row">
+                        <div class="letter-head">{{ letter }} {{ letter|lower }}</div>
+                        <div class="trace">{{ letter }} {{ letter|lower }}  {{ letter }} {{ letter|lower }}  {{ letter }} {{ letter|lower }}</div>
+                        <div>اكتب كلمة تبدأ بهذا الحرف:</div>
+                        <div class="write"></div>
+                    </div>
+                {% endfor %}
+            </section>
+        </article>
+    </main>
+</body>
+</html>

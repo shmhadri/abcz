@@ -1,0 +1,406 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #edf2f7;
+    color: #172033;
+    font-family: "Segoe UI", "Tajawal", Arial, sans-serif;
+}
+
+.book-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 12px;
+    background: #ffffff;
+    border-bottom: 1px solid #dbe4ef;
+}
+
+.toolbar-link,
+.toolbar-button {
+    min-height: 44px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #172033;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font: inherit;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.toolbar-button.primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+.toolbar-button.pdf {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff;
+}
+
+.book-shell {
+    width: min(980px, calc(100% - 24px));
+    margin: 24px auto 48px;
+}
+
+.book-page {
+    min-height: 1120px;
+    margin: 0 auto 24px;
+    padding: 42px;
+    background: #ffffff;
+    border: 1px solid #d8e2ef;
+    border-radius: 8px;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+    break-after: page;
+    page-break-after: always;
+}
+
+.brand-mark,
+.mini-brand {
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #ffffff;
+    font-weight: 900;
+}
+
+.brand-mark {
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    margin: 0 auto 18px;
+    font-size: 34px;
+}
+
+.mini-brand {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    font-size: 18px;
+}
+
+.book-cover,
+.certificate-page {
+    display: grid;
+    place-items: center;
+    text-align: center;
+    align-content: center;
+    border: 10px solid #dbeafe;
+}
+
+.brand-name,
+.section-kicker {
+    margin: 0 0 8px;
+    color: #2563eb;
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin-top: 0;
+}
+
+.book-cover h1 {
+    direction: ltr;
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.book-cover h2,
+.certificate-page h2 {
+    font-size: 32px;
+    color: #7c3aed;
+}
+
+.cover-copy {
+    direction: ltr;
+    color: #64748b;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.student-lines {
+    display: grid;
+    gap: 14px;
+    width: min(560px, 100%);
+    margin-top: 30px;
+    text-align: start;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.student-lines div {
+    min-height: 44px;
+    border-bottom: 2px solid #94a3b8;
+}
+
+.contents-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 22px 0 0;
+    padding: 0;
+    list-style-position: inside;
+}
+
+.contents-grid a {
+    color: #172033;
+    text-decoration: none;
+    font-weight: 900;
+    direction: ltr;
+}
+
+.worksheet-header {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr) 240px;
+    gap: 16px;
+    align-items: center;
+    border-bottom: 2px dashed #cbd5e1;
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+}
+
+.worksheet-header h2 {
+    direction: ltr;
+    margin: 0;
+    font-size: 34px;
+}
+
+.student-mini-lines {
+    display: grid;
+    gap: 8px;
+    direction: ltr;
+    color: #475569;
+    font-weight: 800;
+}
+
+.letter-focus {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.color-box,
+.sound-box,
+.trace-section,
+.word-section,
+.circle-section {
+    border: 1px solid #dbe4ef;
+    border-radius: 8px;
+    padding: 16px;
+    background: #f8fafc;
+}
+
+.outline-letters {
+    direction: ltr;
+    text-align: center;
+    color: #ffffff;
+    -webkit-text-stroke: 2px #172033;
+    font-size: 92px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.sound-box {
+    display: grid;
+    align-content: center;
+    text-align: center;
+}
+
+.sound-box span {
+    color: #64748b;
+    font-weight: 900;
+}
+
+.sound-box strong {
+    direction: ltr;
+    font-size: 58px;
+}
+
+.trace-section,
+.word-section,
+.circle-section {
+    margin-bottom: 18px;
+}
+
+.trace-line {
+    direction: ltr;
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    align-items: end;
+    gap: 12px;
+    min-height: 58px;
+    border-bottom: 1px solid #64748b;
+    color: #cbd5e1;
+    font-family: "Courier New", monospace;
+    font-size: 34px;
+    letter-spacing: 0;
+}
+
+.trace-line strong {
+    color: #172033;
+}
+
+.write-line {
+    min-height: 52px;
+    border-bottom: 1px solid #64748b;
+}
+
+.word-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.word-chip {
+    direction: ltr;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 6px 10px;
+    align-items: center;
+    min-height: 58px;
+    border: 1px dashed #94a3b8;
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: #ffffff;
+}
+
+.word-emoji {
+    grid-row: span 2;
+    font-size: 28px;
+}
+
+.word-text {
+    color: #cbd5e1;
+    font-family: "Courier New", monospace;
+    font-size: 28px;
+    font-weight: 900;
+}
+
+.word-meaning {
+    direction: rtl;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.letter-cloud {
+    direction: ltr;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 18px;
+    font-size: 28px;
+    font-weight: 900;
+    color: #475569;
+}
+
+.letter-cloud span {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 50%;
+    background: #ffffff;
+}
+
+.worksheet-footer {
+    margin-top: 16px;
+    padding-top: 10px;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+    color: #64748b;
+    font-weight: 900;
+}
+
+.certificate-line {
+    width: min(560px, 80%);
+    height: 58px;
+    border-bottom: 3px solid #172033;
+}
+
+.certificate-meta {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 34px;
+    font-weight: 900;
+}
+
+@media (max-width: 720px) {
+    .book-page {
+        min-height: auto;
+        padding: 22px;
+    }
+
+    .worksheet-header,
+    .letter-focus,
+    .contents-grid,
+    .word-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .student-mini-lines {
+        direction: rtl;
+    }
+
+    .book-cover h1 {
+        font-size: 30px;
+    }
+}
+
+@media print {
+    @page {
+        size: A4;
+        margin: 10mm;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    .book-toolbar {
+        display: none !important;
+    }
+
+    .book-shell {
+        width: auto;
+        margin: 0;
+    }
+
+    .book-page {
+        min-height: calc(297mm - 20mm);
+        margin: 0;
+        padding: 10mm;
+        border-radius: 0;
+        box-shadow: none;
+        border: 0;
+        break-after: page;
+        page-break-after: always;
+    }
+
+    .book-page:last-child {
+        break-after: auto;
+        page-break-after: auto;
+    }
+}

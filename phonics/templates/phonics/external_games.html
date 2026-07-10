@@ -5,97 +5,204 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wordwall Games - Letter {{ letter }}</title>
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --accent: #10b981;
+            --text: #111827;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --surface-soft: #f8fafc;
+            --border: #dbe4ef;
+            --shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f8fafc;
-            color: #1e293b;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            background:
+                radial-gradient(circle at 14% 12%, rgba(37, 99, 235, 0.12), transparent 26%),
+                radial-gradient(circle at 92% 4%, rgba(16, 185, 129, 0.12), transparent 24%),
+                var(--surface-soft);
+            color: var(--text);
         }
 
         .page {
-            max-width: 920px;
+            width: min(1040px, calc(100% - 28px));
             margin: 0 auto;
-            padding: 32px 16px;
+            padding: 20px 0 42px;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(248, 250, 252, 0.78));
+            backdrop-filter: blur(12px);
+        }
+
+        .back-link,
+        .open-link {
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 10px 16px;
+            text-decoration: none;
+            font-weight: 900;
+            border: 1px solid var(--border);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .back-link {
+            color: var(--text);
+            background: var(--surface);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+        }
+
+        .open-link {
+            color: #ffffff;
+            background: linear-gradient(135deg, var(--primary), #4895ef);
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+        }
+
+        .back-link:hover,
+        .open-link:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .header {
-            margin-bottom: 24px;
+            margin: 10px 0 20px;
+            padding: 22px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: var(--shadow);
         }
 
         .title {
             margin: 0 0 8px;
-            color: #2563eb;
-            font-size: 28px;
+            color: var(--primary);
+            font-size: clamp(30px, 5vw, 44px);
+            line-height: 1.15;
         }
 
         .subtitle {
             margin: 0;
-            color: #64748b;
+            color: var(--muted);
+            font-size: 1.05rem;
+            font-weight: 800;
         }
 
         .games {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 14px;
+            gap: 18px;
         }
 
         .game-card {
-            background: white;
-            border: 1px solid #e2e8f0;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 16px;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+            box-shadow: var(--shadow);
+        }
+
+        .game-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
         }
 
         .game-title {
-            margin: 0 0 12px;
-            font-size: 18px;
+            margin: 0;
+            font-size: 22px;
+            color: var(--text);
         }
 
-        .game-link {
-            display: inline-block;
-            background: #2563eb;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            padding: 9px 14px;
+        .embed-note {
+            margin: 12px 0 0;
+            color: var(--muted);
+            font-size: 0.92rem;
             font-weight: 700;
         }
 
         .badge {
-            display: inline-block;
+            display: inline-flex;
             margin-top: 12px;
             color: #92400e;
             background: #fef3c7;
             border-radius: 999px;
             padding: 4px 10px;
             font-size: 13px;
+            font-weight: 900;
         }
 
         .empty {
-            background: white;
-            border: 1px solid #e2e8f0;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 20px;
-            color: #64748b;
+            color: var(--muted);
+            box-shadow: var(--shadow);
+            font-weight: 800;
+        }
+
+        @media (max-width: 640px) {
+            .topbar,
+            .game-card-header {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .back-link,
+            .open-link {
+                width: 100%;
+            }
+
         }
     </style>
 </head>
 <body>
-    <main class="page">
+    <main class="page wordwall-page">
+        <nav class="topbar" aria-label="التنقل">
+            <a class="back-link" href="javascript:void(0)" onclick="goBackSafe()">
+                <span>&larr;</span>
+                رجوع للخلف / عودة للحروف
+            </a>
+        </nav>
+
         <header class="header">
             <h1 class="title">Wordwall - Letter {{ letter }}</h1>
-            <p class="subtitle">ألعاب خارجية معتمدة لهذا الحرف.</p>
+            <p class="subtitle">ألعاب خارجية معتمدة لهذا الحرف. اضغط الزر لفتح اللعبة في Wordwall.</p>
         </header>
 
         {% if games %}
             <section class="games" aria-label="Wordwall games">
                 {% for game in games %}
                     <article class="game-card">
-                        <h2 class="game-title">{{ game.title }}</h2>
-                        <a class="game-link" href="{{ game.activity_url }}" target="_blank" rel="noopener noreferrer">
-                            فتح اللعبة
-                        </a>
+                        <div class="game-card-header">
+                            <h2 class="game-title">{{ game.title }}</h2>
+                            <a class="open-link" href="{{ game.activity_url }}" target="_blank" rel="noopener noreferrer">
+                                فتح في Wordwall
+                            </a>
+                        </div>
+                        <p class="embed-note">Wordwall لا يسمح بعرض هذه اللعبة داخل الصفحة، لذلك الانتقال الخارجي هو الخيار المعتمد.</p>
+
                         {% if game.is_premium %}
                             <div class="badge">Premium</div>
                         {% endif %}
@@ -106,5 +213,14 @@
             <div class="empty">لا توجد ألعاب Wordwall معتمدة لهذا الحرف حتى الآن.</div>
         {% endif %}
     </main>
+    <script>
+        function goBackSafe() {
+            if (window.history.length > 1) {
+                window.history.back();
+                return;
+            }
+            window.location.href = "/";
+        }
+    </script>
 </body>
 </html>

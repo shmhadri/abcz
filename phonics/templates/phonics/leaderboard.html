@@ -1,25 +1,21 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <title>لوحة الشرف | Leaderboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
+    <meta charset="UTF-8">
+    <title>لوحة الشرف | Phonics Game Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         :root {
-            --bg: #020617;
-            --bg-soft: #0f172a;
-            --card: #020617;
-            --card-soft: #0b1120;
-            --accent: #38bdf8;
-            --accent-strong: #0ea5e9;
-            --accent-soft: rgba(56, 189, 248, 0.18);
-            --gold: #facc15;
-            --silver: #e5e7eb;
-            --bronze: #f97316;
-            --text: #e5e7eb;
-            --text-soft: #9ca3af;
-            --border: rgba(148, 163, 184, 0.25);
+            --bg: #f7f9fc;
+            --panel: #ffffff;
+            --panel-soft: #f1f5f9;
+            --text: #142033;
+            --muted: #64748b;
+            --line: #dbe4ef;
+            --primary: #2563eb;
+            --primary-soft: #dbeafe;
+            --success: #059669;
+            --warning: #b7791f;
         }
 
         * {
@@ -29,653 +25,547 @@
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: "Cairo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: radial-gradient(circle at top, #1e293b 0, #020617 50%, #000 100%);
+            font-family: "Tajawal", "Cairo", system-ui, -apple-system, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.12), transparent 28%),
+                radial-gradient(circle at 92% 4%, rgba(5, 150, 105, 0.12), transparent 24%),
+                var(--bg);
             color: var(--text);
-            padding: 20px;
+            padding: 24px;
+        }
+
+        .page {
+            max-width: 1120px;
+            margin: 0 auto;
         }
 
         .page-header {
-            text-align: center;
-            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-end;
+            margin-bottom: 18px;
+            padding: 18px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08);
         }
 
         .page-header h1 {
-            margin: 0 0 8px;
-            font-size: clamp(24px, 5vw, 32px);
+            margin: 0;
+            font-size: clamp(24px, 4vw, 34px);
         }
 
         .page-header p {
-            margin: 0;
-            color: var(--text-soft);
+            margin: 6px 0 0;
+            color: var(--muted);
             font-size: 14px;
         }
 
-        .leaderboard-shell {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.85));
-            border-radius: 20px;
-            padding: 18px;
-            box-shadow: 0 24px 70px rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            backdrop-filter: blur(18px);
-        }
-
-        /* شريط الأدوات العلوي: بحث + فلاتر + إحصائيات + أزرار تصدير */
-        .toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .left-tools,
-        .right-tools {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .left-tools {
-            flex: 1 1 260px;
-        }
-
-        .search-box {
-            position: relative;
-            flex: 1 1 180px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 10px 34px 10px 10px;
+        .home-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            white-space: nowrap;
+            border: 1px solid var(--line);
             border-radius: 999px;
-            border: 1px solid var(--border);
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text);
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            padding: 10px 16px;
+            background: #ffffff;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
         }
 
-        .search-box input::placeholder {
-            color: var(--text-soft);
+        .leaderboard-hero {
+            margin-bottom: 18px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #ffffff 0%, #eef4ff 100%);
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.1);
+            padding: 18px;
         }
 
-        .search-box input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
-            background: rgba(15, 23, 42, 1);
+        .leaderboard-hero h2 {
+            margin: 0 0 6px;
+            font-size: clamp(20px, 3vw, 28px);
+            color: #111827;
         }
 
-        .search-icon {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-            color: var(--text-soft);
-            pointer-events: none;
+        .leaderboard-hero p {
+            margin: 0;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .leaderboard-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .metric-card {
+            min-height: 88px;
+            border: 1px solid rgba(37, 99, 235, 0.14);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.86);
+            padding: 14px;
+            display: grid;
+            align-content: center;
+            gap: 4px;
+        }
+
+        .metric-card strong {
+            color: var(--primary);
+            font-size: 1.45rem;
+            line-height: 1;
+        }
+
+        .metric-card span {
+            color: var(--muted);
+            font-weight: 800;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.1);
+            overflow: hidden;
+        }
+
+        .toolbar {
+            padding: 16px;
+            border-bottom: 1px solid var(--line);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: end;
         }
 
         .filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            display: grid;
+            grid-template-columns: minmax(180px, 1.2fr) repeat(3, minmax(140px, 0.8fr)) auto;
+            gap: 10px;
+            align-items: end;
         }
 
-        .filter-select {
-            min-width: 130px;
-            padding: 8px 10px;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-soft);
-            font-size: 13px;
+        label {
+            display: grid;
+            gap: 5px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        input,
+        select {
+            height: 40px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--text);
+            padding: 0 11px;
+            font: inherit;
             outline: none;
         }
 
-        .filter-select:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
         }
 
-        .stats {
+        .actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
             justify-content: flex-end;
         }
 
-        .stat-pill {
-            padding: 6px 12px;
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            background: rgba(15, 23, 42, 0.9);
-            font-size: 12px;
-            color: var(--text-soft);
+        .btn {
+            height: 40px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--text);
+            padding: 0 12px;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            gap: 7px;
             white-space: nowrap;
         }
 
-        .stat-pill strong {
-            color: var(--accent-strong);
-            font-weight: 600;
+        .btn.primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
         }
 
-        .export-buttons {
+        .btn.certificate {
+            color: var(--warning);
+            border-color: #f3d37a;
+            background: #fff9e6;
+        }
+
+        .summary {
+            padding: 12px 16px;
             display: flex;
+            gap: 10px;
             flex-wrap: wrap;
-            gap: 8px;
+            background: var(--panel-soft);
+            border-bottom: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 13px;
         }
 
-        .btn {
-            border-radius: 999px;
-            border: 1px solid rgba(56, 189, 248, 0.5);
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--accent-strong);
-            font-size: 12px;
-            padding: 7px 12px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+        .summary strong {
+            color: var(--text);
         }
 
-        .btn span {
-            font-size: 14px;
-        }
-
-        .btn:hover {
-            background: rgba(56, 189, 248, 0.12);
-            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
-        }
-
-        .btn:active {
-            transform: translateY(1px);
-        }
-
-        .btn-cert {
-            border-color: rgba(250, 204, 21, 0.7);
-            color: #facc15;
-        }
-
-        .btn-cert:hover {
-            background: rgba(250, 204, 21, 0.12);
-            box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.4);
-        }
-
-        /* الجدول */
-        .table-wrapper {
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid rgba(148, 163, 184, 0.35);
-            background: radial-gradient(circle at top, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.88));
+        .table-wrap {
+            overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 760px;
         }
 
-        thead {
-            background: linear-gradient(90deg, rgba(15, 23, 42, 0.98), rgba(30, 64, 175, 0.9));
-        }
-
-        th, td {
-            padding: 10px 12px;
-            font-size: 14px;
+        th,
+        td {
+            padding: 13px 14px;
+            border-bottom: 1px solid var(--line);
+            text-align: right;
+            vertical-align: middle;
         }
 
         th {
-            text-align: right;
-            color: #e5e7eb;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 12px;
             white-space: nowrap;
         }
 
-        tbody tr {
-            transition: background 0.2s, transform 0.15s;
-        }
-
-        tbody tr:nth-child(even) td {
-            background: rgba(15, 23, 42, 0.94);
-        }
-
-        tbody tr:nth-child(odd) td {
-            background: rgba(15, 23, 42, 0.88);
-        }
-
         tbody tr:hover td {
-            background: rgba(30, 64, 175, 0.4);
+            background: #f8fbff;
         }
 
-        td {
-            border-bottom: 1px solid rgba(15, 23, 42, 0.9);
+        tbody tr:first-child td {
+            background: #fffaf0;
+            font-weight: 800;
         }
 
-        .rank-cell {
-            width: 80px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .rank {
+            font-weight: 900;
+            color: var(--primary);
+            direction: ltr;
+            text-align: center;
         }
 
-        .rank-badge {
-            min-width: 30px;
-            height: 24px;
-            border-radius: 999px;
+        .student {
+            font-weight: 800;
+        }
+
+        .score {
+            direction: ltr;
+            text-align: center;
+            font-weight: 900;
+        }
+
+        .achievement {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(148, 163, 184, 0.4);
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
-        .medal {
-            font-size: 16px;
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            min-height: 28px;
+            padding: 4px 10px;
+            background: var(--primary-soft);
+            color: #1d4ed8;
+            font-size: 12px;
+            font-weight: 800;
         }
 
-        .gold .rank-badge {
-            background: rgba(250, 204, 21, 0.16);
-            border-color: rgba(250, 204, 21, 0.8);
-            color: var(--gold);
+        .badge.success {
+            background: #dcfce7;
+            color: var(--success);
         }
 
-        .silver .rank-badge {
-            background: rgba(148, 163, 184, 0.18);
-            border-color: rgba(209, 213, 219, 0.9);
-            color: var(--silver);
-        }
-
-        .bronze .rank-badge {
-            background: rgba(248, 113, 113, 0.12);
-            border-color: rgba(248, 113, 113, 0.8);
-            color: var(--bronze);
-        }
-
-        .name-cell {
-            font-weight: 500;
-        }
-
-        .class-cell,
-        .school-cell {
-            font-size: 13px;
-            color: var(--text-soft);
-        }
-
-        .score-cell {
-            text-align: left;
-            direction: ltr;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .no-results {
+        .empty {
+            padding: 28px 16px;
             text-align: center;
-            padding: 16px;
-            color: var(--text-soft);
-            font-size: 14px;
+            color: var(--muted);
         }
 
-        @media (max-width: 768px) {
-            .leaderboard-shell {
-                padding: 10px;
-                margin: 10px;
+        .error {
+            margin-bottom: 12px;
+            border: 1px solid #fecaca;
+            background: #fff1f2;
+            color: #b91c1c;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 860px) {
+            body {
+                padding: 14px;
             }
 
+            .page-header,
             .toolbar {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 15px;
-            }
-
-            .left-tools,
-            .right-tools {
-                flex-direction: column;
-                align-items: stretch;
-                width: 100%;
-            }
-            
-            .search-box {
-                width: 100%;
-            }
-            
-            .filters {
-                flex-direction: column;
-            }
-            
-            .filter-select {
-                width: 100%;
-            }
-            
-            .stats {
-                justify-content: space-between;
-            }
-            
-            .export-buttons {
+                grid-template-columns: 1fr;
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                align-items: stretch;
             }
 
-            .table-wrapper {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            table {
-                min-width: 600px;
+            .filters {
+                grid-template-columns: 1fr;
             }
 
-            th, td {
-                font-size: 13px;
-                padding: 10px;
+            .leaderboard-metrics {
+                grid-template-columns: 1fr;
             }
 
-            .rank-cell {
-                width: 60px;
+            .actions {
+                justify-content: stretch;
+            }
+
+            .actions .btn {
+                flex: 1;
             }
         }
 
-        /* تحسين عرض الطباعة (PDF) لصفحة النتائج */
         @media print {
             body {
                 background: #fff;
-                color: #000;
                 padding: 0;
             }
-            .leaderboard-shell {
-                box-shadow: none;
-                border: none;
-                border-radius: 0;
-            }
+
+            .page-header,
             .toolbar,
-            .page-header p {
+            .summary,
+            .btn {
                 display: none !important;
             }
-            .table-wrapper {
-                border: 1px solid #000;
+
+            .panel {
+                box-shadow: none;
+                border: none;
+            }
+
+            table {
+                min-width: 0;
             }
         }
     </style>
 </head>
 <body>
+    <main class="page">
+        <header class="page-header">
+            <div>
+                <h1>لوحة المتصدرين ولوحة الشرف</h1>
+                <p>ترتيب واضح يساعد الطالب وولي الأمر على متابعة النقاط والإنجازات والشهادات.</p>
+            </div>
+            <a class="home-link" href="/">العودة للرئيسية</a>
+        </header>
 
-    <div class="page-header">
-        <h1>🏆 لوحة الشرف للطلاب</h1>
-        <p>ترتيب آلي حسب أعلى إجمالي درجات، مع فلاتر حسب الصف والمدرسة وشهادات لكل طالب.</p>
-    </div>
-
-    <div class="leaderboard-shell">
-        <!-- شريط الأدوات -->
-        <div class="toolbar">
-            <!-- يسار: بحث + فلاتر -->
-            <div class="left-tools">
-                <div class="search-box">
-                    <input
-                        id="searchInput"
-                        type="text"
-                        placeholder="ابحث باسم الطالب..."
-                        autocomplete="off"
-                    />
-                    <span class="search-icon">🔍</span>
+        <section class="leaderboard-hero" aria-label="ملخص لوحة المتصدرين">
+            <h2>أفضل إنجازات الطلاب في Phonics Game Lab</h2>
+            <p>استخدم البحث والفلاتر لمعرفة ترتيب الطالب، ثم صدّر النتائج أو اطبع الشهادة عند توفرها.</p>
+            <div class="leaderboard-metrics">
+                <div class="metric-card">
+                    <strong>{{ rows|length }}</strong>
+                    <span>نتيجة ظاهرة</span>
                 </div>
+                <div class="metric-card">
+                    <strong>نقاط</strong>
+                    <span>الترتيب حسب مجموع التقدم</span>
+                </div>
+                <div class="metric-card">
+                    <strong>شهادات</strong>
+                    <span>طباعة مباشرة للطلاب المؤهلين</span>
+                </div>
+            </div>
+        </section>
 
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <section class="panel">
+            <form class="toolbar" method="get" action="{% url 'leaderboard' %}">
                 <div class="filters">
-                    <select id="classFilter" class="filter-select">
-                        <option value="">كل الصفوف</option>
-                    </select>
+                    <label>
+                        بحث باسم الطالب
+                        <input id="searchInput" name="search" type="search" value="{{ search_query }}" placeholder="اكتب اسم الطالب">
+                    </label>
 
-                    <select id="schoolFilter" class="filter-select">
-                        <option value="">كل المدارس</option>
-                    </select>
+                    <label>
+                        الفترة
+                        <select id="periodFilter" name="period">
+                            <option value="all" {% if period == "all" %}selected{% endif %}>كل الطلاب</option>
+                            <option value="daily" {% if period == "daily" %}selected{% endif %}>اليوم</option>
+                            <option value="weekly" {% if period == "weekly" %}selected{% endif %}>الأسبوع</option>
+                            <option value="monthly" {% if period == "monthly" %}selected{% endif %}>الشهر</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        الإنجاز
+                        <select id="typeFilter" name="type">
+                            <option value="all" {% if type_filter == "all" %}selected{% endif %}>كل الإنجازات</option>
+                            <option value="letters_completed" {% if type_filter == "letters_completed" %}selected{% endif %}>أنهى الحروف</option>
+                            <option value="letters_certificate" {% if type_filter == "letters_certificate" %}selected{% endif %}>شهادة الحروف</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        الصف
+                        <select id="gradeFilter" name="grade">
+                            <option value="">كل الصفوف</option>
+                            {% for grade in grade_options %}
+                                <option value="{{ grade }}" {% if grade_filter == grade %}selected{% endif %}>{{ grade }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <button class="btn primary" type="submit">تطبيق</button>
                 </div>
+
+                <div class="actions">
+                    <button class="btn" type="button" onclick="exportVisibleToCSV()">تصدير CSV</button>
+                    <button class="btn" type="button" onclick="printTable()">طباعة / PDF</button>
+                </div>
+            </form>
+
+            <div class="summary">
+                <span>عدد النتائج: <strong id="studentsCount">{{ rows|length }}</strong></span>
+                <span>أعلى درجة: <strong id="topScore">0</strong></span>
             </div>
 
-            <!-- يمين: إحصائيات + أزرار تصدير -->
-            <div class="right-tools">
-                <div class="stats">
-                    <div class="stat-pill">
-                        👨‍🎓 عدد الطلاب:
-                        <strong id="studentsCount">0</strong>
-                    </div>
-                    <div class="stat-pill">
-                        ⭐ أعلى درجة:
-                        <strong id="topScore">0</strong>
-                    </div>
-                </div>
-
-                <div class="export-buttons">
-                    <button class="btn" type="button" onclick="exportVisibleToCSV()">
-                        <span>📥</span> تنزيل Excel
-                    </button>
-                    <button class="btn" type="button" onclick="printTable()">
-                        <span>🖨️</span> طباعة / PDF
-                    </button>
-                </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الترتيب</th>
+                            <th>اسم الطالب</th>
+                            <th>الصف</th>
+                            <th>الدرجة</th>
+                            <th>الشهادة / الإنجاز</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        {% for row in rows %}
+                            <tr class="student-row"
+                                data-rank="{{ row.rank }}"
+                                data-name="{{ row.student_name }}"
+                                data-grade="{{ row.grade }}"
+                                data-score="{{ row.total_points }}"
+                                data-achievement="{{ row.achievement_type }}"
+                                data-has-certificate="{{ row.has_certificate|yesno:'true,false' }}"
+                                data-certificate-title="{{ row.certificate_title }}">
+                                <td class="rank">#{{ row.rank }}</td>
+                                <td class="student">{{ row.student_name }}</td>
+                                <td class="grade">{{ row.grade }}</td>
+                                <td class="score">{{ row.total_points }} نقطة</td>
+                                <td>
+                                    <span class="achievement">
+                                        <span class="badge {% if row.has_certificate %}success{% endif %}">
+                                            {{ row.achievement_type }}
+                                        </span>
+                                        {% if row.has_certificate %}
+                                            <button class="btn certificate" type="button" onclick="openCertificateForRow(this)">طباعة شهادة</button>
+                                        {% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td class="empty" colspan="5">لا توجد نتائج مطابقة حاليًا.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-        </div>
-
-        <!-- الجدول -->
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>الترتيب</th>
-                        <th>اسم الطالب</th>
-                        <th>الصف</th>
-                        <th>المدرسة</th>
-                        <th>إجمالي النقاط</th>
-                        <th>الشهادة</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboardBody">
-                    {% for r in rows %}
-                    <tr class="student-row"
-                        data-name="{{ r.name }}"
-                        data-score="{{ r.total|default:0 }}"
-                        data-class="{{ r.class_name|default_if_none:'' }}"
-                        data-school="{{ r.school_name|default_if_none:'' }}">
-                        <td class="rank-cell">
-                            <span class="rank-badge">-</span>
-                            <span class="medal"></span>
-                        </td>
-                        <td class="name-cell">{{ r.name }}</td>
-                        <td class="class-cell">
-                            {{ r.class_name }}
-                        </td>
-                        <td class="school-cell">
-                            {{ r.school_name }}
-                        </td>
-                        <td class="score-cell">{{ r.total }}</td>
-                        <td>
-                            <button type="button" class="btn btn-cert" onclick="openCertificateForRow(this)">
-                                <span>🎓</span> طباعة شهادة
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <div id="noResults" class="no-results" style="display:none;">
-                لا توجد نتائج مطابقة للبحث / الفلاتر الحالية.
-            </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script>
         const bodyEl = document.getElementById("leaderboardBody");
-        const rowEls = Array.from(bodyEl.querySelectorAll(".student-row"));
+        const rowEls = Array.from(document.querySelectorAll(".student-row"));
         const studentsCountEl = document.getElementById("studentsCount");
         const topScoreEl = document.getElementById("topScore");
         const searchInput = document.getElementById("searchInput");
-        const noResultsEl = document.getElementById("noResults");
-        const classFilter = document.getElementById("classFilter");
-        const schoolFilter = document.getElementById("schoolFilter");
+        const periodFilter = document.getElementById("periodFilter");
+        const typeFilter = document.getElementById("typeFilter");
+        const gradeFilter = document.getElementById("gradeFilter");
 
-        // ترتيب الصفوف + إضافة ميداليات + إحصائيات عامة
-        function sortAndRank() {
-            const rows = [...rowEls];
-
-            rows.sort((a, b) => {
-                const scoreA = parseInt(a.dataset.score || "0", 10);
-                const scoreB = parseInt(b.dataset.score || "0", 10);
-                return scoreB - scoreA;
-            });
-
-            rows.forEach((row, index) => {
-                const rank = index + 1;
-                const rankBadge = row.querySelector(".rank-badge");
-                const medalSpan = row.querySelector(".medal");
-
-                row.classList.remove("gold", "silver", "bronze");
-                medalSpan.textContent = "";
-
-                // حفظ الترتيب في data-rank لاستخدامه في الشهادة
-                row.dataset.rank = rank.toString();
-                rankBadge.textContent = "#" + rank;
-
-                if (index === 0) {
-                    row.classList.add("gold");
-                    medalSpan.textContent = "🥇";
-                } else if (index === 1) {
-                    row.classList.add("silver");
-                    medalSpan.textContent = "🥈";
-                } else if (index === 2) {
-                    row.classList.add("bronze");
-                    medalSpan.textContent = "🥉";
-                }
-
-                bodyEl.appendChild(row);
-            });
-
-            const scores = rows.map(r => parseInt(r.dataset.score || "0", 10));
-            const topScore = scores.length ? Math.max(...scores) : 0;
-            studentsCountEl.textContent = rows.length.toString();
-            topScoreEl.textContent = topScore.toString();
-
-            populateFilterOptions(rows);
+        function setupEventListeners() {
+            searchInput.addEventListener("input", applyClientSearch);
+            periodFilter.addEventListener("change", submitCurrentFilters);
+            typeFilter.addEventListener("change", submitCurrentFilters);
+            gradeFilter.addEventListener("change", submitCurrentFilters);
         }
 
-        // تعبئة خيارات الفلاتر من البيانات الفعلية
-        function populateFilterOptions(rows) {
-            const classes = new Set();
-            const schools = new Set();
-
-            rows.forEach(row => {
-                const cls = (row.dataset.class || "").trim();
-                const sch = (row.dataset.school || "").trim();
-
-                if (cls) classes.add(cls);
-                if (sch) schools.add(sch);
-            });
-
-            while (classFilter.options.length > 1) {
-                classFilter.remove(1);
-            }
-            while (schoolFilter.options.length > 1) {
-                schoolFilter.remove(1);
-            }
-
-            Array.from(classes).sort().forEach(cls => {
-                const opt = document.createElement("option");
-                opt.value = cls;
-                opt.textContent = "صف: " + cls;
-                classFilter.appendChild(opt);
-            });
-
-            Array.from(schools).sort().forEach(sch => {
-                const opt = document.createElement("option");
-                opt.value = sch;
-                opt.textContent = "مدرسة: " + sch;
-                schoolFilter.appendChild(opt);
-            });
+        function submitCurrentFilters() {
+            periodFilter.form.submit();
         }
 
-        // فلترة حسب الاسم + الصف + المدرسة
-        function applyFilter() {
+        function applyClientSearch() {
             const query = (searchInput.value || "").trim().toLowerCase();
-            const classVal = classFilter.value;
-            const schoolVal = schoolFilter.value;
             let visibleCount = 0;
+            let topScore = 0;
 
             rowEls.forEach(row => {
-                const nameCell = row.querySelector(".name-cell");
-                const nameText = (nameCell?.textContent || "").toLowerCase();
+                const name = (row.dataset.name || "").toLowerCase();
+                const visible = !query || name.includes(query);
+                row.style.display = visible ? "" : "none";
 
-                const rowClass = (row.dataset.class || "").trim();
-                const rowSchool = (row.dataset.school || "").trim();
-
-                let match = true;
-
-                if (query && !nameText.includes(query)) {
-                    match = false;
+                if (visible) {
+                    visibleCount += 1;
+                    topScore = Math.max(topScore, Number(row.dataset.score || 0));
                 }
-                if (classVal && rowClass !== classVal) {
-                    match = false;
-                }
-                if (schoolVal && rowSchool !== schoolVal) {
-                    match = false;
-                }
-
-                row.style.display = match ? "" : "none";
-                if (match) visibleCount++;
             });
 
-            noResultsEl.style.display = visibleCount === 0 ? "block" : "none";
+            studentsCountEl.textContent = String(visibleCount);
+            topScoreEl.textContent = String(topScore);
         }
 
-        // تصدير الصفوف الظاهرة حالياً إلى CSV (Excel)
         function exportVisibleToCSV() {
-            const visibleRows = Array.from(bodyEl.querySelectorAll(".student-row"))
-                .filter(r => r.style.display !== "none");
-
+            const visibleRows = rowEls.filter(row => row.style.display !== "none");
             if (!visibleRows.length) {
                 alert("لا توجد بيانات ظاهرة للتصدير.");
                 return;
             }
 
-            const header = [
-                "الترتيب",
-                "اسم الطالب",
-                "الصف",
-                "المدرسة",
-                "إجمالي النقاط"
+            const clean = value => `"${String(value || "").replace(/"/g, '""')}"`;
+            const lines = [
+                ["الترتيب", "اسم الطالب", "الصف", "الدرجة", "الشهادة / الإنجاز"].map(clean).join(",")
             ];
 
-            const lines = [];
-            lines.push(header.join(","));
-
             visibleRows.forEach(row => {
-                const rankText = row.querySelector(".rank-badge")?.textContent || "";
-                const nameText = row.querySelector(".name-cell")?.textContent || "";
-                const classText = row.querySelector(".class-cell")?.textContent || "";
-                const schoolText = row.querySelector(".school-cell")?.textContent || "";
-                const scoreText = row.querySelector(".score-cell")?.textContent || "";
-
-                const clean = (val) =>
-                    '"' + String(val).replace(/"/g, '""') + '"';
-
                 lines.push([
-                    clean(rankText),
-                    clean(nameText),
-                    clean(classText),
-                    clean(schoolText),
-                    clean(scoreText)
-                ].join(","));
+                    row.dataset.rank,
+                    row.dataset.name,
+                    row.dataset.grade,
+                    row.dataset.score,
+                    row.dataset.achievement,
+                ].map(clean).join(","));
             });
 
-            const csvContent = lines.join("\r\n");
-            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
-
             const link = document.createElement("a");
             link.href = url;
             link.download = "leaderboard.csv";
@@ -685,322 +575,158 @@
             URL.revokeObjectURL(url);
         }
 
-        // طباعة الجدول / حفظ كـ PDF
         function printTable() {
             window.print();
         }
 
-        // --- إنشاء شهادة لطالب معيّن ---
         function openCertificateForRow(buttonEl) {
             const row = buttonEl.closest(".student-row");
-            if (!row) return;
-
-            const name = row.dataset.name || (row.querySelector(".name-cell")?.textContent || "").trim();
-            const cls = (row.dataset.class || "").trim();
-            const school = (row.dataset.school || "").trim();
-            const score = row.dataset.score || (row.querySelector(".score-cell")?.textContent || "").trim();
-            const rank = row.dataset.rank || "";
-
-            openCertificateWindow({ name, cls, school, score, rank });
-        }
-
-        // نافذة الشهادة بطباعة جميلة
-        function openCertificateWindow({ name, cls, school, score, rank }) {
-            const win = window.open("", "_blank", "width=1000,height=700");
-            if (!win) {
-                alert("يرجى السماح بفتح النوافذ المنبثقة (Popups) لطباعة الشهادة.");
+            if (!row || row.dataset.hasCertificate !== "true") {
                 return;
             }
 
-            const today = new Date();
-            const dateStr = today.toLocaleDateString("ar-SA", {
+            openCertificateWindow({
+                name: row.dataset.name,
+                grade: row.dataset.grade,
+                score: row.dataset.score,
+                rank: row.dataset.rank,
+                title: row.dataset.certificateTitle || "شهادة الحروف"
+            });
+        }
+
+        function openCertificateWindow({ name, grade, score, rank, title }) {
+            const win = window.open("", "_blank", "width=980,height=720");
+            if (!win) {
+                alert("يرجى السماح بفتح النوافذ المنبثقة لطباعة الشهادة.");
+                return;
+            }
+
+            const safe = value => String(value || "").replace(/[&<>"']/g, char => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            }[char]));
+
+            const dateStr = new Date().toLocaleDateString("ar-SA", {
                 year: "numeric",
                 month: "long",
                 day: "numeric"
             });
 
-            const doc = win.document;
-
-            doc.open();
-            doc.write(`
+            win.document.open();
+            win.document.write(`
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<title>شهادة تفوّق - ${name}</title>
+<meta charset="UTF-8">
+<title>${safe(title)} - ${safe(name)}</title>
 <style>
     * { box-sizing: border-box; }
     body {
         margin: 0;
-        padding: 0;
-        font-family: "Cairo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: radial-gradient(circle at top, #1e293b 0, #020617 40%, #000 100%);
-        color: #0f172a;
-    }
-    .page-wrap {
         min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: grid;
+        place-items: center;
+        background: #eef4ff;
+        font-family: "Tajawal", "Cairo", system-ui, sans-serif;
+        color: #142033;
         padding: 24px;
     }
     .certificate {
-        width: 100%;
-        max-width: 900px;
-        aspect-ratio: 4/3;
-        background: #f9fafb;
-        border-radius: 24px;
-        padding: 32px 40px;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 18px 60px rgba(15,23,42,0.45);
-        border: 4px double #e5e7eb;
-    }
-    .certificate::before {
-        content: "";
-        position: absolute;
-        inset: 18px;
-        border-radius: 18px;
-        border: 2px solid rgba(250, 204, 21, 0.8);
-        pointer-events: none;
-    }
-    .top-ribbon {
-        position: absolute;
-        inset-inline: 0;
-        top: 22px;
-        display: flex;
-        justify-content: center;
-        pointer-events: none;
-    }
-    .top-ribbon span {
-        background: linear-gradient(90deg, #0f172a, #1d4ed8, #0f172a);
-        color: #f9fafb;
-        padding: 6px 26px;
-        border-radius: 999px;
-        font-size: 13px;
-        letter-spacing: 1px;
-    }
-    .cert-header {
+        width: min(900px, 100%);
+        aspect-ratio: 4 / 3;
+        background: #fff;
+        border: 10px solid #dbeafe;
+        outline: 2px solid #2563eb;
+        border-radius: 8px;
+        padding: 56px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
         text-align: center;
-        margin-top: 40px;
-        margin-bottom: 18px;
     }
-    .cert-title-ar {
-        font-size: 32px;
-        font-weight: 800;
-        color: #111827;
+    h1 {
         margin: 0;
+        font-size: 38px;
+        color: #1d4ed8;
     }
-    .cert-title-en {
-        font-size: 16px;
-        color: #4b5563;
-        margin: 4px 0 0;
+    .subtitle {
+        color: #64748b;
+        margin-top: 8px;
+        font-weight: 700;
     }
-    .medal-badge {
-        position: absolute;
-        top: 52px;
-        inset-inline-start: 40px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        font-size: 14px;
-        color: #92400e;
-    }
-    .medal-circle {
-        width: 52px;
-        height: 52px;
-        border-radius: 999px;
-        border: 3px solid #facc15;
-        background: radial-gradient(circle at 30% 20%, #fef3c7, #facc15);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-    }
-    .body-text {
-        text-align: center;
-        margin-top: 10px;
-        padding-inline: 30px;
-        color: #374151;
-    }
-    .body-text p {
-        margin: 6px 0;
-        font-size: 16px;
+    .student {
+        align-self: center;
     }
     .student-name {
-        font-size: 30px;
-        font-weight: 800;
-        color: #111827;
-        margin: 14px 0 6px;
+        font-size: 42px;
+        font-weight: 900;
+        margin: 18px 0;
     }
-    .highlight-box {
-        margin: 18px auto 8px;
-        max-width: 480px;
-        display: flex;
-        justify-content: space-around;
-        gap: 8px;
-        font-size: 14px;
-        color: #111827;
-    }
-    .highlight-box div {
-        background: #fefce8;
-        border-radius: 999px;
-        padding: 6px 16px;
-        border: 1px solid #facc15;
-    }
-    .meta-row {
-        margin-top: 12px;
+    .meta {
         display: flex;
         justify-content: center;
-        gap: 24px;
-        font-size: 14px;
-        color: #4b5563;
+        gap: 14px;
+        flex-wrap: wrap;
+        color: #334155;
+        font-weight: 800;
     }
-    .sign-row {
-        position: absolute;
-        inset-inline: 40px;
-        bottom: 30px;
+    .meta span {
+        border: 1px solid #bfdbfe;
+        background: #eff6ff;
+        border-radius: 999px;
+        padding: 8px 16px;
+    }
+    .footer {
         display: flex;
         justify-content: space-between;
-        font-size: 13px;
-        color: #4b5563;
-    }
-    .sign-block {
-        text-align: center;
-        min-width: 160px;
-    }
-    .sign-line {
-        margin-top: 32px;
-        border-top: 1px solid #9ca3af;
-        padding-top: 4px;
-    }
-    .logo-mark {
-        position: absolute;
-        inset-inline-end: 40px;
-        top: 52px;
-        text-align: center;
-        font-size: 12px;
-        color: #6b7280;
-    }
-    .logo-circle {
-        width: 44px;
-        height: 44px;
-        margin: 0 auto 4px;
-        border-radius: 999px;
-        background: radial-gradient(circle at 30% 20%, #bfdbfe, #1d4ed8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #eff6ff;
-        font-weight: 700;
-        font-size: 18px;
+        gap: 24px;
+        color: #64748b;
+        font-size: 14px;
     }
     @media print {
-        body {
-            background: #fff;
-        }
-        .certificate {
-            box-shadow: none;
-        }
+        body { background: #fff; padding: 0; }
+        .certificate { width: 100%; box-shadow: none; }
     }
 </style>
 </head>
 <body>
-<div class="page-wrap">
-    <div class="certificate">
-        <div class="top-ribbon">
-            <span>منظومة التعلّم والتميّز الأكاديمي</span>
-        </div>
-
-        <div class="medal-badge">
-            <div class="medal-circle">🎓</div>
-            <div>ترتيب: ${rank || "-"}</div>
-        </div>
-
-        <div class="logo-mark">
-            <div class="logo-circle">ED</div>
-            <div>Academic League</div>
-        </div>
-
-        <div class="cert-header">
-            <h1 class="cert-title-ar">شهادة تفوّق وتميّز</h1>
-            <div class="cert-title-en">Certificate of Excellence</div>
-        </div>
-
-        <div class="body-text">
-            <p>تمنح هذه الشهادة للطالبة / الطالب:</p>
-            <div class="student-name">${name}</div>
-            <p>تقديرًا لاجتهاده / اجتهادها وحصوله / حصولها على مرتبة متقدّمة</p>
-            <p>في لوحة الشرف ضمن منظومة التعلّم.</p>
-        </div>
-
-        <div class="highlight-box">
-            <div>الصف: ${cls || "—"}</div>
-            <div>المدرسة: ${school || "—"}</div>
-            <div>الدرجة: ${score || "—"}</div>
-        </div>
-
-        <div class="meta-row">
-            <div>التاريخ: ${dateStr}</div>
-        </div>
-
-        <div class="sign-row">
-            <div class="sign-block">
-                <div>________________________</div>
-                <div>توقيع المعلمة / المعلم</div>
-            </div>
-            <div class="sign-block">
-                <div>________________________</div>
-                <div>ختم المدرسة</div>
+    <section class="certificate">
+        <header>
+            <h1>${safe(title)}</h1>
+            <div class="subtitle">شهادة إنجاز في منصة الحروف والفونكس</div>
+        </header>
+        <div class="student">
+            <div>تمنح هذه الشهادة إلى</div>
+            <div class="student-name">${safe(name)}</div>
+            <div class="meta">
+                <span>الترتيب: #${safe(rank)}</span>
+                <span>الصف: ${safe(grade)}</span>
+                <span>الدرجة: ${safe(score)} نقطة</span>
             </div>
         </div>
-    </div>
-</div>
-<script>
-    // فتح نافذة الطباعة مباشرة ليسهّل حفظ الشهادة
-    window.onload = function() {
-        window.print();
-    };
-</script>
+        <footer class="footer">
+            <div>التاريخ: ${safe(dateStr)}</div>
+            <div>Phonics Game Lab</div>
+        </footer>
+    </section>
 </body>
-</html>
-            `);
-            doc.close();
+</html>`);
+            win.document.close();
+            setTimeout(() => win.print(), 300);
         }
 
-        // ربط الأحداث
-        function setupEventListeners() {
-            searchInput.addEventListener("input", applyFilter);
-            classFilter.addEventListener("change", applyFilter);
-            schoolFilter.addEventListener("change", applyFilter);
-        }
-
-        // جعل الدوال متاحة للأزرار في النطاق العام
-        function exposeGlobalFunctions() {
-            window.exportVisibleToCSV = exportVisibleToCSV;
-            window.printTable = printTable;
-            window.openCertificateForRow = openCertificateForRow;
-        }
-
-        // --- نقطة الدخول الرئيسية ---
         function initializeLeaderboard() {
-            if (!bodyEl || !rowEls.length) {
-                console.warn("Leaderboard body or rows not found. No data to display.");
-                noResultsEl.textContent = "لا توجد بيانات لعرضها حالياً.";
-                noResultsEl.style.display = "block";
-                studentsCountEl.textContent = "0";
-                topScoreEl.textContent = "0";
-                return;
-            }
-
-            sortAndRank();
+            let topScore = 0;
+            rowEls.forEach(row => {
+                topScore = Math.max(topScore, Number(row.dataset.score || 0));
+            });
+            topScoreEl.textContent = String(topScore);
             setupEventListeners();
-            exposeGlobalFunctions();
-            applyFilter(); // قم بالتصفية الأولية بعد الترتيب
+            applyClientSearch();
         }
 
-        // تأكد من تشغيل الشيفرة بعد تحميل كامل محتوى الصفحة
         document.addEventListener("DOMContentLoaded", initializeLeaderboard);
     </script>
 </body>

@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>إكمال الاشتراك - {{ plan.name_ar }}</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --ink: #182235;
+            --muted: #607086;
+            --line: #dce5f2;
+            --blue: #315eea;
+            --green: #0f9f6e;
+            --amber: #b7791f;
+            --surface: #ffffff;
+            --soft: #f6f8fc;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Tahoma, Arial, sans-serif;
+            background: var(--soft);
+            color: var(--ink);
+        }
+        .shell {
+            width: min(1120px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 24px 0 44px;
+        }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--ink);
+            font-weight: 900;
+        }
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            background: var(--blue);
+            color: #fff;
+            font-weight: 900;
+        }
+        .nav-link {
+            color: var(--blue);
+            font-weight: 800;
+            text-decoration: none;
+        }
+        .headline {
+            padding: 24px 0;
+        }
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(1.9rem, 3vw, 3rem);
+            letter-spacing: 0;
+        }
+        .lead {
+            margin: 0;
+            color: var(--muted);
+            font-weight: 700;
+            line-height: 1.8;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(300px, 0.9fr) minmax(340px, 1.1fr);
+            gap: 18px;
+            align-items: start;
+        }
+        .panel, .method {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 22px;
+            box-shadow: 0 14px 32px rgba(24, 34, 53, 0.06);
+        }
+        .summary h2, .methods h2 {
+            margin: 0 0 12px;
+            font-size: 1.35rem;
+        }
+        .price {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin: 14px 0;
+            color: var(--blue);
+        }
+        .price strong {
+            font-size: 2.4rem;
+            line-height: 1;
+        }
+        .features {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0 0;
+            display: grid;
+            gap: 10px;
+        }
+        .features li {
+            padding: 10px 12px;
+            border: 1px solid #edf1f7;
+            border-radius: 8px;
+            background: #fbfcff;
+            font-weight: 700;
+            color: #334155;
+        }
+        .notice {
+            border: 1px solid #f0d8a8;
+            background: #fff8e7;
+            color: #684316;
+            border-radius: 8px;
+            padding: 13px 14px;
+            margin-top: 16px;
+            font-weight: 800;
+            line-height: 1.8;
+        }
+        .methods {
+            display: grid;
+            gap: 14px;
+        }
+        .method {
+            display: grid;
+            gap: 12px;
+        }
+        .method h3 {
+            margin: 0;
+            font-size: 1.12rem;
+        }
+        .method p {
+            margin: 0;
+            color: var(--muted);
+            font-weight: 700;
+            line-height: 1.7;
+        }
+        .method-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .pill {
+            border: 1px solid #dbe4f0;
+            border-radius: 999px;
+            padding: 6px 10px;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 0.86rem;
+            font-weight: 800;
+        }
+        .pill.ready {
+            border-color: #bde7d7;
+            background: #ecfdf5;
+            color: #087356;
+        }
+        .pill.pending {
+            border-color: #f1d391;
+            background: #fff8e1;
+            color: #8a5a12;
+        }
+        .action {
+            border: 0;
+            min-height: 46px;
+            border-radius: 8px;
+            padding: 0 18px;
+            background: var(--blue);
+            color: #fff;
+            font-weight: 900;
+            cursor: pointer;
+            width: fit-content;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        .action.stc { background: #0f9f6e; }
+        .action.bank { background: #334155; }
+        .bank-box {
+            border: 1px dashed #cad5e3;
+            border-radius: 8px;
+            padding: 12px;
+            background: #f8fafc;
+            display: grid;
+            gap: 6px;
+            color: #344256;
+            font-weight: 700;
+        }
+        .bank-box span {
+            color: var(--muted);
+            font-weight: 800;
+        }
+        @media (max-width: 820px) {
+            .layout { grid-template-columns: 1fr; }
+            .topbar { align-items: flex-start; flex-direction: column; }
+            .action { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <nav class="topbar" aria-label="التنقل">
+            <a class="brand" href="/">
+                <span class="brand-mark">A</span>
+                <span>Phonics Game Lab</span>
+            </a>
+            <a class="nav-link" href="{% url 'pricing' %}">العودة للباقات</a>
+        </nav>
+
+        <section class="headline">
+            <h1>إكمال الاشتراك</h1>
+            <p class="lead">اختر طريقة الدفع المناسبة. لا يتم تفعيل الاشتراك إلا بعد نجاح الدفع أو اعتماد التحويل البنكي.</p>
+        </section>
+
+        <section class="layout">
+            <aside class="panel summary">
+                <h2>{{ plan.name_ar }}</h2>
+                <p class="lead">{{ plan.description }}</p>
+                <div class="price"><strong>{{ plan.price_sar|floatformat:0 }}</strong><span>ريال شهريًا</span></div>
+                <ul class="features">
+                    {% for feature in plan.features %}
+                        <li>{{ feature }}</li>
+                    {% endfor %}
+                </ul>
+                <div class="notice">سيتم إنشاء طلب دفع فقط. التفعيل لا يحدث من الضغط على الزر.</div>
+            </aside>
+
+            <section class="methods" aria-label="طرق الدفع">
+                <h2>طريقة الدفع</h2>
+
+                <article class="method">
+                    <h3>بطاقة / مدى / Apple Pay / Samsung Pay عبر Moyasar</h3>
+                    <p>ادفع بأمان عبر ميسر عند تفعيل Sandbox أو الإنتاج لاحقًا. الموقع لا يحفظ بيانات البطاقة أو CVV.</p>
+                    <div class="method-meta">
+                        {% if moyasar.enabled and moyasar.publishable_key_configured %}
+                            <span class="pill ready">ميسر مهيأ</span>
+                        {% else %}
+                            <span class="pill pending">جاهز للتفعيل لاحقًا</span>
+                        {% endif %}
+                        <span class="pill">لا توجد مفاتيح داخل الكود</span>
+                    </div>
+                    <form method="post" action="{% url 'create_payment_order' plan.code 'moyasar' %}">
+                        {% csrf_token %}
+                        <button class="action" type="submit">الدفع عبر ميسر</button>
+                    </form>
+                </article>
+
+                <article class="method">
+                    <h3>STC Pay</h3>
+                    <p>يدعم مسار STC Pay عبر ميسر لاحقًا. سيتم إنشاء طلب دفع بدون تفعيل الاشتراك حتى يتم تأكيد الحالة من مزود الدفع.</p>
+                    <div class="method-meta">
+                        <span class="pill pending">STC Pay عبر Moyasar</span>
+                        <span class="pill">يتطلب تحقق حالة الدفع</span>
+                    </div>
+                    <form method="post" action="{% url 'create_payment_order' plan.code 'stcpay' %}">
+                        {% csrf_token %}
+                        <button class="action stc" type="submit">الدفع عبر STC Pay</button>
+                    </form>
+                </article>
+
+                <article class="method">
+                    <h3>تحويل بنكي</h3>
+                    <p>حوّل المبلغ ثم ارفع الإيصال للمراجعة. يتم التفعيل بعد اعتماد الإدارة فقط.</p>
+                    <div class="bank-box">
+                        <div><span>اسم المستفيد:</span> {{ bank_transfer.account_name|default:"لم يتم ضبطه بعد" }}</div>
+                        <div><span>البنك:</span> {{ bank_transfer.bank_name|default:"لم يتم ضبطه بعد" }}</div>
+                        <div><span>IBAN:</span> {{ bank_transfer.iban|default:"لم يتم ضبطه بعد" }}</div>
+                        <div><span>رقم الحساب:</span> {{ bank_transfer.account_number|default:"اختياري" }}</div>
+                    </div>
+                    <form method="post" action="{% url 'create_payment_order' plan.code 'bank_transfer' %}">
+                        {% csrf_token %}
+                        <button class="action bank" type="submit">أرفع إيصال تحويل بنكي</button>
+                    </form>
+                </article>
+            </section>
+        </section>
+    </main>
+</body>
+</html>

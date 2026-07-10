@@ -13,8 +13,23 @@
         whatsappOpened: "\u062A\u0645 \u0641\u062A\u062D \u0648\u0627\u062A\u0633\u0627\u0628 \u0644\u0645\u0634\u0627\u0631\u0643\u0629 \u0627\u0644\u0634\u0647\u0627\u062F\u0629"
     };
 
+    function buildCertificateId() {
+        const stored = localStorage.getItem("lettersCertificateId");
+        if (stored) return stored;
+
+        const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        const randomPart = String(Math.floor(1000 + Math.random() * 9000));
+        const certificateId = `PGL-LETTERS-${datePart}-${randomPart}`;
+        localStorage.setItem("lettersCertificateId", certificateId);
+        return certificateId;
+    }
+
     const CertificateMethods = {
         showCertificate() {
+            if (window.LEVEL_ONE_DISABLED_FEATURES?.certificate) {
+                this.showToast("\u0627\u0644\u0634\u0647\u0627\u062f\u0629 \u0645\u062a\u0627\u062d\u0629 \u0628\u0639\u062f \u0625\u0643\u0645\u0627\u0644 \u0627\u0644\u062d\u0631\u0648\u0641 \u0641\u064a \u0628\u0627\u0642\u0629 Basic \u0623\u0648 Silver \u0623\u0648 \u0623\u0639\u0644\u0649.");
+                return;
+            }
             if (this.completedLetters.length !== LETTERS.length) {
                 this.showToast(messages.completeAllLetters);
                 return;
@@ -30,10 +45,13 @@
             const dateEl = document.getElementById("certificate-date");
             const starsEl = document.getElementById("certificate-stars");
             const countEl = document.getElementById("certificate-letters-count");
+            const certificateIdEl = document.getElementById("certificate-id");
+            const certificateId = buildCertificateId();
 
             if (dateEl) dateEl.textContent = completionDate;
             if (starsEl) starsEl.textContent = totalStars;
             if (countEl) countEl.textContent = LETTERS.length;
+            if (certificateIdEl) certificateIdEl.textContent = certificateId;
 
             if (this.certificateModal) {
                 this.certificateModal.style.display = "flex";
@@ -42,6 +60,7 @@
             localStorage.setItem("certificateEarned", "true");
             localStorage.setItem("certificateDate", completionDate);
             localStorage.setItem("certificateStars", totalStars);
+            localStorage.setItem("certificateId", certificateId);
             this.soundManager.playSound("win");
         },
 

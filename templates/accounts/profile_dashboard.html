@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملف الطالب - Phonics Game Lab</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #172033;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --surface: #ffffff;
+            --soft: #f8fafc;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            background: #f8fafc;
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        .shell {
+            width: min(1080px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 24px 0 48px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .nav-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 9px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 900;
+        }
+
+        .btn.primary {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .hero {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        h1, h2, h3, p { margin-top: 0; }
+
+        h1 {
+            margin-bottom: 4px;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            color: var(--text);
+        }
+
+        .muted { color: var(--muted); font-weight: 700; }
+
+        .status-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 14px 0 24px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #3730a3;
+            font-weight: 900;
+            border: 1px solid rgba(67, 97, 238, 0.16);
+        }
+
+        .pill.vip { background: #ecfdf5; color: #047857; }
+        .pill.locked { background: #fff7ed; color: #9a3412; }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .stat {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            background: var(--soft);
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-weight: 900;
+        }
+
+        .stat-value {
+            margin-top: 6px;
+            font-size: 1.65rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .lists {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .word-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 9px;
+        }
+
+        .word-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            font-weight: 800;
+        }
+
+        .word-meta {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .empty {
+            margin-bottom: 0;
+            color: var(--muted);
+            font-weight: 800;
+        }
+
+        .upgrade {
+            border-color: rgba(245, 158, 11, 0.34);
+            background: linear-gradient(135deg, #fff7ed 0%, #ffffff 66%);
+        }
+
+        @media (max-width: 760px) {
+            .topbar { align-items: flex-start; flex-direction: column; }
+            .stats-grid, .lists { grid-template-columns: 1fr; }
+            .nav-actions { width: 100%; }
+            .btn { flex: 1 1 140px; }
+        }
+
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <nav class="topbar" aria-label="التنقل">
+            <div class="brand">
+                <div class="brand-mark">A</div>
+                <span>Phonics Game Lab</span>
+            </div>
+            <div class="nav-actions">
+                <a class="btn" href="{% url 'sounds' %}">الصوتيات</a>
+                <a class="btn" href="/">درس الحروف</a>
+                <a class="btn" href="/curriculum/">خطة المنهج</a>
+                <a class="btn" href="/pricing/">الخطط</a>
+                <a class="btn" href="{% url 'guide' %}">التعليمات</a>
+                <a class="btn" href="{% url 'logout' %}">تسجيل الخروج</a>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <h1>ملف الطالب</h1>
+            <p class="muted">{{ profile.student_name|default:request.user.username }} - {{ request.user.email|default:request.user.username }}</p>
+        </section>
+
+        <div class="status-row">
+            <span class="pill">المستخدم: {{ request.user.username }}</span>
+            {% if profile.is_vip %}
+                <span class="pill vip">VIP: نشط</span>
+            {% else %}
+                <span class="pill locked">VIP: غير نشط</span>
+            {% endif %}
+        </div>
+
+        <section class="panel" aria-label="Sound practice progress">
+            <h2>تقدم الصوتيات</h2>
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-label">نسبة الإتقان</div>
+                        <div class="stat-value">{{ sound_mastery_rate }}%</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">تدريبات مكتملة</div>
+                        <div class="stat-value">{{ sound_completed_count }}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">كلمات تم التدريب عليها</div>
+                        <div class="stat-value">{{ sound_word_practice_count }}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">دقة الاختبار</div>
+                        <div class="stat-value">{{ sound_quiz_rate }}%</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">نجاح المايك</div>
+                        <div class="stat-value">{{ sound_mic_rate }}%</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">آخر تدريب</div>
+                        <div class="stat-value">{% if sound_progress.last_item %}{{ sound_progress.last_item }}{% else %}-{% endif %}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">تقدم حروف العلة</div>
+                        <div class="stat-value">{{ vowel_mastery_rate }}%</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">آخر حرف علة</div>
+                        <div class="stat-value">{% if last_vowel_practiced %}{{ last_vowel_practiced }}{% else %}-{% endif %}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">دقة اختبار حروف العلة</div>
+                        <div class="stat-value">{{ vowel_quiz_rate }}%</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">نجاح نطق حروف العلة</div>
+                        <div class="stat-value">{{ vowel_mic_rate }}%</div>
+                    </div>
+                </div>
+                <p class="muted" style="margin: 12px 0;">يتم تحديث هذه البطاقة عند استخدام صفحة الصوتيات وأنت مسجل الدخول.</p>
+                <a class="btn primary" href="{% url 'sounds' %}">أكمل تدريب الصوتيات</a>
+            </section>
+
+        <section class="panel" aria-label="CVC reading progress">
+            <h2>تقدم قراءة CVC</h2>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-label">نسبة الإتقان</div>
+                    <div class="stat-value">{{ cvc_mastery_rate }}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">الكلمات المتقنة</div>
+                    <div class="stat-value">{{ cvc_words_mastered_count }} / {{ cvc_words_total }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">كلمات تم التدريب عليها</div>
+                    <div class="stat-value">{{ cvc_words_practiced_count }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">الجمل المقروءة</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.sentences_read }}{% else %}0{% endif %} / {{ cvc_sentences_total }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">القصص المكتملة</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.stories_completed }}{% else %}0{% endif %} / {{ cvc_stories_total }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">دقة الاختبار</div>
+                    <div class="stat-value">{{ cvc_quiz_rate }}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">نجاح المايك</div>
+                    <div class="stat-value">{{ cvc_mic_rate }}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">آخر كلمة</div>
+                    <div class="stat-value">{% if cvc_reading_progress.last_word %}{{ cvc_reading_progress.last_word }}{% else %}-{% endif %}</div>
+                </div>
+            </div>
+            <h3 style="margin: 18px 0 10px; color: var(--primary);">تقدم قراءة الجمل</h3>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-label">Sentence Mastery</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.sentence_mastery_percentage }}{% else %}0{% endif %}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">الجمل المتقنة</div>
+                    <div class="stat-value">{{ cvc_sentences_mastered_count }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">دقة أسئلة الجمل</div>
+                    <div class="stat-value">{{ cvc_sentence_quiz_rate }}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">نجاح نطق الجمل</div>
+                    <div class="stat-value">{{ cvc_sentence_mic_rate }}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">الجمل الشائعة</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.common_sentences_completed }}{% else %}0{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">الأرقام</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.numbers_completed }}{% else %}0{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">الأيام</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.days_completed }}{% else %}0{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">الشهور</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.months_completed }}{% else %}0{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">آخر جملة</div>
+                    <div class="stat-value">{% if cvc_reading_progress.last_sentence %}{{ cvc_reading_progress.last_sentence }}{% else %}-{% endif %}</div>
+                </div>
+            </div>
+            <h3 style="margin: 18px 0 10px; color: var(--primary);">تقدم القصص</h3>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-label">Story Mastery</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.story_mastery_percentage }}{% else %}0{% endif %}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">قصص بدأها المتعلم</div>
+                    <div class="stat-value">{{ cvc_stories_started_count }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">قصص مكتملة</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.stories_completed }}{% else %}0{% endif %} / {{ cvc_stories_total }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">دقة أسئلة القصص</div>
+                    <div class="stat-value">{{ cvc_story_quiz_rate }}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">نطق القصص</div>
+                    <div class="stat-value">{{ cvc_story_mic_rate }}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">آخر قصة</div>
+                    <div class="stat-value">{% if cvc_reading_progress.last_story %}{{ cvc_reading_progress.last_story }}{% else %}-{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">أفضل وقت قراءة</div>
+                    <div class="stat-value">{% if cvc_reading_progress.story_best_reading_time %}{{ cvc_reading_progress.story_best_reading_time }}ث{% else %}-{% endif %}</div>
+                </div>
+            </div>
+            {% if cvc_reading_progress.story_needs_review %}
+                <p class="muted" style="margin: 12px 0;">قصص تحتاج مراجعة: {{ cvc_reading_progress.story_needs_review|join:", " }}</p>
+            {% endif %}
+            <h3 style="margin: 18px 0 10px; color: var(--primary);">تقدم الضمائر</h3>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-label">Pronoun Mastery</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.pronoun_mastery_percentage }}{% else %}0{% endif %}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">ضمائر تم التدريب عليها</div>
+                    <div class="stat-value">{{ cvc_pronouns_practiced_count }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">ضمائر متقنة</div>
+                    <div class="stat-value">{{ cvc_pronouns_mastered_count }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">دقة اختبار الضمائر</div>
+                    <div class="stat-value">{{ cvc_pronoun_quiz_rate }}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">نجاح نطق الضمائر</div>
+                    <div class="stat-value">{{ cvc_pronoun_mic_rate }}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">آخر ضمير</div>
+                    <div class="stat-value">{% if cvc_reading_progress.last_pronoun %}{{ cvc_reading_progress.last_pronoun }}{% else %}-{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">آخر مستوى</div>
+                    <div class="stat-value">{% if cvc_reading_progress.last_pronoun_level %}{{ cvc_reading_progress.last_pronoun_level }}{% else %}-{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">دروس ضمائر مكتملة</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.pronoun_lessons_completed }}{% else %}0{% endif %}</div>
+                </div>
+            </div>
+            {% if cvc_reading_progress.pronouns_needs_review %}
+                <p class="muted" style="margin: 12px 0;">ضمائر تحتاج مراجعة: {{ cvc_reading_progress.pronouns_needs_review|join:", " }}</p>
+            {% endif %}
+            <h3 style="margin: 18px 0 10px; color: var(--primary);">تقدم الطلاقة والكلمات الشائعة</h3>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-label">Fluency Mastery</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.fluency_mastery_percentage }}{% else %}0{% endif %}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Sight Words</div>
+                    <div class="stat-value">{{ sight_words_mastered_count }} / 40</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Sight Words Practiced</div>
+                    <div class="stat-value">{{ sight_words_practiced_count }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Sight Quiz Accuracy</div>
+                    <div class="stat-value">{{ sight_word_quiz_rate }}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Fluency Sentences Read</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.fluency_sentences_read }}{% else %}0{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Best WPM</div>
+                    <div class="stat-value">{% if cvc_reading_progress.best_wpm %}{{ cvc_reading_progress.best_wpm }}{% else %}0{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Best Reading Time</div>
+                    <div class="stat-value">{% if cvc_reading_progress.best_reading_time %}{{ cvc_reading_progress.best_reading_time }}ث{% else %}-{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Fluency Accuracy</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.fluency_accuracy }}{% else %}0{% endif %}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Conversations Completed</div>
+                    <div class="stat-value">{% if cvc_reading_progress %}{{ cvc_reading_progress.conversations_completed }}{% else %}0{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Question Words</div>
+                    <div class="stat-value">{{ question_words_mastered_count }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Action Verbs</div>
+                    <div class="stat-value">{{ action_verbs_mastered_count }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Adjectives</div>
+                    <div class="stat-value">{{ adjectives_mastered_count }}</div>
+                </div>
+            </div>
+            <p class="muted" style="margin: 12px 0;">
+                Last Sight Word: {% if cvc_reading_progress.last_sight_word %}{{ cvc_reading_progress.last_sight_word }}{% else %}-{% endif %}
+                |
+                Last Sentence: {% if cvc_reading_progress.last_fluency_sentence %}{{ cvc_reading_progress.last_fluency_sentence }}{% else %}-{% endif %}
+            </p>
+            {% if cvc_reading_progress.needs_review_words %}
+                <p class="muted" style="margin: 12px 0;">تحتاج مراجعة: {{ cvc_reading_progress.needs_review_words|join:", " }}</p>
+            {% else %}
+                <p class="muted" style="margin: 12px 0;">ابدأ قراءة CVC لتظهر الكلمات التي تحتاج مراجعة هنا.</p>
+            {% endif %}
+            <a class="btn primary" href="{% url 'cvc_reading' %}">متابعة قراءة CVC</a>
+        </section>
+
+        <section class="panel" aria-label="English foundation progress">
+            <h2>تقدم التأسيس الإنجليزي</h2>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-label">إجمالي النقاط</div>
+                    <div class="stat-value">{{ english_foundation_points }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">الأقسام المكتملة</div>
+                    <div class="stat-value">{{ english_foundation_completed }} / {{ english_foundation_sections|length }}</div>
+                </div>
+                {% for section in english_foundation_sections %}
+                    <div class="stat">
+                        <div class="stat-label">{{ section.icon }} {{ section.title }}</div>
+                        <div class="stat-value">{{ section.points }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+            <p class="muted" style="margin: 12px 0;">كل تفاعل داخل المفردات أو القواعد أو المحادثات أو الجمل الشائعة يضاف هنا وفي لوحة الشرف.</p>
+            <a class="btn primary" href="{% url 'english_foundation' %}">متابعة التأسيس الإنجليزي</a>
+        </section>
+
+        <section class="panel" aria-label="Letter progress">
+            <h2>تقدم الحروف</h2>
+            {% if has_letter_progress %}
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-label">الحروف المكتملة</div>
+                        <div class="stat-value">{{ letter_progress_count }}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">آخر حرف مكتمل</div>
+                        <div class="stat-value">
+                            {% if last_completed_letter %}{{ last_completed_letter.letter }}{% else %}-{% endif %}
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">متوسط الدرجة</div>
+                        <div class="stat-value">{{ average_letter_score }}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Bird XP</div>
+                        <div class="stat-value">{{ bird_xp }}</div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin: 16px 0 0; box-shadow: none;">
+                    <h3>آخر 5 حروف مكتملة</h3>
+                    {% if recent_completed_letters %}
+                        <ul class="word-list">
+                            {% for item in recent_completed_letters %}
+                                <li class="word-item">
+                                    <span>حرف {{ item.letter }}</span>
+                                    <span class="word-meta">الدرجة: {{ item.total_score }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="empty">لا توجد حروف مكتملة بعد.</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="empty">ابدأ بإكمال أول حرف لتظهر إحصائيات التقدم هنا.</p>
+            {% endif %}
+        </section>
+
+        {% if not profile.is_vip %}
+            <section class="panel upgrade">
+                <h2>فعّل VIP لفتح العصفور الذكي وتقارير المراجعة</h2>
+                <p class="muted">ستظهر هنا إحصائيات العصفور، كلمات المراجعة، والكلمات التي أتقنها المتعلم بعد الترقية واستخدام العصفور داخل الدرس.</p>
+                <a class="btn primary" href="/pricing/">عرض باقة VIP</a>
+            </section>
+        {% else %}
+            {% if not bird_progress %}
+                <section class="panel">
+                    <h2>العصفور جاهز</h2>
+                    <p class="empty">ابدأ باستخدام العصفور داخل درس الحروف لتظهر إحصائياتك هنا.</p>
+                </section>
+            {% endif %}
+
+            <section class="panel" aria-label="إحصائيات العصفور">
+                <h2>تقرير العصفور الذكي</h2>
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-label">Bird XP</div>
+                        <div class="stat-value">{{ bird_xp }}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">عدد الأسئلة</div>
+                        <div class="stat-value">{{ total_questions }}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">إجابات صحيحة</div>
+                        <div class="stat-value">{{ correct_answers }}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">إجابات خاطئة</div>
+                        <div class="stat-value">{{ wrong_answers }}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">نسبة النجاح</div>
+                        <div class="stat-value">{{ success_rate }}%</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">آخر استخدام</div>
+                        <div class="stat-value" style="font-size:1rem;">
+                            {% if bird_progress.last_used_at %}
+                                {{ bird_progress.last_used_at|date:"Y-m-d H:i" }}
+                            {% else %}
+                                لا يوجد
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lists" aria-label="مراجعة العصفور">
+                <div class="panel">
+                    <h2>كلمات تحتاج مراجعة</h2>
+                    {% if review_items %}
+                        <ul class="word-list">
+                            {% for item in review_items %}
+                                <li class="word-item">
+                                    <span>{{ item.letter }} - {{ item.word }}</span>
+                                    <span class="word-meta">أخطاء: {{ item.mistakes_count }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="empty">لا توجد كلمات تحتاج مراجعة الآن.</p>
+                    {% endif %}
+                </div>
+
+                <div class="panel">
+                    <h2>كلمات تم إتقانها</h2>
+                    {% if mastered_items %}
+                        <ul class="word-list">
+                            {% for item in mastered_items %}
+                                <li class="word-item">
+                                    <span>{{ item.letter }} - {{ item.word }}</span>
+                                    <span class="word-meta">نجاحات: {{ item.success_count }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="empty">لم يتم إتقان كلمات مراجعة بعد.</p>
+                    {% endif %}
+                </div>
+            </section>
+        {% endif %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ورقة عمل المفردات</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 24px; background: #f8fafc; color: #172033; font-family: "Tajawal", "Cairo", Arial, sans-serif; }
+        .toolbar { max-width: 980px; margin: 0 auto 14px; display: flex; gap: 8px; justify-content: flex-end; }
+        .btn { border: 0; border-radius: 8px; padding: 10px 14px; background: #2563eb; color: #fff; font-weight: 800; cursor: pointer; text-decoration: none; }
+        .sheet { max-width: 980px; margin: 0 auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 24px; }
+        h1, h2 { margin: 0 0 12px; color: #1d4ed8; }
+        .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0 20px; }
+        .line { min-height: 30px; border-bottom: 1px solid #94a3b8; }
+        table { width: 100%; border-collapse: collapse; direction: ltr; margin: 12px 0 24px; }
+        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; vertical-align: top; }
+        th { background: #eff6ff; color: #1d4ed8; }
+        .answer { min-height: 34px; border-bottom: 1px dashed #94a3b8; }
+        .writing-grid { display: grid; grid-template-columns: 1fr; gap: 12px; direction: ltr; }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .toolbar { display: none; }
+            .sheet { border: 0; border-radius: 0; max-width: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <a class="btn" href="/vocabulary-foundation/">رجوع</a>
+        <button class="btn" type="button" onclick="window.print()">طباعة</button>
+    </div>
+    <main class="sheet">
+        <h1>ورقة عمل المفردات</h1>
+        <div class="meta">
+            <div>اسم الطالب<div class="line"></div></div>
+            <div>الصف<div class="line"></div></div>
+            <div>التاريخ<div class="line"></div></div>
+        </div>
+
+        <h2>صل الكلمة بالمعنى</h2>
+        <table>
+            <thead><tr><th>Word</th><th>Arabic Meaning</th><th>Answer</th></tr></thead>
+            <tbody>
+                <tr><td>classroom</td><td>فصل دراسي / مطار / سوق</td><td><div class="answer"></div></td></tr>
+                <tr><td>password</td><td>كلمة مرور / زهرة / لاعب</td><td><div class="answer"></div></td></tr>
+                <tr><td>medicine</td><td>دواء / مسطرة / فطور</td><td><div class="answer"></div></td></tr>
+                <tr><td>expensive</td><td>غالي / رخيص / سعيد</td><td><div class="answer"></div></td></tr>
+                <tr><td>responsibility</td><td>مسؤولية / محطة / نهر</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>اختر الترجمة الصحيحة</h2>
+        <table>
+            <thead><tr><th>Question</th><th>Choices</th><th>Answer</th></tr></thead>
+            <tbody>
+                <tr><td>computer</td><td>حاسوب - طبيب - حقيبة</td><td><div class="answer"></div></td></tr>
+                <tr><td>airport</td><td>مطعم - مطار - زهرة</td><td><div class="answer"></div></td></tr>
+                <tr><td>honest</td><td>صادق - متوتر - غالي</td><td><div class="answer"></div></td></tr>
+                <tr><td>schedule</td><td>جدول - شاشة - صحراء</td><td><div class="answer"></div></td></tr>
+                <tr><td>engineer</td><td>مهندس - زبون - لاعب</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>أكمل الجملة</h2>
+        <table>
+            <tbody>
+                <tr><td>I study English in the ____.</td><td><div class="answer"></div></td></tr>
+                <tr><td>Do not share your ____.</td><td><div class="answer"></div></td></tr>
+                <tr><td>My suitcase is ____.</td><td><div class="answer"></div></td></tr>
+                <tr><td>The doctor helped the ____ child.</td><td><div class="answer"></div></td></tr>
+                <tr><td>My goal is to ____ my English.</td><td><div class="answer"></div></td></tr>
+            </tbody>
+        </table>
+
+        <h2>صح أو خطأ</h2>
+        <table>
+            <tbody>
+                <tr><td>A classroom is a place at school.</td><td>True / False</td></tr>
+                <tr><td>A passport is food.</td><td>True / False</td></tr>
+                <tr><td>Healthy food is good for your body.</td><td>True / False</td></tr>
+                <tr><td>A river is a place to buy things.</td><td>True / False</td></tr>
+                <tr><td>A polite student says please and thank you.</td><td>True / False</td></tr>
+            </tbody>
+        </table>
+
+        <h2>اكتب 5 جمل من عندك</h2>
+        <div class="writing-grid">
+            <div class="answer"></div>
+            <div class="answer"></div>
+            <div class="answer"></div>
+            <div class="answer"></div>
+            <div class="answer"></div>
+        </div>
+    </main>
+</body>
+</html>

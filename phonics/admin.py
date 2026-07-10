@@ -1,8 +1,11 @@
 from django.contrib import admin
+from django.utils import timezone
 from .models import (
     Student, StudentProfile, LetterProgress,
     BirdTutorProgress, BirdReviewItem, ExternalGame,
     CVCWord, CVCSentence, CVCStory, CVCProgress,
+    EnglishFoundationProgress, UserSubscription, PaymentOrder,
+    BankTransferProof, activate_subscription_from_payment,
     TopGoalUnit, TopGoalVocabulary, TopGoalSentence, TopGoalQuiz
 )
 
@@ -17,8 +20,8 @@ class StudentAdmin(admin.ModelAdmin):
 
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'student_name', 'school', 'parent_phone', 'is_premium', 'is_vip', 'updated_at']
-    search_fields = ['user__username', 'user__email', 'student_name', 'school', 'parent_phone']
+    list_display = ['user', 'display_name', 'student_name', 'school', 'parent_phone', 'is_premium', 'is_vip', 'updated_at']
+    search_fields = ['user__username', 'user__email', 'display_name', 'student_name', 'school', 'parent_phone']
     list_filter = ['is_premium', 'is_vip', 'created_at']
     readonly_fields = ['created_at', 'updated_at']
 
@@ -38,12 +41,88 @@ class BirdReviewItemAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'updated_at']
 
 
+@admin.register(EnglishFoundationProgress)
+class EnglishFoundationProgressAdmin(admin.ModelAdmin):
+    list_display = ['user', 'section', 'points', 'actions_count', 'completed', 'last_activity_type', 'last_activity_at']
+    list_filter = ['section', 'completed', 'last_activity_at']
+    search_fields = ['user__username', 'user__email', 'section']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(UserSubscription)
+class UserSubscriptionAdmin(admin.ModelAdmin):
+    list_display = ['user', 'plan_code', 'status', 'starts_at', 'expires_at', 'activated_by_payment', 'updated_at']
+    list_filter = ['plan_code', 'status', 'starts_at', 'expires_at']
+    search_fields = ['user__username', 'user__email', 'plan_code']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(PaymentOrder)
+class PaymentOrderAdmin(admin.ModelAdmin):
+    list_display = [
+        'reference', 'user', 'plan_code', 'amount_sar', 'currency', 'method',
+        'provider', 'status', 'activated_at', 'created_at'
+    ]
+    list_filter = ['plan_code', 'method', 'provider', 'status', 'created_at']
+    search_fields = ['user__username', 'user__email', 'plan_code', 'provider_payment_id']
+    readonly_fields = [
+        'reference', 'amount_halalas', 'currency', 'provider_payment_id',
+        'checkout_url', 'metadata', 'activated_at', 'created_at', 'updated_at'
+    ]
+    actions = ['approve_bank_transfer', 'reject_bank_transfer']
+
+    @admin.action(description='Approve bank transfer and activate subscription')
+    def approve_bank_transfer(self, request, queryset):
+        approved = 0
+        skipped = 0
+        for order in queryset:
+            if order.method != PaymentOrder.Method.BANK_TRANSFER:
+                skipped += 1
+                continue
+            order.status = PaymentOrder.Status.BANK_APPROVED
+            order.provider_status = 'approved_by_admin'
+            order.save(update_fields=['status', 'provider_status', 'updated_at'])
+            order.bank_proofs.filter(status=BankTransferProof.Status.PENDING_REVIEW).update(
+                status=BankTransferProof.Status.APPROVED,
+                reviewed_by=request.user,
+                reviewed_at=timezone.now(),
+            )
+            activate_subscription_from_payment(order)
+            approved += 1
+        self.message_user(request, f'Approved {approved} bank transfer order(s). Skipped {skipped}.')
+
+    @admin.action(description='Reject bank transfer')
+    def reject_bank_transfer(self, request, queryset):
+        rejected = 0
+        for order in queryset.filter(method=PaymentOrder.Method.BANK_TRANSFER):
+            if order.activated_at:
+                continue
+            order.status = PaymentOrder.Status.BANK_REJECTED
+            order.provider_status = 'rejected_by_admin'
+            order.save(update_fields=['status', 'provider_status', 'updated_at'])
+            order.bank_proofs.filter(status=BankTransferProof.Status.PENDING_REVIEW).update(
+                status=BankTransferProof.Status.REJECTED,
+                reviewed_by=request.user,
+                reviewed_at=timezone.now(),
+            )
+            rejected += 1
+        self.message_user(request, f'Rejected {rejected} bank transfer order(s).')
+
+
+@admin.register(BankTransferProof)
+class BankTransferProofAdmin(admin.ModelAdmin):
+    list_display = ['payment_order', 'user', 'sender_name', 'bank_name', 'amount_sar', 'status', 'reviewed_by', 'created_at']
+    list_filter = ['status', 'bank_name', 'created_at', 'reviewed_at']
+    search_fields = ['user__username', 'user__email', 'sender_name', 'transfer_reference', 'payment_order__plan_code']
+    readonly_fields = ['created_at']
+
+
 @admin.register(LetterProgress)
 class LetterProgressAdmin(admin.ModelAdmin):
-    list_display = ['student', 'letter', 'score', 'passed', 'attempts', 'timestamp']
-    list_filter = ['letter', 'passed']
-    search_fields = ['student__name']
-    readonly_fields = ['timestamp']
+    list_display = ['user', 'student', 'letter', 'total_score', 'score', 'completed', 'passed', 'attempts', 'completed_at', 'last_updated_at']
+    list_filter = ['letter', 'completed', 'passed']
+    search_fields = ['user__username', 'user__email', 'student__name']
+    readonly_fields = ['timestamp', 'created_at', 'last_updated_at']
 
 
 @admin.register(ExternalGame)

@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Printable Worksheets Center | أوراق العمل</title>
+    <link rel="stylesheet" href="{% static 'css/worksheets.css' %}">
+</head>
+<body class="worksheets-page" data-section="worksheets" data-initial-points="{{ points }}" data-initial-actions="{{ actions_count }}" data-initial-completed="{% if completed %}true{% else %}false{% endif %}">
+    <main class="worksheets-shell">
+        <section class="worksheets-hero">
+            <div>
+                <p class="eyebrow">Printable Worksheets Center</p>
+                <h1>أوراق العمل</h1>
+                <p class="hero-copy">مركز منظم للطباعة والحل الإلكتروني: مفردات، قواعد، محادثات، جمل شائعة، فونكس، CVC، إتقان الحروف، ومراجعة شاملة.</p>
+            </div>
+            <div class="hero-panel" aria-label="Worksheet progress">
+                <div>
+                    <span class="stat-label">نقاط هذا القسم</span>
+                    <strong id="worksheetPoints">{{ points }}</strong>
+                </div>
+                <div>
+                    <span class="stat-label">عدد التفاعلات</span>
+                    <strong id="worksheetActions">{{ actions_count }}</strong>
+                </div>
+                <div>
+                    <span class="stat-label">الحالة</span>
+                    <strong id="worksheetStatus">{% if completed %}متقن{% else %}قيد التدريب{% endif %}</strong>
+                </div>
+                <div class="progress-track" aria-label="Progress">
+                    <span id="worksheetProgressBar"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="toolbar" aria-label="Worksheet filters">
+            <label class="search-box">
+                <span>بحث</span>
+                <input id="worksheetSearch" type="search" placeholder="اسم الورقة">
+            </label>
+            <label>
+                <span>النوع</span>
+                <select id="worksheetTypeFilter">
+                    <option value="all">كل الأنواع</option>
+                    <option value="vocabulary">مفردات</option>
+                    <option value="grammar">قواعد</option>
+                    <option value="conversation">محادثات</option>
+                    <option value="sentences">جمل شائعة</option>
+                    <option value="phonics">فونكس</option>
+                    <option value="cvc">CVC</option>
+                    <option value="letters">حروف</option>
+                    <option value="review">مراجعة شاملة</option>
+                </select>
+            </label>
+            <label>
+                <span>المستوى</span>
+                <select id="worksheetLevelFilter">
+                    <option value="all">كل المستويات</option>
+                    <option value="Easy">Easy</option>
+                    <option value="Easy - Medium">Easy - Medium</option>
+                    <option value="Medium">Medium</option>
+                </select>
+            </label>
+            <div class="filter-chips" aria-label="Quick filters">
+                <button type="button" data-filter-type="all">كل الأوراق</button>
+                <button type="button" data-filter-type="vocabulary">مفردات</button>
+                <button type="button" data-filter-type="grammar">قواعد</button>
+                <button type="button" data-filter-type="conversation">محادثات</button>
+                <button type="button" data-filter-type="sentences">جمل شائعة</button>
+                <button type="button" data-filter-type="phonics">فونكس</button>
+                <button type="button" data-filter-type="cvc">CVC</button>
+                <button type="button" data-filter-type="review">مراجعة شاملة</button>
+            </div>
+        </section>
+
+        <section id="worksheetsGrid" class="worksheets-grid" aria-label="Worksheet list"></section>
+        <noscript>
+            <section class="worksheets-grid" aria-label="Static worksheet list">
+                <article class="worksheet-card"><h2>Vocabulary Worksheet</h2><p class="arabic-title">ورقة مفردات</p><a class="view-action" href="/vocabulary-foundation/worksheet/">عرض الورقة</a></article>
+                <article class="worksheet-card"><h2>Grammar Worksheet</h2><p class="arabic-title">ورقة قواعد</p><a class="view-action" href="/grammar-foundation/worksheet/">عرض الورقة</a></article>
+                <article class="worksheet-card"><h2>Conversation Worksheet</h2><p class="arabic-title">ورقة محادثة</p><a class="view-action" href="/conversations/worksheet/">عرض الورقة</a></article>
+                <article class="worksheet-card"><h2>Common Sentences Worksheet</h2><p class="arabic-title">ورقة الجمل الشائعة</p><a class="view-action" href="/common-sentences/worksheet/">عرض الورقة</a></article>
+                <article class="worksheet-card"><h2>Phonics Worksheet</h2><p class="arabic-title">ورقة فونكس</p><a class="view-action" href="/phonics-foundation/worksheet/">عرض الورقة</a></article>
+                <article class="worksheet-card"><h2>CVC Worksheet</h2><p class="arabic-title">ورقة CVC</p><a class="view-action" href="/cvc-reading/worksheet/">عرض الورقة</a></article>
+                <article class="worksheet-card"><h2>Letters Mastery Worksheet</h2><p class="arabic-title">ورقة إتقان الحروف</p><a class="view-action" href="/letters/worksheet/">عرض الورقة</a></article>
+                <article class="worksheet-card"><h2>Mixed Review Worksheet</h2><p class="arabic-title">ورقة مراجعة شاملة</p><a class="view-action" href="/worksheets/mixed-review/">عرض الورقة</a></article>
+            </section>
+        </noscript>
+        <p id="emptyWorksheets" class="empty-state" hidden>لا توجد أوراق عمل مطابقة لهذا البحث.</p>
+    </main>
+
+    <div id="practiceModal" class="modal" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="practiceTitle">
+            <button class="modal-close" type="button" data-close-modal aria-label="إغلاق">×</button>
+            <p class="eyebrow">حل إلكتروني</p>
+            <h2 id="practiceTitle"></h2>
+            <form id="practiceForm"></form>
+            <div id="practiceResult" class="result-box" hidden></div>
+            <div class="modal-actions">
+                <button class="primary-action" type="button" id="checkPracticeAnswers">تصحيح</button>
+                <button type="button" id="retryPractice">إعادة المحاولة</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="answersModal" class="modal" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="answersTitle">
+            <button class="modal-close" type="button" data-close-modal aria-label="إغلاق">×</button>
+            <p class="eyebrow">قسم الإجابات مخصص للمعلم</p>
+            <h2 id="answersTitle">الإجابات</h2>
+            <div id="answersBody" class="answers-list"></div>
+        </div>
+    </div>
+
+    <script>
+        window.WORKSHEETS_PROGRESS_URL = "{% url 'english_foundation_progress_api' %}";
+    </script>
+    <script src="{% static 'js/worksheets.js' %}" defer></script>
+</body>
+</html>

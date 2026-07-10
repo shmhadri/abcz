@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>الجمل الشائعة | Common English Sentences</title>
+    <link rel="stylesheet" href="{% static 'css/common_sentences.css' %}">
+</head>
+<body>
+    <main class="cs-page">
+        <div class="cs-topbar">
+            <a class="cs-back-btn" href="{% url 'english_foundation' %}">← العودة للتأسيس</a>
+            <button class="cs-theme-toggle" type="button" id="csThemeToggle" aria-pressed="false">الوضع الداكن</button>
+        </div>
+
+        <header class="cs-hero">
+            <div>
+                <div class="cs-eyebrow">Common English Sentences</div>
+                <h1>الجمل الشائعة</h1>
+                <p>60 جملة مهمة للحياة اليومية والمدرسة والسفر والمحادثة مع النطق والمايك واختبارات القراءة والفهم.</p>
+                <nav class="cs-links" aria-label="English foundation links">
+                    <a href="{% url 'english_foundation' %}">كل الأقسام</a>
+                    <a href="{% url 'vocabulary_foundation' %}">المفردات</a>
+                    <a href="{% url 'grammar_foundation' %}">القواعد</a>
+                    <a href="{% url 'conversations' %}">المحادثات</a>
+                    <a href="{% url 'profile_dashboard' %}">ملف الطالب</a>
+                    <a href="{% url 'leaderboard' %}">لوحة الشرف</a>
+                </nav>
+            </div>
+            <div class="cs-hero-mark">🗣️</div>
+        </header>
+
+        <section class="cs-stats" aria-label="Common sentences progress">
+            <article class="cs-stat"><span>نقاط هذا القسم</span><strong id="csPoints">{{ points }}</strong></article>
+            <article class="cs-stat"><span>عدد التفاعلات</span><strong id="csActions">{{ actions_count }}</strong></article>
+            <article class="cs-stat"><span>الحالة</span><strong id="csStatus">{% if completed %}متقن{% else %}قيد التدريب{% endif %}</strong></article>
+            <article class="cs-stat"><span>الجمل المتقنة</span><strong id="csMastered">0 / 60</strong></article>
+            <div class="cs-progress"><div id="csProgressFill"></div></div>
+        </section>
+
+        <section class="cs-toolbar" aria-label="Sentence filters">
+            <input id="csSearch" type="search" placeholder="ابحث عن Good morning أو airport">
+            <select id="csCategory"><option value="">كل التصنيفات</option></select>
+            <select id="csLevel">
+                <option value="">كل المستويات</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Challenge">Challenge</option>
+            </select>
+            <button class="cs-btn" type="button" data-filter-category="">كل الجمل</button>
+            <button class="cs-btn" type="button" data-filter-category="School">الجمل المدرسية</button>
+            <button class="cs-btn" type="button" data-filter-category="Daily Life">الجمل اليومية</button>
+            <button class="cs-btn" type="button" data-filter-category="Polite Expressions">العبارات المهذبة</button>
+            <button class="cs-btn" type="button" data-filter-category="Questions">الأسئلة</button>
+            <button class="cs-btn" type="button" data-filter-category="Travel">السفر</button>
+            <button class="cs-btn" type="button" data-filter-category="Health">الصحة</button>
+            <button class="cs-btn" type="button" data-filter-category="Speaking Practice">تدريب التحدث</button>
+            <button class="cs-btn" type="button" data-filter-level="Challenge">التحدي</button>
+            <a class="cs-btn primary" href="{% url 'common_sentences_worksheet' %}" target="_blank">ورقة عمل الجمل الشائعة</a>
+        </section>
+
+        <section class="cs-practice" aria-label="Reading and speaking practice">
+            <button class="cs-game-btn" type="button" data-practice="trueFalse">True or False</button>
+            <button class="cs-game-btn" type="button" data-practice="choose">Choose Translation</button>
+            <button class="cs-game-btn" type="button" data-practice="blank">Fill in the Blank</button>
+            <button class="cs-game-btn" type="button" data-practice="order">Sentence Order</button>
+            <button class="cs-game-btn" type="button" data-practice="listen">Listen and Choose</button>
+            <button class="cs-game-btn" type="button" data-practice="speak">Speak Practice</button>
+            <button class="cs-game-btn" type="button" data-practice="meaning">Quick Meaning</button>
+            <button class="cs-game-btn gold" type="button" id="csReadingStart">اختبار سرعة القراءة</button>
+            <button class="cs-game-btn gold" type="button" id="csMicReadingStart">اختبار بالمايك</button>
+        </section>
+
+        <section class="cs-games" aria-label="Sentence games">
+            <button class="cs-game-btn" type="button" data-game="flashcards">Sentence Flashcards</button>
+            <button class="cs-game-btn" type="button" data-game="match">Translation Match</button>
+            <button class="cs-game-btn" type="button" data-game="builder">Sentence Builder</button>
+            <button class="cs-game-btn" type="button" data-game="listenRace">Listen Race</button>
+            <button class="cs-game-btn" type="button" data-game="tfRace">True or False Race</button>
+            <button class="cs-game-btn" type="button" data-game="speakChallenge">Speak Challenge</button>
+            <button class="cs-game-btn" type="button" data-game="review">Daily Sentence Review</button>
+            <button class="cs-game-btn primary" type="button" id="csMinuteChallenge">Minute Challenge</button>
+        </section>
+
+        <section class="cs-panel" id="csPanel" hidden></section>
+        <section class="cs-grid" id="csGrid" aria-label="Common sentence cards"></section>
+        <div class="cs-empty" id="csEmpty" hidden>لا توجد جمل مطابقة لهذا البحث.</div>
+        <div hidden>Good morning Never give up اختبار سرعة القراءة Minute Challenge Common English Sentences</div>
+
+        <button class="cs-complete" id="csCompleteSection" type="button">إتقان قسم الجمل الشائعة +50</button>
+    </main>
+
+    <div class="cs-modal" id="csModal" hidden>
+        <div class="cs-modal-panel" role="dialog" aria-modal="true" aria-labelledby="csModalTitle">
+            <button class="cs-modal-close" type="button" id="csModalClose">×</button>
+            <div id="csModalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        window.COMMON_SENTENCES_INITIAL_PROGRESS = {
+            points: Number("{{ points|default:0 }}"),
+            actions: Number("{{ actions_count|default:0 }}"),
+            completed: {% if completed %}true{% else %}false{% endif %}
+        };
+        window.COMMON_SENTENCES_PROGRESS_URL = "{% url 'english_foundation_progress_api' %}";
+    </script>
+    <script src="{% static 'js/speech_service.js' %}"></script>
+    <script src="{% static 'js/common_sentences.js' %}"></script>
+</body>
+</html>

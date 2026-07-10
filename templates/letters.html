@@ -13,6 +13,19 @@
     <link rel="stylesheet" href="{% static 'css/letters/letters.css' %}">
 </head>
 <body data-phonics-user-id="{{ phonics_user_id|default:'' }}" data-phonics-user-email="{{ phonics_user_email|default:'' }}">
+    <script>
+        window.LEVEL_ONE_PLAN = "{{ level_one_plan|default:'free'|escapejs }}";
+        window.LEVEL_ONE_ALLOWED_GAMES = ["memory", "match"];
+        window.LEVEL_ONE_DISABLED_FEATURES = {
+            wordwall: {{ level_one_disabled_features.wordwall|yesno:"true,false" }},
+            letterWorksheets: {{ level_one_disabled_features.letterWorksheets|yesno:"true,false" }},
+            worksheetBook: {{ level_one_disabled_features.worksheetBook|yesno:"true,false" }},
+            leaderboard: {{ level_one_disabled_features.leaderboard|yesno:"true,false" }},
+            smartBird: {{ level_one_disabled_features.smartBird|yesno:"true,false" }},
+            parentReport: {{ level_one_disabled_features.parentReport|yesno:"true,false" }},
+            certificate: {{ level_one_disabled_features.certificate|yesno:"true,false" }}
+        };
+    </script>
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
@@ -30,6 +43,56 @@
             </div>
 
             <div class="user-controls">
+                <nav class="learning-levels-nav" aria-label="مستويات التعلم">
+                    <a href="/" class="learning-level-link is-active" data-learning-level="1" aria-current="page">
+                        <i class="fas fa-font"></i>
+                        <span class="learning-level-text">
+                            <strong>المستوى الأول</strong>
+                            <small>الحروف الإنجليزية</small>
+                        </span>
+                    </a>
+                    <a href="{% url 'sounds' %}" class="learning-level-link" data-learning-level="2">
+                        <i class="fas fa-volume-high"></i>
+                        <span class="learning-level-text">
+                            <strong>المستوى الثاني</strong>
+                            <small>الصوتيات</small>
+                        </span>
+                    </a>
+                    <a href="{% url 'cvc_reading' %}" class="learning-level-link" data-learning-level="3">
+                        <i class="fas fa-book-reader"></i>
+                        <span class="learning-level-text">
+                            <strong>المستوى الثالث</strong>
+                            <small>قراءة CVC</small>
+                        </span>
+                    </a>
+                    <a href="{% url 'level_four' %}" class="learning-level-link" data-learning-level="4">
+                        <i class="fas fa-rocket"></i>
+                        <span class="learning-level-text">
+                            <strong>المستوى الرابع</strong>
+                            <small>التأسيس الإنجليزي</small>
+                        </span>
+                    </a>
+                </nav>
+                <a href="{% url 'curriculum' %}" class="btn btn-secondary" style="min-height: 42px; text-decoration: none;">
+                    خطة المنهج
+                </a>
+                <div class="header-auth-actions" aria-label="روابط الحساب">
+                    {% if request.user.is_authenticated %}
+                        <a href="{% url 'profile_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-user-graduate"></i> ملف المتعلم
+                        </a>
+                        <a href="{% url 'logout' %}" class="btn btn-danger">
+                            <i class="fas fa-sign-out-alt"></i> خروج
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> دخول
+                        </a>
+                        <a href="{% url 'register' %}" class="btn btn-secondary">
+                            <i class="fas fa-user-plus"></i> حساب جديد
+                        </a>
+                    {% endif %}
+                </div>
                 <!-- Theme Toggle -->
                 <button class="theme-toggle-btn" id="themeToggle" title="Toggle Theme">
                     <i class="fas fa-moon"></i>
@@ -59,46 +122,46 @@
             <div class="modal-body" style="line-height: 1.8; color: var(--text);">
                 <div style="text-align: center; margin-bottom: 20px;">
                     <div style="font-size: 3rem; margin-bottom: 10px;">🎓</div>
-                    <h3 style="color: var(--primary); margin-bottom: 5px;">مرحباً بك في رحلة التعلم الممتعة!</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem;">دليلك السريع لاستخدام منصة Phonics Game Lab</p>
+                    <h3 style="color: var(--primary); margin-bottom: 5px;">رحلة تعلم إنجليزية واضحة خطوة بخطوة</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">ابدأ من الحروف، ثم انتقل للصوتيات، قراءة CVC، وبعدها التأسيس الإنجليزي الكامل.</p>
                 </div>
                 
                 <div style="display: grid; gap: 15px;">
                     <div style="background: var(--surface-light); padding: 15px; border-radius: 12px; border-right: 4px solid var(--primary);">
                         <h4 style="margin-bottom: 5px; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
                             <span style="background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">1</span>
-                            اختر الحرف
+                            المستوى الأول: الحروف الإنجليزية
                         </h4>
-                        <p style="font-size: 0.9rem; margin: 0;">ابدأ باختيار حرف من القائمة. كل حرف هو بوابة لعالم جديد من الكلمات والأصوات.</p>
+                        <p style="font-size: 0.9rem; margin: 0;">يتدرب المتعلم على A-Z بالنطق، السحب، الكتابة، الكلمات، اختبار المعلومات، ثم شهادة إكمال الحروف.</p>
                     </div>
 
                     <div style="background: var(--surface-light); padding: 15px; border-radius: 12px; border-right: 4px solid var(--secondary);">
                         <h4 style="margin-bottom: 5px; color: var(--secondary); display: flex; align-items: center; gap: 8px;">
                             <span style="background: var(--secondary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">2</span>
-                            استمع وشاهد
+                            المستوى الثاني: الصوتيات
                         </h4>
-                        <p style="font-size: 0.9rem; margin: 0;">استمع للنطق الصحيح (بريطاني/أمريكي)، شاهد طريقة الكتابة، وتعلم كلمات جديدة مع الصور.</p>
+                        <p style="font-size: 0.9rem; margin: 0;">يتعلم المتعلم أصوات الحروف والمقاطع بطريقة منظمة مع تدريب سمعي وبصري قبل الانتقال للقراءة.</p>
                     </div>
 
                     <div style="background: var(--surface-light); padding: 15px; border-radius: 12px; border-right: 4px solid var(--success);">
                         <h4 style="margin-bottom: 5px; color: var(--success); display: flex; align-items: center; gap: 8px;">
                             <span style="background: var(--success); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">3</span>
-                            العب وتعلم
+                            المستوى الثالث: قراءة CVC
                         </h4>
-                        <p style="font-size: 0.9rem; margin: 0;">بعد تعلم الحرف، اضغط على زر <strong>"إنهاء الحرف"</strong> لفتح الألعاب الممتعة (الذاكرة، المطابقة، البحث عن الكلمات).</p>
+                        <p style="font-size: 0.9rem; margin: 0;">ينتقل المتعلم إلى قراءة كلمات قصيرة مثل cat وbed وsun بعد تثبيت الحروف والصوتيات.</p>
                     </div>
 
                     <div style="background: var(--surface-light); padding: 15px; border-radius: 12px; border-right: 4px solid var(--warning);">
                         <h4 style="margin-bottom: 5px; color: var(--warning); display: flex; align-items: center; gap: 8px;">
                             <span style="background: var(--warning); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">4</span>
-                            اجمع النقاط والشهادات
+                            المستوى الرابع: التأسيس الإنجليزي
                         </h4>
-                        <p style="font-size: 0.9rem; margin: 0;">كلما لعبت أكثر، جمعت نقاطاً أكثر! أكمل جميع الحروف لتحصل على شهادة إتمام مميزة.</p>
+                        <p style="font-size: 0.9rem; margin: 0;">قراءة، استماع، تحدث، كتابة، قصص، أوراق عمل، اختبار نهائي، وشهادة مستوى.</p>
                     </div>
                 </div>
                 
                 <div style="margin-top: 20px; text-align: center;">
-                    <p style="font-weight: bold; color: var(--primary);">هل أنت مستعد؟ لنبدأ المغامرة! 🚀</p>
+                    <p style="font-weight: bold; color: var(--primary);">اختر المستوى المناسب وابدأ التدريب اليومي بثبات.</p>
                 </div>
             </div>
         </div>
@@ -184,9 +247,12 @@
                         <button class="btn btn-secondary" id="letterInfo">
                             <span>ℹ️</span> معلومات الحرف
                         </button>
-                        <a class="btn btn-success" id="externalGamesLink" href="/letters/A/external-games/" target="_blank" rel="noopener noreferrer">
+                        <a class="btn btn-success external-games-btn" id="externalGamesLink" href="/letters/A/external-games/" target="_blank" rel="noopener noreferrer" hidden>
                             <span>&#127918;</span> &#1571;&#1604;&#1593;&#1575;&#1576; &#1573;&#1590;&#1575;&#1601;&#1610;&#1577;
                         </a>
+                        <button class="btn btn-success letter-worksheet-btn" id="letterWorksheetBtn" type="button" {% if level_one_disabled_features.letterWorksheets %}hidden{% endif %}>
+                            <span>&#128196;</span> تحميل ورقة عمل الحرف
+                        </button>
                         <button class="btn btn-secondary" id="resetLetter">
                             <span>🔄</span> إعادة المحاولة
                         </button>
@@ -209,35 +275,35 @@
                         <span>✍️</span> تدرب على كتابة الحرف
                     </h3>
                     <div class="writing-row">
-                        <div class="writing-label">الحرف الكبير (A) 5 مرات</div>
+                        <div class="writing-label">الحرف الكبير (A) 2 مرات</div>
                         <div class="writing-practice-group">
-                            <div class="writing-mode">
-                                <div class="writing-mode-label">يكتب</div>
-                                <div class="writing-boxes" id="capitalWriting">
-                                    <!-- Writing boxes will be generated here by JavaScript -->
-                                </div>
-                            </div>
                             <div class="writing-mode">
                                 <div class="writing-mode-label">يسحب</div>
                                 <div class="writing-drag-practice" id="capitalDragWriting">
                                     <!-- Drag writing boxes will be generated here by JavaScript -->
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="writing-row">
-                        <div class="writing-label">الحرف الصغير (a) 5 مرات</div>
-                        <div class="writing-practice-group">
                             <div class="writing-mode">
                                 <div class="writing-mode-label">يكتب</div>
-                                <div class="writing-boxes" id="smallWriting">
+                                <div class="writing-boxes" id="capitalWriting">
                                     <!-- Writing boxes will be generated here by JavaScript -->
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <div class="writing-row">
+                        <div class="writing-label">الحرف الصغير (a) 2 مرات</div>
+                        <div class="writing-practice-group">
                             <div class="writing-mode">
                                 <div class="writing-mode-label">يسحب</div>
                                 <div class="writing-drag-practice" id="smallDragWriting">
                                     <!-- Drag writing boxes will be generated here by JavaScript -->
+                                </div>
+                            </div>
+                            <div class="writing-mode">
+                                <div class="writing-mode-label">يكتب</div>
+                                <div class="writing-boxes" id="smallWriting">
+                                    <!-- Writing boxes will be generated here by JavaScript -->
                                 </div>
                             </div>
                         </div>
@@ -290,7 +356,7 @@
                 <div class="score-panel">
                     <div class="score-card">
                         <div class="score-label">كتابة الحرف</div>
-                        <div class="score-value" id="writingScore">0/20</div>
+                        <div class="score-value" id="writingScore">0/14</div>
                     </div>
                     <div class="score-card">
                         <div class="score-label">كتابة الكلمات</div>
@@ -302,7 +368,7 @@
                     </div>
                     <div class="score-card">
                         <div class="score-label">المجموع</div>
-                        <div class="score-value" id="totalScore">0/32</div>
+                        <div class="score-value" id="totalScore">0/26</div>
                     </div>
                 </div>
 
@@ -331,6 +397,8 @@
         </main>
     </div>
 
+    {% include "letters/_completion_modal.html" %}
+
     <!-- Free Letter Gate Modal -->
     <div class="modal" id="letterPaywallModal">
         <div class="modal-content letter-paywall-modal">
@@ -342,7 +410,7 @@
             </div>
 
             <div class="letter-paywall-copy">
-                افتح كل الحروف من A إلى Z مع التقارير والشهادة، واجعل رحلة الطفل اليومية أوضح لولي الأمر.
+                افتح كل الحروف من A إلى Z مع التقارير والشهادة، واجعل رحلة التعلم اليومية أوضح.
             </div>
 
             <div class="premium-preview-list" aria-label="مزايا فتح كل الحروف">
@@ -366,7 +434,7 @@
             <div class="modal-header">
                 <div class="modal-badge parent-report-badge">تقرير ولي الأمر</div>
                 <h2 class="modal-title">🎉 ممتاز!</h2>
-                <p class="modal-subtitle">طفلك أكمل حرف <strong id="parentReportLetter">A</strong></p>
+                <p class="modal-subtitle">الطالب أكمل حرف <strong id="parentReportLetter">A</strong></p>
             </div>
 
             <div class="parent-report-summary">
@@ -388,9 +456,17 @@
                 أحسنت يا بطل! خطوة جديدة في رحلة الإنجليزية.
             </div>
 
+            <div class="parent-report-note" id="parentReportPracticedWords">
+                الكلمات التي تدرب عليها ستظهر هنا بعد إكمال الحرف.
+            </div>
+
             <div class="parent-report-note parent-note">
                 <strong>لولي الأمر:</strong>
-                <span id="parentReportParentMessage">طفلك يتقدم بشكل جيد. التقرير الكامل يساعدك على معرفة نقاط القوة وما يحتاج إلى تدريب يومي قصير.</span>
+                <span id="parentReportParentMessage">الطالب يتقدم بشكل جيد. التقرير الكامل يساعدك على معرفة نقاط القوة وما يحتاج إلى تدريب يومي قصير.</span>
+            </div>
+
+            <div class="parent-report-note" id="parentReportNeedsPractice">
+                حالة المراجعة ستظهر هنا.
             </div>
 
             <div class="parent-report-recommendation">
@@ -399,15 +475,17 @@
             </div>
 
             <div class="premium-preview-list" aria-label="مزايا التقرير الكامل">
-                <div>✅ خطة يومية</div>
-                <div>✅ تقرير ولي الأمر</div>
-                <div>✅ شهادة QR لاحقًا</div>
-                <div>✅ ألعاب إضافية</div>
-                <div>✅ متابعة التقدم من أي جهاز</div>
+                <div>✅ تقرير هذا الحرف فقط</div>
+                <div>✅ كلمات الحرف المتدرب عليها</div>
+                <div>✅ توصية تدريب قصيرة</div>
+                <div>✅ جاهز للمشاركة مع ولي الأمر</div>
             </div>
 
             <div class="modal-actions">
-                <a class="modal-btn parent-report-upgrade" href="/pricing/">اشترك لفتح التقرير الكامل</a>
+                <button class="modal-btn parent-report-back" id="parentReportBack" type="button">رجوع</button>
+                <button class="modal-btn parent-report-whatsapp" id="parentReportWhatsapp" type="button">مشاركة واتساب</button>
+                <button class="modal-btn parent-report-download" id="parentReportDownload" type="button">تنزيل التقرير</button>
+                <button class="modal-btn parent-report-print" id="parentReportPrint" type="button">طباعة / PDF</button>
                 <button class="modal-btn next" id="continueParentReport">أكمل التدريب</button>
             </div>
         </div>
@@ -432,6 +510,10 @@
             
             <!-- Games Grid -->
             <div class="games-container-wrapper">
+                <div class="optional-games-note" id="optionalGamesNote">
+                    <strong>🎮 ألعاب إضافية للتدريب</strong>
+                    <span>الألعاب اختيارية للتدريب ولا تمنع فتح الحرف التالي.</span>
+                </div>
                 <div class="games-grid" id="gamesGrid">
 
 
@@ -440,12 +522,10 @@
                         <div class="game-name">اصطياد الحرف</div>
                     </div>
                     <div class="game-card" data-game="balloons">
-                        <div class="mandatory-badge">مطلوب</div>
                         <div class="game-icon">🎈</div>
                         <div class="game-name">لعبة البالونات</div>
                     </div>
                     <div class="game-card" data-game="memory">
-                        <div class="mandatory-badge">مطلوب</div>
                         <div class="game-icon">🧠</div>
                         <div class="game-name">لعبة الذاكرة</div>
                     </div>
@@ -458,7 +538,6 @@
                         <div class="game-name">الكتابة السريعة</div>
                     </div>
                     <div class="game-card" data-game="match">
-                        <div class="mandatory-badge">مطلوب</div>
                         <div class="game-icon">🔤</div>
                         <div class="game-name">لعبة المطابقة</div>
                     </div>
@@ -590,31 +669,66 @@
 
     <!-- Certificate Modal -->
     <div class="modal" id="certificateModal">
-        <div class="certificate-container">
+        <div class="certificate-modal-panel">
+        <div class="certificate-container certificate-content">
+            <div class="certificate-watermark" aria-hidden="true">PGL</div>
+            <div class="certificate-ribbon">Phonics Game Lab</div>
             <div class="certificate-header">
-                <div class="stars" style="font-size: 2rem; color: gold; margin-bottom: 10px;">⭐⭐⭐⭐⭐</div>
-                <h1 class="certificate-title">شهادة إنجاز / Certificate of Achievement</h1>
-                <p class="certificate-subtitle">منصة ألعاب الحروف الإنجليزية / English Phonics Games Platform</p>
+                <div class="certificate-logo" aria-label="Phonics Game Lab">PGL</div>
+                <div class="certificate-medal" aria-hidden="true">
+                    <span>A</span>
+                    <small>Z</small>
+                </div>
+                <div class="certificate-stars" aria-hidden="true">★★★★★</div>
+                <h1 class="certificate-title">شهادة إنجاز</h1>
+                <p class="certificate-subtitle">Certificate of Achievement</p>
             </div>
             <div class="certificate-body">
-                <p>هذه الشهادة تمنح إلى / This certificate is presented to:</p>
+                <p class="certificate-presented">تمنح هذه الشهادة بفخر إلى</p>
                 <h2 class="certificate-student-name" id="certificateName">الطالب المتميز</h2>
                 <p class="certificate-message">
-                    لقد أتممت بنجاح تعلم جميع الحروف الإنجليزية من A إلى Z<br>
-                    You have successfully completed learning all English letters from A to Z<br>
-                    <br>
-                    إجمالي النجوم المحصل عليها: <span id="certificate-stars" style="color: gold; font-weight: bold;">0</span> ⭐<br>
-                    عدد الحروف المكتملة: <span id="certificate-letters-count" style="color: green; font-weight: bold;">26</span> حرف<br>
-                    <br>
-                    "أنت نجم ساطع في سماء العلم! استمر في التألق والنجاح."<br>
-                    "You are a shining star! Keep up the great work."
+                    لإتمامه بنجاح رحلة تعلّم جميع الحروف الإنجليزية من A إلى Z،
+                    مع التدريب على القراءة، الكتابة، النطق، والكلمات الأساسية.
                 </p>
-                <p class="certificate-date">تم منح هذه الشهادة في: <span id="certificate-date">2024</span></p>
+
+                <div class="certificate-achievement-grid" aria-label="ملخص الإنجاز">
+                    <div>
+                        <span>الحروف المكتملة</span>
+                        <strong><span id="certificate-letters-count">26</span> / 26</strong>
+                    </div>
+                    <div>
+                        <span>النجوم المكتسبة</span>
+                        <strong><span id="certificate-stars">0</span></strong>
+                    </div>
+                    <div>
+                        <span>المستوى</span>
+                        <strong>A-Z</strong>
+                    </div>
+                </div>
+
+                <p class="certificate-quote">
+                    "أنت نجم ساطع في رحلة التعلم. استمر في التألق والنجاح."
+                </p>
+                <p class="certificate-date">تاريخ المنح: <span id="certificate-date">2024</span></p>
+                <p class="certificate-id">رقم الشهادة: <span id="certificate-id">PGL-LETTERS</span></p>
+                <div class="certificate-signatures">
+                    <div>
+                        <span></span>
+                        <strong>اعتماد المنصة</strong>
+                    </div>
+                    <div>
+                        <span></span>
+                        <strong>ولي الأمر / المعلم</strong>
+                    </div>
+                </div>
             </div>
             <div class="certificate-stamp">
+                <span>★</span>
+                <strong>PGL</strong>
                 مكتمل<br>Completed
             </div>
-            <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        </div>
+            <div class="certificate-actions no-print">
                 <button class="btn btn-primary" id="printCertificate">
                     <span>🖨️</span> تحميل PDF / Download
                 </button>
@@ -693,6 +807,7 @@
 
     <script src="/static/js/letters/letter_data.js"></script>
     <script src="/static/js/letters/progress.js"></script>
+    <script src="/static/js/letters/letter_completion.js"></script>
     <script src="/static/js/letters/drag_word_game.js"></script>
     <script src="/static/js/letters/certificate.js"></script>
     <script src="/static/js/letters/assistant.js"></script>
@@ -709,6 +824,9 @@
         const IS_AUTHENTICATED = {{ is_authenticated|yesno:"true,false" }};
         const IS_PREMIUM_USER = {{ is_premium_user|yesno:"true,false" }};
         const IS_VIP_USER = {{ is_vip_user|yesno:"true,false" }};
+        const LEVEL_ONE_PLAN = window.LEVEL_ONE_PLAN || (IS_PREMIUM_USER ? "basic" : "free");
+        const LEVEL_ONE_ALLOWED_GAMES = window.LEVEL_ONE_ALLOWED_GAMES || ["memory", "match"];
+        const LEVEL_ONE_DISABLED_FEATURES = window.LEVEL_ONE_DISABLED_FEATURES || {};
         const SERVER_STUDENT_PROFILE = {{ student_profile_json|default:"{}"|safe }};
         const BIRD_LOTTIE_FILES = {{ bird_lottie_files_json|default:"{}"|safe }};
         window.PHONICS_USER_ID = "{{ phonics_user_id|default:''|escapejs }}";
@@ -995,16 +1113,25 @@
             const q6Options = [targetTrans, ...wrongTrans].sort(() => 0.5 - Math.random());
             const q6CorrectIndex = q6Options.indexOf(targetTrans);
 
+            const soundDistractorLetters = LETTERS
+                .filter(otherLetter => otherLetter !== letter)
+                .sort(() => 0.5 - Math.random())
+                .slice(0, 3);
+            const soundOptionsRaw = [
+                { text: `/${getLetterSound(letter)}/ كما في ${correctWord}`, correct: true },
+                ...soundDistractorLetters.map(otherLetter => {
+                    const otherWord = String(LETTER_DATA[otherLetter]?.words?.[0]?.word || otherLetter.toLowerCase()).toLowerCase();
+                    return { text: `/${getLetterSound(otherLetter)}/ كما في ${otherWord}`, correct: false };
+                })
+            ].sort(() => 0.5 - Math.random());
+            const soundOptions = soundOptionsRaw.map(item => item.text);
+            const soundCorrectIndex = soundOptionsRaw.findIndex(item => item.correct);
+
             return [
                 {
                     question: `ما هو الصوت الأساسي للحرف ${letter}؟`,
-                    options: [
-                        `/${getLetterSound(letter)}/ كما في ${correctWord}`,
-                        "/ɑ:/ كما في arm",
-                        "/eɪ/ كما في ace",
-                        "/ɪ/ كما في ink"
-                    ],
-                    correct: 0
+                    options: soundOptions,
+                    correct: soundCorrectIndex
                 },
                 {
                     question: `أي من هذه الكلمات تبدأ بالحرف ${letter}؟`,
@@ -1036,7 +1163,11 @@
                     options: q6Options,
                     correct: q6CorrectIndex
                 }
-            ];
+            ].map((question, index) => ({
+                ...question,
+                letter,
+                id: `${letter}-knowledge-${index + 1}`
+            }));
         }
 
         // التطبيق الرئيسي المحسن
@@ -1050,15 +1181,18 @@
                 this.activeAnimations = new Set();
                 
                 this.REQUIRED_SCORE = 13;
+                this.HANDWRITING_COUNT = 2;
+                this.DRAG_WRITING_COUNT = 5;
+                this.MAX_WRITING_SCORE = (this.HANDWRITING_COUNT * 2) + (this.DRAG_WRITING_COUNT * 2);
                 this.PROGRESS_KEY_PREFIX = 'phonicsProgress';
                 this.ANONYMOUS_ID_KEY = 'phonicsAnonymousId';
                 this.userIdentifier = this.resolveCurrentUserIdentifier();
                 this.progressStorageKey = this.getProgressKey();
                 this.progress = this.loadProgressState();
 
-                // Required games for progression (updated)
-                this.requiredGames = ['match', 'balloons', 'memory'];
-                this.mandatoryGames = this.requiredGames;
+                // Games are optional practice rewards after the core lesson is complete.
+                this.requiredGames = [];
+                this.mandatoryGames = [];
 
                 this.syncProgressDerivedState();
 
@@ -1134,6 +1268,10 @@
             
             init() {
                 this.cacheDOM();
+                this.applyLevelOnePlanRules();
+                if (this.initLetterCompletionScreen) {
+                    this.initLetterCompletionScreen();
+                }
                 this.bindEvents();
                 this.renderLettersNav();
                 this.loadLetter(this.currentLetterIndex);
@@ -1178,6 +1316,30 @@
                 if (this.handleResize) this.handleResize();
             }
 
+            applyLevelOnePlanRules() {
+                document.body.dataset.levelOnePlan = LEVEL_ONE_PLAN;
+                if (this.externalGamesLink) this.externalGamesLink.hidden = true;
+                if (this.viewCertificateBtn && LEVEL_ONE_PLAN !== "basic") {
+                    this.viewCertificateBtn.hidden = true;
+                    this.viewCertificateBtn.setAttribute('aria-hidden', 'true');
+                    this.viewCertificateBtn.tabIndex = -1;
+                }
+
+                document.querySelectorAll('a[href*="external-games"], a[href*="worksheet"], a[href*="worksheets-book"], a[href*="leaderboard"]').forEach(link => {
+                    link.hidden = true;
+                    link.setAttribute('aria-hidden', 'true');
+                    link.tabIndex = -1;
+                });
+
+                document.querySelectorAll('[data-game]').forEach(card => {
+                    const game = String(card.dataset.game || '').toLowerCase();
+                    if (!LEVEL_ONE_ALLOWED_GAMES.includes(game)) {
+                        card.hidden = true;
+                        card.setAttribute('aria-hidden', 'true');
+                    }
+                });
+            }
+
             cacheDOM() {
                 this.lettersNav = document.getElementById('lettersNav');
                 this.currentLetterEl = document.getElementById('currentLetter');
@@ -1185,6 +1347,7 @@
                 this.letterLowerEl = document.getElementById('letterLower');
                 this.letterForWordsEl = document.getElementById('letterForWords');
                 this.externalGamesLink = document.getElementById('externalGamesLink');
+                this.letterWorksheetBtn = document.getElementById('letterWorksheetBtn');
                 this.wordsGrid = document.getElementById('wordsGrid');
                 this.capitalWriting = document.getElementById('capitalWriting');
                 this.smallWriting = document.getElementById('smallWriting');
@@ -1238,7 +1401,13 @@
                 this.parentReportScore = document.getElementById('parentReportScore');
                 this.parentReportChildMessage = document.getElementById('parentReportChildMessage');
                 this.parentReportParentMessage = document.getElementById('parentReportParentMessage');
+                this.parentReportPracticedWords = document.getElementById('parentReportPracticedWords');
+                this.parentReportNeedsPractice = document.getElementById('parentReportNeedsPractice');
                 this.parentReportRecommendation = document.getElementById('parentReportRecommendation');
+                this.parentReportBackBtn = document.getElementById('parentReportBack');
+                this.parentReportWhatsappBtn = document.getElementById('parentReportWhatsapp');
+                this.parentReportDownloadBtn = document.getElementById('parentReportDownload');
+                this.parentReportPrintBtn = document.getElementById('parentReportPrint');
                 this.letterPaywallModal = document.getElementById('letterPaywallModal');
                 this.closeLetterPaywallBtn = document.getElementById('closeLetterPaywall');
                 this.tryFreeLettersBtn = document.getElementById('tryFreeLetters');
@@ -1351,6 +1520,18 @@
 
                 if (this.continueParentReportBtn) {
                     this.continueParentReportBtn.addEventListener('click', () => this.hideParentReport());
+                }
+                if (this.parentReportBackBtn) {
+                    this.parentReportBackBtn.addEventListener('click', () => this.backFromParentReport());
+                }
+                if (this.parentReportWhatsappBtn) {
+                    this.parentReportWhatsappBtn.addEventListener('click', () => this.shareCurrentLetterReportWhatsapp());
+                }
+                if (this.parentReportDownloadBtn) {
+                    this.parentReportDownloadBtn.addEventListener('click', () => this.downloadCurrentLetterReport());
+                }
+                if (this.parentReportPrintBtn) {
+                    this.parentReportPrintBtn.addEventListener('click', () => this.printCurrentLetterReport());
                 }
 
                 if (this.closeLetterPaywallBtn) {
@@ -2011,6 +2192,21 @@
                     this.lockedLetterName.textContent = letter;
                 }
 
+                const title = this.letterPaywallModal?.querySelector('.modal-title');
+                const subtitle = this.letterPaywallModal?.querySelector('.modal-subtitle');
+                const copy = this.letterPaywallModal?.querySelector('.letter-paywall-copy');
+                const list = this.letterPaywallModal?.querySelector('.premium-preview-list');
+                if (title) title.textContent = 'افتح الحروف من A إلى Z';
+                if (subtitle) subtitle.innerHTML = `حرف <strong>${letter}</strong> متاح في الباقة الأساسية. التجربة المجانية تشمل A و B فقط.`;
+                if (copy) copy.textContent = 'الباقة الأساسية تفتح مسار الحروف فقط بدون Wordwall أو أوراق عمل أو لوحة صدارة أو عصفور ذكي أو تقرير إنجاز متقدم.';
+                if (list) {
+                    list.innerHTML = `
+                        <div>✓ كل الحروف A-Z</div>
+                        <div>✓ شهادة عند إنهاء الحروف</div>
+                        <div>✓ لعبتان فقط بعد الإنهاء: الذاكرة وتوصيل الكلمات</div>
+                    `;
+                }
+
                 if (this.letterPaywallModal) {
                     this.letterPaywallModal.style.display = 'flex';
                 }
@@ -2228,11 +2424,24 @@
                         return;
                     }
 
+                    if (this.quizTimeout) {
+                        clearTimeout(this.quizTimeout);
+                        this.quizTimeout = null;
+                    }
+                    this.isAnswerSelected = false;
+
+                    const quizContainer = this.quizOptions?.closest('.quiz-container');
+                    if (quizContainer) {
+                        quizContainer.classList.remove('quiz-completed');
+                    }
+
+                    const quizState = this.ensureCurrentLetterQuizState(letter, letterProgress);
+
                     // Safe usage of properties with fallbacks
-                    this.quizScore = (letterProgress.exercises && letterProgress.exercises.quiz && letterProgress.exercises.quiz.score) || 0;
-                    this.quizCompletedFlag = (letterProgress.exercises && letterProgress.exercises.quiz && letterProgress.exercises.quiz.completed) || false;
-                    
-                    const answers = (letterProgress.exercises && letterProgress.exercises.quiz && letterProgress.exercises.quiz.answers) || {};
+                    this.quizScore = Number(quizState.score) || 0;
+                    this.quizCompletedFlag = quizState.completed === true;
+
+                    const answers = quizState.answers || {};
                     const answeredCount = Object.keys(answers).length;
                     
                     // Safe quiz length check
@@ -2263,6 +2472,39 @@
                 }
             }
 
+            ensureCurrentLetterQuizState(letter, letterProgress = null) {
+                const entry = letterProgress || this.ensureLetterRecord(letter);
+                if (!entry.exercises) entry.exercises = {};
+
+                const existingQuiz = entry.exercises.quiz || {};
+                const quizIsLegacy = !existingQuiz.letter;
+                const quizIsCorrupt = existingQuiz.letter && existingQuiz.letter !== letter;
+
+                if (quizIsLegacy || quizIsCorrupt) {
+                    entry.exercises.quiz = {
+                        letter,
+                        quizId: `letter_knowledge_quiz_${letter}`,
+                        answers: {},
+                        score: 0,
+                        completed: false
+                    };
+                    entry.exercisesCompleted = false;
+                    entry.completed = false;
+                    this.quizScore = 0;
+                    this.quizCompletedFlag = false;
+                    this.currentQuizIndex = 0;
+                    this.commitProgressUpdate();
+                } else {
+                    entry.exercises.quiz.letter = letter;
+                    entry.exercises.quiz.quizId = entry.exercises.quiz.quizId || `letter_knowledge_quiz_${letter}`;
+                    entry.exercises.quiz.answers = entry.exercises.quiz.answers || {};
+                    entry.exercises.quiz.score = Number(entry.exercises.quiz.score) || 0;
+                    entry.exercises.quiz.completed = entry.exercises.quiz.completed === true;
+                }
+
+                return entry.exercises.quiz;
+            }
+
             updateUIForLetter(letter, words) {
                 if (this.currentLetterEl) this.currentLetterEl.textContent = letter;
                 if (this.letterUpperEl) this.letterUpperEl.textContent = letter.toUpperCase();
@@ -2270,14 +2512,36 @@
                 if (this.letterForWordsEl) this.letterForWordsEl.textContent = letter;
                 if (this.externalGamesLink) {
                     this.externalGamesLink.href = `/letters/${letter}/external-games/`;
+                    this.externalGamesLink.hidden = true;
+                }
+                if (this.letterWorksheetBtn) {
+                    this.letterWorksheetBtn.hidden = LEVEL_ONE_DISABLED_FEATURES.letterWorksheets;
+                    this.letterWorksheetBtn.onclick = () => this.generateWorksheet(letter);
                 }
                 
                 // إضافة زر تحميل ورقة العمل
                 if (this.currentLetterEl && this.currentLetterEl.parentElement) {
                     const headerContainer = this.currentLetterEl.parentElement;
-                    let downloadBtn = headerContainer.querySelector('.download-worksheet-btn');
+                    let actionsGroup = headerContainer.querySelector('.letter-title-actions');
+                    if (LEVEL_ONE_DISABLED_FEATURES.letterWorksheets && LEVEL_ONE_DISABLED_FEATURES.worksheetBook) {
+                        actionsGroup?.querySelector('.download-worksheet-btn')?.remove();
+                        actionsGroup?.querySelector('.letters-worksheet-book-btn')?.remove();
+                        this.renderWordsGrid(words);
+                        return;
+                    }
+                    if (!actionsGroup) {
+                        actionsGroup = document.createElement('span');
+                        actionsGroup.className = 'letter-title-actions';
+                        headerContainer.appendChild(actionsGroup);
+                    }
+
+                    let downloadBtn = actionsGroup.querySelector('.download-worksheet-btn');
+                    let bookBtn = actionsGroup.querySelector('.letters-worksheet-book-btn');
                     
-                    if (!downloadBtn) {
+                    if (LEVEL_ONE_DISABLED_FEATURES.letterWorksheets) {
+                        downloadBtn?.remove();
+                        downloadBtn = null;
+                    } else if (!downloadBtn) {
                         downloadBtn = document.createElement('button');
                         downloadBtn.className = 'download-worksheet-btn';
                         downloadBtn.innerHTML = '<i class="fas fa-file-pdf"></i> ورقة عمل';
@@ -2300,11 +2564,25 @@
                         downloadBtn.onmouseout = () => downloadBtn.style.transform = 'scale(1)';
                         
                         // إدراج الزر بجانب العنوان
-                        this.currentLetterEl.parentElement.appendChild(downloadBtn);
+                        actionsGroup.appendChild(downloadBtn);
+                    }
+
+                    if (LEVEL_ONE_DISABLED_FEATURES.worksheetBook) {
+                        bookBtn?.remove();
+                        bookBtn = null;
+                    } else if (!bookBtn) {
+                        bookBtn = document.createElement('a');
+                        bookBtn.className = 'letters-worksheet-book-btn';
+                        bookBtn.href = '/letters/worksheets-book/';
+                        bookBtn.innerHTML = '<i class="fas fa-file-arrow-down"></i><span>تحميل كتاب الحروف</span><small>PDF / Word</small>';
+                        bookBtn.setAttribute('aria-label', 'تحميل كتاب أوراق عمل الحروف');
+                        actionsGroup.appendChild(bookBtn);
                     }
                     
                     // تحديث حدث النقر للزر
-                    downloadBtn.onclick = () => this.generateWorksheet(letter);
+                    if (downloadBtn) {
+                        downloadBtn.onclick = () => this.generateWorksheet(letter);
+                    }
                 }
 
                 this.renderWordsGrid(words);
@@ -2561,18 +2839,35 @@
                 });
             }
 
+            markWordCardPronunciationCorrect(micButton, expectedWord) {
+                const card = micButton?.closest('.word-card');
+                if (!card) return;
+
+                card.classList.add('pronunciation-correct');
+                let badge = card.querySelector('.word-pronunciation-badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'word-pronunciation-badge';
+                    badge.textContent = '✔';
+                    card.appendChild(badge);
+                }
+                badge.title = `نطق صحيح: ${expectedWord}`;
+            }
+
             renderWritingBoxes(letter) {
                 if (!this.capitalWriting || !this.smallWriting) return;
                 this.capitalWriting.innerHTML = '';
                 this.smallWriting.innerHTML = '';
                 if (this.capitalDragWriting) this.capitalDragWriting.innerHTML = '';
                 if (this.smallDragWriting) this.smallDragWriting.innerHTML = '';
+                this.updateWritingLabels(letter);
 
                 const letterProgress = this.ensureLetterRecord(letter);
                 const writing = this.ensureWritingPracticeState(letterProgress);
-                const practiceCount = 5;
+                const handwritingCount = this.HANDWRITING_COUNT || 2;
+                const dragPracticeCount = this.DRAG_WRITING_COUNT || 5;
                 
-                for (let i = 0; i < practiceCount; i++) {
+                for (let i = 0; i < handwritingCount; i++) {
                     const capitalBox = this.createWritingBox(i, letter.toUpperCase(), true, writing.capital[i]);
                     this.capitalWriting.appendChild(capitalBox);
                     
@@ -2581,11 +2876,21 @@
                 }
 
                 if (this.capitalDragWriting) {
-                    this.renderWritingDragPractice(this.capitalDragWriting, letter.toUpperCase(), true, writing.dragCapital, practiceCount);
+                    this.renderWritingDragPractice(this.capitalDragWriting, letter.toUpperCase(), true, writing.dragCapital, dragPracticeCount);
                 }
 
                 if (this.smallDragWriting) {
-                    this.renderWritingDragPractice(this.smallDragWriting, letter.toLowerCase(), false, writing.dragSmall, practiceCount);
+                    this.renderWritingDragPractice(this.smallDragWriting, letter.toLowerCase(), false, writing.dragSmall, dragPracticeCount);
+                }
+            }
+
+            updateWritingLabels(letter) {
+                const labels = document.querySelectorAll('.writing-section .writing-label');
+                if (labels[0]) {
+                    labels[0].textContent = `الحرف الكبير (${String(letter || '').toUpperCase()}) ${this.HANDWRITING_COUNT || 2} مرات`;
+                }
+                if (labels[1]) {
+                    labels[1].textContent = `الحرف الصغير (${String(letter || '').toLowerCase()}) ${this.HANDWRITING_COUNT || 2} مرات`;
                 }
             }
 
@@ -2633,7 +2938,6 @@
                 if (entered === expected) {
                     box.classList.add('correct');
                     box.classList.remove('incorrect');
-                    box.disabled = true;
                     writing[type][box.dataset.index] = entered;
                     
                     if (!isLoading) {
@@ -2643,7 +2947,7 @@
                         
                         // Auto-focus next input
                         const nextBox = box.nextElementSibling;
-                        if (nextBox && !nextBox.disabled) {
+                        if (nextBox) {
                             nextBox.focus();
                         }
                     }
@@ -2691,10 +2995,10 @@
                     if (savedValues[i] === expectedChar) {
                         slot.classList.add('correct');
                         slot.textContent = expectedChar;
+                        slot.dataset.sourceTileId = `${isCapital ? 'capital' : 'small'}-${i}-${expectedChar}`;
                     }
 
                     slot.addEventListener('dragover', (event) => {
-                        if (slot.classList.contains('correct')) return;
                         event.preventDefault();
                         slot.classList.add('drag-over');
                     });
@@ -2713,6 +3017,10 @@
                     });
 
                     slot.addEventListener('click', () => {
+                        if (slot.classList.contains('correct')) {
+                            this.clearWritingDragSlot(slot, isCapital);
+                            return;
+                        }
                         this.completeWritingDragSlot(slot, this.selectedWritingDragTile, expectedChar, isCapital);
                     });
 
@@ -2754,7 +3062,10 @@
             }
 
             completeWritingDragSlot(slot, tile, expectedChar, isCapital) {
-                if (!slot || !tile || slot.classList.contains('correct') || tile.classList.contains('used')) return;
+                if (!slot || !tile || tile.classList.contains('used')) return;
+                if (slot.classList.contains('correct')) {
+                    this.clearWritingDragSlot(slot, isCapital);
+                }
 
                 const droppedValue = tile.dataset.value;
                 const letter = this.progress.currentLetter;
@@ -2764,6 +3075,7 @@
 
                 if (droppedValue === expectedChar) {
                     slot.textContent = expectedChar;
+                    slot.dataset.sourceTileId = tile.dataset.dragTileId;
                     slot.classList.add('correct');
                     tile.classList.add('used');
                     tile.classList.remove('selected');
@@ -2781,15 +3093,41 @@
                 this.showToast('اسحب الحرف الصحيح إلى الخانة', 2000, 'warning');
             }
 
+            clearWritingDragSlot(slot, isCapital) {
+                if (!slot || !slot.classList.contains('correct')) return;
+
+                const tileId = slot.dataset.sourceTileId;
+                if (tileId) {
+                    const tile = document.querySelector(`[data-drag-tile-id="${tileId}"]`);
+                    if (tile) {
+                        tile.classList.remove('used');
+                        tile.draggable = true;
+                    }
+                }
+
+                const letter = this.progress.currentLetter;
+                const letterProgress = this.ensureLetterRecord(letter);
+                const writing = this.ensureWritingPracticeState(letterProgress);
+                const storeKey = isCapital ? 'dragCapital' : 'dragSmall';
+                delete writing[storeKey][slot.dataset.index];
+
+                slot.textContent = '';
+                slot.dataset.sourceTileId = '';
+                slot.classList.remove('correct', 'drag-over');
+                this.updateAndCommitScores();
+            }
+
             calculateCurrentWritingScore() {
                 const letter = this.progress.currentLetter;
                 if (!letter) return 0;
                 const letterProgress = this.ensureLetterRecord(letter);
                 const writing = this.ensureWritingPracticeState(letterProgress);
-                const capitalCorrect = this.countWritingPracticeEntries(writing.capital);
-                const smallCorrect = this.countWritingPracticeEntries(writing.small);
-                const dragCapitalCorrect = this.countWritingPracticeEntries(writing.dragCapital);
-                const dragSmallCorrect = this.countWritingPracticeEntries(writing.dragSmall);
+                const handwritingLimit = this.HANDWRITING_COUNT || 2;
+                const dragLimit = this.DRAG_WRITING_COUNT || 5;
+                const capitalCorrect = this.countWritingPracticeEntries(writing.capital, handwritingLimit);
+                const smallCorrect = this.countWritingPracticeEntries(writing.small, handwritingLimit);
+                const dragCapitalCorrect = this.countWritingPracticeEntries(writing.dragCapital, dragLimit);
+                const dragSmallCorrect = this.countWritingPracticeEntries(writing.dragSmall, dragLimit);
                 return capitalCorrect + smallCorrect + dragCapitalCorrect + dragSmallCorrect;
             }
 
@@ -2803,6 +3141,11 @@
 
             renderQuiz(quizData) {
                 if (!this.quizQuestion || !this.quizOptions) return;
+                const quizContainer = this.quizOptions.closest('.quiz-container');
+                if (quizContainer) {
+                    quizContainer.classList.remove('quiz-completed');
+                    quizContainer.dataset.quizLetter = this.progress.currentLetter || '';
+                }
                 if (!quizData || quizData.length === 0) {
                     this.quizQuestion.innerHTML = 'لا توجد أسئلة متاحة.';
                     this.quizOptions.innerHTML = '';
@@ -2819,8 +3162,18 @@
                 
                 const questionData = quizData[this.currentQuizIndex];
                 const letter = this.progress.currentLetter;
+                if (questionData.letter && questionData.letter !== letter) {
+                    console.warn('Ignored quiz question for wrong letter', questionData.letter, letter);
+                    this.currentQuizIndex = 0;
+                    this.quizScore = 0;
+                    this.quizCompletedFlag = false;
+                    this.quizQuestion.textContent = 'جاري تحديث اختبار هذا الحرف...';
+                    this.quizOptions.innerHTML = '';
+                    return;
+                }
                 const letterProgress = this.ensureLetterRecord(letter);
-                const savedAnswer = letterProgress.exercises.quiz.answers[this.currentQuizIndex];
+                const quizState = this.ensureCurrentLetterQuizState(letter, letterProgress);
+                const savedAnswer = quizState.answers[this.currentQuizIndex];
 
                 this.questionNumberEl.textContent = this.currentQuizIndex + 1;
                 this.quizQuestion.textContent = questionData.question;
@@ -2855,6 +3208,9 @@
                 this.isAnswerSelected = true;
                 const letter = this.progress.currentLetter;
                 const letterProgress = this.ensureLetterRecord(letter);
+                const quizState = this.ensureCurrentLetterQuizState(letter, letterProgress);
+                quizState.letter = letter;
+                quizState.quizId = `letter_knowledge_quiz_${letter}`;
                 letterProgress.exercises.quiz.answers[this.currentQuizIndex] = selectedIndex;
 
                 const allOptions = this.quizOptions.querySelectorAll('.quiz-option');
@@ -2902,6 +3258,8 @@
                 const letter = this.progress.currentLetter;
                 const quizData = LETTER_DATA[letter]?.quiz;
                 if (!quizData) return;
+                const letterProgress = this.ensureLetterRecord(letter);
+                const quizState = this.ensureCurrentLetterQuizState(letter, letterProgress);
 
                 this.currentQuizIndex++;
                 this.isAnswerSelected = false;
@@ -2909,8 +3267,9 @@
                 if (this.currentQuizIndex < quizData.length) {
                     this.renderQuiz(quizData);
                 } else {
-                    const letterProgress = this.ensureLetterRecord(letter);
-                    letterProgress.exercises.quiz.completed = true;
+                    quizState.letter = letter;
+                    quizState.quizId = `letter_knowledge_quiz_${letter}`;
+                    quizState.completed = true;
                     this.quizCompletedFlag = true;
                     this.commitProgressUpdate();
                     this.showQuizResults();
@@ -2919,11 +3278,20 @@
 
             showQuizResults() {
                 const letter = this.progress.currentLetter;
+                const letterProgress = this.ensureLetterRecord(letter);
+                const quizState = this.ensureCurrentLetterQuizState(letter, letterProgress);
+                if (quizState.letter !== letter || quizState.completed !== true) {
+                    this.quizScore = 0;
+                    this.quizCompletedFlag = false;
+                    this.currentQuizIndex = 0;
+                    this.renderQuiz(LETTER_DATA[letter]?.quiz || []);
+                    return;
+                }
                 const quizData = LETTER_DATA[letter]?.quiz;
                 const maxScore = quizData?.length || 6;
 
-                this.quizQuestion.textContent = `🎉 أحسنت! لقد أكملت الاختبار.`;
-                this.quizOptions.innerHTML = `<p style="text-align: center; width: 100%;">نتيجتك النهائية هي: ${this.quizScore} من ${maxScore}</p>`;
+                this.quizQuestion.textContent = `🎉 أحسنت! لقد أكملت اختبار حرف ${letter}.`;
+                this.quizOptions.innerHTML = `<p style="text-align: center; width: 100%;">نتيجة اختبار حرف ${letter}: ${this.quizScore} من ${maxScore}</p>`;
                 this.quizNavigation.style.display = 'none';
                 this.quizScoreEl.textContent = `${this.quizScore}/${maxScore}`;
                 this.quizOptions.closest('.quiz-container').classList.add('quiz-completed');
@@ -2939,7 +3307,7 @@
                 const letterProgress = this.ensureLetterRecord(letter);
                 const quizData = LETTER_DATA[letter]?.quiz;
 
-                const maxWritingScore = 20;
+                const maxWritingScore = this.MAX_WRITING_SCORE || 14;
                 const maxWordsScore = LETTER_DATA[letter]?.words.length || 6;
                 const maxTestScore = quizData?.length || 6;
 
@@ -2954,9 +3322,9 @@
                 letterProgress.score = totalScore;
                 this.commitProgressUpdate();
                 this.totalScoreEl.className = 'score-value';
-                if (totalScore >= 28) {
+                if (totalScore >= maxTotalScore - 4) {
                     this.totalScoreEl.classList.add('high');
-                } else if (totalScore >= 20) {
+                } else if (totalScore >= this.REQUIRED_SCORE) {
                     this.totalScoreEl.classList.add('medium');
                 } else {
                     this.totalScoreEl.classList.add('low');
@@ -3186,14 +3554,18 @@
                 localStorage.setItem('letterProgress', JSON.stringify(this.letterProgress));
             }
 
-            async startSpeechRecognitionForWord(expectedWord, micButton, inputField = null) {
-                // محاولة إعادة تهيئة الميكروفون إذا لم يكن موجوداً
-                if (!this.speechRecognition) {
-                    console.log("SpeechRecognition not found, attempting to setup...");
-                    this.setupSpeechRecognition();
+            async startSpeechRecognitionForWord(expectedWord, micButton, inputField = null, attempt = 0) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+                if (!window.isSecureContext && !isLocalhost) {
+                    this.showMicStatus('⚠️ المايك يحتاج HTTPS بعد النشر، أو localhost أثناء التطوير.', true);
+                    return;
                 }
-
-                if (!this.speechRecognition) {
+                if (!navigator.mediaDevices?.getUserMedia) {
+                    this.showMicStatus('⚠️ المتصفح لا يدعم فحص الميكروفون. جرّب Chrome أو Edge.', true);
+                    return;
+                }
+                if (!SpeechRecognition) {
                     this.showMicStatus('⚠️ المتصفح لا يدعم التعرف على الصوت', true);
                     return;
                 }
@@ -3217,25 +3589,54 @@
                         return;
                     }
                 }
+                await new Promise(resolve => window.setTimeout(resolve, 150));
+
+                const recognition = new SpeechRecognition();
+                this.speechRecognition = recognition;
                 
-                // إعدادات اللغة - استخدام الإنجليزية البريطانية
+                // إعدادات اللغة - نبدأ بالأمريكية ثم نحاول البريطانية إذا فشلت الخدمة.
                 try {
-                    this.speechRecognition.lang = 'en-GB';
-                    this.speechRecognition.maxAlternatives = 20;
-                    this.speechRecognition.continuous = false;
-                    this.speechRecognition.interimResults = false;
+                    recognition.lang = attempt === 0 ? 'en-US' : 'en-GB';
+                    recognition.maxAlternatives = 20;
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
                 } catch (e) {
                     console.log("Error setting speech recognition properties:", e);
                 }
 
                 micButton.classList.add('mic-active');
                 micButton.disabled = true;
+                let didStart = false;
+                let startupTimedOut = false;
+                const resetMicButton = () => {
+                    micButton.classList.remove('mic-active');
+                    micButton.disabled = false;
+                    micButton.textContent = '🎤';
+                };
+                const startupTimeout = setTimeout(() => {
+                    if (didStart) return;
+                    startupTimedOut = true;
+                    try {
+                        recognition.abort();
+                    } catch (e) {}
+                    this.isListening = false;
+                    resetMicButton();
+                    this.showMicStatus('⚠️ المايك مسموح، لكن خدمة التعرف على الصوت لم تبدأ. استخدم Chrome/Edge وتأكد من الإنترنت ثم حاول مرة ثانية.', true);
+                    setTimeout(() => this.hideMicStatus(), 5000);
+                }, 7000);
+
+                recognition.onstart = () => {
+                    didStart = true;
+                    clearTimeout(startupTimeout);
+                    this.isListening = true;
+                    this.showMicStatus(attempt === 0 ? '🎤 تحدث الآن...' : '🎤 أحاول مرة ثانية، قل الكلمة الآن...', false);
+                };
                 
                 // Timeout to stop recording after 10 seconds
                 const recordingTimeout = setTimeout(() => {
                     if (this.isListening) {
                         try {
-                            this.speechRecognition.abort();
+                            recognition.abort();
                         } catch (e) {}
                         this.isListening = false;
                         micButton.classList.remove('mic-active');
@@ -3246,16 +3647,16 @@
                 }, 10000);
 
                 // تعيين مستمع لنهاية الجلسة
-                this.speechRecognition.onend = () => {
+                recognition.onend = () => {
+                    clearTimeout(startupTimeout);
                     clearTimeout(recordingTimeout);
                     this.isListening = false;
                     if (micButton.textContent === '🎤' || micButton.classList.contains('mic-active')) {
-                        micButton.classList.remove('mic-active');
-                        micButton.disabled = false;
+                        resetMicButton();
                     }
                 };
 
-                this.speechRecognition.onresult = async (event) => {
+                recognition.onresult = async (event) => {
                     // تحسين: فحص جميع البدائل المحتملة وليس فقط النتيجة الأولى
                     const alternatives = Array.from(event.results[0]).map(res => res.transcript.trim().toLowerCase());
                     const expected = expectedWord.toLowerCase();
@@ -3271,14 +3672,29 @@
                     let maxSimilarity = 0;
                     
                     for (const transcript of alternatives) {
-                        const similarity = this.calculateSimilarity(transcript, expected);
+                        const normalizedTranscript = this.normalizeSpeechInput(transcript);
+                        const similarity = this.calculateSimilarity(normalizedTranscript, expected);
                         if (similarity > maxSimilarity) maxSimilarity = similarity;
                         
-                        // قبول النطق إذا كان مطابقاً أو مشابهاً جداً (تم تخفيف النسبة إلى 60% للأطفال)
-                        if (transcript === expected || similarity >= 0.6) {
+                        if (this.isClosePronunciationMatch(normalizedTranscript, expected, alternatives)) {
                             isMatch = true;
                             break;
                         }
+                    }
+
+                    const speechAliases = {
+                        air: ['air', 'heir', 'ear'],
+                        ant: ['ant', 'and'],
+                        axe: ['axe', 'acts', 'ax'],
+                        art: ['art', 'heart'],
+                        bat: ['bat', 'bad', 'bet'],
+                        bag: ['bag', 'back', 'bug'],
+                        bed: ['bed', 'bad', 'bet', 'bid'],
+                        bus: ['bus', 'boss', 'buzz'],
+                        box: ['box', 'bucks']
+                    };
+                    if (!isMatch && speechAliases[expected]) {
+                        isMatch = alternatives.some(transcript => speechAliases[expected].includes(this.normalizeSpeechInput(transcript)));
                     }
                     
                     if (isMatch) {
@@ -3313,8 +3729,9 @@
                             
                             this.updateAndCommitScores();
                         }
-                        
+
                         micButton.textContent = '✅';
+                        this.markWordCardPronunciationCorrect(micButton, expectedWord);
                         this.showMicStatus('🎉 نطق ممتاز!', false);
                         this.soundManager.playSound('success');
                         
@@ -3339,34 +3756,88 @@
                     }
                 };
                 
-                this.speechRecognition.onerror = (event) => {
-                    micButton.classList.remove('mic-active');
-                    micButton.disabled = false;
-                    micButton.textContent = '🎤';
+                recognition.onerror = (event) => {
+                    clearTimeout(startupTimeout);
+                    clearTimeout(recordingTimeout);
+                    if (startupTimedOut && event.error === 'aborted') return;
+                    resetMicButton();
+                    this.isListening = false;
+
+                    if (attempt < 1 && ['no-speech'].includes(event.error)) {
+                        this.showMicStatus('🎤 لم ألتقط الصوت بوضوح، أعيد المحاولة الآن...', false);
+                        window.setTimeout(() => {
+                            this.startSpeechRecognitionForWord(expectedWord, micButton, inputField, attempt + 1);
+                        }, 350);
+                        return;
+                    }
                     
                     if (event.error === 'no-speech') {
                         this.showMicStatus('⚠️ لم يتم سماع الصوت، حاول التحدث بصوت أعلى 🔊', true);
+                    } else if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+                        this.micPermissionGranted = false;
+                        this.showMicStatus('❌ المتصفح منع المايك. افتح إعدادات الموقع واسمح بالميكروفون.', true);
                     } else if (event.error === 'audio-capture') {
                         this.showMicStatus('❌ لا يوجد ميكروفون متاح', true);
+                    } else if (event.error === 'network') {
+                        this.showMicStatus('⚠️ المايك نفسه مسموح، لكن خدمة التعرف على الصوت في المتصفح لم تتصل. تأكد من الإنترنت واستخدم Chrome أو Edge ثم حاول مرة ثانية.', true);
+                    } else if (event.error === 'aborted') {
+                        this.showMicStatus('⚠️ توقف الاستماع. اضغط المايك وحاول مرة ثانية.', true);
                     } else {
-                        this.showMicStatus('❌ حدث خطأ في التعرف على الصوت', true);
+                        this.showMicStatus('⚠️ لم أتعرف على الصوت. حاول مرة ثانية بهدوء.', true);
                     }
                     
                     setTimeout(() => this.hideMicStatus(), 3000);
                 };
                 
                 try {
-                    this.isListening = true;
-                    this.speechRecognition.start();
-                } catch (error) {
                     this.isListening = false;
-                    micButton.classList.remove('mic-active');
-                    micButton.disabled = false;
-                    this.showMicStatus('❌ عذرًا، لا يمكن تشغيل الميكروفون', true);
+                    recognition.start();
+                } catch (error) {
+                    clearTimeout(startupTimeout);
+                    clearTimeout(recordingTimeout);
+                    this.isListening = false;
+                    resetMicButton();
+                    const startMessage = error?.name === 'InvalidStateError'
+                        ? '⚠️ المايك مشغول الآن. انتظر ثانية ثم حاول مرة أخرى.'
+                        : '❌ عذرًا، لا يمكن تشغيل الميكروفون';
+                    this.showMicStatus(startMessage, true);
                     setTimeout(() => this.hideMicStatus(), 3000);
                 }
             }
             
+            normalizeSpeechInput(value) {
+                return String(value || '')
+                    .toLowerCase()
+                    .replace(/[^a-z\s]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
+
+            isClosePronunciationMatch(transcript, expectedWord, alternatives = []) {
+                const expected = this.normalizeSpeechInput(expectedWord).replace(/\s+/g, '');
+                if (!expected) return false;
+
+                const candidates = [transcript, ...alternatives]
+                    .map(item => this.normalizeSpeechInput(item))
+                    .filter(Boolean);
+
+                return candidates.some(candidate => {
+                    const tokens = candidate.split(/\s+/).filter(Boolean);
+                    const compact = tokens.join('');
+                    const allParts = [compact, ...tokens].filter(Boolean);
+
+                    return allParts.some(part => {
+                        if (part === expected || part.includes(expected) || expected.includes(part)) return true;
+                        const distance = this.levenshteinDistance(part, expected);
+                        const similarity = this.calculateSimilarity(part, expected);
+                        const sameFirstSound = part.charAt(0) === expected.charAt(0);
+                        const allowedDistance = Math.max(1, Math.ceil(expected.length * 0.4));
+                        if (distance <= allowedDistance && similarity >= 0.5) return true;
+                        return expected.length <= 3 && sameFirstSound && Math.abs(part.length - expected.length) <= 1 && distance <= 2;
+                    });
+                });
+            }
+
             calculateSimilarity(str1, str2) {
                 const longer = str1.length > str2.length ? str1 : str2;
                 const shorter = str1.length > str2.length ? str2 : str1;
@@ -3446,56 +3917,61 @@
                 const latestEntry = this.ensureLetterRecord(currentLetter);
 
                 if (latestEntry.exercisesCompleted !== true) {
-                    this.showToast('أكمل جميع تمارين الحرف (الكتابة، الكلمات، الاختبار) قبل الانتقال!', 4000);
+                    this.showToast('\u0623\u0643\u0645\u0644 \u062c\u0645\u064a\u0639 \u062a\u0645\u0627\u0631\u064a\u0646 \u0627\u0644\u062d\u0631\u0641 (\u0627\u0644\u0643\u062a\u0627\u0628\u0629\u060c \u0627\u0644\u0643\u0644\u0645\u0627\u062a\u060c \u0627\u0644\u0627\u062e\u062a\u0628\u0627\u0631) \u0642\u0628\u0644 \u0627\u0644\u0627\u0646\u062a\u0642\u0627\u0644!', 4000);
                     return;
                 }
 
                 if ((latestEntry.score || 0) < this.REQUIRED_SCORE) {
-                    this.showToast(`تحتاج إلى درجة ${this.REQUIRED_SCORE} على الأقل في التمارين. درجتك الحالية: ${latestEntry.score || 0}`, 4000);
+                    this.showToast(`\u062a\u062d\u062a\u0627\u062c \u0625\u0644\u0649 \u062f\u0631\u062c\u0629 ${this.REQUIRED_SCORE} \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644 \u0641\u064a \u0627\u0644\u062a\u0645\u0627\u0631\u064a\u0646. \u062f\u0631\u062c\u062a\u0643 \u0627\u0644\u062d\u0627\u0644\u064a\u0629: ${latestEntry.score || 0}`, 4000);
                     return;
                 }
 
-                const missingGames = this.getMissingRequiredGames(currentLetter);
-                let shouldShowParentReport = false;
-                
-                // تشغيل صوت التصفيق والاحتفال دائماً عند إنهاء التمارين
-                this.soundManager.playSound('success'); 
+                this.soundManager.playSound('success');
                 this.launchBalloonsCelebration();
 
-                if (missingGames.length > 0) {
-                    // تحديث نصوص نافذة الألعاب لتكون تحفيزية
-                    this.motivationTitle.textContent = "أنت بطل حقيقي! 🦸‍♂️";
-                    this.motivationSubtitle.textContent = "أحسنت! الآن وقت المرح والألعاب! 🎮";
-                    this.motivationQuote.textContent = "أكمل الألعاب المطلوبة لتصبح محترفاً وتنتقل للحرف التالي!";
-                } else {
-                    // إذا تم إنهاء كل شيء
-                    if (!latestEntry.completed) {
-                        this.markLetterCompleted(currentLetter);
+                this.markLetterCompleted(currentLetter);
+                this.renderLettersNav();
+                this.renderAchievements();
+
+                this.motivationTitle.textContent = '\uD83C\uDFAE \u0623\u0644\u0639\u0627\u0628 \u0625\u0636\u0627\u0641\u064a\u0629 \u0644\u0644\u062a\u062f\u0631\u064a\u0628';
+                this.motivationSubtitle.textContent = '\u0627\u0644\u0623\u0644\u0639\u0627\u0628 \u0627\u062e\u062a\u064a\u0627\u0631\u064a\u0629 \u0644\u0644\u062a\u062f\u0631\u064a\u0628 \u0648\u0644\u0627 \u062a\u0645\u0646\u0639 \u0641\u062a\u062d \u0627\u0644\u062d\u0631\u0641 \u0627\u0644\u062a\u0627\u0644\u064a.';
+                this.motivationQuote.textContent = '\u064a\u0645\u0643\u0646\u0643 \u0627\u0644\u0644\u0639\u0628 \u0644\u0644\u062a\u062f\u0631\u064a\u0628 \u0648\u0627\u0644\u0645\u062a\u0639\u0629\u060c \u0623\u0648 \u0645\u062a\u0627\u0628\u0639\u0629 \u0627\u0644\u062d\u0631\u0641 \u0627\u0644\u062a\u0627\u0644\u064a \u0645\u0628\u0627\u0634\u0631\u0629.';
+                this.showToast('\u0623\u062d\u0633\u0646\u062a! \u062a\u0645 \u0641\u062a\u062d \u0627\u0644\u062d\u0631\u0641 \u0627\u0644\u062a\u0627\u0644\u064a\u060c \u0648\u0627\u0644\u0623\u0644\u0639\u0627\u0628 \u0627\u062e\u062a\u064a\u0627\u0631\u064a\u0629 \u0644\u0644\u062a\u062f\u0631\u064a\u0628.', 3000, 'success');
+
+                const nextIndex = this.currentLetterIndex + 1;
+                if (nextIndex < LETTERS.length) {
+                    const nextLetter = LETTERS[nextIndex];
+                    if (this.isLetterAvailableForPlan(nextLetter)) {
+                        const nextEntry = this.ensureLetterRecord(nextLetter);
+                        if (!nextEntry.unlocked) {
+                            nextEntry.unlocked = true;
+                            this.commitProgressUpdate();
+                        }
                         this.renderLettersNav();
-                        this.renderAchievements();
+                        this.setupLetterJumpMenu();
                     }
-                    this.unlockNextLetter(currentLetter);
-                    shouldShowParentReport = true;
-                    
-                    this.motivationTitle.textContent = "إنجاز مذهل! 🌟";
-                    this.motivationSubtitle.textContent = "لقد أتممت جميع المهام لهذا الحرف!";
-                    this.motivationQuote.textContent = "يمكنك اللعب مرة أخرى أو الانتقال للحرف التالي.";
                 }
 
-                // الانتقال فوراً لقائمة الألعاب دائماً
-                this.showGameSelection();
-                this.showToast('اختر لعبة للبدء أو انتقل للحرف التالي! 🚀', 3000, 'success');
-                if (shouldShowParentReport) {
+                if (this.showLetterCompletion) {
+                    this.showLetterCompletion(currentLetter, latestEntry);
+                } else {
                     this.showParentReport(currentLetter, latestEntry);
                 }
             }
-            
+
             showParentReport(letter, entry) {
+                if (LEVEL_ONE_DISABLED_FEATURES.parentReport) {
+                    this.showToast('تقرير ولي الأمر غير متاح في هذه الباقة.', 3000, 'info');
+                    return;
+                }
                 if (!this.parentReportModal) return;
 
                 const letterData = LETTER_DATA[letter] || { words: [] };
                 const practicedWords = Object.keys(entry?.exercises?.words || {}).length || letterData.words.length || 0;
                 const currentScore = entry?.score || this.getCurrentLetterTotalScore();
+                const practicedWordList = this.getWordsPracticedForLetter ? this.getWordsPracticedForLetter(letter, entry) : [];
+                const mistakes = this.getLetterMistakes ? this.getLetterMistakes(letter, entry) : { quiz: [], missing_words: [] };
+                const needsPractice = (mistakes.quiz?.length || 0) > 0 || (mistakes.missing_words?.length || 0) > 0;
 
                 if (this.parentReportLetter) this.parentReportLetter.textContent = letter;
                 if (this.parentReportWords) this.parentReportWords.textContent = practicedWords;
@@ -3506,12 +3982,33 @@
                 }
 
                 if (this.parentReportParentMessage) {
-                    this.parentReportParentMessage.textContent = `طفلك أنهى حرف ${letter} بنجاح. التقرير الكامل يساعدك على متابعة التقدم، معرفة المهارات التي تحتاج دعمًا، وبناء تدريب يومي قصير.`;
+                    this.parentReportParentMessage.textContent = `الطالب أنهى حرف ${letter} بنجاح. التقرير الكامل يساعدك على متابعة التقدم، معرفة المهارات التي تحتاج دعمًا، وبناء تدريب يومي قصير.`;
+                }
+
+                if (this.parentReportPracticedWords) {
+                    const wordsText = practicedWordList.length ? practicedWordList.join(' - ') : 'لا توجد كلمات محفوظة بعد.';
+                    this.parentReportPracticedWords.textContent = `الكلمات التي تدرب عليها: ${wordsText}`;
+                }
+
+                if (this.parentReportNeedsPractice) {
+                    this.parentReportNeedsPractice.textContent = needsPractice
+                        ? 'يحتاج مراجعة قصيرة لبعض الكلمات أو أسئلة الاختبار.'
+                        : 'لا يحتاج مراجعة إضافية الآن. مراجعة خفيفة تكفي للتثبيت.';
                 }
 
                 if (this.parentReportRecommendation) {
                     this.parentReportRecommendation.textContent = this.getParentReportRecommendation(entry);
                 }
+
+                this.parentReportState = {
+                    letter,
+                    entry: entry || this.ensureLetterRecord(letter),
+                    practicedWords,
+                    score: currentScore,
+                    words: practicedWordList,
+                    needsPractice,
+                    recommendation: this.parentReportRecommendation?.textContent || this.getParentReportRecommendation(entry)
+                };
 
                 this.parentReportModal.style.display = 'flex';
             }
@@ -3522,6 +4019,98 @@
                 }
             }
 
+            backFromParentReport() {
+                const state = this.parentReportState || {};
+                this.hideParentReport();
+                if (state.letter && typeof this.showLetterCompletion === 'function') {
+                    this.showLetterCompletion(state.letter, state.entry);
+                }
+            }
+
+            buildCurrentLetterReportText() {
+                const state = this.parentReportState || {};
+                const letter = state.letter || this.progress.currentLetter || LETTERS[this.currentLetterIndex] || 'A';
+                const entry = state.entry || this.ensureLetterRecord(letter);
+                const letterData = LETTER_DATA[letter] || { words: [] };
+                const words = state.words?.length
+                    ? state.words
+                    : (letterData.words || []).map(item => item.word).filter(Boolean);
+                const score = state.score ?? entry?.score ?? this.getCurrentLetterTotalScore();
+                const practicedCount = state.practicedWords ?? words.length;
+                const reviewText = state.needsPractice
+                    ? 'يحتاج مراجعة قصيرة لبعض الكلمات أو أسئلة الاختبار.'
+                    : 'لا يحتاج مراجعة إضافية الآن. مراجعة خفيفة تكفي للتثبيت.';
+                const recommendation = state.recommendation || this.getParentReportRecommendation(entry);
+                const studentName = this.studentName || 'الطالب';
+                const today = new Date().toLocaleDateString('ar-SA');
+
+                return [
+                    'تقرير إنهاء حرف',
+                    `التاريخ: ${today}`,
+                    `الطالب: ${studentName}`,
+                    `الحرف: ${letter}`,
+                    `الدرجة: ${score}`,
+                    `عدد الكلمات المتدرب عليها: ${practicedCount}`,
+                    `الكلمات: ${words.length ? words.join(' - ') : 'لا توجد كلمات محفوظة بعد'}`,
+                    `حالة المراجعة: ${reviewText}`,
+                    `توصية قصيرة: ${recommendation}`,
+                    '',
+                    'Phonics Game Lab'
+                ].join('\n');
+            }
+
+            shareCurrentLetterReportWhatsapp() {
+                const message = this.buildCurrentLetterReportText();
+                const phone = String(this.parentPhone || '').replace(/[^\d]/g, '');
+                const target = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}` : `https://wa.me/?text=${encodeURIComponent(message)}`;
+                window.open(target, '_blank', 'noopener,noreferrer');
+                this.showToast('تم فتح واتساب لمشاركة تقرير الحرف الحالي.', 2500, 'success');
+            }
+
+            downloadCurrentLetterReport() {
+                const letter = this.parentReportState?.letter || this.progress.currentLetter || 'A';
+                const blob = new Blob([this.buildCurrentLetterReportText()], { type: 'text/plain;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `letter-${letter}-parent-report.txt`;
+                document.body.appendChild(link);
+                link.click();
+                URL.revokeObjectURL(link.href);
+                link.remove();
+                this.showToast('تم تنزيل تقرير الحرف الحالي.', 2500, 'success');
+            }
+
+            printCurrentLetterReport() {
+                const reportText = this.buildCurrentLetterReportText()
+                    .split('\n')
+                    .map(line => `<p>${line.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]))}</p>`)
+                    .join('');
+                const printWindow = window.open('', '_blank', 'width=820,height=900');
+                if (!printWindow) {
+                    this.showToast('اسمح بفتح النوافذ المنبثقة لطباعة التقرير.', 3000, 'warning');
+                    return;
+                }
+                printWindow.document.write(`
+                    <!doctype html>
+                    <html lang="ar" dir="rtl">
+                    <head>
+                        <meta charset="utf-8">
+                        <title>تقرير الحرف الحالي</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 28px; color: #172033; line-height: 1.7; }
+                            .report { border: 2px solid #4361ee; border-radius: 14px; padding: 22px; }
+                            p { margin: 8px 0; font-size: 18px; font-weight: 700; }
+                            p:first-child { color: #4361ee; font-size: 28px; text-align: center; }
+                        </style>
+                    </head>
+                    <body><div class="report">${reportText}</div></body>
+                    </html>
+                `);
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+            }
+
             getParentReportRecommendation(entry) {
                 const writing = entry?.exercises?.writing || {};
                 const writingCount = ['capital', 'small', 'dragCapital', 'dragSmall'].reduce((total, key) => {
@@ -3529,7 +4118,7 @@
                 }, 0);
                 const quizScore = entry?.exercises?.quiz?.score || 0;
 
-                if (writingCount < 20) {
+                if (writingCount < (this.MAX_WRITING_SCORE || 14)) {
                     return 'ركز اليوم على كتابة الحرف الكبير والصغير 3 مرات ببطء ووضوح.';
                 }
 
@@ -3556,7 +4145,7 @@
                 ];
                 
                 const scoreQuotes = totalScore >= 30 ? [
-                    `مذهل! ${studentName} حقق ${totalScore}/32! سوبر سوبر!`,
+                    `مذهل! ${studentName} حقق ${totalScore}/${this.MAX_WRITING_SCORE + (LETTER_DATA[letter]?.words.length || 6) + (LETTER_DATA[letter]?.quiz.length || 6)}! سوبر سوبر!`,
                     `إتقان كامل! ${studentName} ممتاز! واو واو!`,
                     `أداء خارق! ${studentName} في القمة! أميزينج!`
                 ] : totalScore >= 25 ? [
@@ -3628,6 +4217,10 @@
             
             showGameSelection() {
                 this.motivationModal.style.display = 'flex';
+                const optionalNote = document.getElementById('optionalGamesNote');
+                if (optionalNote) {
+                    optionalNote.innerHTML = '<strong>ألعاب التدريب</strong><span>المتاح هنا لعبتان فقط: لعبة الذاكرة وتوصيل الكلمات.</span>';
+                }
                 
                 // Update game cards status
                 const currentLetter = LETTERS[this.currentLetterIndex];
@@ -3665,7 +4258,7 @@
 
                 // تحديث زر الحرف التالي
                 const nextLetterBtn = document.getElementById('nextLetter');
-                const allRequiredGamesDone = this.requiredGames.every(game => passedGames.includes(game));
+                const allRequiredGamesDone = true;
                 
                 if (allRequiredGamesDone) {
                     nextLetterBtn.style.opacity = '1';
@@ -3698,7 +4291,7 @@
                     const games = entry.games || {};
                     
                     // تحديد الألعاب المتبقية
-                    const missingGames = this.requiredGames.filter(game => games[game] !== true);
+                    const missingGames = [];
                     
                     if (missingGames.length > 0) {
                         // تحضير رسالة مفصلة بالألعاب الناقصة
@@ -5570,6 +6163,10 @@
             window.installLettersProgressSystem(PhonicsGameLab);
         }
 
+        if (window.installLetterCompletionScreen) {
+            window.installLetterCompletionScreen(PhonicsGameLab);
+        }
+
         if (window.installDragWordGame) {
             window.installDragWordGame(PhonicsGameLab);
         }
@@ -5733,33 +6330,59 @@ function sendAudioToServer(blob, letter){
         <button class="menu-item" id="profileBtn">
             <i class="fas fa-sign-in-alt"></i> تسجيل الدخول / الملف الشخصي
         </button>
-        <a href="{% url 'leaderboard' %}" class="menu-item" style="text-decoration:none;">
+        <a href="{% url 'leaderboard' %}" class="menu-item" style="text-decoration:none;" hidden>
             <i class="fas fa-trophy"></i> لوحة المتصدرين
         </a>
 
         <div class="menu-divider"></div>
 
-        <a href="{% url 'top_goal_unit_1' %}" class="menu-item" style="text-decoration:none; color: #7209b7; font-weight: bold;">
-            <i class="fas fa-film"></i> الصف السادس
+        <div class="menu-section-label">مستويات التعلم</div>
+        <a href="/" class="menu-item learning-menu-item is-active" data-menu-learning-level="1" aria-current="page">
+            <i class="fas fa-language"></i>
+            <span>
+                <strong>المستوى الأول</strong>
+                <small>الحروف الإنجليزية</small>
+            </span>
         </a>
-        <a href="{% url 'grade_2_unit_1' %}" class="menu-item" style="text-decoration:none; color: #ff6b6b; font-weight: bold;">
-            <i class="fas fa-paw"></i> ثاني ابتدائي - الوحدة 1
+        <a href="{% url 'sounds' %}" class="menu-item learning-menu-item" data-menu-learning-level="2">
+            <i class="fas fa-volume-high"></i>
+            <span>
+                <strong>المستوى الثاني</strong>
+                <small>الصوتيات</small>
+            </span>
         </a>
-        <a href="{% url 'grade_3_unit_1' %}" class="menu-item" style="text-decoration:none; color: #2196f3; font-weight: bold;">
-            <i class="fas fa-book-open"></i> ثالث الوحده الاولى
+        <a href="{% url 'cvc_reading' %}" class="menu-item learning-menu-item" data-menu-learning-level="3">
+            <i class="fas fa-book-reader"></i>
+            <span>
+                <strong>المستوى الثالث</strong>
+                <small>قراءة CVC</small>
+            </span>
         </a>
-        <a href="{% url 'grade_4_unit_1' %}" class="menu-item" style="text-decoration:none; color: #10b981; font-weight: bold;">
-            <i class="fas fa-tree"></i> رابع الوحده الاولى
+        <a href="{% url 'level_four' %}" class="menu-item learning-menu-item" data-menu-learning-level="4">
+            <i class="fas fa-rocket"></i>
+            <span>
+                <strong>المستوى الرابع</strong>
+                <small>التأسيس الإنجليزي</small>
+            </span>
         </a>
-        
+
         <div class="menu-divider"></div>
-        
+
         <a href="{% url 'pricing' %}" class="menu-item" style="text-decoration:none; color: #f59e0b; font-weight: bold;">
             <i class="fas fa-crown"></i> خطط الاشتراك
         </a>
-        <button class="menu-item" id="viewInstructions">
+        <a href="{% url 'curriculum' %}" class="menu-item" style="text-decoration:none;">
+            <i class="fas fa-route"></i> خطة المنهج
+        </a>
+        <a href="{% url 'guide' %}" class="menu-item" style="text-decoration:none;">
+            <i class="fas fa-circle-question"></i> دليل الاستخدام
+        </a>
+        <a href="{% url 'about' %}" class="menu-item" style="text-decoration:none;">
+            <i class="fas fa-building"></i> من نحن
+        </a>
+        <a href="{% url 'guide' %}" class="menu-item" style="text-decoration:none;">
             <i class="fas fa-info-circle"></i> تعليمات الموقع
-        </button>
+        </a>
         <button class="menu-item" id="viewAllLetters">
             <i class="fas fa-th"></i> جميع الحروف
         </button>
@@ -5769,8 +6392,8 @@ function sendAudioToServer(blob, letter){
         <button class="menu-item" id="viewCertificate">
             <i class="fas fa-certificate"></i> الشهادة
         </button>
-        <a href="{% url 'cvc_reading' %}" class="menu-item" style="text-decoration:none;">
-            <i class="fas fa-book-reader"></i> قراءة CVC
+        <a href="{% url 'phonics_foundation' %}" class="menu-item" style="display:none; text-decoration:none; color: #2357d9; font-weight: bold;">
+            <i class="fas fa-spell-check"></i> Phonics Foundation
         </a>
         
         <div class="menu-divider"></div>
@@ -5787,6 +6410,28 @@ function sendAudioToServer(blob, letter){
         <button class="menu-item" id="resetProgressBtn" style="color: var(--error);">
             <i class="fas fa-power-off"></i> إعادة ضبط التقدم
         </button>
+        <div class="menu-divider"></div>
+        <a href="{% url 'privacy' %}" class="menu-item" style="text-decoration:none;">
+            <i class="fas fa-shield-alt"></i> سياسة الخصوصية
+        </a>
+        <a href="{% url 'terms' %}" class="menu-item" style="text-decoration:none;">
+            <i class="fas fa-file-contract"></i> الشروط والأحكام
+        </a>
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'profile_dashboard' %}" class="menu-item" style="text-decoration:none;">
+                <i class="fas fa-user-graduate"></i> ملف المتعلم
+            </a>
+            <a href="{% url 'logout' %}" class="menu-item" style="text-decoration:none; color: var(--error);">
+                <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+            </a>
+        {% else %}
+            <a href="{% url 'login' %}" class="menu-item" style="text-decoration:none;">
+                <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+            </a>
+            <a href="{% url 'register' %}" class="menu-item" style="text-decoration:none;">
+                <i class="fas fa-user-plus"></i> إنشاء حساب
+            </a>
+        {% endif %}
     </div>
 </body>
 </html>

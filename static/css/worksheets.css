@@ -1,0 +1,426 @@
+:root {
+    --ink: #172033;
+    --muted: #64748b;
+    --paper: #ffffff;
+    --page: #f5f7fb;
+    --line: #dbe4ef;
+    --blue: #1d4ed8;
+    --green: #047857;
+    --gold: #b7791f;
+    --violet: #6d28d9;
+    --danger: #b91c1c;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--page);
+    color: var(--ink);
+    font-family: "Tajawal", "Cairo", Arial, sans-serif;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+.worksheets-shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 24px 16px 56px;
+}
+
+.worksheets-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 18px;
+    align-items: stretch;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 22px;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+}
+
+.eyebrow {
+    margin: 0 0 6px;
+    color: var(--blue);
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+h1,
+h2,
+h3,
+p {
+    overflow-wrap: anywhere;
+}
+
+h1 {
+    margin: 0;
+    font-size: 38px;
+    letter-spacing: 0;
+}
+
+.hero-copy {
+    margin: 10px 0 0;
+    color: var(--muted);
+    line-height: 1.9;
+    max-width: 760px;
+}
+
+.hero-panel {
+    display: grid;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+}
+
+.hero-panel > div:not(.progress-track) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.stat-label {
+    color: var(--muted);
+    font-weight: 800;
+}
+
+.hero-panel strong {
+    color: var(--ink);
+    font-size: 20px;
+}
+
+.progress-track {
+    height: 10px;
+    overflow: hidden;
+    background: #e2e8f0;
+    border-radius: 999px;
+}
+
+.progress-track span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--green);
+    transition: width 180ms ease;
+}
+
+.toolbar {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) 180px 180px;
+    gap: 12px;
+    margin: 16px 0;
+    align-items: end;
+}
+
+.toolbar label {
+    display: grid;
+    gap: 6px;
+    color: var(--muted);
+    font-weight: 800;
+}
+
+.toolbar input,
+.toolbar select {
+    min-height: 42px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 0 12px;
+}
+
+.filter-chips {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-chips button,
+.card-actions button,
+.card-actions a,
+.modal-actions button {
+    min-height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 0 12px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 900;
+}
+
+.filter-chips button.active,
+.primary-action,
+.card-actions .view-action {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+}
+
+.card-actions .print-action {
+    background: #eaf2ff;
+    border-color: #bcd2ff;
+    color: var(--blue);
+}
+
+.card-actions .practice-action {
+    background: #e9f8f0;
+    border-color: #b7ebca;
+    color: var(--green);
+}
+
+.card-actions .answers-action {
+    background: #fff7df;
+    border-color: #f2d682;
+    color: var(--gold);
+}
+
+.card-actions .pdf-action {
+    opacity: 0.62;
+    cursor: not-allowed;
+}
+
+.worksheets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 14px;
+}
+
+.worksheet-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+    min-height: 360px;
+}
+
+.card-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: #edf4ff;
+    color: var(--blue);
+    font-size: 26px;
+    font-weight: 900;
+}
+
+.worksheet-card[data-type="grammar"] .card-icon,
+.worksheet-card[data-type="cvc"] .card-icon {
+    background: #e9f8f0;
+    color: var(--green);
+}
+
+.worksheet-card[data-type="review"] .card-icon {
+    background: #f3e8ff;
+    color: var(--violet);
+}
+
+.worksheet-card h2 {
+    margin: 0;
+    font-size: 21px;
+    direction: ltr;
+    text-align: left;
+    letter-spacing: 0;
+}
+
+.arabic-title {
+    margin: 0;
+    color: var(--muted);
+    font-weight: 900;
+}
+
+.description {
+    margin: 0;
+    color: #334155;
+    line-height: 1.75;
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.meta {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.meta span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.meta strong {
+    display: block;
+    margin-top: 3px;
+    font-size: 13px;
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: auto;
+}
+
+.empty-state {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    color: var(--muted);
+    font-weight: 900;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    background: rgba(15, 23, 42, 0.55);
+    padding: 16px;
+}
+
+.modal[hidden] {
+    display: none;
+}
+
+.modal-card {
+    width: min(760px, 100%);
+    max-height: 90vh;
+    overflow: auto;
+    background: var(--paper);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    box-shadow: 0 22px 80px rgba(15, 23, 42, 0.28);
+}
+
+.modal-close {
+    position: absolute;
+    inset-inline-start: 12px;
+    top: 12px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    cursor: pointer;
+    font-size: 22px;
+}
+
+.question {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 10px 0;
+}
+
+.question p {
+    margin: 0 0 8px;
+    font-weight: 900;
+}
+
+.options {
+    display: grid;
+    gap: 8px;
+}
+
+.options label {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.result-box {
+    margin-top: 12px;
+    border-radius: 8px;
+    padding: 12px;
+    background: #ecfdf5;
+    border: 1px solid #bbf7d0;
+    color: var(--green);
+    font-weight: 900;
+}
+
+.answers-list {
+    display: grid;
+    gap: 8px;
+}
+
+.answer-row {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    background: #f8fafc;
+}
+
+@media (max-width: 780px) {
+    .worksheets-hero,
+    .toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    h1 {
+        font-size: 30px;
+    }
+}
+
+@media print {
+    body {
+        background: #fff;
+    }
+
+    .worksheets-hero,
+    .toolbar,
+    .card-actions,
+    .modal,
+    script {
+        display: none !important;
+    }
+
+    .worksheets-shell {
+        max-width: none;
+        padding: 0;
+    }
+
+    .worksheets-grid {
+        display: block;
+    }
+
+    .worksheet-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border-color: #222;
+        margin-bottom: 12px;
+    }
+}

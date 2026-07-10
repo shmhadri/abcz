@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>كتاب أوراق عمل الحروف الإنجليزية</title>
+    <link rel="stylesheet" href="{% static 'css/letters_worksheets_book.css' %}">
+</head>
+<body>
+    <header class="book-toolbar" aria-label="أدوات كتاب أوراق العمل">
+        <a class="toolbar-link" href="/">رجوع للحروف</a>
+        <button class="toolbar-button primary" type="button" id="printLettersBook">طباعة / حفظ PDF</button>
+        <button class="toolbar-button pdf" type="button" id="downloadLettersBookPdf">تحميل PDF</button>
+        <button class="toolbar-button" type="button" id="downloadLettersBookWord">تحميل Word</button>
+    </header>
+
+    <main id="lettersWorksheetsBook" class="book-shell">
+        <section class="book-page book-cover">
+            <div class="brand-mark">PGL</div>
+            <p class="brand-name">Phonics Game Lab</p>
+            <h1>English Letters Worksheets Book</h1>
+            <h2>كتاب أوراق عمل الحروف الإنجليزية</h2>
+            <p class="cover-copy">A-Z printable phonics workbook</p>
+            <div class="student-lines">
+                <div>اسم الطالب: ____________________</div>
+                <div>الصف: ____________________</div>
+                <div>التاريخ: ____________________</div>
+            </div>
+        </section>
+
+        <section class="book-page table-page">
+            <p class="section-kicker">Contents</p>
+            <h2>فهرس الحروف</h2>
+            <ol class="contents-grid">
+                {% for item in letters %}
+                    <li><a href="#letter-{{ item.letter }}">Letter {{ item.letter }}</a></li>
+                {% endfor %}
+            </ol>
+        </section>
+
+        {% for item in letters %}
+            <article class="book-page letter-worksheet-page" id="letter-{{ item.letter }}" data-book-letter="{{ item.letter }}">
+                <header class="worksheet-header">
+                    <div class="mini-brand">PGL</div>
+                    <div>
+                        <p class="section-kicker">Phonics Worksheet</p>
+                        <h2>Letter {{ item.letter }}</h2>
+                    </div>
+                    <div class="student-mini-lines">
+                        <span>Name: ____________</span>
+                        <span>Date: ____________</span>
+                    </div>
+                </header>
+
+                <section class="letter-focus">
+                    <div class="color-box">
+                        <h3>Color</h3>
+                        <div class="outline-letters">{{ item.letter }} {{ item.lower }}</div>
+                    </div>
+                    <div class="sound-box">
+                        <span>{{ item.type }}</span>
+                        <strong>{{ item.letter }} {{ item.lower }}</strong>
+                        <p>Say the sound, then trace and write.</p>
+                    </div>
+                </section>
+
+                <section class="trace-section">
+                    <h3>Trace and Write</h3>
+                    <div class="trace-line"><strong>{{ item.letter }}</strong><span>{{ item.letter }} {{ item.letter }} {{ item.letter }} {{ item.letter }} {{ item.letter }} {{ item.letter }}</span></div>
+                    <div class="trace-line"><strong>{{ item.lower }}</strong><span>{{ item.lower }} {{ item.lower }} {{ item.lower }} {{ item.lower }} {{ item.lower }} {{ item.lower }}</span></div>
+                    <div class="write-line"></div>
+                    <div class="write-line"></div>
+                </section>
+
+                <section class="word-section">
+                    <h3>Trace the Words</h3>
+                    <div class="word-grid">
+                        {% for word in item.words %}
+                            <div class="word-chip">
+                                <span class="word-emoji">{{ word.emoji }}</span>
+                                <span class="word-text">{{ word.word }}</span>
+                                <span class="word-meaning">{{ word.translation }}</span>
+                            </div>
+                        {% empty %}
+                            <div class="word-chip"><span class="word-text">{{ item.lower }}</span></div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <section class="circle-section">
+                    <h3>Find and Circle Letter {{ item.letter }}</h3>
+                    <div class="letter-cloud" aria-label="Find and circle letters">
+                        <span>{{ item.letter }}</span><span>B</span><span>{{ item.letter }}</span><span>D</span><span>{{ item.lower }}</span><span>m</span><span>{{ item.letter }}</span><span>s</span><span>{{ item.lower }}</span><span>T</span>
+                    </div>
+                </section>
+
+                <footer class="worksheet-footer">Great Job! - Phonics Game Lab</footer>
+            </article>
+        {% endfor %}
+
+        <section class="book-page certificate-page">
+            <div class="brand-mark">PGL</div>
+            <p class="section-kicker">Certificate of Completion</p>
+            <h2>شهادة إتمام أوراق عمل الحروف</h2>
+            <p>Presented to</p>
+            <div class="certificate-line"></div>
+            <p>for completing the English Letters Worksheets Book A-Z.</p>
+            <div class="certificate-meta">
+                <span>Teacher: ____________</span>
+                <span>Date: ____________</span>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+    <script src="{% static 'js/letters_worksheets_book.js' %}" defer></script>
+</body>
+</html>

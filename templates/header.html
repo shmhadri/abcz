@@ -226,115 +226,6 @@
         }
     }
 
-    /* --- Top Goal Animated Button --- */
-    .top-goal-btn {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 24px;
-        background: linear-gradient(135deg, #7209b7, #f72585, #4cc9f0);
-        background-size: 200% 200%;
-        border-radius: 25px;
-        text-decoration: none;
-        color: white;
-        font-weight: 700;
-        box-shadow: 0 4px 20px rgba(247, 37, 133, 0.4);
-        transition: all 0.4s ease;
-        animation: gradientShift 3s ease infinite, pulse 1.5s ease-in-out infinite;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .top-goal-btn::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
-        transform: rotate(45deg);
-        animation: shimmer 3s infinite;
-    }
-
-    .top-goal-btn i {
-        font-size: 1.5rem;
-        z-index: 1;
-    }
-
-    .btn-text {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        z-index: 1;
-    }
-
-    .btn-title {
-        font-size: 1rem;
-        font-weight: 800;
-        line-height: 1.2;
-    }
-
-    .btn-subtitle {
-        font-size: 0.75rem;
-        opacity: 0.95;
-        font-family: 'Tajawal', sans-serif;
-        font-weight: 600;
-    }
-
-    .top-goal-btn:hover {
-        transform: scale(1.08) translateY(-2px);
-        box-shadow: 0 8px 30px rgba(247, 37, 133, 0.6);
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            box-shadow: 0 4px 20px rgba(247, 37, 133, 0.4);
-        }
-        50% {
-            box-shadow: 0 4px 30px rgba(247, 37, 133, 0.7);
-        }
-    }
-
-    @keyframes gradientShift {
-        0% {
-            background-position: 0% 50%;
-        }
-        50% {
-            background-position: 100% 50%;
-        }
-        100% {
-            background-position: 0% 50%;
-        }
-    }
-
-    @keyframes shimmer {
-        0% {
-            transform: translateX(-100%) translateY(-100%) rotate(45deg);
-        }
-        100% {
-            transform: translateX(100%) translateY(100%) rotate(45deg);
-        }
-    }
-
-    @media (max-width: 992px) {
-        .top-goal-btn {
-            padding: 8px 14px;
-            gap: 6px;
-        }
-        
-        .top-goal-btn i {
-            font-size: 1.2rem;
-        }
-        
-        .btn-title {
-            font-size: 0.8rem;
-        }
-        
-        .btn-subtitle {
-            font-size: 0.6rem;
-        }
-    }
 </style>
 
 <header class="app-header">
@@ -364,6 +255,18 @@
         <div class="nav-item">
             <a href="#" class="nav-link" id="certificateLink">
                 <i class="fas fa-certificate"></i> الشهادة
+            </a>
+        </div>
+
+        <div class="nav-item">
+            <a href="{% url 'sounds' %}" class="nav-link">
+                <i class="fas fa-volume-high"></i> الصوتيات
+            </a>
+        </div>
+
+        <div class="nav-item">
+            <a href="/phonics-foundation/" class="nav-link" style="display: none;">
+                <i class="fas fa-spell-check"></i> Phonics Foundation
             </a>
         </div>
 
@@ -401,34 +304,6 @@
             </div>
         </div>
 
-        <!-- Top Goal Animated Button Dropdown -->
-        <div class="nav-item">
-            <a href="#" class="top-goal-btn" onclick="toggleDropdown(event)">
-                <i class="fas fa-layer-group"></i>
-                <div class="btn-text">
-                    <span class="btn-title">Top Goal</span>
-                    <span class="btn-subtitle">Select Grade</span>
-                </div>
-                <!-- Angle down icon -->
-                <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-left: 8px; opacity: 0.8;"></i>
-            </a>
-            <div class="dropdown-content" style="min-width: 220px;">
-                <a href="/top-goal-6-unit-1/" class="dropdown-item" style="padding: 12px 15px;">
-                    <i class="fas fa-star" style="color: #f72585;"></i>
-                    <div style="display:inline-flex; flex-direction:column; margin-left:8px;">
-                        <span style="font-weight:bold; color:#1e293b;">Top Goal 6</span>
-                        <span style="font-size:0.75rem; color:#64748b;">Unit 1: Back to School</span>
-                    </div>
-                </a>
-                <a href="/grade-4-unit-1/" class="dropdown-item" style="padding: 12px 15px;">
-                    <i class="fas fa-tree" style="color: #10b981;"></i>
-                    <div style="display:inline-flex; flex-direction:column; margin-left:8px;">
-                        <span style="font-weight:bold; color:#1e293b;">Grade 4 (رابعة)</span>
-                        <span style="font-size:0.75rem; color:#64748b;">Unit 1: Outdoor Fun</span>
-                    </div>
-                </a>
-            </div>
-        </div>
     </nav>
 
     <div class="student-info nav-item" style="display: flex; align-items: center; gap: 10px; position: relative;">

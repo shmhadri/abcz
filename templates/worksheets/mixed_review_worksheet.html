@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ورقة مراجعة شاملة</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #f3f6fb;
+            color: #111827;
+            font-family: "Tajawal", "Cairo", Arial, sans-serif;
+        }
+        .page {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 18px;
+        }
+        .print-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .print-bar a,
+        .print-bar button {
+            min-height: 40px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            color: #0f172a;
+            padding: 0 14px;
+            text-decoration: none;
+            font: inherit;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        .sheet {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 22px;
+        }
+        header {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            border-bottom: 2px solid #111827;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+        h1 {
+            grid-column: 1 / -1;
+            margin: 0 0 6px;
+            text-align: center;
+            font-size: 28px;
+            letter-spacing: 0;
+        }
+        .field {
+            min-height: 38px;
+            border: 1px solid #9ca3af;
+            border-radius: 6px;
+            padding: 8px;
+            font-weight: 800;
+        }
+        section {
+            break-inside: avoid;
+            margin: 18px 0;
+        }
+        h2 {
+            margin: 0 0 10px;
+            font-size: 20px;
+            color: #1d4ed8;
+        }
+        ol {
+            margin: 0;
+            padding-inline-start: 22px;
+        }
+        li {
+            margin: 8px 0;
+            line-height: 1.8;
+        }
+        .line {
+            display: inline-block;
+            min-width: 180px;
+            border-bottom: 1px solid #111827;
+        }
+        .wide-lines {
+            display: grid;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .wide-lines span {
+            border-bottom: 1px solid #111827;
+            min-height: 30px;
+        }
+        .teacher-box {
+            min-height: 90px;
+            border: 1px solid #9ca3af;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        @media print {
+            body { background: #fff; }
+            .page { max-width: none; padding: 0; }
+            .print-bar { display: none; }
+            .sheet { border: 0; border-radius: 0; padding: 0; }
+            header { margin-top: 0; }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <div class="print-bar">
+            <a href="/worksheets/">مركز أوراق العمل</a>
+            <button type="button" onclick="window.print()">طباعة</button>
+        </div>
+        <article class="sheet">
+            <header>
+                <h1>ورقة مراجعة شاملة</h1>
+                <div class="field">اسم الطالب:</div>
+                <div class="field">الصف:</div>
+                <div class="field">التاريخ:</div>
+            </header>
+
+            <section>
+                <h2>القسم الأول: Vocabulary</h2>
+                <ol>
+                    <li>صل الكلمة بالمعنى: classroom / dictionary / airport / worried / responsibility.</li>
+                    <li>صل الكلمة بالمعنى: computer / school / travel / market / restaurant.</li>
+                    <li>اختر المعنى الصحيح لكلمة dictionary: <span class="line"></span></li>
+                    <li>اختر المعنى الصحيح لكلمة airport: <span class="line"></span></li>
+                    <li>اختر المعنى الصحيح لكلمة worried: <span class="line"></span></li>
+                    <li>أكمل: I use a <span class="line"></span> to write.</li>
+                    <li>أكمل: We arrived at the <span class="line"></span>.</li>
+                    <li>أكمل: Cleaning your desk is your <span class="line"></span>.</li>
+                    <li>اكتب كلمة إنجليزية عن المدرسة: <span class="line"></span></li>
+                    <li>اكتب كلمة إنجليزية عن السفر: <span class="line"></span></li>
+                    <li>ترجم: classroom <span class="line"></span></li>
+                    <li>ترجم: computer <span class="line"></span></li>
+                    <li>ترجم: responsibility <span class="line"></span></li>
+                    <li>ضع كلمة مناسبة في جملة قصيرة: <span class="line"></span></li>
+                    <li>اختر كلمة جديدة واكتب معناها: <span class="line"></span></li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>القسم الثاني: Grammar</h2>
+                <ol>
+                    <li>She ___ happy. (am / is / are)</li>
+                    <li>They ___ students. (am / is / are)</li>
+                    <li>I ___ swim. (can / is / are)</li>
+                    <li>He ___ books. (read / reads / reading)</li>
+                    <li>Where ___ you live? (do / is / are)</li>
+                    <li>We ___ playing. (am / is / are)</li>
+                    <li>This ___ my pen. (am / is / are)</li>
+                    <li>Correct: She are happy. <span class="line"></span></li>
+                    <li>Correct: I is a student. <span class="line"></span></li>
+                    <li>Correct: They am friends. <span class="line"></span></li>
+                    <li>Correct: He read every day. <span class="line"></span></li>
+                    <li>Correct: Where is you? <span class="line"></span></li>
+                    <li>اكتب جملة بفعل can: <span class="line"></span></li>
+                    <li>اكتب سؤالا يبدأ بـ Where: <span class="line"></span></li>
+                    <li>اكتب جملة عن نفسك: <span class="line"></span></li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>القسم الثالث: Common Sentences</h2>
+                <ol>
+                    <li>Translate: Good morning. <span class="line"></span></li>
+                    <li>Translate: How are you today? <span class="line"></span></li>
+                    <li>Translate: Can you help me, please? <span class="line"></span></li>
+                    <li>Translate: Never give up. <span class="line"></span></li>
+                    <li>Translate: I want to improve my reading. <span class="line"></span></li>
+                    <li>رتب: today / are / How / you ? <span class="line"></span></li>
+                    <li>رتب: help / Can / me / you ? <span class="line"></span></li>
+                    <li>رتب: morning / Good . <span class="line"></span></li>
+                    <li>رتب: give / Never / up . <span class="line"></span></li>
+                    <li>رتب: reading / my / improve / I / want / to . <span class="line"></span></li>
+                    <li>اكتب جملة يومية قصيرة: <span class="line"></span></li>
+                    <li>اكتب سؤالا مهذبا: <span class="line"></span></li>
+                    <li>اكتب جملة تشجيعية: <span class="line"></span></li>
+                    <li>ترجم جملة من اختيارك: <span class="line"></span></li>
+                    <li>اكتب جملة للمدرسة: <span class="line"></span></li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>القسم الرابع: Conversations</h2>
+                <ol>
+                    <li>A: Nice to meet you. B: <span class="line"></span></li>
+                    <li>A: How are you? B: <span class="line"></span></li>
+                    <li>A: Thank you. B: <span class="line"></span></li>
+                    <li>A: May I have water? B: <span class="line"></span></li>
+                    <li>A: Good morning. B: <span class="line"></span></li>
+                </ol>
+                <p>اكتب حوارا قصيرا:</p>
+                <div class="wide-lines"><span></span><span></span><span></span></div>
+                <p>اكتب حوارا آخر:</p>
+                <div class="wide-lines"><span></span><span></span><span></span></div>
+            </section>
+
+            <section>
+                <h2>تقييم المعلم</h2>
+                <div class="teacher-box"></div>
+            </section>
+            <section>
+                <h2>ملاحظات ولي الأمر</h2>
+                <div class="teacher-box"></div>
+            </section>
+        </article>
+    </main>
+</body>
+</html>

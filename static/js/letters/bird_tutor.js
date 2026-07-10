@@ -19,13 +19,18 @@
         air: ["air", "heir", "ear"],
         ant: ["ant", "and"],
         axe: ["axe", "acts", "ax"],
-        art: ["art", "heart"]
+        art: ["art", "heart"],
+        bat: ["bat", "bad", "bet"],
+        bag: ["bag", "back", "bug"],
+        bed: ["bed", "bad", "bet", "bid"],
+        bus: ["bus", "boss", "buzz"],
+        box: ["box", "bucks"]
     };
     const SPEECH_ERROR_MESSAGES = {
         "not-allowed": "\u0627\u0644\u0645\u0627\u064a\u0643 \u063a\u064a\u0631 \u0645\u0633\u0645\u0648\u062d. \u0641\u0639\u0651\u0644 \u0625\u0630\u0646 \u0627\u0644\u0645\u064a\u0643\u0631\u0648\u0641\u0648\u0646 \u0645\u0646 \u0627\u0644\u0645\u062a\u0635\u0641\u062d.",
         "no-speech": "\u0644\u0645 \u0623\u0633\u0645\u0639 \u0635\u0648\u062a\u064b\u0627. \u0642\u0631\u0651\u0628 \u0627\u0644\u0645\u064a\u0643\u0631\u0648\u0641\u0648\u0646 \u0648\u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629.",
         "audio-capture": "\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0639\u062b\u0648\u0631 \u0639\u0644\u0649 \u0645\u064a\u0643\u0631\u0648\u0641\u0648\u0646.",
-        network: "\u062d\u062f\u062b\u062a \u0645\u0634\u0643\u0644\u0629 \u0641\u064a \u062e\u062f\u0645\u0629 \u0627\u0644\u062a\u0639\u0631\u0641 \u0639\u0644\u0649 \u0627\u0644\u0635\u0648\u062a.",
+        network: "\u0644\u0645 \u064a\u0635\u0644\u0646\u064a \u0627\u0644\u0635\u0648\u062a \u0628\u0648\u0636\u0648\u062d. \u0627\u0642\u062a\u0631\u0628 \u0645\u0646 \u0627\u0644\u0645\u0627\u064a\u0643 \u0648\u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629.",
         default: "\u062a\u0639\u0630\u0631 \u0627\u0644\u062a\u0639\u0631\u0641 \u0639\u0644\u0649 \u0627\u0644\u0635\u0648\u062a. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649."
     };
     const QUESTION_TYPES = window.BIRD_TUTOR_CONTENT?.questionTypes || [
@@ -110,6 +115,13 @@
         return normalizeSpeechText(value).replace(/\s+/g, "");
     }
 
+    function sanitizeSpeechText(value) {
+        return String(value || "")
+            .replace(/\/([a-z])\//gi, "$1")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+
     function isBirdSpeechDebugEnabled() {
         const host = window.location?.hostname || "";
         return Boolean(
@@ -145,31 +157,39 @@
         return matrix[first.length][second.length];
     }
 
-    function isCloseSpeechMatch(transcript, expectedWord) {
-        const heard = normalizeSpeechText(transcript);
+    function isCloseSpeechMatch(transcript, expectedWord, alternatives = []) {
         const expected = normalizeSpeechToken(expectedWord);
-        if (!heard || !expected) {
+        if (!expected) {
             return false;
         }
 
-        const heardTokens = heard.split(/\s+/).filter(Boolean);
-        const heardCompact = heardTokens.join("");
+        const candidates = [transcript, ...alternatives]
+            .map(item => normalizeSpeechText(item))
+            .filter(Boolean);
         const aliases = new Set([expected, ...(SPEECH_ALIASES[expected] || [])].map(normalizeSpeechToken));
 
-        if (
-            aliases.has(heardCompact) ||
-            heardTokens.some(token => aliases.has(normalizeSpeechToken(token))) ||
-            heard.includes(expected) ||
-            (heardCompact && expected.includes(heardCompact))
-        ) {
-            return true;
-        }
+        return candidates.some(candidate => {
+            const heardTokens = candidate.split(/\s+/).filter(Boolean);
+            const heardCompact = heardTokens.join("");
 
-        return heardTokens.some(part => (
-            part &&
-            Math.abs(part.length - expected.length) <= 1 &&
-            levenshteinDistance(part, expected) <= 1
-        ));
+            if (
+                aliases.has(heardCompact) ||
+                heardTokens.some(token => aliases.has(normalizeSpeechToken(token))) ||
+                candidate.includes(expected) ||
+                (heardCompact && expected.includes(heardCompact))
+            ) {
+                return true;
+            }
+
+            return [heardCompact, ...heardTokens].filter(Boolean).some(part => {
+                const distance = levenshteinDistance(part, expected);
+                const similarity = 1 - (distance / Math.max(part.length, expected.length, 1));
+                const sameFirstSound = part.charAt(0) === expected.charAt(0);
+                const allowedDistance = Math.max(1, Math.ceil(expected.length * 0.4));
+                if (distance <= allowedDistance && similarity >= 0.5) return true;
+                return expected.length <= 3 && sameFirstSound && Math.abs(part.length - expected.length) <= 1 && distance <= 2;
+            });
+        });
     }
 
     function collectSpeechAlternatives(event) {
@@ -255,6 +275,7 @@
             this.birdBubbleEl = document.getElementById("birdBubble");
             this.birdActionsEl = document.getElementById("birdActions");
             this.birdAskBtn = document.getElementById("birdAskBtn");
+            this.birdNextBtn = document.getElementById("birdNextBtn");
             this.birdRepeatBtn = document.getElementById("birdRepeatBtn");
             this.birdReviewBtn = document.getElementById("birdReviewBtn");
             this.birdStatsEl = document.getElementById("birdStats");
@@ -289,6 +310,14 @@
                     this.renderQuestion(question);
                 });
                 this.birdAskBtn.dataset.bound = "true";
+            }
+
+            if (this.birdNextBtn && !this.birdNextBtn.dataset.bound) {
+                this.birdNextBtn.addEventListener("click", () => {
+                    const question = this.buildQuestionForCurrentLetter();
+                    this.renderQuestion(question);
+                });
+                this.birdNextBtn.dataset.bound = "true";
             }
 
             if (this.birdRepeatBtn && !this.birdRepeatBtn.dataset.bound) {
@@ -543,7 +572,7 @@
         };
 
         AppClass.prototype.speakText = function (text) {
-            const message = String(text || "").trim();
+            const message = sanitizeSpeechText(text);
             if (!message || !("speechSynthesis" in window) || !window.SpeechSynthesisUtterance) {
                 return;
             }
@@ -913,7 +942,7 @@
                 targetMeaning: record?.translation || this.getBirdWordMeaning(word),
                 isReview,
                 reviewId,
-                correctExplanation: `ممتاز يا بطل! ${word} تبدأ بحرف ${upperLetter} وصوت /${upperLetter.toLowerCase()}/.`,
+                correctExplanation: `ممتاز يا بطل! ${word} تبدأ بحرف ${upperLetter} وصوت الحرف ${upperLetter.toLowerCase()}.`,
                 wrongHint: `استمع إلى بداية الكلمة. نحن نبحث عن كلمة تبدأ بحرف ${upperLetter}.`,
                 finalExplanation: `الإجابة الصحيحة هي ${word} لأنها تبدأ بحرف ${upperLetter}.`,
                 speakPrompt: `Listen carefully. ${word}.`
@@ -1096,6 +1125,60 @@
             statusEl.appendChild(debug);
         };
 
+        AppClass.prototype.markBirdPictureChoice = function (choice, state = "selected") {
+            if (!this.birdVisualQuestionEl) {
+                return;
+            }
+
+            this.birdVisualQuestionEl.querySelectorAll(".bird-picture-choice").forEach(item => {
+                const isCurrent = normalizeAnswer(item.dataset.choice) === normalizeAnswer(choice);
+                if (state === "selected") {
+                    item.classList.toggle("selected", isCurrent);
+                    if (isCurrent) item.classList.remove("wrong");
+                    return;
+                }
+                if (isCurrent) {
+                    item.classList.add(state);
+                    item.classList.remove("selected");
+                }
+            });
+        };
+
+        AppClass.prototype.revealBirdCorrectChoice = function (question) {
+            if (!question?.correct) {
+                return;
+            }
+            this.markBirdPictureChoice(question.correct, "correct");
+        };
+
+        AppClass.prototype.markPronunciationTargetCorrect = function () {
+            const target = this.birdVisualQuestionEl?.querySelector(".bird-pronounce-target");
+            if (!target) {
+                return;
+            }
+            target.classList.remove("pronunciation-wrong");
+            target.classList.add("pronunciation-correct");
+            if (!target.querySelector(".bird-pronounce-check")) {
+                const check = document.createElement("span");
+                check.className = "bird-pronounce-check";
+                check.textContent = "\u2714";
+                target.appendChild(check);
+            }
+        };
+
+        AppClass.prototype.markPronunciationTargetWrong = function () {
+            const target = this.birdVisualQuestionEl?.querySelector(".bird-pronounce-target");
+            if (!target) {
+                return;
+            }
+            target.classList.remove("pronunciation-correct");
+            target.classList.add("pronunciation-wrong");
+            const existingCheck = target.querySelector(".bird-pronounce-check");
+            if (existingCheck) {
+                existingCheck.remove();
+            }
+        };
+
         AppClass.prototype.renderBirdVisualQuestion = function (question) {
             if (!this.birdVisualQuestionEl) {
                 return;
@@ -1125,7 +1208,9 @@
             if (question.visualMode === "pronounce_word") {
                 const target = document.createElement("div");
                 target.className = "bird-target-picture bird-pronounce-target";
-                target.textContent = question.targetWord;
+                const word = document.createElement("span");
+                word.textContent = question.targetWord;
+                target.appendChild(word);
 
                 const micButton = document.createElement("button");
                 micButton.type = "button";
@@ -1158,8 +1243,14 @@
                 const grid = document.createElement("div");
                 grid.className = "bird-picture-grid";
                 (question.choices || []).forEach(choice => {
-                    const item = document.createElement("div");
+                    const item = document.createElement("button");
+                    item.type = "button";
                     item.className = "bird-picture-choice";
+                    item.dataset.choice = choice;
+                    item.addEventListener("click", () => {
+                        this.markBirdPictureChoice(choice);
+                        this.handleAnswer(choice);
+                    });
 
                     const image = document.createElement("span");
                     image.className = "bird-picture-emoji";
@@ -1188,10 +1279,12 @@
             const correct = normalizeAnswer(question.correct);
 
             if (selected === correct) {
+                this.markBirdPictureChoice(choice, "correct");
                 this.handleCorrectBirdAnswer(question);
                 return;
             }
 
+            this.markBirdPictureChoice(choice, "wrong");
             this.handleWrongBirdAnswer(question);
         };
 
@@ -1201,7 +1294,7 @@
             this.birdActionsEl.replaceChildren();
             this.typeMessage(`${pick(BIRD_MESSAGES.encouragement)} ${question.correctExplanation}`);
             this.setBirdHint(question.correctExplanation, "success");
-            this.speakText(question.correctExplanation);
+            this.revealBirdCorrectChoice(question);
             this.addBirdXp(xpDelta);
             this.syncBirdProgress(question, true, xpDelta).catch(() => {
                 // Local XP is already saved as fallback.
@@ -1220,7 +1313,7 @@
                 this.birdActionsEl.replaceChildren();
                 this.typeMessage(question.finalExplanation);
                 this.setBirdHint(question.finalExplanation, "review");
-                this.speakText(question.targetWord || question.correct);
+                this.revealBirdCorrectChoice(question);
                 this.addBirdReviewItem(question);
                 this.syncBirdProgress(question, false, 0).catch(() => {
                     // Local review remains available as fallback.
@@ -1237,7 +1330,7 @@
             this.speakText("Try again.");
         };
 
-        AppClass.prototype.startPronunciationPractice = function (question, micButton, options = {}) {
+        AppClass.prototype.startPronunciationPractice = async function (question, micButton, options = {}) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const statusEl = document.getElementById("birdListeningStatus");
             const testOnly = Boolean(options.testOnly);
@@ -1250,6 +1343,23 @@
                 this.setBirdHint(message, "review");
                 this.renderSpeechStatus(statusEl, message, { level: "error", expectedWord: question.targetWord, testOnly });
                 return;
+            }
+
+            if (navigator.mediaDevices?.getUserMedia) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    stream.getTracks().forEach(track => track.stop());
+                } catch (error) {
+                    const message = getSpeechErrorMessage("not-allowed");
+                    this.setBirdState("sad");
+                    this.setBirdHint(message, "hint");
+                    this.renderSpeechStatus(statusEl, message, {
+                        level: "error",
+                        expectedWord: question.targetWord,
+                        testOnly
+                    });
+                    return;
+                }
             }
 
             const recognition = new SpeechRecognition();
@@ -1275,8 +1385,10 @@
 
                 if (testOnly) {
                     const heard = transcript || SPEECH_UNCLEAR;
+                    const isCorrect = isCloseSpeechMatch(transcript, question.targetWord, alternatives);
                     this.setBirdState("thinking");
-                    this.renderSpeechStatus(statusEl, `${SPEECH_HEARD_PREFIX}${heard}`, {
+                    this.renderSpeechStatus(statusEl, `${isCorrect ? "\u2705 \u0635\u062D! " : "\u274C \u0642\u0631\u064A\u0628\u060C \u062D\u0627\u0648\u0644 \u0645\u0631\u0629 \u062B\u0627\u0646\u064A\u0629. "}${SPEECH_HEARD_PREFIX}${heard}`, {
+                        level: isCorrect ? "success" : "error",
                         heard,
                         expectedWord: question.targetWord,
                         alternatives,
@@ -1339,10 +1451,10 @@
         AppClass.prototype.handlePronunciationResult = function (question, transcript, statusEl, alternatives = []) {
             const heard = normalizeSpeechText(transcript);
             const heardLabel = heard || SPEECH_UNCLEAR;
-            const isCorrect = isCloseSpeechMatch(heard, question.targetWord);
+            const isCorrect = isCloseSpeechMatch(heard, question.targetWord, alternatives);
 
-            this.renderSpeechStatus(statusEl, `${SPEECH_HEARD_PREFIX}${heardLabel}`, {
-                level: isCorrect ? "success" : "info",
+            this.renderSpeechStatus(statusEl, `${isCorrect ? "\u2705 \u0635\u062D! " : "\u274C \u0644\u0645 \u0623\u0633\u0645\u0639\u0647\u0627 \u0628\u0634\u0643\u0644 \u0643\u0627\u0641\u064D. "}${SPEECH_HEARD_PREFIX}${heardLabel}`, {
+                level: isCorrect ? "success" : "error",
                 heard,
                 expectedWord: question.targetWord,
                 alternatives,
@@ -1355,6 +1467,7 @@
                 this.setBirdState("celebrate");
                 this.typeMessage("\u0631\u0627\u0626\u0639! \u0646\u0637\u0642\u0643 \u0645\u0645\u062a\u0627\u0632 \u2b50");
                 this.setBirdHint(`${SPEECH_HEARD_PREFIX}${heardLabel}`, "success");
+                this.markPronunciationTargetCorrect();
                 this.addBirdXp(xpDelta);
                 this.syncBirdProgress(question, true, xpDelta).catch(() => {
                     // Local XP is already saved as fallback.
@@ -1364,6 +1477,7 @@
 
             this.birdWrongAttempts += 1;
             this.setBirdState("sad");
+            this.markPronunciationTargetWrong();
             this.typeMessage("\u0642\u0631\u064a\u0628 \u062c\u062f\u064b\u0627\u060c \u0627\u0633\u0645\u0639 \u0627\u0644\u0643\u0644\u0645\u0629 \u0648\u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u062b\u0627\u0646\u064a\u0629.");
             this.setBirdHint(`${SPEECH_HEARD_PREFIX}${heardLabel}`, "hint");
             this.speakText(question.targetWord);

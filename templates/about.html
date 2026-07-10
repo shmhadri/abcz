@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>من نحن - Phonics Game Lab</title>
+    <link rel="stylesheet" href="{% static 'css/site_public.css' %}">
+</head>
+<body>
+    <main class="site-shell">
+        {% include "includes/public_nav.html" %}
+
+        <section class="hero">
+            <p class="eyebrow">من نحن</p>
+            <h1>منصة تعليمية عربية تساعد المتعلم على بناء أساس إنجليزي واضح خطوة بخطوة.</h1>
+            <p class="lead">
+                Phonics Game Lab تجمع بين الحروف، الصوتيات، القراءة المبكرة، أوراق العمل، الألعاب الداخلية، والتقارير في تجربة واحدة مناسبة للمتعلم والأسرة.
+            </p>
+            <div class="hero-actions">
+                <a class="btn primary" href="{% url 'index' %}">ابدأ التعلم</a>
+                <a class="btn" href="{% url 'curriculum' %}">استعرض المنهج</a>
+            </div>
+        </section>
+
+        <section class="grid">
+            <article class="panel">
+                <h2>رسالتنا</h2>
+                <p>تبسيط تعلم الإنجليزية للأطفال العرب من خلال مسار قصير وواضح يبدأ من الحرف وينتهي بقراءة الجمل واستخدام اللغة في مواقف يومية.</p>
+            </article>
+            <article class="panel">
+                <h2>طريقتنا</h2>
+                <p>كل مستوى مبني على مهارة محددة: مشاهدة، سماع، نطق، كتابة، تدريب، ثم مراجعة. لا نخلط المراحل حتى يعرف المتعلم والأسرة ماذا تحقق وماذا بقي.</p>
+            </article>
+            <article class="panel">
+                <h2>لمن المنصة؟</h2>
+                <p>للأطفال في مرحلة التأسيس، ولأولياء الأمور والمعلمين الذين يحتاجون متابعة تقدم واضحة وأوراق عمل قابلة للطباعة والتكرار.</p>
+            </article>
+        </section>
+
+        <section class="grid two-col" style="margin-top: 14px;">
+            <article class="panel">
+                <h2>ما الذي نقدمه؟</h2>
+                <ul class="clean-list">
+                    <li>تعلم الحروف A-Z مع النطق والكتابة والكلمات.</li>
+                    <li>قسم صوتيات منظم: حروف العلة، الأصوات الثنائية، النهايات، الثلاثية، والمعاينة المتقدمة.</li>
+                    <li>تدريبات مايك مساعدة للتكرار والنطق.</li>
+                    <li>أوراق عمل وتقارير وشهادات حسب الباقة والإنجاز.</li>
+                </ul>
+            </article>
+            <article class="panel">
+                <h2>حدود مهمة</h2>
+                <p>المنصة أداة تعليمية مساعدة وليست بديلًا كاملًا عن المعلم أو المتابعة الأسرية. نتائج المايك تعتمد على متصفح الجهاز ووضوح الصوت والبيئة المحيطة.</p>
+                <p class="legal-note">قبل الإطلاق التجاري، يفضل مراجعة النصوص القانونية مع مستشار مختص حسب بلد التشغيل.</p>
+            </article>
+        </section>
+
+        <footer class="footer">
+            <span>Phonics Game Lab</span>
+            <div class="footer-links">
+                <a href="{% url 'privacy' %}">سياسة الخصوصية</a>
+                <a href="{% url 'terms' %}">الشروط والأحكام</a>
+                <a href="{% url 'guide' %}">التعليمات</a>
+            </div>
+        </footer>
+    </main>
+</body>
+</html>

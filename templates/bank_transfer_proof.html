@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>رفع إيصال التحويل - {{ order.reference }}</title>
+    <style>
+        :root {
+            --ink: #172033;
+            --muted: #617188;
+            --line: #dbe5f2;
+            --blue: #315eea;
+            --green: #0f9f6e;
+            --red: #b42318;
+            --soft: #f6f8fc;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Tahoma, Arial, sans-serif;
+            background: var(--soft);
+            color: var(--ink);
+        }
+        .shell {
+            width: min(920px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 28px 0 46px;
+        }
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        a { color: var(--blue); font-weight: 900; text-decoration: none; }
+        .panel {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 14px 32px rgba(23, 32, 51, 0.06);
+        }
+        h1 { margin: 0 0 10px; font-size: clamp(1.8rem, 3vw, 2.6rem); letter-spacing: 0; }
+        .lead { margin: 0; color: var(--muted); font-weight: 700; line-height: 1.8; }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin: 18px 0;
+        }
+        .summary div, .bank-info div {
+            border: 1px solid #edf1f7;
+            border-radius: 8px;
+            background: #fbfcff;
+            padding: 12px;
+            font-weight: 800;
+        }
+        .summary span, .bank-info span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        .bank-info {
+            display: grid;
+            gap: 8px;
+            margin: 18px 0;
+        }
+        form {
+            display: grid;
+            gap: 14px;
+            margin-top: 18px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        label {
+            display: grid;
+            gap: 7px;
+            color: #334155;
+            font-weight: 900;
+        }
+        input, textarea {
+            width: 100%;
+            min-height: 44px;
+            border: 1px solid #cbd6e4;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font: inherit;
+            color: var(--ink);
+            background: #fff;
+        }
+        textarea { min-height: 88px; resize: vertical; }
+        .errors {
+            border: 1px solid #f2b8b5;
+            background: #fff2f1;
+            color: var(--red);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-weight: 800;
+            display: grid;
+            gap: 6px;
+        }
+        .hint {
+            border: 1px solid #c9e9dd;
+            background: #ecfdf5;
+            color: #087356;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-weight: 800;
+            line-height: 1.8;
+        }
+        .submit {
+            border: 0;
+            width: fit-content;
+            min-height: 46px;
+            border-radius: 8px;
+            padding: 0 20px;
+            background: var(--green);
+            color: #fff;
+            font: inherit;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        @media (max-width: 720px) {
+            .grid, .summary { grid-template-columns: 1fr; }
+            .top { align-items: flex-start; flex-direction: column; }
+            .submit { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <div class="top">
+            <a href="{% url 'checkout' order.plan_code %}">العودة لطريقة الدفع</a>
+            <a href="{% url 'pricing' %}">الباقات</a>
+        </div>
+
+        <section class="panel">
+            <h1>رفع إيصال التحويل البنكي</h1>
+            <p class="lead">اكتب رقم الطلب في ملاحظات التحويل إن أمكن. سيتم تفعيل الاشتراك بعد مراجعة الإيصال واعتماده.</p>
+
+            <div class="summary">
+                <div><span>رقم الطلب</span>{{ order.reference }}</div>
+                <div><span>الاشتراك</span>{{ order.plan_name }}</div>
+                <div><span>المبلغ</span>{{ order.amount_sar|floatformat:0 }} ريال</div>
+            </div>
+
+            <div class="bank-info">
+                <div><span>اسم المستفيد</span>{{ bank_transfer.account_name|default:"لم يتم ضبطه بعد" }}</div>
+                <div><span>البنك</span>{{ bank_transfer.bank_name|default:"لم يتم ضبطه بعد" }}</div>
+                <div><span>IBAN</span>{{ bank_transfer.iban|default:"لم يتم ضبطه بعد" }}</div>
+                <div><span>رقم الحساب</span>{{ bank_transfer.account_number|default:"اختياري" }}</div>
+            </div>
+
+            <div class="hint">الملفات المقبولة: JPG أو PNG أو PDF. الحد الأقصى 5MB.</div>
+
+            {% if errors %}
+                <div class="errors">
+                    {% for error in errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="grid">
+                    <label>
+                        اسم المحول
+                        <input name="sender_name" autocomplete="name" required>
+                    </label>
+                    <label>
+                        البنك المحول منه
+                        <input name="bank_name" required>
+                    </label>
+                    <label>
+                        رقم مرجع التحويل
+                        <input name="transfer_reference">
+                    </label>
+                    <label>
+                        آخر أرقام الحساب
+                        <input name="sender_account_last_digits" maxlength="8" inputmode="numeric">
+                    </label>
+                    <label>
+                        تاريخ التحويل
+                        <input name="transferred_at" type="date" required>
+                    </label>
+                    <label>
+                        مبلغ التحويل
+                        <input name="amount_sar" type="number" step="0.01" min="1" value="{{ order.amount_sar }}" required>
+                    </label>
+                </div>
+                <label>
+                    ملف الإيصال
+                    <input name="receipt_file" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" required>
+                </label>
+                <label>
+                    ملاحظات
+                    <textarea name="note"></textarea>
+                </label>
+                <button class="submit" type="submit">إرسال الإيصال للمراجعة</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

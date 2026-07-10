@@ -1,0 +1,561 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خطط الاشتراك - Phonics Game Lab</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #2b277f;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --surface: #ffffff;
+            --surface-soft: #f8fafc;
+            --text: #172033;
+            --muted: #64748b;
+            --border: #dbe3ef;
+            --shadow: 0 18px 45px rgba(15, 23, 42, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            background: #ffffff;
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        .pricing-shell {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 28px 0 52px;
+        }
+
+        .pricing-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 34px;
+        }
+
+        .pricing-links {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 900;
+            color: var(--primary-dark);
+            text-decoration: none;
+        }
+
+        .brand-mark {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            color: #ffffff;
+            background: var(--primary);
+            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.18);
+        }
+
+        .back-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 900;
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 18px;
+        }
+
+        .hero {
+            max-width: 760px;
+            margin: 0 auto 30px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            margin: 0 0 12px;
+            color: var(--primary-dark);
+            font-size: clamp(2rem, 5vw, 3.4rem);
+            line-height: 1.15;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 1.08rem;
+            font-weight: 800;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .hero-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface-soft);
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 900;
+        }
+
+        .hero-action.primary {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .level-roadmap {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin: 0 0 24px;
+        }
+
+        .level-pill {
+            min-height: 86px;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+            display: grid;
+            gap: 3px;
+        }
+
+        .level-pill strong {
+            color: #111827;
+            font-size: 0.98rem;
+        }
+
+        .level-pill span {
+            color: var(--muted);
+            font-weight: 800;
+            font-size: 0.86rem;
+        }
+
+        .plans {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 18px;
+            align-items: stretch;
+        }
+
+        .level-subscriptions {
+            margin: 0 0 26px;
+        }
+
+        .level-subscriptions h2 {
+            margin: 0 0 8px;
+            color: var(--primary-dark);
+            text-align: center;
+        }
+
+        .level-subscriptions > p {
+            max-width: 760px;
+            margin: 0 auto 16px;
+            color: var(--muted);
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .plan {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            min-height: 100%;
+        }
+
+        .plan.featured {
+            border: 2px solid var(--primary);
+        }
+
+        .plan.silver {
+            border: 2px solid #0ea5e9;
+            background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 54%);
+        }
+
+        .plan.vip {
+            border: 2px solid var(--warning);
+            background: linear-gradient(180deg, #fff7ed 0%, #ffffff 56%);
+        }
+
+        .plan.diamond {
+            border: 2px solid #172f77;
+            background: linear-gradient(180deg, #eef4ff 0%, #ffffff 56%);
+        }
+
+        .plan-badge {
+            align-self: start;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #eef4ff;
+            color: var(--primary-dark);
+            font-size: 0.78rem;
+            font-weight: 900;
+        }
+
+        .plan.silver .plan-badge {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        .plan.vip .plan-badge {
+            background: #ffedd5;
+            color: #92400e;
+        }
+
+        .plan.diamond .plan-badge {
+            background: #dbeafe;
+            color: #172f77;
+        }
+
+        .plan-label {
+            color: var(--muted);
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
+        .plan h2 {
+            margin: 0;
+            font-size: 1.55rem;
+            color: var(--text);
+        }
+
+        .description {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        .price {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            color: var(--primary-dark);
+        }
+
+        .price strong {
+            font-size: 2.2rem;
+            line-height: 1;
+        }
+
+        .features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 10px;
+            color: var(--text);
+            font-weight: 800;
+        }
+
+        .features li::before {
+            content: "✓";
+            color: var(--accent);
+            font-weight: 900;
+            margin-left: 8px;
+        }
+
+        .plan-action {
+            margin-top: auto;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 44px;
+            text-decoration: none;
+            border-radius: 8px;
+            padding: 0 18px;
+            color: #ffffff;
+            background: var(--primary);
+            font-weight: 900;
+        }
+
+        .plan-action.secondary {
+            color: var(--primary);
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+        }
+
+        .plan-action.silver-action {
+            background: #0284c7;
+        }
+
+        .plan-action.diamond-action {
+            background: linear-gradient(135deg, #172f77 0%, #2357d9 54%, #0f9f6e 100%);
+        }
+
+        .note {
+            margin: 26px auto 0;
+            text-align: center;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        @media (max-width: 980px) {
+            .plans,
+            .level-roadmap {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 620px) {
+            .pricing-nav {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .plans,
+            .level-roadmap {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="pricing-shell">
+        <nav class="pricing-nav" aria-label="التنقل">
+            <a class="brand" href="/">
+                <span class="brand-mark">A</span>
+                <span>Phonics Game Lab</span>
+            </a>
+            <div class="pricing-links">
+                <a class="back-link" href="/">التعلم</a>
+                <a class="back-link" href="{% url 'start' %}">ابدأ الآن</a>
+                <a class="back-link" href="{% url 'curriculum' %}">المنهج</a>
+                <a class="back-link" href="{% url 'guide' %}">التعليمات</a>
+                {% if request.user.is_authenticated %}
+                    <a class="back-link" href="{% url 'profile_dashboard' %}">ملف المتعلم</a>
+                    <a class="back-link" href="{% url 'logout' %}">خروج</a>
+                {% else %}
+                    <a class="back-link" href="{% url 'login' %}">تسجيل الدخول</a>
+                {% endif %}
+            </div>
+        </nav>
+
+        <section class="hero">
+            <h1>اختر المستوى المناسب</h1>
+            <p>يمكنك البدء من المستوى الذي يناسبك، أو إجراء اختبار تحديد مستوى إذا لم تكن متأكدًا.</p>
+            <div class="hero-actions">
+                <a class="hero-action primary" href="{% url 'placement_test' %}">لا أعرف مستواي - ابدأ اختبار تحديد المستوى</a>
+                <a class="hero-action" href="{% url 'levels' %}">أعرف مستواي - اختر المستوى</a>
+            </div>
+        </section>
+
+        <section class="level-roadmap" aria-label="مستويات التعلم">
+            <div class="level-pill">
+                <strong>المستوى الأول</strong>
+                <span>الحروف الإنجليزية A-Z</span>
+            </div>
+            <div class="level-pill">
+                <strong>المستوى الثاني</strong>
+                <span>الصوتيات والنطق</span>
+            </div>
+            <div class="level-pill">
+                <strong>المستوى الثالث</strong>
+                <span>قراءة CVC</span>
+            </div>
+            <div class="level-pill">
+                <strong>المستوى الرابع</strong>
+                <span>قراءة واستماع وتحدث وكتابة</span>
+            </div>
+        </section>
+
+        <section class="level-subscriptions" aria-label="اشتراكات المستويات">
+            <h2>اشتراكات المستويات المتقدمة</h2>
+            <p>المستوى الثالث والمستوى الرابع لكل واحد اشتراك واحد فقط: 15 ريال شهريًا، بدون أنواع متعددة.</p>
+            <div class="plans">
+                <article class="plan" id="level-3-plan">
+                    <span class="plan-badge">المستوى الثالث</span>
+                    <div>
+                        <div class="plan-label">قراءة CVC</div>
+                        <h2>المستوى الثالث</h2>
+                        <p class="description">يناسب من أتقن الحروف والصوتيات ويريد قراءة كلمات CVC، عائلات الكلمات، الجمل، والقصص القصيرة.</p>
+                    </div>
+                    <div class="price"><strong>15</strong><span>ريال شهريًا</span></div>
+                    <ul class="features">
+                        <li>CVC Words.</li>
+                        <li>Word Families.</li>
+                        <li>Short Vowels.</li>
+                        <li>Sentences and Stories.</li>
+                        <li>CVC Worksheets.</li>
+                        <li>CVC Certificate حسب الإنجاز.</li>
+                    </ul>
+                    <a class="plan-action" href="{% url 'checkout' 'level-3' %}">اشترك في المستوى الثالث</a>
+                </article>
+
+                <article class="plan" id="level-4-plan">
+                    <span class="plan-badge">المستوى الرابع</span>
+                    <div>
+                        <div class="plan-label">English Foundation</div>
+                        <h2>المستوى الرابع</h2>
+                        <p class="description">يناسب من يريد تطوير القراءة والاستماع والتحدث والكتابة والجمل الشائعة والمحادثات.</p>
+                    </div>
+                    <div class="price"><strong>15</strong><span>ريال شهريًا</span></div>
+                    <ul class="features">
+                        <li>Reading.</li>
+                        <li>Listening.</li>
+                        <li>Speaking.</li>
+                        <li>Writing.</li>
+                        <li>Common Sentences and Conversations.</li>
+                        <li>Level Four Certificate حسب الإنجاز.</li>
+                    </ul>
+                    <a class="plan-action" href="{% url 'checkout' 'level-4' %}">اشترك في المستوى الرابع</a>
+                </article>
+            </div>
+        </section>
+
+        <section class="plans" aria-label="خطط الاشتراك">
+            <article class="plan">
+                <span class="plan-badge">تجربة مجانية</span>
+                <div>
+                    <div class="plan-label">للتجربة فقط</div>
+                    <h2>Free</h2>
+                </div>
+                <div class="price"><strong>0</strong><span>ريال</span></div>
+                <ul class="features">
+                    <li>حرف A و B فقط.</li>
+                    <li>ألعاب داخلية محدودة.</li>
+                    <li>تجربة أولية للمنصة.</li>
+                </ul>
+                <a class="plan-action secondary" href="/">ابدأ مجانًا</a>
+            </article>
+
+            <article class="plan featured">
+                <span class="plan-badge">أفضل بداية</span>
+                <div>
+                    <div class="plan-label">لإتقان الحروف</div>
+                    <h2>Basic</h2>
+                </div>
+                <div class="price"><strong>19</strong><span>ريال شهريًا</span></div>
+                <ul class="features">
+                    <li>المستوى الأول: الحروف الإنجليزية A-Z.</li>
+                    <li>ألعاب الموقع الداخلية.</li>
+                    <li>متابعة تقدم الطالب.</li>
+                    <li>تقرير الإنجاز.</li>
+                    <li>شهادة المستوى الأول حسب الإنجاز.</li>
+                </ul>
+                <a class="plan-action" href="{% url 'checkout' 'basic' %}">اختيار Basic</a>
+            </article>
+
+            <article class="plan silver">
+                <span class="plan-badge">قيمة أعلى</span>
+                <div>
+                    <div class="plan-label">للحروف والصوتيات وأوراق العمل</div>
+                    <h2>Silver</h2>
+                    <p class="description">مناسب للمتعلم الذي يحتاج الحروف والصوتيات مع أوراق عمل قابلة للطباعة والتحميل.</p>
+                </div>
+                <div class="price"><strong>27</strong><span>ريال شهريًا</span></div>
+                <ul class="features">
+                    <li>كل مزايا Basic.</li>
+                    <li>المستوى الأول: الحروف الإنجليزية A-Z.</li>
+                    <li>المستوى الثاني: الصوتيات والنطق.</li>
+                    <li>تدريبات المايك.</li>
+                    <li>متابعة تقدم الطالب.</li>
+                    <li>تقرير الإنجاز.</li>
+                    <li>شهادة المستوى الأول حسب الإنجاز.</li>
+                    <li>أوراق العمل.</li>
+                    <li>طباعة أوراق العمل.</li>
+                    <li>تحميل أوراق العمل PDF.</li>
+                </ul>
+                <a class="plan-action silver-action" href="{% url 'checkout' 'silver' %}">اختيار Silver</a>
+            </article>
+
+            <article class="plan vip">
+                <span class="plan-badge">للمتابعة الذكية</span>
+                <div>
+                    <div class="plan-label">للحروف والصوتيات مع المتابعة الذكية</div>
+                    <h2>VIP</h2>
+                    <p class="description">مناسبة للطفل الذي يحتاج تجربة أقوى في الحروف والصوتيات مع العصفور الذكي وWordwall والكتاب الكامل والتقارير والشهادة الذهبية.</p>
+                </div>
+                <div class="price"><strong>39</strong><span>ريال شهريًا</span></div>
+                <ul class="features">
+                    <li>كل مزايا Silver.</li>
+                    <li>كامل ميزات الحروف.</li>
+                    <li>المستوى الأول: الحروف الإنجليزية A-Z.</li>
+                    <li>المستوى الثاني: الصوتيات والنطق.</li>
+                    <li>أوراق العمل.</li>
+                    <li>طباعة أوراق العمل.</li>
+                    <li>تحميل أوراق العمل.</li>
+                    <li>تحميل الكتاب الكامل PDF.</li>
+                    <li>Wordwall.</li>
+                    <li>العصفور الذكي.</li>
+                    <li>حفظ تقدم العصفور و Bird XP.</li>
+                    <li>قراءة الأسئلة بالصوت.</li>
+                    <li>مراجعة الأخطاء خطوة بخطوة.</li>
+                    <li>مراجعة الكلمات التي تحتاج تدريبا إضافيا.</li>
+                    <li>تقرير ولي أمر مفصل.</li>
+                    <li>تقرير العصفور الذكي.</li>
+                    <li>الشهادة الذهبية حسب الإنجاز.</li>
+                    <li>لوحة الشرف / الصدارة بعد موافقة ولي الأمر.</li>
+                    <li>حفظ تقدم الطالب.</li>
+                    <li>خطة مراجعة أقوى.</li>
+                </ul>
+                <p class="description">VIP لا يشمل كل الموقع. لفتح جميع المستويات والميزات استخدم الباقة الماسية.</p>
+                <a class="plan-action" href="{% url 'checkout' 'vip' %}">اختيار VIP</a>
+            </article>
+
+            <article class="plan diamond">
+                <span class="plan-badge">كل الموقع</span>
+                <div>
+                    <div class="plan-label">لمن يريد فتح جميع المستويات والميزات بدون قيود</div>
+                    <h2>الماسي</h2>
+                    <p class="description">اشتراك واحد يفتح كل الموقع: الحروف، الصوتيات، أوراق العمل، الكتاب، Wordwall، العصفور الذكي، CVC، المستوى الرابع، التقارير، الألعاب، والشهادات.</p>
+                </div>
+                <div class="price"><strong>50</strong><span>ريال شهريًا</span></div>
+                <ul class="features">
+                    <li>كل مزايا VIP.</li>
+                    <li>كل مستويات الموقع.</li>
+                    <li>المستوى الثالث: قراءة CVC.</li>
+                    <li>المستوى الرابع كاملًا.</li>
+                    <li>كل أوراق العمل والطباعة والتحميل.</li>
+                    <li>كل الألعاب والتقارير والشهادات المتاحة.</li>
+                    <li>فتح مباشر لكل الميزات الحالية داخل الموقع.</li>
+                </ul>
+                <a class="plan-action diamond-action" href="{% url 'checkout' 'diamond' %}">اختيار الماسي</a>
+            </article>
+        </section>
+
+        <p class="note">الدفع الحقيقي غير مفعل الآن. يتم إنشاء طلب دفع فقط، ولا يتم تفعيل الاشتراك إلا بعد نجاح الدفع أو اعتماد التحويل البنكي.</p>
+        <p class="note">
+            <a href="{% url 'about' %}">من نحن</a>
+            ·
+            <a href="{% url 'privacy' %}">سياسة الخصوصية</a>
+            ·
+            <a href="{% url 'terms' %}">الشروط والأحكام</a>
+        </p>
+    </main>
+</body>
+</html>

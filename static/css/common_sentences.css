@@ -1,0 +1,403 @@
+:root {
+    --cs-bg: #f7f9fc;
+    --cs-card: #ffffff;
+    --cs-text: #172033;
+    --cs-muted: #5f6f86;
+    --cs-line: #dbe4ef;
+    --cs-blue: #2563eb;
+    --cs-green: #059669;
+    --cs-purple: #7c3aed;
+    --cs-gold: #d97706;
+    --cs-red: #dc2626;
+    --cs-soft: #f8fafc;
+    --cs-hero-bg: linear-gradient(135deg, #ffffff 0%, #ecfeff 100%);
+    --cs-shadow: rgba(15, 23, 42, 0.08);
+    --cs-title: #0f766e;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--cs-bg);
+    color: var(--cs-text);
+    font-family: "Tajawal", "Cairo", Arial, sans-serif;
+}
+
+body[data-theme="dark"] {
+    --cs-bg: #0f172a;
+    --cs-card: #111827;
+    --cs-text: #f8fafc;
+    --cs-muted: #cbd5e1;
+    --cs-line: #334155;
+    --cs-soft: #0b1220;
+    --cs-hero-bg: linear-gradient(135deg, #111827 0%, #134e4a 100%);
+    --cs-shadow: rgba(0, 0, 0, 0.34);
+    --cs-title: #5eead4;
+}
+
+.cs-page {
+    width: min(1280px, calc(100% - 28px));
+    margin: 0 auto;
+    padding: 24px 0 54px;
+}
+
+.cs-topbar,
+.cs-links,
+.cs-toolbar,
+.cs-practice,
+.cs-games,
+.cs-actions,
+.cs-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.cs-topbar {
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.cs-back-btn,
+.cs-theme-toggle,
+.cs-links a,
+.cs-btn,
+.cs-game-btn,
+.cs-action,
+.cs-complete,
+.cs-option {
+    min-height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--cs-line);
+    background: var(--cs-card);
+    color: var(--cs-text);
+    padding: 0 14px;
+    text-decoration: none;
+    font: inherit;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.cs-theme-toggle[aria-pressed="true"] {
+    background: #fbbf24;
+    border-color: #f59e0b;
+    color: #111827;
+}
+
+.cs-hero {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+    background: var(--cs-hero-bg);
+    border: 1px solid var(--cs-line);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 18px 44px var(--cs-shadow);
+}
+
+.cs-eyebrow {
+    color: var(--cs-blue);
+    font-weight: 900;
+}
+
+.cs-hero h1 {
+    margin: 8px 0;
+    font-size: clamp(32px, 5vw, 54px);
+    color: var(--cs-title);
+}
+
+.cs-hero p {
+    margin: 0;
+    color: var(--cs-muted);
+    line-height: 1.8;
+    font-size: 18px;
+}
+
+.cs-hero-mark {
+    width: 92px;
+    height: 92px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    background: linear-gradient(135deg, var(--cs-blue), var(--cs-green));
+    font-size: 48px;
+}
+
+.cs-links { margin-top: 16px; }
+
+.cs-stats {
+    margin: 18px 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.cs-stat,
+.cs-toolbar,
+.cs-practice,
+.cs-games,
+.cs-panel,
+.cs-card {
+    background: var(--cs-card);
+    border: 1px solid var(--cs-line);
+    border-radius: 8px;
+    box-shadow: 0 10px 26px var(--cs-shadow);
+}
+
+.cs-stat {
+    padding: 14px;
+    display: grid;
+    gap: 6px;
+}
+
+.cs-stat span {
+    color: var(--cs-muted);
+    font-weight: 800;
+}
+
+.cs-stat strong {
+    color: var(--cs-title);
+    font-size: 28px;
+}
+
+.cs-progress {
+    grid-column: 1 / -1;
+    height: 12px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.cs-progress div {
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--cs-green), var(--cs-blue), var(--cs-purple));
+    transition: width 0.25s ease;
+}
+
+.cs-toolbar,
+.cs-practice,
+.cs-games,
+.cs-panel {
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.cs-toolbar input,
+.cs-toolbar select,
+.cs-panel input,
+.cs-modal input {
+    min-height: 42px;
+    border: 1px solid var(--cs-line);
+    border-radius: 8px;
+    background: var(--cs-card);
+    color: var(--cs-text);
+    padding: 0 12px;
+    font: inherit;
+}
+
+.cs-toolbar input {
+    min-width: min(360px, 100%);
+    flex: 1;
+}
+
+.cs-btn.primary,
+.cs-game-btn.primary,
+.cs-complete {
+    background: var(--cs-blue);
+    border-color: var(--cs-blue);
+    color: #fff;
+}
+
+.cs-game-btn.gold {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.cs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.cs-card {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.cs-card-top {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.cs-emoji {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: #ecfeff;
+    font-size: 30px;
+    flex: 0 0 56px;
+}
+
+.cs-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.cs-badge {
+    border-radius: 999px;
+    padding: 5px 9px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.cs-badge.level {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.cs-sentence {
+    direction: ltr;
+    text-align: left;
+    margin: 8px 0 4px;
+    font-size: 23px;
+    font-weight: 900;
+    color: var(--cs-text);
+}
+
+.cs-ar,
+.cs-explain,
+.cs-context {
+    color: var(--cs-muted);
+    line-height: 1.7;
+}
+
+.cs-context {
+    background: var(--cs-soft);
+    border: 1px solid var(--cs-line);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.cs-action.open { background: #eff6ff; color: #1d4ed8; }
+.cs-action.listen { background: #ecfdf5; color: #047857; }
+.cs-action.slow { background: #ecfeff; color: #0e7490; }
+.cs-action.train { background: #fffbeb; color: #b45309; }
+.cs-action.mic { background: #f5f3ff; color: #6d28d9; }
+.cs-action.review { background: #fef2f2; color: #b91c1c; }
+
+.cs-empty {
+    margin-top: 14px;
+    background: var(--cs-card);
+    border: 1px solid var(--cs-line);
+    border-radius: 8px;
+    padding: 18px;
+    text-align: center;
+    color: var(--cs-muted);
+    font-weight: 900;
+}
+
+.cs-complete {
+    width: min(400px, 100%);
+    margin: 20px auto 0;
+}
+
+.cs-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(15, 23, 42, 0.52);
+    display: grid;
+    place-items: center;
+    padding: 16px;
+}
+
+.cs-modal[hidden],
+.cs-panel[hidden] {
+    display: none;
+}
+
+.cs-modal-panel {
+    width: min(820px, 100%);
+    max-height: min(84vh, 900px);
+    overflow: auto;
+    background: var(--cs-card);
+    border: 1px solid var(--cs-line);
+    border-radius: 8px;
+    padding: 22px;
+    box-shadow: 0 24px 70px var(--cs-shadow);
+}
+
+.cs-modal-close {
+    position: sticky;
+    top: 0;
+    margin-right: auto;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--cs-line);
+    border-radius: 8px;
+    background: var(--cs-card);
+    color: var(--cs-text);
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.cs-option.correct { background: #ecfdf5; color: var(--cs-green); border-color: var(--cs-green); }
+.cs-option.wrong { background: #fef2f2; color: var(--cs-red); border-color: var(--cs-red); }
+
+.cs-reading-list {
+    direction: ltr;
+    text-align: left;
+    display: grid;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.cs-reading-list div {
+    background: var(--cs-soft);
+    border: 1px solid var(--cs-line);
+    border-radius: 8px;
+    padding: 10px;
+    font-weight: 900;
+}
+
+@media (max-width: 1000px) {
+    .cs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+    .cs-page { width: min(100% - 18px, 1280px); padding-top: 12px; }
+    .cs-topbar { align-items: stretch; flex-direction: column; }
+    .cs-hero { grid-template-columns: 1fr; padding: 18px; }
+    .cs-hero-mark { width: 70px; height: 70px; font-size: 36px; }
+    .cs-stats { grid-template-columns: repeat(2, 1fr); }
+    .cs-grid { grid-template-columns: 1fr; }
+}
+
+@media print {
+    .cs-toolbar,
+    .cs-practice,
+    .cs-games,
+    .cs-complete,
+    .cs-modal {
+        display: none !important;
+    }
+    body { background: #fff; }
+    .cs-card { break-inside: avoid; box-shadow: none; }
+}

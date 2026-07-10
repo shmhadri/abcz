@@ -1,0 +1,245 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ section.title }} | English Foundation</title>
+    <style>
+        :root {
+            --accent: {{ section.color }};
+            --bg: #f7f9fc;
+            --card: #fff;
+            --text: #172033;
+            --muted: #64748b;
+            --line: #dbe4ef;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Tajawal", "Cairo", system-ui, sans-serif;
+        }
+        .page { max-width: 1180px; margin: 0 auto; padding: 24px 18px 48px; }
+        .hero {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 22px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 18px;
+            align-items: center;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+        }
+        h1 { margin: 0; font-size: clamp(28px, 5vw, 42px); }
+        .lead { color: var(--muted); line-height: 1.8; margin: 8px 0 0; }
+        .hero-icon {
+            width: 82px; height: 82px; border-radius: 8px;
+            display: grid; place-items: center; background: var(--accent);
+            color: #fff; font-size: 42px;
+        }
+        .quick-links {
+            display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 0;
+        }
+        .quick-links a, .btn {
+            min-height: 38px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--text);
+            padding: 0 12px;
+            text-decoration: none;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font: inherit;
+        }
+        .btn.primary, .quick-links a.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .stats {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+            color: var(--muted);
+        }
+        .stat {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-weight: 800;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 16px;
+            display: grid;
+            gap: 10px;
+        }
+        .tag {
+            width: fit-content;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--accent) 12%, white);
+            color: var(--accent);
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 900;
+        }
+        .en { direction: ltr; text-align: left; font-size: 22px; font-weight: 900; }
+        .ar { color: var(--muted); line-height: 1.7; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .feedback { color: var(--muted); font-size: 13px; min-height: 20px; }
+        @media (max-width: 700px) {
+            .hero { grid-template-columns: 1fr; }
+            .hero-icon { width: 64px; height: 64px; font-size: 32px; }
+        }
+    </style>
+</head>
+<body data-section="{{ section.key }}">
+    <main class="page">
+        <section class="hero">
+            <div>
+                <h1>{{ section.icon }} {{ section.title }}</h1>
+                <p class="lead">{{ section.description }}</p>
+                <div class="quick-links">
+                    <a href="{% url 'english_foundation' %}">كل الأقسام</a>
+                    {% for item in all_sections %}
+                        <a href="{{ item.url }}" class="{% if item.key == section.key %}active{% endif %}">{{ item.icon }} {{ item.title }}</a>
+                    {% endfor %}
+                    <a href="{% url 'profile_dashboard' %}">ملف الطالب</a>
+                    <a href="{% url 'leaderboard' %}">لوحة الشرف</a>
+                </div>
+            </div>
+            <div class="hero-icon">{{ section.icon }}</div>
+        </section>
+
+        <div class="stats">
+            <div class="stat">نقاط هذا القسم: <span id="sectionPoints">{{ points }}</span></div>
+            <div class="stat">عدد التفاعلات: <span id="sectionActions">{{ actions_count }}</span></div>
+            <div class="stat">الحالة: <span id="sectionDone">{% if completed %}مكتمل{% else %}قيد التدريب{% endif %}</span></div>
+        </div>
+
+        <section class="grid">
+            {% for item in items %}
+                <article class="card">
+                    <span class="tag">{{ item.type }}</span>
+                    <div class="en">{{ item.title }}</div>
+                    <div class="ar">{{ item.ar }}</div>
+                    <div class="en" style="font-size:16px;">{{ item.example }}</div>
+                    <div class="actions">
+                        <button class="btn primary" type="button" data-action="open">ابدأ</button>
+                        <button class="btn" type="button" data-speak="{{ item.example }}">استماع</button>
+                        <button class="btn" type="button" data-action="exercise">حل تدريب</button>
+                        <button class="btn" type="button" data-action="mic">مايك</button>
+                    </div>
+                    <div class="feedback"></div>
+                </article>
+            {% endfor %}
+        </section>
+
+        <div class="quick-links" style="margin-top:18px;">
+            {% if section.key == "common_sentences" %}
+                <a class="active" href="{% url 'common_sentences_worksheet' %}">ورقة عمل الجمل الشائعة</a>
+            {% endif %}
+            <button class="btn primary" type="button" id="completeSection">إتقان القسم +50</button>
+        </div>
+    </main>
+
+    <script src="{% static 'js/speech_service.js' %}"></script>
+    <script>
+        const sectionKey = document.body.dataset.section;
+
+        function csrfToken() {
+            return document.cookie.split(";").map(v => v.trim()).find(v => v.startsWith("csrftoken="))?.split("=")[1] || "";
+        }
+
+        async function saveFoundationProgress(activityType, points, completed = false) {
+            try {
+                const response = await fetch("{% url 'english_foundation_progress_api' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken()
+                    },
+                    body: JSON.stringify({ section: sectionKey, activity_type: activityType, points, completed })
+                });
+                const data = await response.json();
+                if (data.authenticated === false) return { localOnly: true };
+                if (data.status === "ok") {
+                    document.getElementById("sectionPoints").textContent = data.points;
+                    document.getElementById("sectionActions").textContent = data.actions_count;
+                    document.getElementById("sectionDone").textContent = data.completed ? "مكتمل" : "قيد التدريب";
+                }
+                return data;
+            } catch (error) {
+                return { error: true };
+            }
+        }
+
+        function speak(text, rate = 0.9) {
+            if (!("speechSynthesis" in window)) {
+                alert("النطق غير مدعوم في هذا المتصفح.");
+                return;
+            }
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "en-US";
+            utterance.rate = rate;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            saveFoundationProgress("open", 1);
+            document.querySelectorAll("[data-speak]").forEach(button => {
+                button.addEventListener("click", () => {
+                    speak(button.dataset.speak);
+                    saveFoundationProgress("open", 1);
+                    button.closest(".card").querySelector(".feedback").textContent = "تم تشغيل النطق.";
+                });
+            });
+            document.querySelectorAll("[data-action]").forEach(button => {
+                button.addEventListener("click", () => {
+                    const action = button.dataset.action;
+                    const points = action === "mic" ? 5 : action === "exercise" ? 5 : 1;
+                    const card = button.closest(".card");
+                    const feedback = card.querySelector(".feedback");
+                    if (action === "mic") {
+                        const target = [...card.querySelectorAll(".en")].at(-1)?.textContent || "";
+                        SpeechService.startRecognition({
+                            targetText: target,
+                            type: target.split(/\s+/).length > 1 ? "short_sentence" : "word",
+                            section: sectionKey,
+                            onStart: () => SpeechService.renderResult(feedback, { expected: target, spoken: SpeechService.messages.listening, score: 0, status: "retry" }),
+                            onResult: result => {
+                                SpeechService.renderResult(feedback, result);
+                                saveFoundationProgress(action, points, result.status === "excellent");
+                            },
+                            onError: result => SpeechService.renderResult(feedback, result)
+                        });
+                        return;
+                    }
+                    saveFoundationProgress(action, points);
+                    button.closest(".card").querySelector(".feedback").textContent = "تم تسجيل النشاط في ملف الطالب.";
+                });
+            });
+            document.getElementById("completeSection")?.addEventListener("click", () => {
+                saveFoundationProgress("complete", 50, true);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -23,7 +23,7 @@ words_data = [
     {"word": "FOG", "arabic": "ضباب", "category": "nature", "difficulty": 2, "order": 8, "image": "https://em-content.zobj.net/source/apple/391/fog_1f32b-fe0f.png"},
     
     {"word": "BIG", "arabic": "كبير", "category": "adjectives", "difficulty": 1, "order": 9, "image": "https://em-content.zobj.net/source/apple/391/elephant_1f418.png"},
-    {"word": "PIG", "arabic": "خنزير", "category": "animals", "difficulty": 1, "order": 10, "image": "https://em-content.zobj.net/source/apple/391/pig_1f416.png"},
+    {"word": "PIN", "arabic": "دبوس", "category": "objects", "difficulty": 1, "order": 10, "image": "https://em-content.zobj.net/source/apple/391/pushpin_1f4cc.png"},
     
     {"word": "CUP", "arabic": "كوب", "category": "objects", "difficulty": 1, "order": 11, "image": "https://em-content.zobj.net/source/apple/391/teacup-without-handle_1f375.png"},
     {"word": "PUP", "arabic": "جرو", "category": "animals", "difficulty": 2, "order": 12, "image": "https://em-content.zobj.net/source/apple/391/dog-face_1f436.png"},
@@ -62,7 +62,7 @@ sentences_data = [
     {"sentence": "The sun is hot.", "arabic": "الشمس حارة.", "difficulty": 1, "time": 20, "order": 4},
     {"sentence": "A rat hid in a pot.", "arabic": "فأر اختبأ في وعاء.", "difficulty": 2, "time": 25, "order": 5},
     {"sentence": "Put on your hat and get in the bus.", "arabic": "ضع قبعتك واركب الحافلة.", "difficulty": 3, "time": 40, "order": 6},
-    {"sentence": "The pig is big.", "arabic": "الخنزير كبير.", "difficulty": 1, "time": 20, "order": 7},
+    {"sentence": "The pin is big.", "arabic": "الدبوس كبير.", "difficulty": 1, "time": 20, "order": 7},
     {"sentence": "I can see fog on the top.", "arabic": "أستطيع رؤية الضباب على القمة.", "difficulty": 3, "time": 35, "order": 8},
 ]
 

@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>المحادثات | Interactive Conversations</title>
+    <link rel="stylesheet" href="{% static 'css/conversations.css' %}">
+</head>
+<body>
+    <main class="cv-page">
+        <div class="cv-topbar">
+            <a class="cv-back-btn" href="{% url 'english_foundation' %}">← العودة للتأسيس</a>
+            <a class="cv-back-btn" href="{% url 'profile_dashboard' %}">ملف الطالب</a>
+        </div>
+
+        <header class="cv-hero">
+            <div>
+                <div class="cv-eyebrow">Interactive Conversations</div>
+                <h1>المحادثات</h1>
+                <p>مواقف محادثة مع نطق لكل جملة ومايك للتقييم، وتدريبات اختيار الرد وترتيب الحوار وتمثيل الأدوار.</p>
+                <nav class="cv-links" aria-label="English foundation links">
+                    <a href="{% url 'english_foundation' %}">كل الأقسام</a>
+                    <a href="{% url 'vocabulary_foundation' %}">المفردات</a>
+                    <a href="{% url 'grammar_foundation' %}">القواعد</a>
+                    <a href="{% url 'common_sentences' %}">الجمل الشائعة</a>
+                    <a href="{% url 'leaderboard' %}">لوحة الشرف</a>
+                </nav>
+            </div>
+            <div class="cv-hero-mark">💬</div>
+        </header>
+
+        <section class="cv-stats" aria-label="Conversation progress">
+            <article class="cv-stat"><span>نقاط هذا القسم</span><strong id="cvPoints">{{ points }}</strong></article>
+            <article class="cv-stat"><span>عدد التفاعلات</span><strong id="cvActions">{{ actions_count }}</strong></article>
+            <article class="cv-stat"><span>الحالة</span><strong id="cvStatus">{% if completed %}متقن{% else %}قيد التدريب{% endif %}</strong></article>
+            <article class="cv-stat"><span>محادثات مكتملة</span><strong id="cvCompleted">0 / 20</strong></article>
+            <div class="cv-progress"><div id="cvProgressFill"></div></div>
+        </section>
+
+        <section class="cv-toolbar" aria-label="Conversation filters">
+            <input id="cvSearch" type="search" placeholder="ابحث عن airport أو restaurant">
+            <select id="cvCategory"><option value="">كل التصنيفات</option></select>
+            <select id="cvLevel">
+                <option value="">كل المستويات</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Challenge">Challenge</option>
+            </select>
+            <button class="cv-btn" type="button" data-filter-category="">كل المحادثات</button>
+            <button class="cv-btn" type="button" data-filter-category="School">المدرسة</button>
+            <button class="cv-btn" type="button" data-filter-category="Restaurant">المطعم</button>
+            <button class="cv-btn" type="button" data-filter-category="Travel">السفر</button>
+            <button class="cv-btn" type="button" data-filter-category="Shopping">التسوق</button>
+            <button class="cv-btn" type="button" data-filter-category="Health">الصحة</button>
+            <button class="cv-btn" type="button" data-filter-category="Daily Life">الحياة اليومية</button>
+            <button class="cv-btn" type="button" data-filter-level="Challenge">التحدي</button>
+            <a class="cv-btn primary" href="{% url 'conversations_worksheet' %}" target="_blank">ورقة عمل المحادثات</a>
+        </section>
+
+        <section class="cv-games" aria-label="Conversation games">
+            <button class="cv-game-btn" type="button" data-game="reply">Reply Master</button>
+            <button class="cv-game-btn" type="button" data-game="builder">Dialogue Builder</button>
+            <button class="cv-game-btn" type="button" data-game="role">Role Play Challenge</button>
+            <button class="cv-game-btn" type="button" data-game="memory">Conversation Memory</button>
+            <button class="cv-game-btn" type="button" data-game="situation">Situation Picker</button>
+            <button class="cv-game-btn" type="button" data-game="fast">Fast Response</button>
+            <button class="cv-game-btn" type="button" data-game="speed">Conversation Speed Challenge</button>
+        </section>
+
+        <section class="cv-game-panel" id="cvGamePanel" hidden></section>
+        <section class="cv-grid" id="cvGrid" aria-label="Conversation cards"></section>
+        <div class="cv-empty" id="cvEmpty" hidden>لا توجد محادثات مطابقة لهذا البحث.</div>
+        <div hidden>At school At the restaurant Conversation Speed Challenge Interactive Conversations</div>
+
+        <button class="cv-complete" id="cvCompleteSection" type="button">إتقان قسم المحادثات +50</button>
+    </main>
+
+    <div class="cv-modal" id="cvModal" hidden>
+        <div class="cv-modal-panel" role="dialog" aria-modal="true" aria-labelledby="cvModalTitle">
+            <button class="cv-modal-close" type="button" id="cvModalClose">×</button>
+            <div id="cvModalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        window.CONVERSATIONS_INITIAL_PROGRESS = {
+            points: Number("{{ points|default:0 }}"),
+            actions: Number("{{ actions_count|default:0 }}"),
+            completed: {% if completed %}true{% else %}false{% endif %}
+        };
+        window.CONVERSATIONS_PROGRESS_URL = "{% url 'english_foundation_progress_api' %}";
+    </script>
+    <script src="{% static 'js/speech_service.js' %}"></script>
+    <script src="{% static 'js/conversations.js' %}"></script>
+</body>
+</html>

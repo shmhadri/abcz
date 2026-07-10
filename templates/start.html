@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختر طريقة البداية - Phonics Game Lab</title>
+    <link rel="stylesheet" href="{% static 'css/site_public.css' %}">
+</head>
+<body>
+    <main class="site-shell">
+        {% include "includes/public_nav.html" %}
+
+        <section class="hero start-hero">
+            <p class="eyebrow">بداية ذكية</p>
+            <h1>اختر طريقة البداية</h1>
+            <p class="lead">سنساعدك في اختيار المسار المناسب حسب مستواك الحالي في اللغة الإنجليزية.</p>
+        </section>
+
+        <section class="choice-grid two-choice-grid" aria-label="طرق البداية">
+            <article class="choice-card featured-choice">
+                <span class="route-badge">أعرف مستواي</span>
+                <h2>أعرف مستواي في اللغة الإنجليزية</h2>
+                <p>اختر المستوى المناسب وانتقل إلى صفحة الاشتراكات أو الدرس مباشرة حسب المسار.</p>
+                <a class="btn primary" href="{% url 'levels' %}">انتقل للمستويات والاشتراكات</a>
+            </article>
+
+            <article class="choice-card">
+                <span class="route-badge">لا أعرف مستواي</span>
+                <h2>أريد اختبار تحديد مستوى</h2>
+                <p>ابدأ اختبارا قصيرا من 20 سؤالا، وسنقترح لك المستوى الأنسب بناء على إجاباتك.</p>
+                <a class="btn primary" href="{% url 'placement_test' %}">ابدأ اختبار تحديد المستوى</a>
+            </article>
+        </section>
+
+        <section class="panel direct-start-panel">
+            <div>
+                <h2>أريد أن أبدأ من البداية</h2>
+                <p>إذا كنت تريد بناء الأساس خطوة بخطوة، ابدأ من المستوى الأول: الحروف الإنجليزية A-Z.</p>
+            </div>
+            <a class="btn" href="{% url 'index' %}">أبدأ من الحروف</a>
+        </section>
+
+        <footer class="footer">
+            <span>Phonics Game Lab</span>
+            <div class="footer-links">
+                <a href="{% url 'about' %}">من نحن</a>
+                <a href="{% url 'privacy' %}">سياسة الخصوصية</a>
+                <a href="{% url 'terms' %}">الشروط والأحكام</a>
+            </div>
+        </footer>
+    </main>
+</body>
+</html>

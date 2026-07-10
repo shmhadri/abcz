@@ -168,11 +168,11 @@
             { word: "wave", translation: "موجة", emoji: "🌊" }
         ],
         X: [
-            { word: "box", translation: "صندوق", emoji: "📦" },
-            { word: "fox", translation: "ثعلب", emoji: "🦊" },
-            { word: "axe", translation: "فأس", emoji: "🪓" },
-            { word: "mix", translation: "يخلط", emoji: "🥣" },
-            { word: "wax", translation: "شمع", emoji: "🕯️" }
+            { word: "xray", translation: "أشعة", emoji: "🩻" },
+            { word: "xmas", translation: "عيد الميلاد", emoji: "🎄" },
+            { word: "xbox", translation: "إكس بوكس", emoji: "🎮" },
+            { word: "xeno", translation: "غريب", emoji: "👽" },
+            { word: "xyst", translation: "ممر", emoji: "🏛️" }
         ],
         Y: [
             { word: "yak", translation: "ثور التبت", emoji: "🐂" },

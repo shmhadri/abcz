@@ -64,11 +64,11 @@ class Command(BaseCommand):
             {"word": "DOG", "arabic": "كلب", "category": "animals", "difficulty": 1, "order": 7, "emoji": "🐕", "word_family": "og", "vowel": "o"},
             {"word": "LOG", "arabic": "جذع شجرة", "category": "nature", "difficulty": 2, "order": 8, "emoji": "🪵", "word_family": "og", "vowel": "o"},
             {"word": "FOG", "arabic": "ضباب", "category": "nature", "difficulty": 2, "order": 9, "emoji": "🌫️", "word_family": "og", "vowel": "o"},
-            {"word": "HOG", "arabic": "خنزير بري", "category": "animals", "difficulty": 2, "order": 10, "emoji": "🐗", "word_family": "og", "vowel": "o"},
+            {"word": "JOG", "arabic": "يركض ببطء", "category": "verbs", "difficulty": 2, "order": 10, "emoji": "🏃", "word_family": "og", "vowel": "o"},
             
             # -ig family
             {"word": "BIG", "arabic": "كبير", "category": "adjectives", "difficulty": 1, "order": 11, "emoji": "📏", "word_family": "ig", "vowel": "i"},
-            {"word": "PIG", "arabic": "خنزير", "category": "animals", "difficulty": 1, "order": 12, "emoji": "🐷", "word_family": "ig", "vowel": "i"},
+            {"word": "PIN", "arabic": "دبوس", "category": "objects", "difficulty": 1, "order": 12, "emoji": "📌", "word_family": "in", "vowel": "i"},
             {"word": "DIG", "arabic": "يحفر", "category": "verbs", "difficulty": 2, "order": 13, "emoji": "⛏️", "word_family": "ig", "vowel": "i"},
             {"word": "WIG", "arabic": "باروكة", "category": "objects", "difficulty": 2, "order": 14, "emoji": "💇", "word_family": "ig", "vowel": "i"},
             
@@ -141,7 +141,7 @@ class Command(BaseCommand):
             {"sentence": "The sun is hot.", "arabic": "الشمس حارة.", "difficulty": 1, "time": 20, "order": 4, "emoji": "☀️", "category": "cvc"},
             {"sentence": "A rat hid in a pot.", "arabic": "فأر اختبأ في وعاء.", "difficulty": 2, "time": 25, "order": 5, "emoji": "🐀", "category": "cvc"},
             {"sentence": "Put on your hat and get in the bus.", "arabic": "ضع قبعتك واركب الحافلة.", "difficulty": 3, "time": 40, "order": 6, "emoji": "🎩", "category": "cvc"},
-            {"sentence": "The pig is big.", "arabic": "الخنزير كبير.", "difficulty": 1, "time": 20, "order": 7, "emoji": "🐷", "category": "cvc"},
+            {"sentence": "The pin is big.", "arabic": "الدبوس كبير.", "difficulty": 1, "time": 20, "order": 7, "emoji": "📌", "category": "cvc"},
             {"sentence": "I can see fog on the top.", "arabic": "أستطيع رؤية الضباب على القمة.", "difficulty": 3, "time": 35, "order": 8, "emoji": "🌫️", "category": "cvc"},
             {"sentence": "The hen is in the pen.", "arabic": "الدجاجة في الحظيرة.", "difficulty": 2, "time": 25, "order": 9, "emoji": "🐓", "category": "cvc"},
             {"sentence": "I run in the sun for fun.", "arabic": "أركض تحت الشمس للمرح.", "difficulty": 2, "time": 30, "order": 10, "emoji": "🏃", "category": "cvc"},

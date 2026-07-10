@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - Phonics Game Lab</title>
+    <link rel="stylesheet" href="{% static 'css/site_public.css' %}">
+    <style>
+        body {
+            background: #f6f8fb;
+        }
+
+        .auth-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(340px, 430px);
+            gap: 18px;
+            align-items: stretch;
+        }
+
+        .auth-card,
+        .auth-side {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--card);
+            box-shadow: var(--shadow);
+        }
+
+        .auth-card {
+            padding: clamp(22px, 4vw, 34px);
+        }
+
+        .auth-side {
+            padding: 24px;
+            display: grid;
+            align-content: start;
+            gap: 14px;
+            background: linear-gradient(180deg, #eef4ff 0%, #ffffff 72%);
+        }
+
+        form {
+            display: grid;
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--ink);
+            font-weight: 900;
+        }
+
+        input {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font: inherit;
+        }
+
+        .errorlist {
+            margin: 0;
+            padding: 0;
+            color: #dc2626;
+            list-style: none;
+            font-weight: 800;
+        }
+
+        .auth-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        button.btn {
+            cursor: pointer;
+            font: inherit;
+        }
+
+        @media (max-width: 840px) {
+            .auth-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="site-shell">
+        {% include "includes/public_nav.html" %}
+
+        <section class="auth-layout">
+            <article class="auth-card">
+                <p class="eyebrow">تسجيل الدخول</p>
+                <h1>ادخل لحساب المتعلم واحفظ التقدم على السيرفر.</h1>
+                <p class="lead">استخدم الحساب المناسب للباقة التي تريد اختبارها، ثم انتقل إلى المنهج أو صفحة الأسعار أو ملف المتعلم.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    {% for field in form %}
+                        <div>
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {{ field.errors }}
+                        </div>
+                    {% endfor %}
+                    <div class="auth-actions">
+                        <button class="btn primary" type="submit">دخول</button>
+                        <a class="btn" href="{% url 'register' %}">إنشاء حساب جديد</a>
+                    </div>
+                </form>
+            </article>
+
+            <aside class="auth-side">
+                <h2>اختبار الباقات</h2>
+                <p>بعد الدخول، افتح نفس الروابط في كل باقة ولاحظ ما يفتح وما يظهر له قفل ترقية.</p>
+                <ul class="clean-list">
+                    <li>Free للتجربة المحدودة.</li>
+                    <li>Basic للحروف الأساسية.</li>
+                    <li>Silver للحروف والصوتيات وأوراق العمل.</li>
+                    <li>VIP للكتاب وWordwall والعصفور الذكي.</li>
+                </ul>
+                <a class="btn" href="{% url 'guide' %}">اقرأ تعليمات التجربة</a>
+            </aside>
+        </section>
+    </main>
+</body>
+</html>

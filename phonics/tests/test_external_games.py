@@ -27,23 +27,41 @@ class ExternalGameTests(TestCase):
         with self.assertRaises(ValidationError):
             game.full_clean()
 
-    def test_pending_games_are_hidden_from_children(self):
+    def test_accepts_arabic_wordwall_resource_url(self):
+        game = ExternalGame(
+            letter="E",
+            title="Arabic Wordwall E",
+            activity_url="https://wordwall.net/ar/resource/22838490/letter-e",
+        )
+
+        game.full_clean()
+
+    def test_accepts_www_arabic_wordwall_resource_url(self):
+        game = ExternalGame(
+            letter="E",
+            title="Arabic Wordwall E",
+            activity_url="https://www.wordwall.net/ar/resource/22838490/letter-e",
+        )
+
+        game.full_clean()
+
+    def test_pending_games_route_is_blocked_in_level_one_policy(self):
         self.make_game(title="Pending A", review_status=ExternalGame.REVIEW_PENDING)
 
         response = self.client.get("/letters/A/external-games/")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Pending A")
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("Pending A", response.content.decode("utf-8"))
 
-    def test_rejected_games_are_hidden_from_children(self):
+    def test_rejected_games_route_is_blocked_in_level_one_policy(self):
         self.make_game(title="Rejected A", review_status=ExternalGame.REVIEW_REJECTED)
 
         response = self.client.get("/letters/A/external-games/")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Rejected A")
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("Rejected A", response.content.decode("utf-8"))
 
-    def test_only_active_approved_games_are_visible(self):
+    def test_approved_games_route_is_blocked_in_level_one_policy(self):
         self.make_game(title="Approved A")
         self.make_game(
             title="Inactive Approved A",
@@ -53,11 +71,18 @@ class ExternalGameTests(TestCase):
 
         response = self.client.get("/letters/A/external-games/")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Approved A")
-        self.assertNotContains(response, "Inactive Approved A")
+        self.assertEqual(response.status_code, 403)
+        html = response.content.decode("utf-8")
+        self.assertNotIn("Approved A", html)
+        self.assertNotIn("goBackSafe", html)
+        self.assertNotIn("wordwall-page", html)
+        self.assertNotIn("noopener noreferrer", html)
+        self.assertNotIn("Wordwall", html)
+        self.assertNotIn("https://wordwall.net/resource/12345", html)
+        self.assertNotIn("external-game-frame", html)
+        self.assertNotIn("Inactive Approved A", html)
 
-    def test_games_are_filtered_by_letter(self):
+    def test_filtered_games_route_is_blocked_in_level_one_policy(self):
         self.make_game(title="Approved A", letter="A")
         self.make_game(
             title="Approved B",
@@ -67,6 +92,7 @@ class ExternalGameTests(TestCase):
 
         response = self.client.get("/letters/A/external-games/")
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Approved A")
-        self.assertNotContains(response, "Approved B")
+        self.assertEqual(response.status_code, 403)
+        html = response.content.decode("utf-8")
+        self.assertNotIn("Approved A", html)
+        self.assertNotIn("Approved B", html)

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خطة المنهج - ABCZ</title>
+    <style>
+        :root {
+            --primary: #2357d9;
+            --primary-dark: #183a8f;
+            --accent: #0f9f6e;
+            --warning: #b7791f;
+            --ink: #172033;
+            --muted: #64748b;
+            --line: #dbe4f0;
+            --soft: #f6f8fb;
+            --card: #ffffff;
+            --shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+        }
+
+        * { box-sizing: border-box; }
+
+        html { overflow-x: hidden; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: var(--soft);
+            color: var(--ink);
+            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            line-height: 1.7;
+        }
+
+        a { color: inherit; }
+
+        .page {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 22px 0 48px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .brand,
+        .nav,
+        .hero-actions,
+        .stage-actions,
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand {
+            color: var(--primary);
+            font-weight: 900;
+            text-decoration: none;
+        }
+
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            background: var(--primary);
+            color: #fff;
+            letter-spacing: 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: var(--card);
+            color: var(--primary);
+            font-weight: 900;
+            text-decoration: none;
+            text-align: center;
+            touch-action: manipulation;
+        }
+
+        .btn.primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(35, 87, 217, 0.18);
+        }
+
+        .btn.locked {
+            color: var(--muted);
+            background: #eef2f7;
+            cursor: not-allowed;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+            gap: 18px;
+            align-items: stretch;
+            margin-bottom: 18px;
+        }
+
+        .hero-main,
+        .hero-panel,
+        .progress-path,
+        .stage-card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--card);
+            box-shadow: var(--shadow);
+        }
+
+        .hero-main {
+            padding: clamp(22px, 4vw, 34px);
+        }
+
+        .eyebrow {
+            color: var(--accent);
+            font-size: 0.95rem;
+            font-weight: 900;
+            margin: 0 0 8px;
+        }
+
+        h1, h2, h3, p { margin-top: 0; }
+
+        h1 {
+            max-width: 760px;
+            margin-bottom: 12px;
+            font-size: clamp(2rem, 5vw, 3.35rem);
+            line-height: 1.18;
+        }
+
+        .lead {
+            max-width: 760px;
+            margin-bottom: 22px;
+            color: #475569;
+            font-size: 1.07rem;
+            font-weight: 750;
+        }
+
+        .hero-panel {
+            display: grid;
+            align-content: start;
+            gap: 12px;
+            padding: 20px;
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 1.05rem;
+            color: var(--primary-dark);
+        }
+
+        .summary-grid,
+        .meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .summary-item,
+        .meta-item {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+            padding: 12px;
+        }
+
+        .summary-item {
+            min-height: 82px;
+            display: grid;
+            align-content: center;
+            gap: 3px;
+        }
+
+        .summary-value {
+            color: var(--primary);
+            font-size: 1.55rem;
+            font-weight: 900;
+        }
+
+        .summary-label,
+        .meta-label {
+            color: var(--muted);
+            font-size: 0.86rem;
+            font-weight: 900;
+        }
+
+        .meta-value {
+            display: block;
+            color: var(--ink);
+            font-size: 0.94rem;
+            font-weight: 900;
+            overflow-wrap: anywhere;
+        }
+
+        .progress-path {
+            margin: 0 0 24px;
+            padding: 16px;
+        }
+
+        .path-label {
+            margin: 0 0 12px;
+            color: var(--primary-dark);
+            font-weight: 900;
+        }
+
+        .path-track {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .path-step {
+            min-height: 46px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: #eef4ff;
+            color: #1d4ed8;
+            font-size: 0.9rem;
+            font-weight: 900;
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+
+        .path-step:first-child,
+        .path-step:nth-child(2) {
+            background: #e8f8ef;
+            color: #047857;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 0 0 14px;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            font-size: 1.35rem;
+        }
+
+        .section-heading p {
+            margin: 0;
+            color: var(--muted);
+            font-weight: 800;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .stage-card {
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+            position: relative;
+        }
+
+        .stage-card.available {
+            border-color: rgba(15, 159, 110, 0.35);
+        }
+
+        .stage-head {
+            display: grid;
+            grid-template-columns: 44px minmax(0, 1fr) auto;
+            gap: 12px;
+            align-items: start;
+        }
+
+        .stage-index {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            background: #eef2ff;
+            color: #3730a3;
+            font-weight: 900;
+        }
+
+        .stage-title h3 {
+            margin: 0 0 2px;
+            font-size: 1.22rem;
+            overflow-wrap: anywhere;
+        }
+
+        .stage-title p {
+            margin: 0;
+            color: var(--muted);
+            font-weight: 850;
+        }
+
+        .status {
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .status.available { background: #dcfce7; color: #166534; }
+        .status.locked { background: #eef2f7; color: #475569; }
+        .status.coming_soon { background: #fff7ed; color: #9a3412; }
+
+        .desc {
+            margin: 0;
+            color: #334155;
+            font-weight: 750;
+        }
+
+        .certificate {
+            border: 1px solid rgba(183, 121, 31, 0.28);
+            border-right: 5px solid var(--warning);
+            border-radius: 8px;
+            background: #fffbeb;
+            color: #92400e;
+            font-weight: 900;
+            padding: 11px 12px;
+        }
+
+        .content-block {
+            display: grid;
+            gap: 8px;
+        }
+
+        .section-label {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: 0.95rem;
+            font-weight: 900;
+        }
+
+        .chips {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--soft);
+            border: 1px solid var(--line);
+            color: #1f2937;
+            font-size: 0.9rem;
+            font-weight: 850;
+            overflow-wrap: anywhere;
+        }
+
+        details.examples-panel {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fbfdff;
+            padding: 0;
+        }
+
+        details.examples-panel summary {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            color: var(--primary-dark);
+            font-weight: 900;
+            list-style: none;
+        }
+
+        details.examples-panel summary::-webkit-details-marker { display: none; }
+
+        details.examples-panel summary::after {
+            content: "+";
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #eef4ff;
+            color: var(--primary);
+        }
+
+        details.examples-panel[open] summary::after { content: "-"; }
+
+        .examples {
+            display: grid;
+            gap: 6px;
+            padding: 0 12px 12px;
+            margin: 0;
+            list-style: none;
+        }
+
+        .examples li {
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 750;
+            overflow-wrap: anywhere;
+        }
+
+        @media (max-width: 900px) {
+            .hero,
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .path-track {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 560px) {
+            .page {
+                width: min(100% - 20px, 680px);
+                padding-top: 14px;
+            }
+
+            .topbar,
+            .section-heading {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .nav,
+            .btn,
+            .hero-actions .btn,
+            .stage-actions .btn,
+            .stage-actions .locked {
+                width: 100%;
+            }
+
+            .hero-main,
+            .hero-panel,
+            .progress-path,
+            .stage-card {
+                padding: 15px;
+            }
+
+            .summary-grid,
+            .meta,
+            .path-track {
+                grid-template-columns: 1fr;
+            }
+
+            .stage-head {
+                grid-template-columns: 44px minmax(0, 1fr);
+            }
+
+            .status {
+                justify-self: start;
+                grid-column: 1 / -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <nav class="topbar" aria-label="التنقل">
+            <a class="brand" href="/">
+                <span class="brand-mark">A</span>
+                <span>Phonics Game Lab</span>
+            </a>
+            <div class="nav">
+                <a class="btn" href="/">درس الحروف</a>
+                <a class="btn" href="/profile/">ملف المتعلم</a>
+                <a class="btn" href="/pricing/">الخطط</a>
+                <a class="btn" href="{% url 'guide' %}">التعليمات</a>
+                {% if request.user.is_authenticated %}
+                    <a class="btn" href="{% url 'logout' %}">تسجيل الخروج</a>
+                {% else %}
+                    <a class="btn" href="{% url 'login' %}">تسجيل الدخول</a>
+                {% endif %}
+            </div>
+        </nav>
+
+        <section class="hero">
+            <div class="hero-main">
+                <p class="eyebrow">خطة المنهج</p>
+                <h1>خارطة طريق ABCZ من الحروف إلى الإنجليزية اليومية</h1>
+                <p class="lead">
+                    مسار واضح يبدأ من Letters A-Z وشهادة إتقان الحروف، ثم ينتقل تدريجيًا إلى الفونكس، القراءة، القواعد، والإنجليزية العملية في مواقف الحياة اليومية.
+                </p>
+                <div class="hero-actions">
+                    <a class="btn primary" href="/">ابدأ الحروف</a>
+                    <a class="btn" href="#curriculum-stages">استعرض المراحل</a>
+                </div>
+            </div>
+
+            <aside class="hero-panel" aria-label="ملخص المنهج">
+                <h2 class="panel-title">ملخص الخطة</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-value">{{ stages|length }}</span>
+                        <span class="summary-label">مراحل رئيسية</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-value">1</span>
+                        <span class="summary-label">مرحلة متاحة الآن</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-value">A-Z</span>
+                        <span class="summary-label">نقطة البداية</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-value">PDF</span>
+                        <span class="summary-label">خطة عمل لاحقة</span>
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="progress-path" aria-label="شريط تقدم المنهج">
+            <p class="path-label">تسلسل التعلم</p>
+            <div class="path-track">
+                {% for step in progress_steps %}
+                    <span class="path-step">{{ step }}</span>
+                {% endfor %}
+            </div>
+        </section>
+
+        <div class="section-heading" id="curriculum-stages">
+            <div>
+                <h2>مراحل المنهج</h2>
+                <p>كل مرحلة تعرض الهدف، شرط الفتح، الدروس، والأمثلة الأساسية.</p>
+            </div>
+        </div>
+
+        <section class="grid" aria-label="مراحل المنهج">
+            {% for stage in stages %}
+                <article class="stage-card {{ stage.status }}">
+                    <div class="stage-head">
+                        <div class="stage-index">{{ stage.order }}</div>
+                        <div class="stage-title">
+                            <h3>{{ stage.title_en }}</h3>
+                            <p>{{ stage.title_ar }}</p>
+                        </div>
+                        <span class="status {{ stage.status }}">
+                            {% if stage.status == "available" %}متاح{% elif stage.status == "locked" %}مقفل الآن{% else %}قريبًا{% endif %}
+                        </span>
+                    </div>
+
+                    <p class="desc">{{ stage.description_ar }}</p>
+
+                    <div class="meta">
+                        <div class="meta-item">
+                            <span class="meta-label">شرط الفتح</span>
+                            <span class="meta-value">{{ stage.unlock_condition|default:"متاح مباشرة" }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">هدف الإتقان</span>
+                            <span class="meta-value">{{ stage.mastery_goal }}</span>
+                        </div>
+                    </div>
+
+                    {% if stage.certificate %}
+                        <div class="certificate">{{ stage.certificate }}</div>
+                    {% endif %}
+
+                    <div class="content-block">
+                        <p class="section-label">الدروس</p>
+                        <ul class="chips">
+                            {% for lesson in stage.lessons %}
+                                <li class="chip">{{ lesson }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    {% if stage.examples %}
+                        <details class="examples-panel">
+                            <summary>أمثلة المرحلة</summary>
+                            <ul class="examples">
+                                {% for example in stage.examples %}
+                                    <li>{{ example }}</li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                    {% endif %}
+
+                    <div class="stage-actions">
+                        {% if stage.link %}
+                            <a class="btn primary" href="{{ stage.link }}">{{ stage.button_text }}</a>
+                        {% else %}
+                            <span class="btn locked" aria-disabled="true">{{ stage.button_text }}</span>
+                        {% endif %}
+                    </div>
+                </article>
+            {% endfor %}
+        </section>
+        <footer style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-weight: 800;">
+            <a href="{% url 'about' %}">من نحن</a>
+            ·
+            <a href="{% url 'privacy' %}">سياسة الخصوصية</a>
+            ·
+            <a href="{% url 'terms' %}">الشروط والأحكام</a>
+        </footer>
+    </main>
+</body>
+</html>

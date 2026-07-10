@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Games & Interactive Training | الألعاب والتدريبات</title>
+    <link rel="stylesheet" href="{% static 'css/games.css' %}">
+</head>
+<body class="games-page" data-section="games" data-initial-points="{{ points }}" data-initial-actions="{{ actions_count }}" data-initial-completed="{% if completed %}true{% else %}false{% endif %}">
+    <main class="games-shell">
+        <section class="games-hero">
+            <div class="hero-copy">
+                <p class="eyebrow">Games & Interactive Training</p>
+                <h1>الألعاب والتدريبات</h1>
+                <p>ألعاب تعليمية لتقوية المفردات والقواعد والجمل والمحادثات مع تحديات نطق وسرعة وتفاعل.</p>
+            </div>
+            <div class="stats-panel" aria-label="Games progress">
+                <div><span>نقاط هذا القسم</span><strong id="gamesPoints">{{ points }}</strong></div>
+                <div><span>عدد التفاعلات</span><strong id="gamesActions">{{ actions_count }}</strong></div>
+                <div><span>الحالة</span><strong id="gamesStatus">{% if completed %}متقن{% else %}قيد التدريب{% endif %}</strong></div>
+                <div><span>الألعاب المكتملة</span><strong id="gamesCompleted">0</strong></div>
+                <div><span>أفضل نتيجة</span><strong id="gamesBestScore">0</strong></div>
+                <div class="progress-track"><span id="gamesProgressBar"></span></div>
+            </div>
+        </section>
+
+        <section class="daily-panel" aria-label="Daily challenge">
+            <div>
+                <p class="eyebrow">تحدي اليوم</p>
+                <h2>ثلاث ألعاب مختارة اليوم</h2>
+                <p>ابدأ التحدي وأكمل لعبة مفردات ولعبة قواعد ولعبة نطق لتحصل على مكافأة إضافية.</p>
+            </div>
+            <div id="dailyChallengeGames" class="daily-games"></div>
+            <button class="primary-action" type="button" id="startDailyChallenge">ابدأ تحدي اليوم</button>
+        </section>
+
+        <section class="toolbar" aria-label="Game filters">
+            <label>
+                <span>بحث</span>
+                <input id="gameSearch" type="search" placeholder="اسم اللعبة">
+            </label>
+            <label>
+                <span>التصنيف</span>
+                <select id="categoryFilter">
+                    <option value="all">كل التصنيفات</option>
+                    <option value="Vocabulary">Vocabulary</option>
+                    <option value="Grammar">Grammar</option>
+                    <option value="Sentences">Sentences</option>
+                    <option value="Conversations">Conversations</option>
+                    <option value="Speaking">Speaking</option>
+                    <option value="Speed">Speed</option>
+                </select>
+            </label>
+            <label>
+                <span>المهارة</span>
+                <select id="skillFilter">
+                    <option value="all">كل المهارات</option>
+                    <option value="Vocabulary">Vocabulary</option>
+                    <option value="Grammar">Grammar</option>
+                    <option value="Reading">Reading</option>
+                    <option value="Speaking">Speaking</option>
+                    <option value="Listening">Listening</option>
+                    <option value="Conversation">Conversation</option>
+                </select>
+            </label>
+            <label>
+                <span>المستوى</span>
+                <select id="levelFilter">
+                    <option value="all">كل المستويات</option>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Challenge">Challenge</option>
+                </select>
+            </label>
+            <div class="filter-chips" aria-label="Quick filters">
+                <button type="button" data-filter-category="all">كل الألعاب</button>
+                <button type="button" data-filter-category="Vocabulary">Vocabulary</button>
+                <button type="button" data-filter-category="Grammar">Grammar</button>
+                <button type="button" data-filter-category="Sentences">Sentences</button>
+                <button type="button" data-filter-category="Conversations">Conversations</button>
+                <button type="button" data-filter-category="Speaking">Speaking</button>
+                <button type="button" data-filter-category="Speed">Speed</button>
+                <button type="button" data-level-chip="Challenge">Challenge</button>
+            </div>
+        </section>
+
+        <section id="gamesGrid" class="games-grid" aria-label="Games list"></section>
+        <noscript>
+            <section class="games-grid" aria-label="Static games list">
+                <article class="game-card"><h2>Flashcards</h2><p>بطاقات تعليمية</p></article>
+                <article class="game-card"><h2>Word Match</h2><p>مطابقة الكلمات</p></article>
+                <article class="game-card"><h2>Sentence Builder</h2><p>ترتيب الجملة</p></article>
+                <article class="game-card"><h2>Speak Challenge</h2><p>تحدي النطق</p></article>
+                <article class="game-card"><h2>One Minute Challenge</h2><p>تحدي الدقيقة</p></article>
+            </section>
+        </noscript>
+        <p id="emptyGames" class="empty-state" hidden>لا توجد ألعاب مطابقة لهذا البحث.</p>
+
+        <section class="mini-board" aria-label="Mini leaderboard">
+            <h2>لوحة النتائج</h2>
+            <div class="mini-grid">
+                <div><span>أفضل نتيجة اليوم</span><strong id="todayBestScore">0</strong></div>
+                <div><span>أفضل لعبة أتقنتها</span><strong id="bestGameName">-</strong></div>
+                <div><span>الألعاب المكتملة</span><strong id="boardCompleted">0</strong></div>
+                <div><span>آخر لعبة</span><strong id="lastPlayedGame">-</strong></div>
+            </div>
+        </section>
+    </main>
+
+    <div id="gameModal" class="game-modal" hidden>
+        <div class="game-panel" role="dialog" aria-modal="true" aria-labelledby="modalGameTitle">
+            <button class="modal-close" type="button" data-close-modal aria-label="إغلاق">×</button>
+            <p class="eyebrow" id="modalGameCategory"></p>
+            <h2 id="modalGameTitle"></h2>
+            <p id="modalGameInstructions" class="modal-copy"></p>
+            <div class="modal-controls">
+                <label>
+                    <span>المستوى</span>
+                    <select id="modalLevel">
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Challenge">Challenge</option>
+                    </select>
+                </label>
+                <button class="primary-action" type="button" id="beginGame">بدء</button>
+                <button type="button" id="explainGame">شرح اللعبة</button>
+            </div>
+            <div class="round-stats">
+                <span>Score: <strong id="roundScore">0</strong></span>
+                <span>Progress: <strong id="roundProgress">0 / 0</strong></span>
+                <span>Timer: <strong id="roundTimer">0</strong></span>
+            </div>
+            <div id="questionArea" class="question-area"></div>
+            <div id="answerArea" class="answer-area"></div>
+            <div id="gameFeedback" class="feedback-box" hidden></div>
+            <div class="modal-actions">
+                <button class="primary-action" type="button" id="checkGameAnswer">تحقق</button>
+                <button type="button" id="nextGameQuestion">التالي</button>
+                <button type="button" id="finishGameRound">إنهاء اللعبة</button>
+                <button type="button" id="reviewMistakesBtn">مراجعة الأخطاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.GAMES_PROGRESS_URL = "{% url 'english_foundation_progress_api' %}";
+    </script>
+    <script src="{% static 'js/speech_service.js' %}"></script>
+    <script src="{% static 'js/games.js' %}" defer></script>
+</body>
+</html>

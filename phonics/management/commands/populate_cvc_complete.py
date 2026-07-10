@@ -90,7 +90,7 @@ class Command(BaseCommand):
             
             {"word": "lip", "arabic_meaning": "شفة", "category": "body", "word_family": "ip", "vowel_sound": "i", "difficulty_level": 1, "order": 86, "image_url": "", "emoji": "👄"},
             {"word": "tip", "arabic_meaning": "طرف/إكرامية", "category": "objects", "word_family": "ip", "vowel_sound": "i", "difficulty_level": 1, "order": 88, "image_url": "", "emoji": "💡"},
-            {"word": "zip", "arabic_meaning": "سحاب", "category": "objects", "word_family": "ip", "vowel_sound": "i", "difficulty_level": 2, "order": 89, "image_url": "", "emoji": "🤐"},
+            {"word": "sip", "arabic_meaning": "يرشف", "category": "verbs", "word_family": "ip", "vowel_sound": "i", "difficulty_level": 2, "order": 89, "image_url": "", "emoji": "🥤"},
 
             # ============================================
             # SHORT O WORDS
@@ -157,7 +157,7 @@ class Command(BaseCommand):
         
         self.stdout.write(self.style.SUCCESS(f'\n📚 Created {created_words} new words!\n'))
         
-        # ===== RICH THEMED STORIES (No Pig) =====
+        # ===== RICH THEMED STORIES (SAFE CONTENT) =====
         self.stdout.write('\nPopulating Rich Stories with Quizzes...')
         
         stories_data = [
@@ -328,7 +328,7 @@ class Command(BaseCommand):
             {"sentence": "We play with a ball.", "arabic_translation": "نحن نلعب بالكرة.", "category": "pronouns", "emoji": "⚽", "order": 10},
             {"sentence": "They are my friends.", "arabic_translation": "هم أصدقائي.", "category": "pronouns", "emoji": "👫", "order": 11},
             {"sentence": "It is a cute dog.", "arabic_translation": "إنه كلب لطيف.", "category": "pronouns", "emoji": "🐶", "order": 12,
-             "quiz_data": {"question": "What is it?", "options": ["A cat", "A dog 🐶", "A pig"], "correct": 1, "feedback_ar": "إنه كلب!"}},
+             "quiz_data": {"question": "What is it?", "options": ["A cat", "A dog 🐶", "A bag"], "correct": 1, "feedback_ar": "إنه كلب!"}},
         ]
         
         created_sentences = 0

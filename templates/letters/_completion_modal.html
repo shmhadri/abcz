@@ -1,0 +1,52 @@
+<div
+    class="modal letter-completion-overlay"
+    id="letterCompletionModal"
+    role="dialog"
+    aria-modal="true"
+    aria-label="شاشة إنجاز الحرف"
+>
+    <div class="letter-completion-card" role="document">
+        <button class="letter-completion-close" id="letterCompletionClose" type="button" aria-label="إغلاق شاشة الإنجاز">×</button>
+
+        <div class="letter-completion-stars" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <div class="letter-completion-hero" aria-hidden="true">
+            <div class="letter-completion-medal">🏆</div>
+        </div>
+
+        <div class="letter-completion-body">
+            <p class="letter-completion-kicker">إنجاز جديد</p>
+            <h2 class="letter-completion-title">🎉 أحسنت يا بطل!</h2>
+            <p class="letter-completion-subtitle">
+                أنهيت حرف <strong id="completionLetter">A</strong>
+            </p>
+
+            <div class="letter-completion-score">
+                <span>درجتك</span>
+                <strong id="completionScore">0</strong>
+            </div>
+
+            <div class="letter-completion-words">
+                <span class="letter-completion-section-title">الكلمات التي تعلمتها:</span>
+                <div class="letter-completion-word-list" id="completionWords" aria-live="polite"></div>
+            </div>
+
+            <div class="letter-completion-bird-message" id="completionBirdMessage">
+                🦜 رائع! أنت جاهز للحرف التالي.
+            </div>
+        </div>
+
+        <div class="letter-completion-actions" aria-label="خيارات بعد إنجاز الحرف">
+            <button class="letter-completion-btn primary" id="completionNextLetter" type="button">الحرف التالي</button>
+            <button class="letter-completion-btn secondary" id="completionOptionalGames" type="button">ألعاب إضافية للتدريب</button>
+            <button class="letter-completion-btn secondary" id="completionParentReport" type="button" hidden>تقرير ولي الأمر</button>
+            <button class="letter-completion-btn ghost" id="completionDismiss" type="button">إغلاق</button>
+        </div>
+    </div>
+</div>
