@@ -4633,7 +4633,42 @@ def get_owned_payment_order_or_404(request, order_id):
     return get_object_or_404(PaymentOrder, pk=order_id, user=request.user)
 
 
+def readable_payment_status_text(order, status_type):
+    if status_type == "success":
+        return (
+            "تم الدفع بنجاح",
+            "تم تفعيل الاشتراك إذا كانت حالة الدفع مؤكدة من مزود الدفع.",
+        )
+    if status_type == "failed":
+        return (
+            "لم تكتمل عملية الدفع",
+            "يمكنك المحاولة مرة أخرى أو اختيار طريقة دفع أخرى.",
+        )
+
+    if order and order.provider_status == "callback_received_pending_provider_verification":
+        return (
+            "تم الرجوع من ميسر",
+            "لم يتم تفعيل الاشتراك من بيانات الرابط فقط. يجب التحقق من حالة الدفع من ميسر قبل أي تفعيل.",
+        )
+
+    if (
+        order
+        and order.method == PaymentOrder.Method.BANK_TRANSFER
+        and order.status == PaymentOrder.Status.AWAITING_BANK_REVIEW
+    ):
+        return (
+            "التحويل البنكي قيد المراجعة",
+            "تم رفع الإيصال والطلب قيد المراجعة. سيتم تفعيل الاشتراك بعد الاعتماد الإداري.",
+        )
+
+    return (
+        "الدفع قيد المعالجة",
+        "عملية الدفع قيد المعالجة. لا يتم تفعيل الاشتراك إلا بعد نجاح الدفع أو اعتماد التحويل البنكي.",
+    )
+
+
 def payment_status_payload(order, status_type, title, message):
+    title, message = readable_payment_status_text(order, status_type)
     return {
         "order": order,
         "status_type": status_type,
