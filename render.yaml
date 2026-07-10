@@ -1,0 +1,60 @@
+services:
+  - type: web
+    name: abcz
+    runtime: python
+    plan: starter
+    branch: staging-ready
+    buildCommand: bash build.sh
+    preDeployCommand: python manage.py migrate --noinput
+    startCommand: gunicorn abcz.wsgi:application --log-file -
+    healthCheckPath: /health/
+    autoDeployTrigger: commit
+    disk:
+      name: abcz-media
+      mountPath: /opt/render/project/src/media
+      sizeGB: 1
+    envVars:
+      - key: DJANGO_ENV
+        value: production
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: abcz-db
+          property: connectionString
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+      - key: MEDIA_ROOT
+        value: /opt/render/project/src/media
+      - key: DISABLE_AUTO_SEED
+        value: "False"
+      - key: MOYASAR_ENABLED
+        value: "False"
+      - key: MOYASAR_PUBLISHABLE_KEY
+        sync: false
+      - key: MOYASAR_SECRET_KEY
+        sync: false
+      - key: MOYASAR_WEBHOOK_SECRET
+        sync: false
+      - key: MOYASAR_CALLBACK_URL
+        sync: false
+      - key: BANK_TRANSFER_ENABLED
+        value: "True"
+      - key: BANK_ACCOUNT_NAME
+        sync: false
+      - key: BANK_NAME
+        sync: false
+      - key: BANK_IBAN
+        sync: false
+      - key: BANK_ACCOUNT_NUMBER
+        sync: false
+      - key: BANK_TRANSFER_INSTRUCTIONS
+        sync: false
+
+databases:
+  - name: abcz-db
+    databaseName: abcz
+    user: abcz
+    plan: basic-256mb
