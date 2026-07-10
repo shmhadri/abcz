@@ -466,6 +466,7 @@ def feature_unavailable_response(request, message, *, feature_key="feature_unava
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>الترقية مطلوبة</title>
     <style>
+        * {{ box-sizing: border-box; }}
         body {{ margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: Tahoma, Arial, sans-serif; background: #f8fafc; color: #172033; }}
         main {{ width: min(560px, calc(100% - 32px)); background: #fff; border: 1px solid #dbe3ef; border-radius: 8px; padding: 28px; box-shadow: 0 18px 45px rgba(15, 23, 42, 0.1); text-align: center; }}
         h1 {{ margin: 0 0 12px; font-size: 1.6rem; }}
