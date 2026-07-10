@@ -4770,6 +4770,47 @@ body {
     }
 }
 
+.hamburger-btn {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    align-self: flex-start;
+    display: none;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-light);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    line-height: 1;
+}
+
+.hamburger-btn i {
+    display: none;
+}
+
+.hamburger-btn::before {
+    content: "\2630";
+    color: var(--text);
+    font-family: Arial, sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .hamburger-btn {
+        display: grid !important;
+        order: -10;
+        margin: 0;
+    }
+
+    .app-header {
+        align-items: flex-start;
+    }
+}
+
 .ai-footer {
     padding: 10px;
     background: white;
