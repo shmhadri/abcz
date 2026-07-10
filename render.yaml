@@ -30,6 +30,8 @@ services:
         value: /opt/render/project/src/media
       - key: DISABLE_AUTO_SEED
         value: "False"
+      - key: RUN_MIGRATIONS_ON_BUILD
+        value: "False"
       - key: MOYASAR_ENABLED
         value: "False"
       - key: MOYASAR_PUBLISHABLE_KEY
