@@ -5,6 +5,7 @@ __pycache__/
 # Django / local db
 db.sqlite3
 *.sqlite3
+media/
 
 # Static files (collected by Django)
 staticfiles/
@@ -18,3 +19,27 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Test and browser artifacts
+test-results/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local runserver logs and diagnostics
+*.log
+runserver*.log
+runserver*.err.log
+runserver*.out.log
+
+# Temporary audit files kept outside git
+/*.png
+/*.patch
+backup_*.txt
+diff_*.patch
+reports/
