@@ -32,6 +32,8 @@ services:
         value: "False"
       - key: RUN_MIGRATIONS_ON_BUILD
         value: "False"
+      - key: RUN_MIGRATIONS_ON_STARTUP
+        value: "False"
       - key: MOYASAR_ENABLED
         value: "False"
       - key: MOYASAR_PUBLISHABLE_KEY
