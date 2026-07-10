@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group, User
 from django.test import TestCase, override_settings
 
 from phonics.views import (
@@ -12,6 +13,12 @@ from phonics.views import (
 
 @override_settings(DISABLE_AUTO_SEED=True)
 class SoundsPatternsTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="sounds-silver", password="StrongPass123!")
+        silver_group, _ = Group.objects.get_or_create(name="Silver")
+        self.user.groups.add(silver_group)
+        self.client.force_login(self.user)
+
     def test_sound_patterns_cover_required_groups(self):
         groups = {group["id"]: group for group in SOUND_PATTERN_GROUPS}
 

@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.test import TestCase, override_settings
 
 from phonics.models import EnglishFoundationProgress, StudentProfile
@@ -6,6 +6,12 @@ from phonics.models import EnglishFoundationProgress, StudentProfile
 
 @override_settings(DISABLE_AUTO_SEED=True)
 class EnglishFoundationPagesTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="english-foundation-diamond", password="StrongPass123!")
+        diamond_group, _ = Group.objects.get_or_create(name="Diamond")
+        self.user.groups.add(diamond_group)
+        self.client.force_login(self.user)
+
     def test_english_foundation_pages_return_success(self):
         paths = [
             "/english-foundation/",
@@ -26,6 +32,7 @@ class EnglishFoundationPagesTests(TestCase):
                 self.assertEqual(response.status_code, 200)
 
     def test_layout_contains_english_foundation_buttons(self):
+        self.client.logout()
         response = self.client.get("/")
 
         self.assertEqual(response.status_code, 200)
@@ -73,6 +80,8 @@ class EnglishFoundationPagesTests(TestCase):
     def test_progress_api_records_points_while_leaderboard_is_blocked(self):
         user = User.objects.create_user(username="foundation-user", password="pass12345")
         StudentProfile.objects.create(user=user, student_name="Foundation Student", grade="الصف الثالث")
+        level_four_group, _ = Group.objects.get_or_create(name="Diamond")
+        user.groups.add(level_four_group)
         self.client.force_login(user)
 
         response = self.client.post(
@@ -85,6 +94,7 @@ class EnglishFoundationPagesTests(TestCase):
         self.assertEqual(response.json()["points"], 5)
         self.assertTrue(EnglishFoundationProgress.objects.filter(user=user, section="vocabulary").exists())
 
+        self.client.logout()
         leaderboard = self.client.get("/api/leaderboard/")
         self.assertEqual(leaderboard.status_code, 403)
         self.assertEqual(leaderboard.json()["error"], "feature_unavailable")

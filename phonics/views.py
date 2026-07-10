@@ -378,6 +378,9 @@ CHECKOUT_PLANS = {
 
 UPGRADE_VIP_OR_FULL_MESSAGE = "هذه الميزة متاحة في VIP أو الباقة الماسية."
 UPGRADE_FULL_ACCESS_MESSAGE = "هذه الميزة متاحة في الباقة الماسية."
+UPGRADE_SILVER_OR_HIGHER_MESSAGE = "هذه الميزة متاحة في Silver أو باقة أعلى."
+UPGRADE_LEVEL_THREE_MESSAGE = "هذه الميزة متاحة في اشتراك المستوى الثالث أو الباقة الماسية."
+UPGRADE_LEVEL_FOUR_MESSAGE = "هذه الميزة متاحة في اشتراك المستوى الرابع أو الباقة الماسية."
 
 
 def upgrade_message_for_feature(feature_key, fallback_message):
@@ -1842,6 +1845,10 @@ def profile_api(request):
 
 @require_POST
 def english_foundation_progress_api(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     if not request.user.is_authenticated:
         return JsonResponse({"authenticated": False, "message": "local_only"})
 
@@ -1962,6 +1969,10 @@ def english_foundation_items(section_key):
 @ensure_csrf_cookie
 @require_GET
 def english_foundation(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     return render(request, "english_foundation.html", {
         "sections": english_foundation_context_for_user(request.user),
     })
@@ -1970,6 +1981,10 @@ def english_foundation(request):
 @ensure_csrf_cookie
 @require_GET
 def english_foundation_section(request, section_key):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     section = ENGLISH_FOUNDATION_SECTION_MAP[section_key]
     progress = get_english_foundation_progress_map(request.user).get(section_key)
     return render(request, "english_foundation_section.html", {
@@ -1985,6 +2000,10 @@ def english_foundation_section(request, section_key):
 @ensure_csrf_cookie
 @require_GET
 def vocabulary_foundation(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     progress = get_english_foundation_progress_map(request.user).get("vocabulary")
     return render(request, "vocabulary_foundation.html", {
         "points": progress.points if progress else 0,
@@ -1996,12 +2015,20 @@ def vocabulary_foundation(request):
 @ensure_csrf_cookie
 @require_GET
 def vocabulary_foundation_worksheet(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     return render(request, "worksheets/vocabulary_worksheet.html")
 
 
 @ensure_csrf_cookie
 @require_GET
 def grammar_foundation(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     progress = get_english_foundation_progress_map(request.user).get("grammar")
     return render(request, "grammar_foundation.html", {
         "points": progress.points if progress else 0,
@@ -2013,12 +2040,20 @@ def grammar_foundation(request):
 @ensure_csrf_cookie
 @require_GET
 def grammar_foundation_worksheet(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     return render(request, "worksheets/grammar_worksheet.html")
 
 
 @ensure_csrf_cookie
 @require_GET
 def conversations(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     progress = get_english_foundation_progress_map(request.user).get("conversations")
     return render(request, "conversations.html", {
         "points": progress.points if progress else 0,
@@ -2030,12 +2065,20 @@ def conversations(request):
 @ensure_csrf_cookie
 @require_GET
 def conversations_worksheet(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     return render(request, "worksheets/conversations_worksheet.html")
 
 
 @ensure_csrf_cookie
 @require_GET
 def common_sentences(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     progress = get_english_foundation_progress_map(request.user).get("common_sentences")
     return render(request, "common_sentences.html", {
         "points": progress.points if progress else 0,
@@ -2047,6 +2090,10 @@ def common_sentences(request):
 @ensure_csrf_cookie
 @require_GET
 def worksheets_center(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     progress = get_english_foundation_progress_map(request.user).get("worksheets")
     return render(request, "worksheets/worksheets_center.html", {
         "points": progress.points if progress else 0,
@@ -2062,6 +2109,10 @@ def english_worksheets(request):
 @ensure_csrf_cookie
 @require_GET
 def mixed_review_worksheet(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     return render(request, "worksheets/mixed_review_worksheet.html")
 
 
@@ -2135,6 +2186,10 @@ def letters_worksheets_book(request):
 @ensure_csrf_cookie
 @require_GET
 def games_view(request):
+    blocked = require_feature(request, "internal_games", "ألعاب الموقع الداخلية متاحة في Basic أو باقة أعلى.")
+    if blocked:
+        return blocked
+
     progress = get_english_foundation_progress_map(request.user).get("games")
     return render(request, "games.html", {
         "points": progress.points if progress else 0,
@@ -2246,12 +2301,7 @@ def level_four_worksheet_items():
 
 
 def render_level_four_page(request, section_mode, **extra):
-    blocked = deny_current_plan_without_feature(
-        request,
-        "level_four",
-        UPGRADE_FULL_ACCESS_MESSAGE,
-        plans={PLAN_BASIC, PLAN_SILVER, PLAN_VIP},
-    )
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
     if blocked:
         return blocked
 
@@ -2313,6 +2363,10 @@ def level_four_worksheet_detail_view(request, worksheet_type):
 @ensure_csrf_cookie
 @require_GET
 def common_sentences_worksheet(request):
+    blocked = require_feature(request, "level_four", UPGRADE_LEVEL_FOUR_MESSAGE)
+    if blocked:
+        return blocked
+
     return render(request, "worksheets/common_sentences_worksheet.html")
 
 
@@ -5033,6 +5087,10 @@ def terms(request):
 @ensure_csrf_cookie
 @require_GET
 def sounds(request):
+    blocked = require_feature(request, "sounds_basic", UPGRADE_SILVER_OR_HIGHER_MESSAGE)
+    if blocked:
+        return blocked
+
     progress = None
     profile = None
     if request.user.is_authenticated:
@@ -5079,12 +5137,7 @@ def sounds(request):
 
 @require_GET
 def sounds_worksheet(request):
-    blocked = deny_current_plan_without_feature(
-        request,
-        "sounds_worksheets",
-        "أوراق عمل الصوتيات متاحة في Silver أو باقة أعلى.",
-        plans={PLAN_BASIC},
-    )
+    blocked = require_feature(request, "sounds_worksheets", "أوراق عمل الصوتيات متاحة في Silver أو باقة أعلى.")
     if blocked:
         return blocked
 
@@ -5103,6 +5156,10 @@ def sounds_worksheet(request):
 
 @require_http_methods(["GET", "POST"])
 def sound_progress_api(request):
+    blocked = require_feature(request, "sounds_basic", UPGRADE_SILVER_OR_HIGHER_MESSAGE)
+    if blocked:
+        return blocked
+
     if not request.user.is_authenticated:
         return JsonResponse({"authenticated": False, "message": "local_only"})
 
@@ -5628,7 +5685,7 @@ def serialize_cvc_reading_progress(progress):
 @require_GET
 @ensure_csrf_cookie
 def cvc_reading_view(request):
-    blocked = deny_current_plan_without_feature(request, "cvc_words", UPGRADE_VIP_OR_FULL_MESSAGE)
+    blocked = require_feature(request, "cvc_words", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
         return blocked
 
@@ -5646,7 +5703,7 @@ def cvc_reading_view(request):
 
 @require_GET
 def cvc_reading_worksheet(request):
-    blocked = deny_current_plan_without_feature(request, "cvc_worksheets", UPGRADE_VIP_OR_FULL_MESSAGE)
+    blocked = require_feature(request, "cvc_worksheets", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
         return blocked
 
@@ -5667,7 +5724,7 @@ def cvc_reading_worksheet(request):
 
 @require_GET
 def get_cvc_words_api(request):
-    blocked = deny_current_plan_without_feature(request, "cvc_words", UPGRADE_VIP_OR_FULL_MESSAGE)
+    blocked = require_feature(request, "cvc_words", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
         return blocked
 
@@ -5709,7 +5766,7 @@ def get_cvc_words_api(request):
 
 @require_GET
 def get_cvc_sentences_api(request):
-    blocked = deny_current_plan_without_feature(request, "cvc_sentences", UPGRADE_VIP_OR_FULL_MESSAGE)
+    blocked = require_feature(request, "cvc_sentences", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
         return blocked
 
@@ -5744,7 +5801,7 @@ def get_cvc_sentences_api(request):
 
 @require_GET
 def get_cvc_stories_api(request):
-    blocked = deny_current_plan_without_feature(request, "cvc_stories", UPGRADE_VIP_OR_FULL_MESSAGE)
+    blocked = require_feature(request, "cvc_stories", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
         return blocked
 
@@ -5778,7 +5835,7 @@ def get_cvc_stories_api(request):
 
 @require_POST
 def save_cvc_progress_api(request):
-    blocked = deny_current_plan_without_feature(request, "cvc_words", UPGRADE_VIP_OR_FULL_MESSAGE)
+    blocked = require_feature(request, "cvc_words", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
         return blocked
 
@@ -5838,7 +5895,7 @@ def save_cvc_progress_api(request):
 
 @require_http_methods(["GET", "POST"])
 def cvc_reading_progress_api(request):
-    blocked = deny_current_plan_without_feature(request, "cvc_words", UPGRADE_VIP_OR_FULL_MESSAGE)
+    blocked = require_feature(request, "cvc_words", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
         return blocked
 
@@ -6132,7 +6189,7 @@ def cvc_reading_progress_api(request):
 @csrf_exempt
 @require_POST
 def check_cvc_pronunciation(request):
-    blocked = deny_current_plan_without_feature(request, "cvc_words", UPGRADE_VIP_OR_FULL_MESSAGE)
+    blocked = require_feature(request, "cvc_words", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
         return blocked
 

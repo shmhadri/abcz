@@ -15,7 +15,6 @@ class CorePagesTests(TestCase):
             "/guide/",
             "/privacy/",
             "/terms/",
-            "/cvc-reading/",
         ]
 
         for path in paths:
@@ -53,6 +52,29 @@ class CorePagesTests(TestCase):
         self.assertNotIn("leaderboard-hero", html)
         self.assertNotIn("Leaderboard Student", html)
         self.assertNotIn("Test School", html)
+
+    def test_paid_learning_paths_are_blocked_for_anonymous_users(self):
+        paths = [
+            "/sounds/",
+            "/sounds/worksheet/",
+            "/cvc-reading/",
+            "/cvc-reading/worksheet/",
+            "/level-four/",
+            "/level-four/reading/",
+            "/english-foundation/",
+            "/vocabulary-foundation/",
+            "/grammar-foundation/",
+            "/conversations/",
+            "/common-sentences/",
+            "/worksheets/",
+            "/games/",
+        ]
+
+        for path in paths:
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 403)
+                self.assertContains(response, "هذه الميزة", status_code=403)
 
     def test_leaderboard_api_is_blocked_in_level_one_policy(self):
         student = Student.objects.create(name="API Leaderboard Student", grade="Grade 2", school="Hidden School")

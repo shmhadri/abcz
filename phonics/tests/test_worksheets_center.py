@@ -1,8 +1,15 @@
+from django.contrib.auth.models import Group, User
 from django.test import TestCase, override_settings
 
 
 @override_settings(DISABLE_AUTO_SEED=True)
 class WorksheetsCenterTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="worksheets-diamond", password="StrongPass123!")
+        diamond_group, _ = Group.objects.get_or_create(name="Diamond")
+        self.user.groups.add(diamond_group)
+        self.client.force_login(self.user)
+
     def test_worksheets_center_returns_success(self):
         response = self.client.get("/worksheets/")
 
