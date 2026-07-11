@@ -10,7 +10,7 @@ from django.core.management import call_command
 from django.test import TestCase
 
 from load_tests.config import get_config, validate_base_url
-from load_tests.scenarios import SCENARIO_WEIGHTS, csrf_token_from_client, json_headers
+from load_tests.scenarios import SCENARIO_WEIGHTS, SILVER_PAGES, csrf_token_from_client, json_headers
 from phonics.management.commands.create_load_test_data import LOAD_TEST_EMAIL_DOMAIN, LOAD_TEST_SCHOOL
 from phonics.models import (
     CVCReadingProgress,
@@ -121,6 +121,12 @@ class LoadTestScenarioTests(TestCase):
         self.assertEqual(SCENARIO_WEIGHTS["level4"], 15)
         self.assertEqual(SCENARIO_WEIGHTS["diamond"], 10)
         self.assertEqual(sum(SCENARIO_WEIGHTS.values()), 100)
+
+    def test_silver_scenario_uses_silver_allowed_worksheet_routes(self):
+        silver_paths = {step.path for step in SILVER_PAGES}
+        self.assertIn("/sounds/worksheet/", silver_paths)
+        self.assertIn("/letters/worksheet/", silver_paths)
+        self.assertNotIn("/worksheets/", silver_paths)
 
     def test_csrf_helpers_support_plain_cookie_values(self):
         class Client:

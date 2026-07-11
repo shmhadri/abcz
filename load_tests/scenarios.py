@@ -34,7 +34,7 @@ SILVER_PAGES = [
     ScenarioStep("GET", "/", "silver:index"),
     ScenarioStep("GET", "/sounds/", "silver:sounds"),
     ScenarioStep("GET", "/sounds/worksheet/", "silver:sounds_worksheet"),
-    ScenarioStep("GET", "/worksheets/", "silver:worksheets"),
+    ScenarioStep("GET", "/letters/worksheet/", "silver:letters_worksheet"),
     ScenarioStep("GET", "/api/sounds/progress/", "silver:sounds_progress_get"),
 ]
 
