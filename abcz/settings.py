@@ -67,6 +67,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "phonics.middleware.RequestIDMiddleware",
+    "phonics.middleware.RequestTimingMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -171,6 +173,8 @@ LOGOUT_REDIRECT_URL = "/"
 
 
 DISABLE_AUTO_SEED = env_bool("DISABLE_AUTO_SEED", "False")
+REQUEST_LOG_ENABLED = (not TESTING) and env_bool("REQUEST_LOG_ENABLED", "True")
+ENABLE_SERVER_TIMING_HEADER = env_bool("ENABLE_SERVER_TIMING_HEADER", "False")
 
 
 # Payment integration placeholders. Keep real secrets in environment variables only.
@@ -186,3 +190,30 @@ BANK_NAME = os.getenv("BANK_NAME", "").strip()
 BANK_IBAN = os.getenv("BANK_IBAN", "").strip()
 BANK_ACCOUNT_NUMBER = os.getenv("BANK_ACCOUNT_NUMBER", "").strip()
 BANK_TRANSFER_INSTRUCTIONS = os.getenv("BANK_TRANSFER_INSTRUCTIONS", "").strip()
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "request": {
+            "format": (
+                "%(asctime)s %(levelname)s %(name)s request_id=%(request_id)s "
+                "method=%(method)s path=%(path)s status=%(status_code)s duration_ms=%(duration_ms)s"
+            )
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "request",
+        },
+    },
+    "loggers": {
+        "abcz.requests": {
+            "handlers": ["console"],
+            "level": os.getenv("REQUEST_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+    },
+}

@@ -6,7 +6,7 @@ services:
     branch: staging-ready
     buildCommand: bash build.sh
     preDeployCommand: python manage.py migrate --noinput
-    startCommand: gunicorn abcz.wsgi:application --log-file -
+    startCommand: sh -c 'gunicorn abcz.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers ${WEB_CONCURRENCY:-2} --threads ${GUNICORN_THREADS:-4} --timeout ${GUNICORN_TIMEOUT:-45} --graceful-timeout ${GUNICORN_GRACEFUL_TIMEOUT:-30} --keep-alive ${GUNICORN_KEEP_ALIVE:-5} --max-requests ${GUNICORN_MAX_REQUESTS:-1000} --max-requests-jitter ${GUNICORN_MAX_REQUESTS_JITTER:-100} --access-logfile - --error-logfile -'
     healthCheckPath: /health/
     autoDeployTrigger: commit
     disk:
@@ -34,6 +34,22 @@ services:
         value: "False"
       - key: RUN_MIGRATIONS_ON_STARTUP
         value: "False"
+      - key: WEB_CONCURRENCY
+        value: "2"
+      - key: GUNICORN_THREADS
+        value: "4"
+      - key: GUNICORN_TIMEOUT
+        value: "45"
+      - key: GUNICORN_GRACEFUL_TIMEOUT
+        value: "30"
+      - key: GUNICORN_KEEP_ALIVE
+        value: "5"
+      - key: GUNICORN_MAX_REQUESTS
+        value: "1000"
+      - key: GUNICORN_MAX_REQUESTS_JITTER
+        value: "100"
+      - key: REQUEST_LOG_ENABLED
+        value: "True"
       - key: MOYASAR_ENABLED
         value: "False"
       - key: MOYASAR_PUBLISHABLE_KEY

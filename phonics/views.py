@@ -53,6 +53,7 @@ from .models import (
     BankTransferProof,
     activate_subscription_from_payment,
 )
+from .middleware import get_current_request
 
 
 # ============================================
@@ -135,9 +136,34 @@ def parse_json_safely(request):
         return None, _json_error("Failed to parse request", 400, details=str(e))
 
 
+def get_request_feature_cache(user):
+    if not getattr(user, "is_authenticated", False):
+        return None
+
+    request = get_current_request()
+    if request is None:
+        return None
+
+    request_user = getattr(request, "user", None)
+    if not getattr(request_user, "is_authenticated", False):
+        return None
+    if getattr(request_user, "pk", None) != getattr(user, "pk", None):
+        return None
+
+    cache = getattr(request, "_subscription_feature_cache", None)
+    if cache is None:
+        cache = {}
+        request._subscription_feature_cache = cache
+    return cache
+
+
 def get_or_create_student_profile(user):
     if not user.is_authenticated:
         return None
+
+    cache = get_request_feature_cache(user)
+    if cache is not None and "student_profile" in cache:
+        return cache["student_profile"]
 
     profile, _ = StudentProfile.objects.get_or_create(
         user=user,
@@ -148,6 +174,8 @@ def get_or_create_student_profile(user):
             "parent_phone": "",
         },
     )
+    if cache is not None:
+        cache["student_profile"] = profile
     return profile
 
 
@@ -393,18 +421,29 @@ def _user_group_slugs(user):
     if not user.is_authenticated:
         return set()
 
-    return {
+    cache = get_request_feature_cache(user)
+    if cache is not None and "group_slugs" in cache:
+        return cache["group_slugs"]
+
+    group_slugs = {
         group.name.strip().lower().replace(" ", "_").replace("-", "_")
         for group in user.groups.all()
     }
+    if cache is not None:
+        cache["group_slugs"] = group_slugs
+    return group_slugs
 
 
 def get_active_subscription_plan_codes(user):
     if not user.is_authenticated:
         return set()
 
+    cache = get_request_feature_cache(user)
+    if cache is not None and "active_plan_codes" in cache:
+        return cache["active_plan_codes"]
+
     now = timezone.now()
-    return set(
+    active_plan_codes = set(
         UserSubscription.objects.filter(
             user=user,
             status=UserSubscription.Status.ACTIVE,
@@ -412,16 +451,24 @@ def get_active_subscription_plan_codes(user):
             expires_at__gt=now,
         ).values_list("plan_code", flat=True)
     )
+    if cache is not None:
+        cache["active_plan_codes"] = active_plan_codes
+    return active_plan_codes
 
 
 def get_subscription_plan(user):
     if not user.is_authenticated:
         return PLAN_FREE
 
+    cache = get_request_feature_cache(user)
+    if cache is not None and "subscription_plan" in cache:
+        return cache["subscription_plan"]
+
     group_slugs = _user_group_slugs(user)
     active_plan_codes = get_active_subscription_plan_codes(user)
     profile = get_or_create_student_profile(user)
 
+    plan = PLAN_FREE
     if (
         PLAN_DIAMOND in group_slugs
         or PLAN_DIAMOND in active_plan_codes
@@ -430,20 +477,29 @@ def get_subscription_plan(user):
         or PLAN_FULL_ACCESS in group_slugs
         or "fullaccess" in group_slugs
     ):
-        return PLAN_DIAMOND
-    if (profile and profile.is_vip) or PLAN_VIP in group_slugs or PLAN_VIP in active_plan_codes:
-        return PLAN_VIP
-    if PLAN_SILVER in group_slugs or PLAN_SILVER in active_plan_codes:
-        return PLAN_SILVER
-    if (profile and profile.is_premium) or PLAN_BASIC in group_slugs or PLAN_BASIC in active_plan_codes:
-        return PLAN_BASIC
-    return PLAN_FREE
+        plan = PLAN_DIAMOND
+    elif (profile and profile.is_vip) or PLAN_VIP in group_slugs or PLAN_VIP in active_plan_codes:
+        plan = PLAN_VIP
+    elif PLAN_SILVER in group_slugs or PLAN_SILVER in active_plan_codes:
+        plan = PLAN_SILVER
+    elif (profile and profile.is_premium) or PLAN_BASIC in group_slugs or PLAN_BASIC in active_plan_codes:
+        plan = PLAN_BASIC
+
+    if cache is not None:
+        cache["subscription_plan"] = plan
+    return plan
 
 
 def get_feature_keys(user):
+    cache = get_request_feature_cache(user)
+    if cache is not None and "feature_keys" in cache:
+        return cache["feature_keys"]
+
     feature_keys = set(FEATURE_KEYS_BY_PLAN.get(get_subscription_plan(user), set()))
     for plan_code in get_active_subscription_plan_codes(user):
         feature_keys.update(FEATURE_KEYS_BY_PLAN.get(plan_code, set()))
+    if cache is not None:
+        cache["feature_keys"] = feature_keys
     return feature_keys
 
 
