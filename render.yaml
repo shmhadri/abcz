@@ -6,7 +6,7 @@ services:
     branch: staging-ready
     buildCommand: bash build.sh
     preDeployCommand: python manage.py migrate --noinput
-    startCommand: sh -c 'gunicorn abcz.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers ${WEB_CONCURRENCY:-2} --threads ${GUNICORN_THREADS:-4} --timeout ${GUNICORN_TIMEOUT:-45} --graceful-timeout ${GUNICORN_GRACEFUL_TIMEOUT:-30} --keep-alive ${GUNICORN_KEEP_ALIVE:-5} --max-requests ${GUNICORN_MAX_REQUESTS:-1000} --max-requests-jitter ${GUNICORN_MAX_REQUESTS_JITTER:-100} --access-logfile - --error-logfile -'
+    startCommand: sh -c 'gunicorn abcz.wsgi:application --bind 0.0.0.0:${PORT:-8000} --worker-class gthread --workers ${WEB_CONCURRENCY:-2} --threads ${GUNICORN_THREADS:-4} --timeout ${GUNICORN_TIMEOUT:-45} --graceful-timeout ${GUNICORN_GRACEFUL_TIMEOUT:-30} --keep-alive ${GUNICORN_KEEP_ALIVE:-5} --max-requests ${GUNICORN_MAX_REQUESTS:-1000} --max-requests-jitter ${GUNICORN_MAX_REQUESTS_JITTER:-100} --access-logfile - --error-logfile -'
     healthCheckPath: /health/
     autoDeployTrigger: commit
     disk:
@@ -50,6 +50,18 @@ services:
         value: "100"
       - key: REQUEST_LOG_ENABLED
         value: "True"
+      - key: DB_CONN_MAX_AGE
+        value: "60"
+      - key: REDIS_URL
+        sync: false
+      - key: CACHE_KEY_PREFIX
+        value: abcz
+      - key: SUBSCRIPTION_CACHE_TIMEOUT
+        value: "300"
+      - key: STATIC_CONTENT_CACHE_TIMEOUT
+        value: "1800"
+      - key: PUBLIC_PAGE_CACHE_TIMEOUT
+        value: "600"
       - key: MOYASAR_ENABLED
         value: "False"
       - key: MOYASAR_PUBLISHABLE_KEY

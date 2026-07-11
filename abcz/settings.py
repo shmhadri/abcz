@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "phonics",
+    "phonics.apps.PhonicsConfig",
 ]
 
 MIDDLEWARE = [
@@ -103,7 +103,7 @@ if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.config(
             default=DATABASE_URL,
-            conn_max_age=600,
+            conn_max_age=int(os.getenv("DB_CONN_MAX_AGE", "60")),
             ssl_require=not DEBUG,
         )
     }
@@ -114,6 +114,40 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
+DATABASES["default"]["CONN_MAX_AGE"] = int(os.getenv("DB_CONN_MAX_AGE", "60"))
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
+
+
+REDIS_URL = os.getenv("REDIS_URL", "").strip()
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                "SOCKET_CONNECT_TIMEOUT": 3,
+                "SOCKET_TIMEOUT": 3,
+                "RETRY_ON_TIMEOUT": True,
+                "IGNORE_EXCEPTIONS": True,
+            },
+            "KEY_PREFIX": os.getenv("CACHE_KEY_PREFIX", "abcz"),
+            "TIMEOUT": 300,
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "abcz-local-cache",
+            "TIMEOUT": 300,
+        }
+    }
+
+SUBSCRIPTION_CACHE_TIMEOUT = 0 if TESTING else int(os.getenv("SUBSCRIPTION_CACHE_TIMEOUT", "300"))
+STATIC_CONTENT_CACHE_TIMEOUT = 0 if TESTING else int(os.getenv("STATIC_CONTENT_CACHE_TIMEOUT", "1800"))
+PUBLIC_PAGE_CACHE_TIMEOUT = int(os.getenv("PUBLIC_PAGE_CACHE_TIMEOUT", "600"))
 
 
 AUTH_PASSWORD_VALIDATORS = [

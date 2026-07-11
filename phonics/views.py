@@ -28,6 +28,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
@@ -53,7 +54,17 @@ from .models import (
     BankTransferProof,
     activate_subscription_from_payment,
 )
+from .cache_helpers import (
+    get_cached_active_plan_codes,
+    get_cached_feature_keys,
+    get_cached_static_value,
+    get_cached_subscription_plan,
+    get_cached_user_group_slugs,
+)
 from .middleware import get_current_request
+
+
+PUBLIC_PAGE_CACHE_TIMEOUT = getattr(settings, "PUBLIC_PAGE_CACHE_TIMEOUT", 600)
 
 
 # ============================================
@@ -425,10 +436,13 @@ def _user_group_slugs(user):
     if cache is not None and "group_slugs" in cache:
         return cache["group_slugs"]
 
-    group_slugs = {
-        group.name.strip().lower().replace(" ", "_").replace("-", "_")
-        for group in user.groups.all()
-    }
+    def calculate_group_slugs():
+        return {
+            group.name.strip().lower().replace(" ", "_").replace("-", "_")
+            for group in user.groups.all()
+        }
+
+    group_slugs = get_cached_user_group_slugs(user, calculate_group_slugs)
     if cache is not None:
         cache["group_slugs"] = group_slugs
     return group_slugs
@@ -442,15 +456,18 @@ def get_active_subscription_plan_codes(user):
     if cache is not None and "active_plan_codes" in cache:
         return cache["active_plan_codes"]
 
-    now = timezone.now()
-    active_plan_codes = set(
-        UserSubscription.objects.filter(
-            user=user,
-            status=UserSubscription.Status.ACTIVE,
-            starts_at__lte=now,
-            expires_at__gt=now,
-        ).values_list("plan_code", flat=True)
-    )
+    def calculate_active_plan_codes():
+        now = timezone.now()
+        return set(
+            UserSubscription.objects.filter(
+                user=user,
+                status=UserSubscription.Status.ACTIVE,
+                starts_at__lte=now,
+                expires_at__gt=now,
+            ).values_list("plan_code", flat=True)
+        )
+
+    active_plan_codes = get_cached_active_plan_codes(user, calculate_active_plan_codes)
     if cache is not None:
         cache["active_plan_codes"] = active_plan_codes
     return active_plan_codes
@@ -464,27 +481,30 @@ def get_subscription_plan(user):
     if cache is not None and "subscription_plan" in cache:
         return cache["subscription_plan"]
 
-    group_slugs = _user_group_slugs(user)
-    active_plan_codes = get_active_subscription_plan_codes(user)
-    profile = get_or_create_student_profile(user)
+    def calculate_subscription_plan():
+        group_slugs = _user_group_slugs(user)
+        active_plan_codes = get_active_subscription_plan_codes(user)
+        profile = get_or_create_student_profile(user)
 
-    plan = PLAN_FREE
-    if (
-        PLAN_DIAMOND in group_slugs
-        or PLAN_DIAMOND in active_plan_codes
-        or "الماسي" in group_slugs
-        or "diamond_plan" in group_slugs
-        or PLAN_FULL_ACCESS in group_slugs
-        or "fullaccess" in group_slugs
-    ):
-        plan = PLAN_DIAMOND
-    elif (profile and profile.is_vip) or PLAN_VIP in group_slugs or PLAN_VIP in active_plan_codes:
-        plan = PLAN_VIP
-    elif PLAN_SILVER in group_slugs or PLAN_SILVER in active_plan_codes:
-        plan = PLAN_SILVER
-    elif (profile and profile.is_premium) or PLAN_BASIC in group_slugs or PLAN_BASIC in active_plan_codes:
-        plan = PLAN_BASIC
+        plan = PLAN_FREE
+        if (
+            PLAN_DIAMOND in group_slugs
+            or PLAN_DIAMOND in active_plan_codes
+            or "الماسي" in group_slugs
+            or "diamond_plan" in group_slugs
+            or PLAN_FULL_ACCESS in group_slugs
+            or "fullaccess" in group_slugs
+        ):
+            plan = PLAN_DIAMOND
+        elif (profile and profile.is_vip) or PLAN_VIP in group_slugs or PLAN_VIP in active_plan_codes:
+            plan = PLAN_VIP
+        elif PLAN_SILVER in group_slugs or PLAN_SILVER in active_plan_codes:
+            plan = PLAN_SILVER
+        elif (profile and profile.is_premium) or PLAN_BASIC in group_slugs or PLAN_BASIC in active_plan_codes:
+            plan = PLAN_BASIC
+        return plan
 
+    plan = get_cached_subscription_plan(user, calculate_subscription_plan)
     if cache is not None:
         cache["subscription_plan"] = plan
     return plan
@@ -495,9 +515,13 @@ def get_feature_keys(user):
     if cache is not None and "feature_keys" in cache:
         return cache["feature_keys"]
 
-    feature_keys = set(FEATURE_KEYS_BY_PLAN.get(get_subscription_plan(user), set()))
-    for plan_code in get_active_subscription_plan_codes(user):
-        feature_keys.update(FEATURE_KEYS_BY_PLAN.get(plan_code, set()))
+    def calculate_feature_keys():
+        keys = set(FEATURE_KEYS_BY_PLAN.get(get_subscription_plan(user), set()))
+        for plan_code in get_active_subscription_plan_codes(user):
+            keys.update(FEATURE_KEYS_BY_PLAN.get(plan_code, set()))
+        return keys
+
+    feature_keys = get_cached_feature_keys(user, calculate_feature_keys)
     if cache is not None:
         cache["feature_keys"] = feature_keys
     return feature_keys
@@ -967,20 +991,23 @@ def get_english_foundation_progress_map(user):
 
 
 def get_existing_bird_lottie_files():
-    animation_dir = settings.BASE_DIR / "static" / "animations" / "bird"
-    expected_files = {
-        "idle": "bird_idle.json",
-        "talking": "bird_talk.json",
-        "happy": "bird_happy.json",
-        "wrong": "bird_wrong.json",
-        "thinking": "bird_thinking.json",
-    }
+    def calculate_files():
+        animation_dir = settings.BASE_DIR / "static" / "animations" / "bird"
+        expected_files = {
+            "idle": "bird_idle.json",
+            "talking": "bird_talk.json",
+            "happy": "bird_happy.json",
+            "wrong": "bird_wrong.json",
+            "thinking": "bird_thinking.json",
+        }
 
-    return {
-        state: f"/static/animations/bird/{filename}"
-        for state, filename in expected_files.items()
-        if (animation_dir / filename).exists()
-    }
+        return {
+            state: f"/static/animations/bird/{filename}"
+            for state, filename in expected_files.items()
+            if (animation_dir / filename).exists()
+        }
+
+    return get_cached_static_value("bird-lottie-files", calculate_files)
 
 
 def validate_int(value, *, min_val: int, max_val: int, field_name="value"):
@@ -4792,6 +4819,7 @@ def payment_status_payload(order, status_type, title, message):
     }
 
 
+@cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
 @require_GET
 def pricing(request):
     return render(request, "pricing.html")
@@ -4982,11 +5010,13 @@ def moyasar_webhook(request):
     }, status=202)
 
 
+@cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
 @require_GET
 def start(request):
     return render(request, "start.html")
 
 
+@cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
 @require_GET
 def levels(request):
     level_cards = [
@@ -5116,26 +5146,31 @@ def build_curriculum_context():
     }
 
 
+@cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
 @require_GET
 def curriculum(request):
     return render(request, "curriculum.html", build_curriculum_context())
 
 
+@cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
 @require_GET
 def about(request):
     return render(request, "about.html")
 
 
+@cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
 @require_GET
 def guide(request):
     return render(request, "guide.html")
 
 
+@cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
 @require_GET
 def privacy(request):
     return render(request, "privacy.html")
 
 
+@cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
 @require_GET
 def terms(request):
     return render(request, "terms.html")
