@@ -4785,6 +4785,16 @@
         }
 
         function speak(text, slow = false) {
+            if (window.SpeechService?.speakText) {
+                SpeechService.speakText(text, {
+                    lang: "en-US",
+                    rate: slow ? 0.78 : (String(text).length <= 3 ? 0.8 : 0.86),
+                    pitch: 1
+                }).then(result => {
+                    if (!result.ok && window.ABCZ_DEBUG_SPEECH) console.debug("[sounds]", "speech synthesis failed", result);
+                });
+                return true;
+            }
             if (!("speechSynthesis" in window)) {
                 return false;
             }
