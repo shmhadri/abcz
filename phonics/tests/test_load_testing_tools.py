@@ -142,10 +142,10 @@ class LoadTestAnalysisTests(TestCase):
             path = Path(temp_dir) / "sample_stats.csv"
             path.write_text(
                 "\n".join([
-                    "Type,Name,Request Count,Failure Count,Average Response Time,Requests/s,95%",
-                    "GET,visitor:index,100,0,120,10,220",
-                    "GET,silver:sounds,80,2,300,8,750",
-                    ",Aggregated,180,2,200,18,600",
+                    "Type,Name,Request Count,Failure Count,Average Response Time,Requests/s,50%,95%,99%,Max Response Time",
+                    "GET,visitor:index,100,0,120,10,110,220,400,700",
+                    "GET,silver:sounds,80,2,300,8,280,750,900,1200",
+                    ",Aggregated,180,2,200,18,180,600,850,1200",
                 ]),
                 encoding="utf-8",
             )
@@ -156,6 +156,9 @@ class LoadTestAnalysisTests(TestCase):
         self.assertEqual(summary.failures, 2)
         self.assertEqual(summary.failure_rate, 1.11)
         self.assertEqual(summary.requests_per_second, 18)
+        self.assertEqual(summary.p50_response_ms, 180)
         self.assertEqual(summary.p95_response_ms, 600)
+        self.assertEqual(summary.p99_response_ms, 850)
+        self.assertEqual(summary.max_response_ms, 1200)
         self.assertEqual(summary.slowest_name, "silver:sounds")
         self.assertEqual(summary.slowest_p95_ms, 750)

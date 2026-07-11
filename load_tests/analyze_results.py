@@ -13,7 +13,10 @@ class LocustSummary:
     failure_rate: float
     requests_per_second: float
     avg_response_ms: float
+    p50_response_ms: float
     p95_response_ms: float
+    p99_response_ms: float
+    max_response_ms: float
     slowest_name: str
     slowest_p95_ms: float
 
@@ -50,7 +53,10 @@ def summarize_stats_csv(path: str | Path) -> LocustSummary:
         failure_rate=round(failure_rate, 2),
         requests_per_second=round(_float(aggregate, "Requests/s"), 2),
         avg_response_ms=round(_float(aggregate, "Average Response Time"), 2),
+        p50_response_ms=round(_float(aggregate, "50%"), 2),
         p95_response_ms=round(_float(aggregate, "95%"), 2),
+        p99_response_ms=round(_float(aggregate, "99%"), 2),
+        max_response_ms=round(_float(aggregate, "Max Response Time"), 2),
         slowest_name=slowest.get("Name") or "",
         slowest_p95_ms=round(_float(slowest, "95%"), 2),
     )
@@ -63,7 +69,10 @@ def format_summary(summary: LocustSummary) -> str:
         f"failure_rate={summary.failure_rate}%",
         f"requests_per_second={summary.requests_per_second}",
         f"avg_response_ms={summary.avg_response_ms}",
+        f"p50_response_ms={summary.p50_response_ms}",
         f"p95_response_ms={summary.p95_response_ms}",
+        f"p99_response_ms={summary.p99_response_ms}",
+        f"max_response_ms={summary.max_response_ms}",
         f"slowest_name={summary.slowest_name}",
         f"slowest_p95_ms={summary.slowest_p95_ms}",
     ])
