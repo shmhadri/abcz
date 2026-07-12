@@ -9,6 +9,8 @@ Phonics App Views - SECURED & OPTIMIZED (SAFE VERSION)
 from __future__ import annotations
 
 import json
+import logging
+import math
 import re
 from decimal import Decimal, InvalidOperation
 from datetime import datetime, timedelta
@@ -22,7 +24,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import models, transaction
-from django.db.models import F
+from django.db.models import Count, F, Max, Q, Sum
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
@@ -60,11 +62,23 @@ from .cache_helpers import (
     get_cached_static_value,
     get_cached_subscription_plan,
     get_cached_user_group_slugs,
+    safe_cache_get,
+    safe_cache_set,
 )
 from .middleware import get_current_request
 
 
 PUBLIC_PAGE_CACHE_TIMEOUT = getattr(settings, "PUBLIC_PAGE_CACHE_TIMEOUT", 600)
+logger = logging.getLogger("abcz.performance")
+
+LEADERBOARD_CACHE_TIMEOUT = 60
+LEADERBOARD_LIMIT = 100
+CVC_API_DEFAULT_PAGE_SIZE = 100
+CVC_API_MAX_PAGE_SIZE = 100
+CVC_WORKSHEET_WORD_LIMIT = 120
+CVC_WORKSHEET_SENTENCE_LIMIT = 20
+CVC_WORKSHEET_STORY_LIMIT = 20
+CVC_CONTENT_CACHE_VERSION = "v1"
 
 
 # ============================================
@@ -5462,117 +5476,189 @@ def activity_matches_period(*timestamps, period_start=None):
     return any(ts and ts >= period_start for ts in timestamps)
 
 
+def leaderboard_cache_key(period, type_filter, grade_filter, search_query):
+    normalized = "|".join([
+        str(period or "all").strip().lower(),
+        str(type_filter or "all").strip().lower(),
+        str(grade_filter or "").strip().lower(),
+        str(search_query or "").strip().lower(),
+        f"limit:{LEADERBOARD_LIMIT}",
+    ])
+    return f"leaderboard:{CVC_CONTENT_CACHE_VERSION}:{normalized}"
+
+
+def _leaderboard_row(student_name, grade, total_points, completed_letters):
+    has_certificate = completed_letters >= 26
+    achievement_type, has_certificate, certificate_title = build_achievement(
+        completed_letters,
+        has_certificate,
+        total_points,
+    )
+    return {
+        "rank": 0,
+        "student_name": student_name,
+        "grade": normalize_leaderboard_grade(grade),
+        "total_points": total_points,
+        "achievement_type": achievement_type,
+        "has_certificate": has_certificate,
+        "certificate_title": certificate_title,
+    }
+
+
 def build_leaderboard_rows(params):
     period = (params.get("period") or "all").strip()
     type_filter = (params.get("type") or "all").strip()
     grade_filter = (params.get("grade") or "").strip()
     search_query = (params.get("search") or "").strip().lower()
     period_start = get_leaderboard_period_start(period)
+    cache_key = leaderboard_cache_key(period, type_filter, grade_filter, search_query)
+    cached = safe_cache_get(cache_key)
+    if isinstance(cached, list):
+        return cached
+
     rows = []
 
-    student_progress = list(
+    student_progress_qs = (
         LetterProgress.objects
         .filter(student__isnull=False)
-        .select_related("student")
-        .order_by("student_id", "letter")
+        .values("student_id", "student__name", "student__grade")
+        .annotate(
+            letter_points=Sum("score"),
+            completed_letters=Count("letter", filter=Q(completed=True) | Q(passed=True), distinct=True),
+            last_activity=Max("timestamp"),
+        )
     )
-    progress_by_student = {}
-    for progress in student_progress:
-        progress_by_student.setdefault(progress.student_id, []).append(progress)
+    if period_start:
+        student_progress_qs = student_progress_qs.filter(timestamp__gte=period_start)
+    if grade_filter:
+        student_progress_qs = student_progress_qs.filter(student__grade=grade_filter)
+    if search_query:
+        student_progress_qs = student_progress_qs.filter(student__name__icontains=search_query)
 
     cvc_by_student = {
-        progress.student_id: progress
-        for progress in CVCProgress.objects.select_related("student").all()
+        row["student_id"]: row
+        for row in CVCProgress.objects.values("student_id", "total_score", "last_activity")
     }
 
-    for student in Student.objects.all():
-        entries = progress_by_student.get(student.id, [])
-        cvc_progress = cvc_by_student.get(student.id)
-        if not entries and not cvc_progress:
-            continue
-        if not activity_matches_period(
-            *(entry.timestamp for entry in entries),
-            cvc_progress.last_activity if cvc_progress else None,
+    seen_students = set()
+    for summary in student_progress_qs:
+        student_id = summary["student_id"]
+        seen_students.add(student_id)
+        completed_letters = int(summary["completed_letters"] or 0)
+        letter_points = int(summary["letter_points"] or 0) + (completed_letters * 7)
+        if completed_letters >= 26:
+            letter_points += 250
+        cvc_progress = cvc_by_student.get(student_id) or {}
+        if period_start and cvc_progress and not activity_matches_period(
+            summary.get("last_activity"),
+            cvc_progress.get("last_activity"),
             period_start=period_start,
         ):
             continue
-
-        letter_points, completed_letters = score_letter_progress(entries)
-        total_points = letter_points + int(getattr(cvc_progress, "total_score", 0) or 0)
-        has_certificate = completed_letters >= 26
-        achievement_type, has_certificate, certificate_title = build_achievement(
-            completed_letters,
-            has_certificate,
+        total_points = letter_points + int(cvc_progress.get("total_score") or 0)
+        rows.append(_leaderboard_row(
+            summary["student__name"],
+            summary["student__grade"],
             total_points,
-        )
+            completed_letters,
+        ))
 
-        rows.append({
-            "rank": 0,
-            "student_name": student.name,
-            "grade": normalize_leaderboard_grade(student.grade),
-            "total_points": total_points,
-            "achievement_type": achievement_type,
-            "has_certificate": has_certificate,
-            "certificate_title": certificate_title,
-        })
+    cvc_student_ids = set(cvc_by_student) - seen_students
+    if cvc_student_ids:
+        cvc_students = Student.objects.filter(id__in=cvc_student_ids)
+        if grade_filter:
+            cvc_students = cvc_students.filter(grade=grade_filter)
+        if search_query:
+            cvc_students = cvc_students.filter(name__icontains=search_query)
+        student_labels = {
+            row["id"]: row
+            for row in cvc_students.values("id", "name", "grade")
+        }
+        for student_id, cvc_progress in cvc_by_student.items():
+            if student_id not in student_labels:
+                continue
+            if period_start and not activity_matches_period(cvc_progress.get("last_activity"), period_start=period_start):
+                continue
+            student = student_labels[student_id]
+            rows.append(_leaderboard_row(
+                student["name"],
+                student["grade"],
+                int(cvc_progress.get("total_score") or 0),
+                0,
+            ))
 
-    user_progress = list(
+    user_progress_qs = (
         LetterProgress.objects
         .filter(user__isnull=False)
-        .select_related("user", "user__student_profile")
-        .order_by("user_id", "letter")
+        .values("user_id")
+        .annotate(
+            letter_points=Sum("total_score"),
+            completed_letters=Count("letter", filter=Q(completed=True) | Q(passed=True), distinct=True),
+            last_activity=Max("last_updated_at"),
+        )
     )
-    progress_by_user = {}
-    for progress in user_progress:
-        progress_by_user.setdefault(progress.user_id, []).append(progress)
+    if period_start:
+        user_progress_qs = user_progress_qs.filter(last_updated_at__gte=period_start)
+    progress_by_user = {row["user_id"]: row for row in user_progress_qs}
 
-    profile_qs = StudentProfile.objects.select_related("user").all()
-    english_progress_by_user = {}
-    for progress in EnglishFoundationProgress.objects.all():
-        english_progress_by_user.setdefault(progress.user_id, []).append(progress)
+    english_progress_qs = EnglishFoundationProgress.objects.values("user_id").annotate(
+        points=Sum("points"),
+        last_activity=Max("last_activity_at"),
+    )
+    if period_start:
+        english_progress_qs = english_progress_qs.filter(last_activity_at__gte=period_start)
+    english_progress_by_user = {row["user_id"]: row for row in english_progress_qs}
+
+    profile_qs = StudentProfile.objects.select_related(
+        "user",
+        "user__sound_practice_progress",
+        "user__cvc_reading_progress",
+        "user__bird_tutor_progress",
+    )
+    if grade_filter:
+        profile_qs = profile_qs.filter(grade=grade_filter)
+    if search_query:
+        profile_qs = profile_qs.filter(
+            Q(display_name__icontains=search_query)
+            | Q(student_name__icontains=search_query)
+            | Q(user__username__icontains=search_query)
+        )
 
     for profile in profile_qs:
-        entries = progress_by_user.get(profile.user_id, [])
+        letter_summary = progress_by_user.get(profile.user_id) or {}
         sound_progress = getattr(profile.user, "sound_practice_progress", None)
         cvc_reading_progress = getattr(profile.user, "cvc_reading_progress", None)
         bird_progress = getattr(profile.user, "bird_tutor_progress", None)
-        english_progress_entries = english_progress_by_user.get(profile.user_id, [])
+        english_summary = english_progress_by_user.get(profile.user_id) or {}
 
-        if not any([entries, sound_progress, cvc_reading_progress, bird_progress, english_progress_entries]):
+        if not any([letter_summary, sound_progress, cvc_reading_progress, bird_progress, english_summary]):
             continue
         if not activity_matches_period(
-            *(entry.last_updated_at for entry in entries),
+            letter_summary.get("last_activity"),
             sound_progress.updated_at if sound_progress else None,
             cvc_reading_progress.updated_at if cvc_reading_progress else None,
             bird_progress.updated_at if bird_progress else None,
-            *(entry.last_activity_at for entry in english_progress_entries),
+            english_summary.get("last_activity"),
             period_start=period_start,
         ):
             continue
 
-        letter_points, completed_letters = score_letter_progress(entries)
+        completed_letters = int(letter_summary.get("completed_letters") or 0)
+        letter_points = int(letter_summary.get("letter_points") or 0) + (completed_letters * 7)
+        if completed_letters >= 26:
+            letter_points += 250
         total_points = letter_points
         total_points += score_sound_progress(sound_progress)
         total_points += score_cvc_reading_progress(cvc_reading_progress)
         total_points += int(getattr(bird_progress, "xp", 0) or 0)
-        total_points += sum(entry.points for entry in english_progress_entries)
+        total_points += int(english_summary.get("points") or 0)
 
-        has_certificate = completed_letters >= 26
-        achievement_type, has_certificate, certificate_title = build_achievement(
-            completed_letters,
-            has_certificate,
+        rows.append(_leaderboard_row(
+            profile.display_name or profile.student_name or profile.user.username,
+            profile.grade,
             total_points,
-        )
-
-        rows.append({
-            "rank": 0,
-            "student_name": profile.display_name or profile.student_name or profile.user.username,
-            "grade": normalize_leaderboard_grade(profile.grade),
-            "total_points": total_points,
-            "achievement_type": achievement_type,
-            "has_certificate": has_certificate,
-            "certificate_title": certificate_title,
-        })
+            completed_letters,
+        ))
 
     if type_filter == "letters_completed":
         rows = [row for row in rows if row["achievement_type"] in {"أنهى الحروف", "شهادة الحروف"}]
@@ -5585,10 +5671,12 @@ def build_leaderboard_rows(params):
         rows = [row for row in rows if search_query in row["student_name"].lower()]
 
     rows.sort(key=lambda row: (-row["total_points"], row["student_name"]))
-    for index, row in enumerate(rows[:100], start=1):
+    rows = rows[:LEADERBOARD_LIMIT]
+    for index, row in enumerate(rows, start=1):
         row["rank"] = index
 
-    return rows[:100]
+    safe_cache_set(cache_key, rows, timeout=LEADERBOARD_CACHE_TIMEOUT)
+    return rows
 
 
 @require_GET
@@ -5800,9 +5888,9 @@ def cvc_reading_worksheet(request):
         return blocked
 
     ensure_seed_data()
-    words = list(CVCWord.objects.all().order_by("vowel_sound", "word_family", "order", "word"))
-    sentences = list(CVCSentence.objects.filter(category__in=["cvc", ""]).order_by("order", "difficulty")[:20])
-    stories = list(CVCStory.objects.all().order_by("order", "difficulty"))
+    words = list(CVCWord.objects.all().order_by("vowel_sound", "word_family", "order", "word")[:CVC_WORKSHEET_WORD_LIMIT])
+    sentences = list(CVCSentence.objects.filter(category__in=["cvc", ""]).order_by("order", "difficulty")[:CVC_WORKSHEET_SENTENCE_LIMIT])
+    stories = list(CVCStory.objects.all().order_by("order", "difficulty")[:CVC_WORKSHEET_STORY_LIMIT])
     groups = {}
     for word in words:
         groups.setdefault(word.vowel_sound or "mixed", []).append(word)
@@ -5813,6 +5901,113 @@ def cvc_reading_worksheet(request):
         "stories": stories,
         "word_groups": groups,
     })
+
+
+def log_public_api_exception(request, message, exc):
+    logger.exception(
+        message,
+        extra={
+            "request_id": getattr(request, "request_id", ""),
+            "method": getattr(request, "method", ""),
+            "path": getattr(request, "path", ""),
+            "status_code": 500,
+            "duration_ms": 0,
+        },
+    )
+
+
+def parse_pagination_params(request):
+    def positive_int(name, default):
+        raw = request.GET.get(name, default)
+        try:
+            value = int(raw)
+        except (TypeError, ValueError):
+            value = default
+        return max(1, value)
+
+    page = positive_int("page", 1)
+    page_size = min(positive_int("page_size", CVC_API_DEFAULT_PAGE_SIZE), CVC_API_MAX_PAGE_SIZE)
+    return page, page_size
+
+
+def paginate_queryset(qs, request, *, resource, serializer, legacy_key, cache_extra="", timeout=300):
+    page, page_size = parse_pagination_params(request)
+    cache_key = (
+        f"cvc-api:{CVC_CONTENT_CACHE_VERSION}:{resource}:"
+        f"page:{page}:page_size:{page_size}:filters:{cache_extra}"
+    )
+    cached = safe_cache_get(cache_key)
+    if isinstance(cached, dict):
+        return JsonResponse(cached)
+
+    count = qs.count()
+    total_pages = max(1, math.ceil(count / page_size)) if count else 1
+    if page > total_pages:
+        page = total_pages
+    offset = (page - 1) * page_size
+    results = [serializer(item) for item in qs[offset:offset + page_size]]
+    payload = {
+        "count": count,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "results": results,
+        legacy_key: results,
+    }
+    safe_cache_set(cache_key, payload, timeout=timeout)
+    return JsonResponse(payload)
+
+
+def cvc_word_payload(w):
+    return {
+        "id": w.id,
+        "word": getattr(w, "word", ""),
+        "arabic_meaning": getattr(w, "arabic_meaning", "") or getattr(w, "meaning_ar", ""),
+        "image_url": getattr(w, "image_url", "") or getattr(w, "image", ""),
+        "emoji": getattr(w, "emoji", ""),
+        "category": getattr(w, "category", ""),
+        "word_family": getattr(w, "word_family", ""),
+        "vowel_sound": getattr(w, "vowel_sound", ""),
+        "difficulty_level": getattr(w, "difficulty_level", None) or getattr(w, "difficulty", None),
+    }
+
+
+def cvc_sentence_payload(s):
+    return {
+        "id": s.id,
+        "sentence": getattr(s, "sentence", "") or getattr(s, "text", ""),
+        "arabic_translation": getattr(s, "arabic_translation", "") or getattr(s, "translation_ar", ""),
+        "difficulty": getattr(s, "difficulty", None),
+        "time_limit": getattr(s, "time_limit", None),
+        "category": getattr(s, "category", ""),
+        "quiz_data": getattr(s, "quiz_data", None),
+        "emoji": getattr(s, "emoji", ""),
+    }
+
+
+def cvc_story_payload(s, *, summary=False):
+    payload = {
+        "id": s.id,
+        "title": getattr(s, "title", ""),
+        "difficulty": getattr(s, "difficulty", None),
+        "image_url": getattr(s, "image_url", "") or getattr(s, "image", ""),
+    }
+    content = getattr(s, "content", "") or getattr(s, "story", "")
+    explanation = getattr(s, "arabic_explanation", "") or getattr(s, "explanation_ar", "")
+    if summary:
+        words = content.split()
+        payload.update({
+            "summary": " ".join(words[:24]),
+            "word_count": len(words),
+        })
+    else:
+        payload.update({
+            "content": content,
+            "arabic_explanation": explanation,
+            "quiz_data": getattr(s, "quiz_data", None),
+        })
+    return payload
+
 
 @require_GET
 def get_cvc_words_api(request):
@@ -5826,34 +6021,13 @@ def get_cvc_words_api(request):
     """
     # Auto-seed if database is empty (Render Free tier solution)
     ensure_seed_data()
-    
+
     try:
-        qs = CVCWord.objects.all()
-        # ط¥ط°ط§ ط¹ظ†ط¯ظƒ ط­ظ‚ظ„ order ط±طھط¨طŒ ظˆط¥ظ„ط§ طھط¬ط§ظ‡ظ„ظ‡
-        if "order" in [f.name for f in CVCWord._meta.get_fields()]:
-            qs = qs.order_by("order")
-        else:
-            qs = qs.order_by("id")
-
-        words = []
-        for w in qs:
-            words.append({
-                "id": w.id,
-                "word": getattr(w, "word", ""),
-                "arabic_meaning": getattr(w, "arabic_meaning", "") or getattr(w, "meaning_ar", ""),
-                "image_url": getattr(w, "image_url", "") or getattr(w, "image", ""),
-                "emoji": getattr(w, "emoji", ""),
-                "category": getattr(w, "category", ""),
-                "word_family": getattr(w, "word_family", ""),
-                "vowel_sound": getattr(w, "vowel_sound", ""),
-                "difficulty_level": getattr(w, "difficulty_level", None) or getattr(w, "difficulty", None),
-            })
-
-        return JsonResponse({"words": words, "count": len(words)})
-
+        qs = CVCWord.objects.all().order_by("order", "id")
+        return paginate_queryset(qs, request, resource="words", serializer=cvc_word_payload, legacy_key="words")
     except Exception as e:
-        # ظ‡ط°ط§ ظٹظپظٹط¯ظƒ ظ„ظ…ط¹ط±ظپط© ط³ط¨ط¨ 500 ط¨ط§ظ„ط¶ط¨ط· ظ…ظ† Render logs
-        return _json_error("Failed to fetch CVC words", 500, details=str(e))
+        log_public_api_exception(request, "failed_fetch_cvc_words", e)
+        return _json_error("Failed to fetch CVC words", 500)
 
 
 @require_GET
@@ -5864,31 +6038,13 @@ def get_cvc_sentences_api(request):
 
     # Auto-seed if database is empty
     ensure_seed_data()
-    
+
     try:
-        qs = CVCSentence.objects.all()
-        if "order" in [f.name for f in CVCSentence._meta.get_fields()]:
-            qs = qs.order_by("order")
-        else:
-            qs = qs.order_by("id")
-
-        sentences = []
-        for s in qs:
-            sentences.append({
-                "id": s.id,
-                "sentence": getattr(s, "sentence", "") or getattr(s, "text", ""),
-                "arabic_translation": getattr(s, "arabic_translation", "") or getattr(s, "translation_ar", ""),
-                "difficulty": getattr(s, "difficulty", None),
-                "time_limit": getattr(s, "time_limit", None),
-                "category": getattr(s, "category", ""),
-                "quiz_data": getattr(s, "quiz_data", None),
-                "emoji": getattr(s, "emoji", ""),
-            })
-
-        return JsonResponse({"sentences": sentences, "count": len(sentences)})
-
+        qs = CVCSentence.objects.all().order_by("order", "id")
+        return paginate_queryset(qs, request, resource="sentences", serializer=cvc_sentence_payload, legacy_key="sentences")
     except Exception as e:
-        return _json_error("Failed to fetch CVC sentences", 500, details=str(e))
+        log_public_api_exception(request, "failed_fetch_cvc_sentences", e)
+        return _json_error("Failed to fetch CVC sentences", 500)
 
 
 @require_GET
