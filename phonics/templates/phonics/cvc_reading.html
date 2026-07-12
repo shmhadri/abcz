@@ -3380,12 +3380,7 @@
                 { word: "When", emoji: "⏰", category: "Digraphs", family: "wh", arabic_meaning: "متى" },
                 { word: "Whim", emoji: "💭", category: "Digraphs", family: "wh", arabic_meaning: "نزوة" }
             ].map((w, i) => ({ ...w, id: i + 1 })); // Add IDs dynamically
-            cvcStaticWordsFallback = wordsData.map((word, index) => {
-                const item = { ...word, id: word.id || `static-${index}`, _level: primaryLevelForWord(word) };
-                item.category = item._level;
-                item._levels = levelsForWord(item);
-                return item;
-            });
+            cvcStaticWordsFallback = wordsData.map((word, index) => ({ ...word, id: word.id || `static-${index}` }));
 
             console.log("Static CVC Words Loaded:", wordsData.length);
             
@@ -6788,7 +6783,12 @@
             };
 
             async function hydrateWordsFromApi(append = false) {
-                const staticWords = [...(cvcStaticWordsFallback || [])];
+                const staticWords = [...(cvcStaticWordsFallback.length ? cvcStaticWordsFallback : (wordsData || []))].map((word, index) => {
+                    const item = { ...word, id: word.id || `static-${index}`, _level: primaryLevelForWord(word) };
+                    item.category = item._level;
+                    item._levels = levelsForWord(item);
+                    return item;
+                });
                 try {
                     if (!append) resetCvcPager("words");
                     const apiWords = (await fetchCvcApiPage("words", "{% url 'api_get_cvc_words' %}", {
@@ -6807,7 +6807,7 @@
                     displayWords();
                     updateCvcStats();
                     renderCvcPager("words", "wordsGrid", "loadMoreCvcWords");
-                    document.getElementById("cvcSaveStatus").textContent = `تم تحميل ${apiWords.length} كلمة من قاعدة البيانات، مع إبقاء Blends/Digraphs كدعم إضافي.`;
+                    document.getElementById("cvcSaveStatus").textContent = `Loaded ${cvcApiPages.words.loadedKeys.size} / ${cvcApiPages.words.count || cvcApiPages.words.loadedKeys.size} CVC word records from the database.`;
                 } catch (error) {
                     wordsData = staticWords;
                     initFilters();
