@@ -71,6 +71,16 @@ class BigOReadPathTests(TestCase):
             item["id"] for item in second["results"]
         ))
 
+    def test_cvc_words_api_can_omit_legacy_key_for_results_frontend(self):
+        self.login_user("level-three-results-only", PLAN_LEVEL_THREE)
+        self.create_cvc_words(2)
+
+        payload = self.client.get("/api/cvc-words/?legacy=0&page_size=100").json()
+
+        self.assertEqual(payload["count"], 2)
+        self.assertIn("results", payload)
+        self.assertNotIn("words", payload)
+
     def test_cvc_words_api_clamps_invalid_pagination(self):
         self.login_user("level-three-clamp", PLAN_LEVEL_THREE)
         self.create_cvc_words(3)
@@ -143,3 +153,19 @@ class BigOReadPathTests(TestCase):
 
         self.assertEqual(cached_response.status_code, 200)
         self.assertLess(len(cached_queries), len(queries))
+
+    def test_cvc_reading_template_uses_paginated_results_contract(self):
+        self.login_user("level-three-cvc-template", PLAN_LEVEL_THREE)
+
+        response = self.client.get("/cvc-reading/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("payload.results", html)
+        self.assertIn("legacy=0", html)
+        self.assertIn("loadMoreCvcWords", html)
+        self.assertIn("loadMoreCvcSentences", html)
+        self.assertIn("loadMoreCvcStories", html)
+        self.assertNotIn("data.words ||", html)
+        self.assertNotIn("data.sentences ||", html)
+        self.assertNotIn("data.stories ||", html)

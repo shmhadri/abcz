@@ -5932,9 +5932,10 @@ def parse_pagination_params(request):
 
 def paginate_queryset(qs, request, *, resource, serializer, legacy_key, cache_extra="", timeout=300):
     page, page_size = parse_pagination_params(request)
+    include_legacy = str(request.GET.get("legacy", "1")).lower() not in {"0", "false", "no"}
     cache_key = (
         f"cvc-api:{CVC_CONTENT_CACHE_VERSION}:{resource}:"
-        f"page:{page}:page_size:{page_size}:filters:{cache_extra}"
+        f"page:{page}:page_size:{page_size}:legacy:{int(include_legacy)}:filters:{cache_extra}"
     )
     cached = safe_cache_get(cache_key)
     if isinstance(cached, dict):
@@ -5952,8 +5953,9 @@ def paginate_queryset(qs, request, *, resource, serializer, legacy_key, cache_ex
         "page_size": page_size,
         "total_pages": total_pages,
         "results": results,
-        legacy_key: results,
     }
+    if include_legacy:
+        payload[legacy_key] = results
     safe_cache_set(cache_key, payload, timeout=timeout)
     return JsonResponse(payload)
 
