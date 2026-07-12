@@ -102,6 +102,10 @@ class Student(models.Model):
         verbose_name = "طالب"
         verbose_name_plural = "الطلاب"
         ordering = ["-total_score", "name"]  # يفيد في الـ Leaderboard
+        indexes = [
+            models.Index(fields=["-total_score", "name"], name="student_score_name_idx"),
+            models.Index(fields=["grade", "name"], name="student_grade_name_idx"),
+        ]
 
     def __str__(self) -> str:
         return self.name
@@ -139,6 +143,9 @@ class StudentProfile(models.Model):
     class Meta:
         verbose_name = "Student profile"
         verbose_name_plural = "Student profiles"
+        indexes = [
+            models.Index(fields=["grade"], name="student_profile_grade_idx"),
+        ]
 
     def __str__(self):
         label = self.display_name or self.student_name or self.user.username
@@ -191,6 +198,7 @@ class BirdReviewItem(models.Model):
         indexes = [
             models.Index(fields=["user", "mastered"]),
             models.Index(fields=["user", "letter", "word"]),
+            models.Index(fields=["user", "mastered", "-updated_at", "letter", "word"], name="bird_review_user_queue_idx"),
         ]
 
     def __str__(self):
@@ -311,6 +319,8 @@ class LetterProgress(models.Model):
             models.Index(fields=["user", "letter"]),
             models.Index(fields=["user", "completed"]),
             models.Index(fields=["letter"]),
+            models.Index(fields=["student", "timestamp"], name="letter_student_time_idx"),
+            models.Index(fields=["user", "last_updated_at"], name="letter_user_updated_idx"),
         ]
 
     def __str__(self) -> str:
@@ -477,6 +487,8 @@ class CVCWord(models.Model):
             models.Index(fields=['word_family']),
             models.Index(fields=['vowel_sound']),
             models.Index(fields=['difficulty_level']),
+            models.Index(fields=["order", "id"], name="cvc_word_order_id_idx"),
+            models.Index(fields=["vowel_sound", "word_family", "order", "word"], name="cvc_word_sheet_idx"),
         ]
 
     def __str__(self):
@@ -533,6 +545,10 @@ class CVCSentence(models.Model):
         verbose_name = "جملة CVC"
         verbose_name_plural = "جمل CVC"
         ordering = ["order", "difficulty"]
+        indexes = [
+            models.Index(fields=["order", "id"], name="cvc_sentence_order_id_idx"),
+            models.Index(fields=["category", "order", "difficulty"], name="cvc_sentence_sheet_idx"),
+        ]
 
     def __str__(self):
         return self.sentence[:50]
@@ -580,6 +596,10 @@ class CVCStory(models.Model):
         verbose_name = "قصة CVC"
         verbose_name_plural = "قصص CVC"
         ordering = ["order", "difficulty"]
+        indexes = [
+            models.Index(fields=["order", "id"], name="cvc_story_order_id_idx"),
+            models.Index(fields=["order", "difficulty"], name="cvc_story_sheet_idx"),
+        ]
 
     def __str__(self):
         return self.title
@@ -777,6 +797,9 @@ class CVCReadingProgress(models.Model):
     class Meta:
         verbose_name = "CVC reading progress"
         verbose_name_plural = "CVC reading progress"
+        indexes = [
+            models.Index(fields=["updated_at"], name="cvc_reading_updated_idx"),
+        ]
 
     def __str__(self):
         return f"{self.user.username} - CVC Reading {self.cvc_mastery_percentage}%"
@@ -814,6 +837,8 @@ class EnglishFoundationProgress(models.Model):
         indexes = [
             models.Index(fields=["user", "section"]),
             models.Index(fields=["section", "completed"]),
+            models.Index(fields=["last_activity_at"], name="english_progress_last_idx"),
+            models.Index(fields=["user", "last_activity_at"], name="english_progress_user_last_idx"),
         ]
 
     def __str__(self):
@@ -916,6 +941,8 @@ class PaymentOrder(models.Model):
             models.Index(fields=["user", "status"]),
             models.Index(fields=["plan_code", "status"]),
             models.Index(fields=["provider", "provider_payment_id"]),
+            models.Index(fields=["status", "created_at"], name="payment_status_created_idx"),
+            models.Index(fields=["method", "status", "created_at"], name="payment_method_status_idx"),
         ]
 
     def __str__(self):
@@ -975,6 +1002,7 @@ class BankTransferProof(models.Model):
         indexes = [
             models.Index(fields=["user", "status"]),
             models.Index(fields=["payment_order", "status"]),
+            models.Index(fields=["status", "created_at"], name="bank_proof_status_created_idx"),
         ]
 
     def clean(self):
@@ -1072,6 +1100,11 @@ class TopGoalUnit(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["grade", "unit_number"], name="topgoal_unit_grade_num_idx"),
+        ]
+
     def __str__(self):
         return f"{self.grade} - {self.title}"
 
@@ -1095,6 +1128,9 @@ class TopGoalVocabulary(models.Model):
         verbose_name = "مفردات Top Goal"
         verbose_name_plural = "مفردات Top Goal"
         ordering = ['order']
+        indexes = [
+            models.Index(fields=["unit", "order"], name="topgoal_vocab_unit_order_idx"),
+        ]
 
     def __str__(self):
         return self.word
@@ -1115,6 +1151,9 @@ class TopGoalSentence(models.Model):
         verbose_name = "جمل Top Goal"
         verbose_name_plural = "جمل Top Goal"
         ordering = ['order']
+        indexes = [
+            models.Index(fields=["unit", "order"], name="topgoal_sent_unit_order_idx"),
+        ]
 
     def __str__(self):
         return self.english_text[:50]
@@ -1139,6 +1178,9 @@ class TopGoalQuiz(models.Model):
         verbose_name = "اختبار Top Goal"
         verbose_name_plural = "اختبارات Top Goal"
         ordering = ['order']
+        indexes = [
+            models.Index(fields=["unit", "order"], name="topgoal_quiz_unit_order_idx"),
+        ]
 
     def __str__(self):
         return self.question_text[:50]
