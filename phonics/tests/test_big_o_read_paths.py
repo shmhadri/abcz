@@ -19,7 +19,7 @@ from phonics.models import (
     StudentProfile,
     UserSubscription,
 )
-from phonics.views import PLAN_DIAMOND, PLAN_LEVEL_THREE
+from phonics.views import PLAN_DIAMOND, PLAN_LEVEL_THREE, ensure_seed_data
 
 
 @override_settings(DISABLE_AUTO_SEED=True)
@@ -169,3 +169,40 @@ class BigOReadPathTests(TestCase):
         self.assertNotIn("data.words ||", html)
         self.assertNotIn("data.sentences ||", html)
         self.assertNotIn("data.stories ||", html)
+
+    @override_settings(DISABLE_AUTO_SEED=False)
+    def test_auto_seed_ready_check_is_cached(self):
+        cache.clear()
+
+        with patch("phonics.views.CVCWord.objects.exists", return_value=True) as word_exists, patch(
+            "phonics.views.CVCSentence.objects.exists",
+            return_value=True,
+        ) as sentence_exists:
+            ensure_seed_data()
+            ensure_seed_data()
+
+        self.assertEqual(word_exists.call_count, 1)
+        self.assertEqual(sentence_exists.call_count, 1)
+
+    def test_cvc_progress_post_reuses_cached_content_counts(self):
+        self.login_user("level-three-cvc-progress-counts", PLAN_LEVEL_THREE)
+        CVCWord.objects.create(word="cat", arabic_meaning="قط", order=1)
+        CVCSentence.objects.create(sentence="The cat sat.", arabic_translation="جلست القطة.", order=1)
+        CVCStory.objects.create(title="Cat", content="cat sat", arabic_explanation="قصة", order=1)
+        payload = {"event_type": "word", "item_text": "cat", "score": 100, "mastered": True}
+
+        with patch("phonics.views.CVCWord.objects.count", wraps=CVCWord.objects.count) as word_count, patch(
+            "phonics.views.CVCSentence.objects.count",
+            wraps=CVCSentence.objects.count,
+        ) as sentence_count, patch(
+            "phonics.views.CVCStory.objects.count",
+            wraps=CVCStory.objects.count,
+        ) as story_count:
+            first = self.client.post("/api/cvc-progress/", payload, content_type="application/json")
+            second = self.client.post("/api/cvc-progress/", payload, content_type="application/json")
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(word_count.call_count, 1)
+        self.assertEqual(sentence_count.call_count, 1)
+        self.assertEqual(story_count.call_count, 1)

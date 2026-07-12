@@ -118,3 +118,24 @@ class SubscriptionQueryCacheTests(TestCase):
         self.assertIn("completed_items", payload)
         self.assertIn("quiz_attempts", payload)
         self.assertIn("vowel_mastery_percentage", payload)
+
+    def test_sound_progress_duplicate_post_is_noop(self):
+        client = Client()
+        client.force_login(self.create_user_with_group("scale-silver-sound-noop", "Silver"))
+        payload = {
+            "completed_items": ["digraph:sh"],
+            "quiz_attempts": 1,
+            "quiz_correct": 1,
+            "mic_attempts": 1,
+            "mic_success": 1,
+            "last_item": "ship",
+            "last_payload": {"page": "sounds", "completed_count": 1},
+        }
+
+        first = client.post("/api/sounds/progress/", payload, content_type="application/json")
+        second = client.post("/api/sounds/progress/", payload, content_type="application/json")
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        self.assertTrue(first.json()["changed"])
+        self.assertFalse(second.json()["changed"])

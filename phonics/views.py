@@ -79,6 +79,8 @@ CVC_WORKSHEET_WORD_LIMIT = 120
 CVC_WORKSHEET_SENTENCE_LIMIT = 20
 CVC_WORKSHEET_STORY_LIMIT = 20
 CVC_CONTENT_CACHE_VERSION = "v1"
+CVC_COUNT_CACHE_TIMEOUT = 300
+CVC_SEED_CHECK_CACHE_TIMEOUT = 300
 
 
 # ============================================
@@ -97,6 +99,10 @@ def ensure_seed_data():
     if getattr(settings, "DISABLE_AUTO_SEED", False):
         return
     
+    seed_cache_key = f"cvc-seed-ready:{CVC_CONTENT_CACHE_VERSION}"
+    if safe_cache_get(seed_cache_key) is True:
+        return
+
     # Check if data already exists (fast query)
     try:
         has_words = CVCWord.objects.exists()
@@ -104,6 +110,7 @@ def ensure_seed_data():
         
         # If we have data, no need to seed
         if has_words and has_sentences:
+            safe_cache_set(seed_cache_key, True, timeout=CVC_SEED_CHECK_CACHE_TIMEOUT)
             return
         
         print("🌱 Database is empty. Auto-seeding...")
@@ -114,6 +121,7 @@ def ensure_seed_data():
             if not has_words or not has_sentences:
                 print("📚 Populating CVC data...")
                 call_command("populate_all_cvc")
+                safe_cache_set(seed_cache_key, True, timeout=CVC_SEED_CHECK_CACHE_TIMEOUT)
             
         
         print("✅ Auto-seed completed successfully!")
@@ -5296,6 +5304,26 @@ def sound_progress_api(request):
     if error:
         return error
 
+    tracked_fields = [
+        "completed_items",
+        "quiz_attempts",
+        "quiz_correct",
+        "mic_attempts",
+        "mic_success",
+        "worksheet_downloads",
+        "last_item",
+        "last_payload",
+        "vowel_lessons_completed",
+        "practiced_vowels",
+        "vowel_quiz_attempts",
+        "vowel_quiz_correct",
+        "vowel_microphone_attempts",
+        "vowel_microphone_success",
+        "last_vowel_practiced",
+        "vowel_mastery_percentage",
+    ]
+    before_state = {field: getattr(progress, field) for field in tracked_fields}
+
     completed_items = data.get("completed_items")
     if isinstance(completed_items, list):
         progress.completed_items = [str(item)[:80] for item in completed_items[:300]]
@@ -5325,12 +5353,20 @@ def sound_progress_api(request):
         progress.vowel_mastery_percentage,
         max(0, min(100, incoming_vowel_mastery)),
     )
-    progress.last_used_at = timezone.now()
-    progress.save()
+    changed_fields = [
+        field
+        for field in tracked_fields
+        if getattr(progress, field) != before_state[field]
+    ]
+    changed = bool(changed_fields)
+    if changed:
+        progress.last_used_at = timezone.now()
+        progress.save(update_fields=changed_fields + ["last_used_at", "updated_at"])
 
     return JsonResponse({
         "status": "ok",
         "authenticated": True,
+        "changed": changed,
         "completed_items": progress.completed_items,
         "quiz_attempts": progress.quiz_attempts,
         "quiz_correct": progress.quiz_correct,
@@ -5930,6 +5966,16 @@ def parse_pagination_params(request):
     return page, page_size
 
 
+
+def get_cached_cvc_content_count(kind, model, *, extra=0):
+    cache_key = f"cvc-count:{CVC_CONTENT_CACHE_VERSION}:{kind}"
+    cached = safe_cache_get(cache_key)
+    if isinstance(cached, int) and cached >= 0:
+        return max(cached + extra, 1)
+    count = model.objects.count()
+    safe_cache_set(cache_key, count, timeout=CVC_COUNT_CACHE_TIMEOUT)
+    return max(count + extra, 1)
+
 def paginate_queryset(qs, request, *, resource, serializer, legacy_key, cache_extra="", timeout=300):
     page, page_size = parse_pagination_params(request)
     include_legacy = str(request.GET.get("legacy", "1")).lower() not in {"0", "false", "no"}
@@ -6366,8 +6412,8 @@ def cvc_reading_progress_api(request):
     if family and family not in completed_families and mastered:
         completed_families.append(family)
 
-    total_words = max(CVCWord.objects.count(), 1)
-    total_sentences = max(CVCSentence.objects.count() + 99, 1)
+    total_words = get_cached_cvc_content_count("words", CVCWord)
+    total_sentences = get_cached_cvc_content_count("sentences", CVCSentence, extra=99)
     if event_type.startswith("sentence"):
         progress.last_sentence = item_text[:160] or progress.last_sentence
         progress.last_sentence_level = sentence_level or level or progress.last_sentence_level
@@ -6383,7 +6429,7 @@ def cvc_reading_progress_api(request):
             100,
             round((len(progress.sentences_mastered or []) / total_sentences) * 100),
         )
-    total_stories = max(CVCStory.objects.count() + 9, 1)
+    total_stories = get_cached_cvc_content_count("stories", CVCStory, extra=9)
     if event_type.startswith("story"):
         progress.story_mastery_percentage = min(
             100,
