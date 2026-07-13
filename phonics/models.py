@@ -1,5 +1,6 @@
 from datetime import timedelta
 from pathlib import Path
+import secrets
 
 from django.conf import settings
 from django.contrib.auth.models import Group
@@ -42,13 +43,29 @@ def validate_bank_transfer_receipt(value):
             code="receipt_too_large",
         )
 
+    position = value.tell() if hasattr(value, "tell") else 0
+    header = value.read(16)
+    if hasattr(value, "seek"):
+        value.seek(position)
+    signatures = {
+        ".jpg": (b"\xff\xd8\xff",),
+        ".jpeg": (b"\xff\xd8\xff",),
+        ".png": (b"\x89PNG\r\n\x1a\n",),
+        ".pdf": (b"%PDF-",),
+    }
+    if not any(header.startswith(signature) for signature in signatures[extension]):
+        raise ValidationError(
+            "Receipt content does not match its file extension.",
+            code="invalid_receipt_content",
+        )
+
 
 def bank_transfer_receipt_upload_to(instance, filename):
-    safe_name = get_valid_filename(Path(filename or "receipt").name)
-    timestamp = timezone.now().strftime("%Y%m%d%H%M%S")
+    extension = Path(get_valid_filename(Path(filename or "receipt").name)).suffix.lower()
+    random_name = secrets.token_hex(20)
     user_id = instance.user_id or "unknown"
     order_id = instance.payment_order_id or "new"
-    return f"bank_transfer_receipts/user_{user_id}/order_{order_id}/{timestamp}_{safe_name}"
+    return f"bank_transfer_receipts/user_{user_id}/order_{order_id}/{random_name}{extension}"
 
 
 def validate_wordwall_activity_url(value):
