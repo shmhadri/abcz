@@ -120,6 +120,8 @@ DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
 
 REDIS_URL = os.getenv("REDIS_URL", "").strip()
+if IS_PRODUCTION and not REDIS_URL:
+    raise ImproperlyConfigured("REDIS_URL must be configured in production for shared security rate limits.")
 if REDIS_URL:
     CACHES = {
         "default": {
@@ -130,7 +132,7 @@ if REDIS_URL:
                 "SOCKET_CONNECT_TIMEOUT": 3,
                 "SOCKET_TIMEOUT": 3,
                 "RETRY_ON_TIMEOUT": True,
-                "IGNORE_EXCEPTIONS": True,
+                "IGNORE_EXCEPTIONS": False,
             },
             "KEY_PREFIX": os.getenv("CACHE_KEY_PREFIX", "abcz"),
             "TIMEOUT": 300,
@@ -187,8 +189,22 @@ STORAGES = {
 # Production security
 SECURE_SSL_REDIRECT = (not DEBUG) and (not TESTING) and env_bool("SECURE_SSL_REDIRECT", "True")
 SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SAMESITE = "Lax"
 SECURE_PROXY_SSL_HEADER = None if DEBUG else ("HTTP_X_FORWARDED_PROTO", "https")
+
+RATE_LIMIT_LOGIN = int(os.getenv("RATE_LIMIT_LOGIN", "10"))
+RATE_LIMIT_REGISTER = int(os.getenv("RATE_LIMIT_REGISTER", "5"))
+RATE_LIMIT_WRITE = int(os.getenv("RATE_LIMIT_WRITE", "60"))
+RATE_LIMIT_UPLOAD = int(os.getenv("RATE_LIMIT_UPLOAD", "10"))
+RATE_LIMIT_PUBLIC_API = int(os.getenv("RATE_LIMIT_PUBLIC_API", "30"))
+
+CSP_REPORT_ONLY = os.getenv(
+    "CSP_REPORT_ONLY",
+    "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+).strip()
 
 if not DEBUG:
     SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "31536000"))

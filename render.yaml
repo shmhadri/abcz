@@ -50,6 +50,16 @@ services:
         value: "100"
       - key: REQUEST_LOG_ENABLED
         value: "True"
+      - key: RATE_LIMIT_LOGIN
+        value: "10"
+      - key: RATE_LIMIT_REGISTER
+        value: "5"
+      - key: RATE_LIMIT_WRITE
+        value: "60"
+      - key: RATE_LIMIT_UPLOAD
+        value: "10"
+      - key: RATE_LIMIT_PUBLIC_API
+        value: "30"
       - key: DB_CONN_MAX_AGE
         value: "60"
       - key: REDIS_URL
