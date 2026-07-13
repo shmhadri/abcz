@@ -6103,30 +6103,22 @@ def get_cvc_stories_api(request):
 
     # Auto-seed if database is empty
     ensure_seed_data()
-    
+
     try:
-        qs = CVCStory.objects.all()
-        if "order" in [f.name for f in CVCStory._meta.get_fields()]:
-            qs = qs.order_by("order")
-        else:
-            qs = qs.order_by("id")
-
-        stories = []
-        for s in qs:
-            stories.append({
-                "id": s.id,
-                "title": getattr(s, "title", ""),
-                "content": getattr(s, "content", "") or getattr(s, "story", ""),
-                "arabic_explanation": getattr(s, "arabic_explanation", "") or getattr(s, "explanation_ar", ""),
-                "image_url": getattr(s, "image_url", "") or getattr(s, "image", ""),
-                "quiz_data": getattr(s, "quiz_data", None),
-                "difficulty": getattr(s, "difficulty", None),
-            })
-
-        return JsonResponse({"stories": stories, "count": len(stories)})
-
+        qs = CVCStory.objects.all().order_by("order", "id")
+        summary = str(request.GET.get("summary", "")).strip().lower() in {"1", "true", "yes"}
+        serializer = lambda story: cvc_story_payload(story, summary=summary)
+        return paginate_queryset(
+            qs,
+            request,
+            resource="stories",
+            serializer=serializer,
+            legacy_key="stories",
+            cache_extra=f"summary:{int(summary)}",
+        )
     except Exception as e:
-        return _json_error("Failed to fetch CVC stories", 500, details=str(e))
+        log_public_api_exception(request, "failed_fetch_cvc_stories", e)
+        return _json_error("Failed to fetch CVC stories", 500)
 
 
 @require_POST
