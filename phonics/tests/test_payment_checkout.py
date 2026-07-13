@@ -1,5 +1,6 @@
 import shutil
 import tempfile
+from io import BytesIO
 from decimal import Decimal
 
 from django.contrib import admin as django_admin
@@ -10,6 +11,7 @@ from django.test import RequestFactory
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 
 from phonics.admin import PaymentOrderAdmin
 from phonics.models import (
@@ -162,6 +164,57 @@ class PaymentCheckoutTests(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(BankTransferProof.objects.count(), 0)
+
+    def test_bank_transfer_rejects_fake_jpg_content(self):
+        order = self.create_order(
+            method=PaymentOrder.Method.BANK_TRANSFER,
+            provider=PaymentOrder.Provider.MANUAL_BANK,
+            status=PaymentOrder.Status.AWAITING_BANK_REVIEW,
+        )
+        receipt = SimpleUploadedFile("receipt.jpg", b"<html>not an image</html>", content_type="image/jpeg")
+        response = self.client.post(reverse("bank_transfer_proof", args=[order.id]), {
+            "sender_name": "Payment User", "bank_name": "Test Bank",
+            "transferred_at": timezone.localdate().isoformat(), "amount_sar": "27.00", "receipt_file": receipt,
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(BankTransferProof.objects.count(), 0)
+
+    def test_bank_transfer_accepts_real_generated_png(self):
+        image_bytes = BytesIO()
+        Image.new("RGB", (8, 8), color="blue").save(image_bytes, format="PNG")
+        order = self.create_order(
+            method=PaymentOrder.Method.BANK_TRANSFER,
+            provider=PaymentOrder.Provider.MANUAL_BANK,
+            status=PaymentOrder.Status.AWAITING_BANK_REVIEW,
+        )
+        receipt = SimpleUploadedFile("../ odd receipt ..png", image_bytes.getvalue(), content_type="text/plain")
+        response = self.client.post(reverse("bank_transfer_proof", args=[order.id]), {
+            "sender_name": "Payment User", "bank_name": "Test Bank",
+            "transferred_at": timezone.localdate().isoformat(), "amount_sar": "27.00", "receipt_file": receipt,
+        })
+        self.assertEqual(response.status_code, 302)
+        stored_name = BankTransferProof.objects.get(payment_order=order).receipt_file.name
+        self.assertNotIn("..", stored_name)
+        self.assertNotIn("odd", stored_name)
+
+    def test_bank_transfer_rejects_html_named_pdf_and_signature_extension_mismatch(self):
+        for filename, content in [
+            ("receipt.pdf", b"<html>fake</html>"),
+            ("receipt.jpg", b"%PDF-1.4\n"),
+        ]:
+            with self.subTest(filename=filename):
+                order = self.create_order(
+                    method=PaymentOrder.Method.BANK_TRANSFER,
+                    provider=PaymentOrder.Provider.MANUAL_BANK,
+                    status=PaymentOrder.Status.AWAITING_BANK_REVIEW,
+                )
+                receipt = SimpleUploadedFile(filename, content, content_type="application/octet-stream")
+                response = self.client.post(reverse("bank_transfer_proof", args=[order.id]), {
+                    "sender_name": "Payment User", "bank_name": "Test Bank",
+                    "transferred_at": timezone.localdate().isoformat(), "amount_sar": "27.00", "receipt_file": receipt,
+                })
+                self.assertEqual(response.status_code, 400)
+                self.assertFalse(BankTransferProof.objects.filter(payment_order=order).exists())
 
     def test_bank_transfer_rejects_large_file(self):
         order = self.create_order(
