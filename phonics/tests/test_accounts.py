@@ -48,11 +48,36 @@ class AccountsFoundationTests(TestCase):
         user = User.objects.create_user(username="student2", password="StrongPass123!")
         self.client.login(username="student2", password="StrongPass123!")
 
-        response = self.client.get("/accounts/logout/")
+        response = self.client.post("/accounts/logout/")
 
         self.assertEqual(response.status_code, 302)
         self.assertNotIn("_auth_user_id", self.client.session)
         self.assertTrue(User.objects.filter(id=user.id).exists())
+
+    def test_logout_get_is_not_allowed(self):
+        user = User.objects.create_user(username="logout-get", password="StrongPass123!")
+        self.client.force_login(user)
+        response = self.client.get("/accounts/logout/")
+        self.assertEqual(response.status_code, 405)
+        self.assertIn("_auth_user_id", self.client.session)
+
+    def test_login_rejects_external_next_redirect(self):
+        User.objects.create_user(username="redirect-user", password="StrongPass123!")
+        response = self.client.post(
+            "/accounts/login/?next=https://evil.example/phish",
+            {"username": "redirect-user", "password": "StrongPass123!"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/")
+
+    def test_login_accepts_internal_next_redirect(self):
+        User.objects.create_user(username="redirect-local", password="StrongPass123!")
+        response = self.client.post(
+            "/accounts/login/?next=/profile/",
+            {"username": "redirect-local", "password": "StrongPass123!"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/profile/")
 
     def test_profile_api_updates_authenticated_profile(self):
         user = User.objects.create_user(username="student3", password="StrongPass123!")

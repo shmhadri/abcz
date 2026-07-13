@@ -81,9 +81,9 @@
                         <a href="{% url 'profile_dashboard' %}" class="btn btn-secondary">
                             <i class="fas fa-user-graduate"></i> ملف المتعلم
                         </a>
-                        <a href="{% url 'logout' %}" class="btn btn-danger">
+                        <form method="post" action="{% url 'logout' %}" style="display:inline">{% csrf_token %}<button type="submit" class="btn btn-danger">
                             <i class="fas fa-sign-out-alt"></i> خروج
-                        </a>
+                        </button></form>
                     {% else %}
                         <a href="{% url 'login' %}" class="btn btn-primary">
                             <i class="fas fa-sign-in-alt"></i> دخول
@@ -6421,9 +6421,9 @@ function sendAudioToServer(blob, letter){
             <a href="{% url 'profile_dashboard' %}" class="menu-item" style="text-decoration:none;">
                 <i class="fas fa-user-graduate"></i> ملف المتعلم
             </a>
-            <a href="{% url 'logout' %}" class="menu-item" style="text-decoration:none; color: var(--error);">
+            <form method="post" action="{% url 'logout' %}" style="display:inline">{% csrf_token %}<button type="submit" class="menu-item" style="text-decoration:none; color: var(--error); border:0; background:none;">
                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
-            </a>
+            </button></form>
         {% else %}
             <a href="{% url 'login' %}" class="menu-item" style="text-decoration:none;">
                 <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
