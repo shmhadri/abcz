@@ -16,7 +16,7 @@
     <div class="auth-links">
         {% if request.user.is_authenticated %}
             <a class="btn" href="{% url 'profile_dashboard' %}">ملف المتعلم</a>
-            <a class="btn danger" href="{% url 'logout' %}">تسجيل الخروج</a>
+            <form method="post" action="{% url 'logout' %}" class="logout-form">{% csrf_token %}<button class="btn danger" type="submit">تسجيل الخروج</button></form>
         {% else %}
             <a class="btn" href="{% url 'login' %}">تسجيل الدخول</a>
             <a class="btn primary" href="{% url 'register' %}">حساب جديد</a>

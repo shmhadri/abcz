@@ -9,6 +9,7 @@ Phonics App Views - SECURED & OPTIMIZED (SAFE VERSION)
 from __future__ import annotations
 
 import json
+import logging
 import re
 from decimal import Decimal, InvalidOperation
 from datetime import datetime, timedelta
@@ -27,6 +28,7 @@ from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -53,6 +55,9 @@ from .models import (
     BankTransferProof,
     activate_subscription_from_payment,
 )
+from .security import login_identity, rate_limit
+
+logger = logging.getLogger("abcz.performance")
 
 
 # ============================================
@@ -129,10 +134,11 @@ def parse_json_safely(request):
         if not isinstance(data, dict):
             return None, _json_error("JSON must be an object", 400)
         return data, None
-    except (json.JSONDecodeError, UnicodeDecodeError) as e:
-        return None, _json_error("Invalid JSON format", 400, details=str(e))
-    except Exception as e:
-        return None, _json_error("Failed to parse request", 400, details=str(e))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return None, _json_error("Invalid JSON format", 400)
+    except Exception:
+        logger.exception("request_json_parse_failed request_id=%s", getattr(request, "request_id", ""))
+        return None, _json_error("Failed to parse request", 400, request_id=getattr(request, "request_id", ""))
 
 
 def get_or_create_student_profile(user):
@@ -1417,6 +1423,8 @@ CURRICULUM_STAGES = [
 # ============================================
 
 @require_POST
+@login_required
+@rate_limit("letter-progress", limit_setting="RATE_LIMIT_WRITE", default=60)
 def save_progress(request):
     """
     Expected JSON: {student, letter, score}
@@ -1426,13 +1434,11 @@ def save_progress(request):
     if error:
         return error
 
-    student_name = (data.get("student") or "").strip()
-    grade = (data.get("grade") or "").strip()[:80]
     letter_raw = data.get("letter")
     score_raw = data.get("score")
 
-    if not student_name or letter_raw is None or score_raw is None:
-        return _json_error("Missing required fields: student, letter, score", 400)
+    if letter_raw is None or score_raw is None:
+        return _json_error("Missing required fields: letter, score", 400)
 
     letter, error = validate_letter(letter_raw)
     if error:
@@ -1451,16 +1457,11 @@ def save_progress(request):
 
     try:
         with transaction.atomic():
-            student, _ = Student.objects.get_or_create(name=student_name)
-            if grade and student.grade != grade:
-                student.grade = grade
-                student.save(update_fields=["grade", "updated_at"])
-
             # enforce previous letter completion
             if letter != "A":
                 prev_letter = chr(ord(letter) - 1)
                 prev_passed = LetterProgress.objects.filter(
-                    student=student,
+                    user=request.user,
                     letter=prev_letter,
                     passed=True
                 ).exists()
@@ -1472,7 +1473,7 @@ def save_progress(request):
                     }, status=400)
 
             lp, created = LetterProgress.objects.get_or_create(
-                student=student,
+                user=request.user,
                 letter=letter,
                 defaults={"score": 0, "passed": False},
             )
@@ -1493,8 +1494,9 @@ def save_progress(request):
             "created": created
         })
 
-    except Exception as e:
-        return _json_error("Database error", 500, details=str(e))
+    except Exception:
+        logger.exception("letter_progress_save_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Database error", 500, request_id=getattr(request, "request_id", ""))
 
 
 @require_POST
@@ -1591,8 +1593,9 @@ def save_letter_progress_api(request):
             "created": created,
             "progress": serialize_letter_progress(progress),
         })
-    except Exception as e:
-        return _json_error("Failed to save letter progress", 500, details=str(e))
+    except Exception:
+        logger.exception("account_letter_progress_save_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Failed to save letter progress", 500, request_id=getattr(request, "request_id", ""))
 
 
 @login_required
@@ -1652,8 +1655,9 @@ def bird_tutor_progress_api(request):
                 "last_used_at": progress.last_used_at.isoformat() if progress.last_used_at else None,
             },
         })
-    except Exception as e:
-        return _json_error("Failed to save bird tutor progress", 500, details=str(e))
+    except Exception:
+        logger.exception("bird_tutor_progress_save_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Failed to save bird tutor progress", 500, request_id=getattr(request, "request_id", ""))
 
 
 @login_required
@@ -1718,8 +1722,9 @@ def bird_tutor_review_api(request):
             ])
 
         return JsonResponse({"status": "ok", "item": serialize_bird_review_item(item)})
-    except Exception as e:
-        return _json_error("Failed to update bird tutor review item", 500, details=str(e))
+    except Exception:
+        logger.exception("bird_review_update_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Failed to update bird tutor review item", 500, request_id=getattr(request, "request_id", ""))
 
 
 # ظ‡ط°ط§ endpoint ط®ط§ط±ط¬ظٹ (ظ„ط§ط­ظ‚ظ‹ط§ ط­ط·ظٹ API KEY)
@@ -1738,16 +1743,20 @@ def speech_check(request):
             "correct": False,
             "message": "This endpoint is a compatibility placeholder. Current pronunciation practice uses browser Web Speech text recognition, not deep server-side audio analysis."
         })
-    except Exception as e:
-        return _json_error("Speech check failed", 500, details=str(e))
+    except Exception:
+        logger.exception("speech_check_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Speech check failed", 500, request_id=getattr(request, "request_id", ""))
 
 
 @require_GET
+@login_required
 def generate_certificate(request, student_id):
     """
     PDF certificate if completed A-Z
     """
     try:
+        if not request.user.is_staff:
+            raise Http404("Certificate not found")
         student = get_object_or_404(Student, id=student_id)
 
         passed_count = LetterProgress.objects.filter(student=student, passed=True).count()
@@ -1777,10 +1786,15 @@ def generate_certificate(request, student_id):
         if pisa_status.err:
             return _json_error("PDF generation failed", 500)
 
+        response["Cache-Control"] = "private, no-store"
+        response["Pragma"] = "no-cache"
         return response
 
-    except Exception as e:
-        return _json_error("Certificate generation failed", 500, details=str(e))
+    except Http404:
+        raise
+    except Exception:
+        logger.exception("certificate_generation_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Certificate generation failed", 500, request_id=getattr(request, "request_id", ""))
 
 
 # ============================================
@@ -1789,6 +1803,7 @@ def generate_certificate(request, student_id):
 
 
 @require_http_methods(["GET", "POST"])
+@rate_limit("register", limit_setting="RATE_LIMIT_REGISTER", default=5)
 def register(request):
     if request.user.is_authenticated:
         return redirect("index")
@@ -1804,6 +1819,8 @@ def register(request):
 
 
 @require_http_methods(["GET", "POST"])
+@rate_limit("login-ip", limit_setting="RATE_LIMIT_LOGIN", default=10)
+@rate_limit("login-account", limit_setting="RATE_LIMIT_LOGIN", default=10, identity=login_identity)
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("index")
@@ -1812,12 +1829,20 @@ def login_view(request):
     if request.method == "POST" and form.is_valid():
         auth_login(request, form.get_user())
         messages.success(request, "طھظ… طھط³ط¬ظٹظ„ ط§ظ„ط¯ط®ظˆظ„ ط¨ظ†ط¬ط§ط­.")
-        return redirect(request.GET.get("next") or "index")
+        next_url = request.GET.get("next") or ""
+        if url_has_allowed_host_and_scheme(
+            url=next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            return redirect(next_url)
+        return redirect("index")
 
     return render(request, "accounts/login.html", {"form": form})
 
 
-@require_GET
+@login_required
+@require_POST
 def logout_view(request):
     auth_logout(request)
     messages.success(request, "طھظ… طھط³ط¬ظٹظ„ ط§ظ„ط®ط±ظˆط¬.")
@@ -4782,6 +4807,7 @@ def create_payment_order(request, plan_code, method_slug):
 @login_required
 @ensure_csrf_cookie
 @require_http_methods(["GET", "POST"])
+@rate_limit("bank-receipt", limit_setting="RATE_LIMIT_UPLOAD", default=10)
 def bank_transfer_proof(request, order_id):
     order = get_owned_payment_order_or_404(request, order_id)
     if order.method != PaymentOrder.Method.BANK_TRANSFER:
@@ -5282,8 +5308,9 @@ def leaderboard_api(request):
 
     try:
         return JsonResponse({"rows": build_leaderboard_rows(request.GET)})
-    except Exception as e:
-        return _json_error("Failed to load leaderboard", 500, details=str(e))
+    except Exception:
+        logger.exception("leaderboard_load_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Failed to load leaderboard", 500, request_id=getattr(request, "request_id", ""))
 
 
 def get_leaderboard_period_start(period):
@@ -5827,63 +5854,18 @@ def get_cvc_stories_api(request):
 
 
 @require_POST
+@login_required
+@rate_limit("legacy-cvc-progress", limit_setting="RATE_LIMIT_WRITE", default=60)
 def save_cvc_progress_api(request):
     blocked = require_feature(request, "cvc_words", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
         return blocked
 
-    data, error = parse_json_safely(request)
-    if error:
-        return error
-
-    student_name = (data.get("student") or "").strip()
-    progress_type = (data.get("type") or "").strip()
-    points_raw = data.get("points", 0)
-
-    if not student_name or not progress_type:
-        return _json_error("Missing required fields: student, type", 400)
-
-    valid_types = {"word", "sentence", "story", "quiz", "spelling", "mic"}
-    if progress_type not in valid_types:
-        return _json_error(f"Invalid type. Must be one of: {sorted(valid_types)}", 400)
-
-    points, error = validate_int(points_raw, min_val=0, max_val=1000, field_name="points")
-    if error:
-        return error
-
-    try:
-        with transaction.atomic():
-            student, _ = Student.objects.get_or_create(name=student_name)
-            cvc_progress, created = CVCProgress.objects.get_or_create(student=student)
-
-            if progress_type == "word":
-                cvc_progress.update_word_score(points)
-
-            elif progress_type == "sentence":
-                reading_time = data.get("reading_time", 0)
-                try:
-                    reading_time = float(reading_time or 0)
-                except (ValueError, TypeError):
-                    return _json_error("Invalid reading_time format. Must be a number.", 400)
-                cvc_progress.update_sentence_score(points, reading_time)
-
-            elif progress_type == "story":
-                cvc_progress.mark_story_complete()
-
-            elif progress_type in {"quiz", "spelling", "mic"}:
-                cvc_progress.update_word_score(points)
-
-        return JsonResponse({
-            "status": "ok",
-            "total_score": cvc_progress.total_score,
-            "words_completed": cvc_progress.words_completed,
-            "sentences_completed": cvc_progress.sentences_completed,
-            "stories_completed": cvc_progress.stories_completed,
-            "created": created
-        })
-
-    except Exception as e:
-        return _json_error("Failed to save progress", 500, details=str(e))
+    return JsonResponse({
+        "error": "legacy_endpoint_retired",
+        "message": "Use the authenticated CVC reading progress endpoint.",
+        "replacement": reverse("api_cvc_reading_progress"),
+    }, status=410)
 
 
 @require_http_methods(["GET", "POST"])
@@ -6181,6 +6163,7 @@ def cvc_reading_progress_api(request):
 
 @csrf_exempt
 @require_POST
+@rate_limit("pronunciation", limit_setting="RATE_LIMIT_PUBLIC_API", default=30)
 def check_cvc_pronunciation(request):
     blocked = require_feature(request, "cvc_words", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
@@ -6207,7 +6190,8 @@ def check_cvc_pronunciation(request):
             "message": "ط±ط§ط¦ط¹! ظ†ط·ظ‚ ظ…ظ…طھط§ط²" if accuracy >= 80 else "ط¬ظٹط¯طŒ ط­ط§ظˆظ„ ظ…ط±ط© ط£ط®ط±ظ‰"
         })
 
-    except Exception as e:
-        return _json_error("Pronunciation check failed", 500, details=str(e))
+    except Exception:
+        logger.exception("pronunciation_check_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Pronunciation check failed", 500, request_id=getattr(request, "request_id", ""))
 
 

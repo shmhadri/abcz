@@ -493,7 +493,9 @@
                     entry.completed = true;
                     this.commitProgressUpdate();
                 }
-                this.postProgressToBackend(letter, entry.score || this.getCurrentLetterTotalScore());
+                if (this.hasAuthenticatedAccount()) {
+                    this.postProgressToBackend(letter, entry.score || this.getCurrentLetterTotalScore());
+                }
                 this.postLetterProgressToAccount(letter, entry).catch(error => {
                     console.warn('Account letter progress fallback: localStorage remains active.', error);
                 });
