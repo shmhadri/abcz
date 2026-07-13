@@ -2,6 +2,7 @@ import shutil
 import tempfile
 from io import BytesIO
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib import admin as django_admin
 from django.contrib.auth.models import User
@@ -196,6 +197,37 @@ class PaymentCheckoutTests(TestCase):
         stored_name = BankTransferProof.objects.get(payment_order=order).receipt_file.name
         self.assertNotIn("..", stored_name)
         self.assertNotIn("odd", stored_name)
+
+    def test_bank_transfer_receipt_uses_unique_random_storage_names(self):
+        order = self.create_order(
+            method=PaymentOrder.Method.BANK_TRANSFER,
+            provider=PaymentOrder.Provider.MANUAL_BANK,
+            status=PaymentOrder.Status.AWAITING_BANK_REVIEW,
+        )
+        proof = BankTransferProof(user=self.user, payment_order=order)
+        receipt_field = BankTransferProof._meta.get_field("receipt_file")
+        first_token = "a" * 40
+        second_token = "b" * 40
+
+        with patch(
+            "phonics.models.secrets.token_hex",
+            side_effect=[first_token, second_token],
+        ) as token_hex:
+            first_path = receipt_field.generate_filename(proof, "original-receipt.png")
+            second_path = receipt_field.generate_filename(proof, "original-receipt.png")
+
+        first_path = first_path.replace("\\", "/")
+        second_path = second_path.replace("\\", "/")
+
+        expected_prefix = (
+            f"bank_transfer_receipts/user_{self.user.id}/order_{order.id}/"
+        )
+        self.assertEqual(first_path, f"{expected_prefix}{first_token}.png")
+        self.assertEqual(second_path, f"{expected_prefix}{second_token}.png")
+        self.assertNotIn("original-receipt", first_path)
+        self.assertNotIn("original-receipt", second_path)
+        self.assertNotEqual(first_path, second_path)
+        self.assertEqual(token_hex.call_count, 2)
 
     def test_bank_transfer_rejects_html_named_pdf_and_signature_extension_mismatch(self):
         for filename, content in [
