@@ -67,6 +67,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "phonics.middleware.RequestIDMiddleware",
+    "phonics.middleware.RequestTimingMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -113,6 +115,13 @@ else:
         }
     }
 
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
+
+
+SUBSCRIPTION_CACHE_TIMEOUT = 0 if TESTING else int(os.getenv("SUBSCRIPTION_CACHE_TIMEOUT", "300"))
+STATIC_CONTENT_CACHE_TIMEOUT = 0 if TESTING else int(os.getenv("STATIC_CONTENT_CACHE_TIMEOUT", "1800"))
+PUBLIC_PAGE_CACHE_TIMEOUT = int(os.getenv("PUBLIC_PAGE_CACHE_TIMEOUT", "600"))
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -151,8 +160,22 @@ STORAGES = {
 # Production security
 SECURE_SSL_REDIRECT = (not DEBUG) and (not TESTING) and env_bool("SECURE_SSL_REDIRECT", "True")
 SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SAMESITE = "Lax"
 SECURE_PROXY_SSL_HEADER = None if DEBUG else ("HTTP_X_FORWARDED_PROTO", "https")
+
+RATE_LIMIT_LOGIN = int(os.getenv("RATE_LIMIT_LOGIN", "10"))
+RATE_LIMIT_REGISTER = int(os.getenv("RATE_LIMIT_REGISTER", "5"))
+RATE_LIMIT_WRITE = int(os.getenv("RATE_LIMIT_WRITE", "60"))
+RATE_LIMIT_UPLOAD = int(os.getenv("RATE_LIMIT_UPLOAD", "10"))
+RATE_LIMIT_PUBLIC_API = int(os.getenv("RATE_LIMIT_PUBLIC_API", "30"))
+
+CSP_REPORT_ONLY = os.getenv(
+    "CSP_REPORT_ONLY",
+    "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+).strip()
 
 if not DEBUG:
     SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "31536000"))

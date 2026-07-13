@@ -222,7 +222,7 @@
                 <a class="btn" href="/curriculum/">خطة المنهج</a>
                 <a class="btn" href="/pricing/">الخطط</a>
                 <a class="btn" href="{% url 'guide' %}">التعليمات</a>
-                <a class="btn" href="{% url 'logout' %}">تسجيل الخروج</a>
+                <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn" type="submit">تسجيل الخروج</button></form>
             </div>
         </nav>
 
