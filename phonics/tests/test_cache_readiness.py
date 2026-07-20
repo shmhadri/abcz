@@ -49,7 +49,7 @@ class SubscriptionCacheReadinessTests(TestCase):
             )
         return user
 
-    def test_feature_keys_cache_hit_avoids_repeated_subscription_queries(self):
+    def test_feature_keys_are_recomputed_to_honor_subscription_expiry(self):
         user = self.create_user(plan_code=PLAN_SILVER)
 
         with CaptureQueriesContext(connection) as first_queries:
@@ -60,7 +60,7 @@ class SubscriptionCacheReadinessTests(TestCase):
         self.assertIn("sounds_basic", first_keys)
         self.assertEqual(first_keys, second_keys)
         self.assertGreater(len(first_queries), 0)
-        self.assertEqual(len(second_queries), 0)
+        self.assertGreater(len(second_queries), 0)
 
     def test_feature_cache_is_isolated_per_user(self):
         silver_user = self.create_user("cache-silver", PLAN_SILVER)
@@ -90,7 +90,7 @@ class SubscriptionCacheReadinessTests(TestCase):
 
         self.assertIn("sounds_basic", get_feature_keys(user))
 
-    def test_group_membership_change_invalidates_cached_feature_keys(self):
+    def test_group_membership_alone_does_not_grant_feature_keys(self):
         user = self.create_user()
         group = Group.objects.create(name="Silver")
         self.assertNotIn("sounds_basic", get_feature_keys(user))
@@ -98,7 +98,7 @@ class SubscriptionCacheReadinessTests(TestCase):
         with self.captureOnCommitCallbacks(execute=True):
             user.groups.add(group)
 
-        self.assertIn("sounds_basic", get_feature_keys(user))
+        self.assertNotIn("sounds_basic", get_feature_keys(user))
 
     def test_cache_failure_falls_back_to_database_calculation(self):
         user = self.create_user(plan_code=PLAN_SILVER)
@@ -109,17 +109,13 @@ class SubscriptionCacheReadinessTests(TestCase):
 
         self.assertIn("sounds_basic", keys)
 
-    def test_cached_feature_payload_contains_only_simple_feature_names(self):
+    def test_feature_payload_is_not_persisted_in_shared_cache(self):
         user = self.create_user(plan_code=PLAN_SILVER)
         get_feature_keys(user)
 
         stored = cache.get(user_cache_key("feature-keys", user.pk))
 
-        self.assertIsInstance(stored, list)
-        self.assertTrue(stored)
-        self.assertTrue(all(isinstance(item, str) for item in stored))
-        self.assertNotIn("secret", stored)
-        self.assertNotIn(user.email, stored)
+        self.assertIsNone(stored)
 
 
 @override_settings(CACHES=CACHE_SETTINGS, PUBLIC_PAGE_CACHE_TIMEOUT=600)
@@ -130,8 +126,8 @@ class PublicPageCacheTests(TestCase):
     def tearDown(self):
         cache.clear()
 
-    def test_pricing_page_is_marked_cacheable(self):
+    def test_pricing_page_is_not_publicly_cached_because_actions_are_user_specific(self):
         response = self.client.get("/pricing/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("max-age=600", response.headers.get("Cache-Control", ""))
+        self.assertNotIn("max-age=600", response.headers.get("Cache-Control", ""))

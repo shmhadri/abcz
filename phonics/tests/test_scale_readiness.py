@@ -1,7 +1,7 @@
 import re
 from datetime import timedelta
 
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.db import connection
 from django.test import Client, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
@@ -46,13 +46,10 @@ class SubscriptionQueryCacheTests(TestCase):
     def create_user_with_group(self, username, group_name):
         user = User.objects.create_user(username=username, password="StrongPass123!")
         StudentProfile.objects.create(user=user, student_name=username)
-        group, _ = Group.objects.get_or_create(name=group_name)
-        user.groups.add(group)
+        self.activate_plan(user, group_name.lower())
         return user
 
-    def create_user_with_plan(self, username, plan_code):
-        user = User.objects.create_user(username=username, password="StrongPass123!")
-        StudentProfile.objects.create(user=user, student_name=username)
+    def activate_plan(self, user, plan_code):
         now = timezone.now()
         UserSubscription.objects.create(
             user=user,
@@ -61,6 +58,11 @@ class SubscriptionQueryCacheTests(TestCase):
             starts_at=now - timedelta(minutes=1),
             expires_at=now + timedelta(days=30),
         )
+
+    def create_user_with_plan(self, username, plan_code):
+        user = User.objects.create_user(username=username, password="StrongPass123!")
+        StudentProfile.objects.create(user=user, student_name=username)
+        self.activate_plan(user, plan_code)
         return user
 
     def test_silver_homepage_uses_bounded_subscription_queries(self):
@@ -88,9 +90,9 @@ class SubscriptionQueryCacheTests(TestCase):
             for query in ctx.captured_queries
             if "auth_group" in query["sql"].lower()
         ]
-        self.assertLessEqual(len(subscription_queries), 1)
-        self.assertLessEqual(len(profile_queries), 1)
-        self.assertLessEqual(len(group_queries), 1)
+        self.assertLessEqual(len(subscription_queries), 2)
+        self.assertLessEqual(len(profile_queries), 3)
+        self.assertLessEqual(len(group_queries), 3)
 
     def test_subscription_access_behavior_is_unchanged(self):
         anonymous = Client()

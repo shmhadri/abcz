@@ -1,11 +1,16 @@
 import json
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 
 from phonics.models import LetterProgress, Student
 
 
 class SaveProgressApiTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="progress-user", password="StrongPass123!")
+        self.client.force_login(self.user)
+
     def post_progress(self, payload):
         return self.client.post(
             "/api/save-progress/",
@@ -22,10 +27,25 @@ class SaveProgressApiTests(TestCase):
         self.assertTrue(data["passed"])
         self.assertEqual(data["score"], 14)
 
-        student = Student.objects.get(name="Test Student")
-        progress = LetterProgress.objects.get(student=student, letter="A")
+        progress = LetterProgress.objects.get(user=self.user, letter="A")
         self.assertEqual(progress.score, 14)
         self.assertTrue(progress.passed)
+        self.assertFalse(Student.objects.filter(name="Test Student").exists())
+
+    def test_anonymous_request_is_rejected_and_creates_nothing(self):
+        self.client.logout()
+        response = self.post_progress({"student": "Victim", "letter": "A", "score": 20})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(LetterProgress.objects.count(), 0)
+        self.assertEqual(Student.objects.count(), 0)
+
+    def test_client_student_name_cannot_select_another_owner(self):
+        other = User.objects.create_user(username="other", password="StrongPass123!")
+        LetterProgress.objects.create(user=other, letter="A", score=1)
+        response = self.post_progress({"student": "other", "user_id": other.id, "letter": "A", "score": 20})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(LetterProgress.objects.get(user=other, letter="A").score, 1)
+        self.assertEqual(LetterProgress.objects.get(user=self.user, letter="A").score, 20)
 
     def test_rejects_score_above_backend_limit(self):
         response = self.post_progress({"student": "Test Student", "letter": "A", "score": 21})

@@ -81,9 +81,9 @@
                         <a href="{% url 'profile_dashboard' %}" class="btn btn-secondary">
                             <i class="fas fa-user-graduate"></i> ملف المتعلم
                         </a>
-                        <a href="{% url 'logout' %}" class="btn btn-danger">
+                        <form method="post" action="{% url 'logout' %}" style="display:inline">{% csrf_token %}<button type="submit" class="btn btn-danger">
                             <i class="fas fa-sign-out-alt"></i> خروج
-                        </a>
+                        </button></form>
                     {% else %}
                         <a href="{% url 'login' %}" class="btn btn-primary">
                             <i class="fas fa-sign-in-alt"></i> دخول
@@ -194,18 +194,13 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>المدرسة</label>
-                        <input type="text" id="profileSchool" class="form-control" placeholder="اسم المدرسة" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                        <label>المدينة</label>
+                        <input type="text" id="profileCity" class="form-control" autocomplete="address-level2" placeholder="مثال: الرياض" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
                     </div>
                     
                     <div class="form-group">
-                        <label>رقم جوال الطالب (اختياري)</label>
-                        <input type="tel" id="profilePhone" class="form-control" placeholder="05xxxxxxxx" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>رقم جوال ولي الأمر (لإرسال الشهادة)</label>
-                        <input type="tel" id="profileParentPhone" class="form-control" placeholder="05xxxxxxxx" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                        <label>رقم الجوال</label>
+                        <input type="tel" id="profileParentPhone" class="form-control" inputmode="numeric" autocomplete="tel" pattern="(?:05\d{8}|(?:\+?966|00966)5\d{8})" placeholder="05xxxxxxxx" dir="ltr" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
                     </div>
 
                     <button type="submit" class="btn btn-primary" style="margin-top: 10px;">حفظ البيانات</button>
@@ -1219,8 +1214,7 @@
                 // Profile Data
                 const serverProfile = SERVER_STUDENT_PROFILE || {};
                 this.studentName = serverProfile.student_name || localStorage.getItem('studentName') || '';
-                this.studentSchool = serverProfile.school || localStorage.getItem('studentSchool') || '';
-                this.studentPhone = localStorage.getItem('studentPhone') || '';
+                this.studentCity = serverProfile.city || localStorage.getItem('studentCity') || '';
                 this.parentPhone = serverProfile.parent_phone || localStorage.getItem('parentPhone') || '';
                 this.studentEmail = window.PHONICS_USER_EMAIL || localStorage.getItem('studentEmail') || '';
 
@@ -1662,9 +1656,11 @@
                 });
                 
                 // Profile Events
-                this.studentProfileBtn.addEventListener('click', () => {
-                    this.openProfileModal();
-                });
+                if (this.studentProfileBtn) {
+                    this.studentProfileBtn.addEventListener('click', () => {
+                        this.openProfileModal();
+                    });
+                }
 
                 document.getElementById('closeProfileModal').addEventListener('click', () => {
                     this.profileModal.style.display = 'none';
@@ -1893,8 +1889,7 @@
 
             openProfileModal() {
                 document.getElementById('profileName').value = this.studentName;
-                document.getElementById('profileSchool').value = this.studentSchool;
-                document.getElementById('profilePhone').value = this.studentPhone;
+                document.getElementById('profileCity').value = this.studentCity;
                 document.getElementById('profileParentPhone').value = this.parentPhone;
                 this.profileModal.style.display = 'flex';
             }
@@ -1908,8 +1903,7 @@
 
             storeProfileLocally(profileData) {
                 localStorage.setItem('studentName', profileData.student_name);
-                localStorage.setItem('studentSchool', profileData.school);
-                localStorage.setItem('studentPhone', profileData.student_phone || '');
+                localStorage.setItem('studentCity', profileData.city);
                 localStorage.setItem('parentPhone', profileData.parent_phone);
             }
 
@@ -1922,7 +1916,7 @@
                     },
                     body: JSON.stringify({
                         student_name: profileData.student_name,
-                        school: profileData.school,
+                        city: profileData.city,
                         parent_phone: profileData.parent_phone
                     })
                 });
@@ -1938,8 +1932,7 @@
             async saveProfile() {
                 const profileData = {
                     student_name: document.getElementById('profileName').value.trim(),
-                    school: document.getElementById('profileSchool').value.trim(),
-                    student_phone: document.getElementById('profilePhone').value.trim(),
+                    city: document.getElementById('profileCity').value.trim(),
                     parent_phone: document.getElementById('profileParentPhone').value.trim()
                 };
 
@@ -1947,13 +1940,12 @@
                     if (IS_AUTHENTICATED) {
                         const savedProfile = await this.saveProfileToServer(profileData);
                         profileData.student_name = savedProfile.student_name || profileData.student_name;
-                        profileData.school = savedProfile.school || profileData.school;
+                        profileData.city = savedProfile.city || profileData.city;
                         profileData.parent_phone = savedProfile.parent_phone || profileData.parent_phone;
                     }
 
                     this.studentName = profileData.student_name;
-                    this.studentSchool = profileData.school;
-                    this.studentPhone = profileData.student_phone;
+                    this.studentCity = profileData.city;
                     this.parentPhone = profileData.parent_phone;
 
                     this.storeProfileLocally(profileData);
@@ -6327,12 +6319,30 @@ function sendAudioToServer(blob, letter){
             <i class="fas fa-arrow-right"></i> رجوع
         </button>
         
-        <button class="menu-item" id="profileBtn">
-            <i class="fas fa-sign-in-alt"></i> تسجيل الدخول / الملف الشخصي
-        </button>
-        <a href="{% url 'leaderboard' %}" class="menu-item" style="text-decoration:none;" hidden>
-            <i class="fas fa-trophy"></i> لوحة المتصدرين
-        </a>
+        <div class="menu-account-card" aria-label="الحساب">
+            <div class="menu-section-label">الحساب</div>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'profile_dashboard' %}" class="menu-item menu-item-primary">
+                    <i class="fas fa-user-graduate"></i>
+                    <span><strong>ملف المتعلم</strong><small>{{ request.user.username }}</small></span>
+                </a>
+                <button class="menu-item" id="profileBtn" type="button">
+                    <i class="fas fa-user-edit"></i><span>تعديل بيانات المتعلم</span>
+                </button>
+                {% if not level_one_disabled_features.leaderboard %}
+                    <a href="{% url 'leaderboard' %}" class="menu-item">
+                        <i class="fas fa-trophy"></i><span>لوحة المتصدرين</span>
+                    </a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'login' %}" class="menu-item menu-item-primary">
+                    <i class="fas fa-sign-in-alt"></i><span>تسجيل الدخول</span>
+                </a>
+                <a href="{% url 'register' %}" class="menu-item">
+                    <i class="fas fa-user-plus"></i><span>إنشاء حساب جديد</span>
+                </a>
+            {% endif %}
+        </div>
 
         <div class="menu-divider"></div>
 
@@ -6418,19 +6428,9 @@ function sendAudioToServer(blob, letter){
             <i class="fas fa-file-contract"></i> الشروط والأحكام
         </a>
         {% if request.user.is_authenticated %}
-            <a href="{% url 'profile_dashboard' %}" class="menu-item" style="text-decoration:none;">
-                <i class="fas fa-user-graduate"></i> ملف المتعلم
-            </a>
-            <a href="{% url 'logout' %}" class="menu-item" style="text-decoration:none; color: var(--error);">
+            <form method="post" action="{% url 'logout' %}" style="display:inline">{% csrf_token %}<button type="submit" class="menu-item" style="text-decoration:none; color: var(--error); border:0; background:none;">
                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
-            </a>
-        {% else %}
-            <a href="{% url 'login' %}" class="menu-item" style="text-decoration:none;">
-                <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
-            </a>
-            <a href="{% url 'register' %}" class="menu-item" style="text-decoration:none;">
-                <i class="fas fa-user-plus"></i> إنشاء حساب
-            </a>
+            </button></form>
         {% endif %}
     </div>
 </body>

@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
@@ -23,8 +23,7 @@ class SubscriptionAccessControlTests(TestCase):
     def create_logged_in_user(self, username, *, group_name=None, plan_code=None):
         user = User.objects.create_user(username=username, password="StrongPass123!")
         if group_name:
-            group, _ = Group.objects.get_or_create(name=group_name)
-            user.groups.add(group)
+            self.activate_plan(user, group_name.lower())
         if plan_code:
             self.activate_plan(user, plan_code)
         self.client.force_login(user)
@@ -68,4 +67,3 @@ class SubscriptionAccessControlTests(TestCase):
             with self.subTest(path=path):
                 response = self.client.get(path)
                 self.assertEqual(response.status_code, 403)
-

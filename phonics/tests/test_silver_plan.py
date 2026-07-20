@@ -1,10 +1,11 @@
 import json
 
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 
 from phonics.models import StudentProfile
 from phonics.views import SILVER_FEATURE_KEYS
+from phonics.tests.subscription_helpers import grant_active_subscription
 
 
 @override_settings(DISABLE_AUTO_SEED=True)
@@ -53,8 +54,7 @@ class SilverPlanTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="silver-user", password="StrongPass123!")
         StudentProfile.objects.create(user=self.user, student_name="Silver Student")
-        silver_group = Group.objects.create(name="Silver")
-        self.user.groups.add(silver_group)
+        grant_active_subscription(self.user, "silver")
         self.client.force_login(self.user)
 
     def test_silver_feature_keys_are_exact_for_requested_scope(self):
@@ -69,7 +69,7 @@ class SilverPlanTests(TestCase):
         self.assertContains(response, "27")
         self.assertContains(response, "ريال شهريًا")
         self.assertContains(response, "قيمة أعلى")
-        self.assertContains(response, "اختيار Silver")
+        self.assertContains(response, "مشترك حاليًا")
 
     def test_silver_opens_level_one_level_two_and_worksheets(self):
         for path in ["/", "/sounds/", "/sounds/worksheet/", "/letters/worksheet/"]:
