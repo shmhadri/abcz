@@ -1,5 +1,7 @@
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
+
+from phonics.tests.subscription_helpers import grant_active_subscription
 
 from phonics.views import (
     FOUNDATION_VOCABULARY_CATEGORIES,
@@ -15,8 +17,7 @@ from phonics.views import (
 class SoundsPatternsTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="sounds-silver", password="StrongPass123!")
-        silver_group, _ = Group.objects.get_or_create(name="Silver")
-        self.user.groups.add(silver_group)
+        grant_active_subscription(self.user, "silver")
         self.client.force_login(self.user)
 
     def test_sound_patterns_cover_required_groups(self):

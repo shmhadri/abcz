@@ -52,12 +52,32 @@
         }
 
         input {
+            box-sizing: border-box;
             width: 100%;
             min-height: 44px;
             padding: 10px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             font: inherit;
+        }
+
+        input:focus-visible {
+            outline: 3px solid rgba(67, 97, 238, 0.18);
+            border-color: #4361ee;
+        }
+
+        .field-group:has(.errorlist) input {
+            border-color: #dc2626;
+            background: #fff7f7;
+        }
+
+        .security-note {
+            padding: 11px 13px;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-weight: 750;
         }
 
         .errorlist {
@@ -95,13 +115,13 @@
             <article class="auth-card">
                 <p class="eyebrow">تسجيل الدخول</p>
                 <h1>ادخل لحساب المتعلم واحفظ التقدم على السيرفر.</h1>
-                <p class="lead">استخدم الحساب المناسب للباقة التي تريد اختبارها، ثم انتقل إلى المنهج أو صفحة الأسعار أو ملف المتعلم.</p>
+                <p class="lead">أدخل بيانات حسابك للوصول إلى تقدم المتعلم ومحتوى الباقة المرتبطة به.</p>
 
-                <form method="post">
+                <form method="post" autocomplete="on">
                     {% csrf_token %}
-                    {{ form.non_field_errors }}
+                    <div aria-live="polite">{{ form.non_field_errors }}</div>
                     {% for field in form %}
-                        <div>
+                        <div class="field-group">
                             {{ field.label_tag }}
                             {{ field }}
                             {{ field.errors }}
@@ -115,15 +135,15 @@
             </article>
 
             <aside class="auth-side">
-                <h2>اختبار الباقات</h2>
-                <p>بعد الدخول، افتح نفس الروابط في كل باقة ولاحظ ما يفتح وما يظهر له قفل ترقية.</p>
+                <h2>دخول آمن</h2>
+                <p class="security-note">محاولات الدخول محدودة لحماية حسابك، ورسالة الخطأ لا تكشف إن كان اسم المستخدم موجودًا.</p>
                 <ul class="clean-list">
-                    <li>Free للتجربة المحدودة.</li>
-                    <li>Basic للحروف الأساسية.</li>
-                    <li>Silver للحروف والصوتيات وأوراق العمل.</li>
-                    <li>VIP للكتاب وWordwall والعصفور الذكي.</li>
+                    <li>تأكد أن العنوان يبدأ بنطاق الموقع الصحيح.</li>
+                    <li>لا تشارك كلمة المرور مع أي شخص.</li>
+                    <li>استخدم كلمة مرور مختلفة عن حساباتك الأخرى.</li>
+                    <li>سجّل الخروج عند استخدام جهاز مشترك.</li>
                 </ul>
-                <a class="btn" href="{% url 'guide' %}">اقرأ تعليمات التجربة</a>
+                <a class="btn" href="{% url 'privacy' %}">سياسة الخصوصية</a>
             </aside>
         </section>
     </main>

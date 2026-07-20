@@ -1,9 +1,11 @@
 from datetime import timedelta
 from pathlib import Path
 import secrets
+import uuid
+from decimal import Decimal
 
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth import get_user_model
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -119,6 +121,10 @@ class Student(models.Model):
         verbose_name = "طالب"
         verbose_name_plural = "الطلاب"
         ordering = ["-total_score", "name"]  # يفيد في الـ Leaderboard
+        indexes = [
+            models.Index(fields=["-total_score", "name"], name="student_score_name_idx"),
+            models.Index(fields=["grade", "name"], name="student_grade_name_idx"),
+        ]
 
     def __str__(self) -> str:
         return self.name
@@ -145,9 +151,10 @@ class StudentProfile(models.Model):
     )
     display_name = models.CharField("Display name", max_length=200, blank=True)
     student_name = models.CharField("اسم الطالب", max_length=200)
+    city = models.CharField("المدينة", max_length=100, blank=True)
     school = models.CharField("المدرسة", max_length=200, blank=True)
     grade = models.CharField("الصف", max_length=80, blank=True)
-    parent_phone = models.CharField("جوال ولي الأمر", max_length=30, blank=True)
+    parent_phone = models.CharField("رقم الجوال", max_length=30, blank=True)
     is_premium = models.BooleanField("Premium user", default=False)
     is_vip = models.BooleanField("VIP user", default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -156,6 +163,9 @@ class StudentProfile(models.Model):
     class Meta:
         verbose_name = "Student profile"
         verbose_name_plural = "Student profiles"
+        indexes = [
+            models.Index(fields=["grade"], name="student_profile_grade_idx"),
+        ]
 
     def __str__(self):
         label = self.display_name or self.student_name or self.user.username
@@ -208,6 +218,7 @@ class BirdReviewItem(models.Model):
         indexes = [
             models.Index(fields=["user", "mastered"]),
             models.Index(fields=["user", "letter", "word"]),
+            models.Index(fields=["user", "mastered", "-updated_at", "letter", "word"], name="bird_review_user_queue_idx"),
         ]
 
     def __str__(self):
@@ -328,6 +339,8 @@ class LetterProgress(models.Model):
             models.Index(fields=["user", "letter"]),
             models.Index(fields=["user", "completed"]),
             models.Index(fields=["letter"]),
+            models.Index(fields=["student", "timestamp"], name="letter_student_time_idx"),
+            models.Index(fields=["user", "last_updated_at"], name="letter_user_updated_idx"),
         ]
 
     def __str__(self) -> str:
@@ -494,6 +507,8 @@ class CVCWord(models.Model):
             models.Index(fields=['word_family']),
             models.Index(fields=['vowel_sound']),
             models.Index(fields=['difficulty_level']),
+            models.Index(fields=["order", "id"], name="cvc_word_order_id_idx"),
+            models.Index(fields=["vowel_sound", "word_family", "order", "word"], name="cvc_word_sheet_idx"),
         ]
 
     def __str__(self):
@@ -550,6 +565,10 @@ class CVCSentence(models.Model):
         verbose_name = "جملة CVC"
         verbose_name_plural = "جمل CVC"
         ordering = ["order", "difficulty"]
+        indexes = [
+            models.Index(fields=["order", "id"], name="cvc_sentence_order_id_idx"),
+            models.Index(fields=["category", "order", "difficulty"], name="cvc_sentence_sheet_idx"),
+        ]
 
     def __str__(self):
         return self.sentence[:50]
@@ -597,6 +616,10 @@ class CVCStory(models.Model):
         verbose_name = "قصة CVC"
         verbose_name_plural = "قصص CVC"
         ordering = ["order", "difficulty"]
+        indexes = [
+            models.Index(fields=["order", "id"], name="cvc_story_order_id_idx"),
+            models.Index(fields=["order", "difficulty"], name="cvc_story_sheet_idx"),
+        ]
 
     def __str__(self):
         return self.title
@@ -794,6 +817,9 @@ class CVCReadingProgress(models.Model):
     class Meta:
         verbose_name = "CVC reading progress"
         verbose_name_plural = "CVC reading progress"
+        indexes = [
+            models.Index(fields=["updated_at"], name="cvc_reading_updated_idx"),
+        ]
 
     def __str__(self):
         return f"{self.user.username} - CVC Reading {self.cvc_mastery_percentage}%"
@@ -831,6 +857,8 @@ class EnglishFoundationProgress(models.Model):
         indexes = [
             models.Index(fields=["user", "section"]),
             models.Index(fields=["section", "completed"]),
+            models.Index(fields=["last_activity_at"], name="english_progress_last_idx"),
+            models.Index(fields=["user", "last_activity_at"], name="english_progress_user_last_idx"),
         ]
 
     def __str__(self):
@@ -885,8 +913,11 @@ class UserSubscription(models.Model):
 class PaymentOrder(models.Model):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
+        CREATING_INVOICE = "creating_invoice", "Creating invoice"
+        INVOICE_CREATION_UNKNOWN = "invoice_creation_unknown", "Invoice creation unknown"
         INITIATED = "initiated", "Initiated"
         PAID = "paid", "Paid"
+        PAID_REQUIRES_REVIEW = "paid_requires_review", "Paid - requires review"
         FAILED = "failed", "Failed"
         EXPIRED = "expired", "Expired"
         CANCELED = "canceled", "Canceled"
@@ -903,6 +934,15 @@ class PaymentOrder(models.Model):
         MOYASAR = "moyasar", "Moyasar"
         MANUAL_BANK = "manual_bank", "Manual bank"
 
+    class Environment(models.TextChoices):
+        TEST = "test", "Test"
+        LIVE = "live", "Live"
+
+    class OperationType(models.TextChoices):
+        PURCHASE = "purchase", "Purchase"
+        RENEWAL = "renewal", "Renewal"
+        UPGRADE = "upgrade", "Upgrade"
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -911,6 +951,18 @@ class PaymentOrder(models.Model):
     plan_code = models.CharField(max_length=60, db_index=True)
     plan_name = models.CharField(max_length=120)
     duration_days = models.PositiveSmallIntegerField(default=30)
+    operation_type = models.CharField(
+        max_length=20,
+        choices=OperationType.choices,
+        default=OperationType.PURCHASE,
+        db_index=True,
+    )
+    from_plan_code = models.CharField(max_length=60, blank=True)
+    to_plan_code = models.CharField(max_length=60, blank=True, db_index=True)
+    original_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    target_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    amount_due = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    current_expires_at = models.DateTimeField(null=True, blank=True)
     amount_halalas = models.PositiveIntegerField()
     amount_sar = models.DecimalField(max_digits=8, decimal_places=2)
     currency = models.CharField(max_length=3, default="SAR")
@@ -918,10 +970,27 @@ class PaymentOrder(models.Model):
     method = models.CharField(max_length=40, choices=Method.choices, db_index=True)
     provider = models.CharField(max_length=40, choices=Provider.choices, db_index=True)
     provider_payment_id = models.CharField(max_length=120, blank=True, db_index=True)
+    # Kept for backwards compatibility. New Moyasar code uses the explicit IDs below.
+    moyasar_invoice_id = models.CharField(max_length=120, null=True, blank=True, unique=True)
+    moyasar_payment_id = models.CharField(max_length=120, null=True, blank=True, unique=True)
+    payment_environment = models.CharField(
+        max_length=10,
+        choices=Environment.choices,
+        default=Environment.TEST,
+        db_index=True,
+    )
+    idempotency_key = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    invoice_creation_token = models.UUIDField(null=True, blank=True, unique=True, editable=False)
+    invoice_creation_started_at = models.DateTimeField(null=True, blank=True)
     provider_status = models.CharField(max_length=80, blank=True)
     checkout_url = models.URLField(blank=True)
     metadata = models.JSONField(default=dict, blank=True)
     activated_at = models.DateTimeField(null=True, blank=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    failed_at = models.DateTimeField(null=True, blank=True)
+    canceled_at = models.DateTimeField(null=True, blank=True)
+    failure_code = models.CharField(max_length=80, null=True, blank=True)
+    failure_message = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -933,6 +1002,18 @@ class PaymentOrder(models.Model):
             models.Index(fields=["user", "status"]),
             models.Index(fields=["plan_code", "status"]),
             models.Index(fields=["provider", "provider_payment_id"]),
+            models.Index(fields=["status", "created_at"], name="payment_status_created_idx"),
+            models.Index(fields=["method", "status", "created_at"], name="payment_method_status_idx"),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(amount_halalas__gt=0),
+                name="payment_amount_halalas_positive",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(provider="moyasar") | models.Q(currency="SAR"),
+                name="moyasar_payment_currency_sar",
+            ),
         ]
 
     def __str__(self):
@@ -944,6 +1025,102 @@ class PaymentOrder(models.Model):
 
     def can_activate(self):
         return self.status in {self.Status.PAID, self.Status.BANK_APPROVED}
+
+    def clean(self):
+        super().clean()
+        if self.amount_due is not None:
+            amount_due = Decimal(self.amount_due).quantize(Decimal("0.01"))
+            if amount_due <= Decimal("0.00"):
+                raise ValidationError({"amount_due": "Payment amount must be positive."})
+            if Decimal(self.amount_sar).quantize(Decimal("0.01")) != amount_due:
+                raise ValidationError({"amount_sar": "Payment amount must match the server quote."})
+        if self.to_plan_code and self.plan_code != self.to_plan_code:
+            raise ValidationError({"to_plan_code": "Target plan must match the payment plan."})
+        if self.provider != self.Provider.MOYASAR:
+            return
+        if self.currency != "SAR":
+            raise ValidationError({"currency": "Moyasar payment orders must use SAR."})
+        amount_sar = Decimal(self.amount_sar)
+        rounded_sar = amount_sar.quantize(Decimal("0.01"))
+        if amount_sar != rounded_sar or int(rounded_sar * 100) != self.amount_halalas:
+            raise ValidationError({
+                "amount_halalas": "The SAR amount and halala amount do not match."
+            })
+
+
+class PaymentWebhookEvent(models.Model):
+    class ProcessingStatus(models.TextChoices):
+        RECEIVED = "received", "Received"
+        PROCESSING = "processing", "Processing"
+        PROCESSED = "processed", "Processed"
+        PENDING = "pending", "Pending"
+        MISMATCH = "mismatch", "Mismatch"
+        FAILED = "failed", "Failed"
+        IGNORED = "ignored", "Ignored"
+
+    provider = models.CharField(max_length=40, default=PaymentOrder.Provider.MOYASAR)
+    event_id = models.CharField(max_length=120, unique=True)
+    event_type = models.CharField(max_length=80)
+    payment_environment = models.CharField(
+        max_length=10,
+        choices=PaymentOrder.Environment.choices,
+        default=PaymentOrder.Environment.TEST,
+    )
+    payment_order = models.ForeignKey(
+        PaymentOrder,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="webhook_events",
+    )
+    received_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    processing_status = models.CharField(
+        max_length=30,
+        choices=ProcessingStatus.choices,
+        default=ProcessingStatus.RECEIVED,
+        db_index=True,
+    )
+    failure_code = models.CharField(max_length=80, null=True, blank=True)
+    payload_hash = models.CharField(max_length=64)
+
+    class Meta:
+        ordering = ["-received_at"]
+        indexes = [
+            models.Index(fields=["provider", "processing_status", "received_at"], name="webhook_provider_status_idx"),
+            models.Index(fields=["payment_order", "received_at"], name="webhook_order_received_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.provider}:{self.event_id} ({self.processing_status})"
+
+
+class PaymentActivationReview(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        RESOLVED = "resolved", "Resolved"
+
+    payment_order = models.OneToOneField(
+        PaymentOrder,
+        on_delete=models.PROTECT,
+        related_name="activation_review",
+    )
+    reason_code = models.CharField(max_length=80, db_index=True)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["status", "created_at"], name="payment_review_status_idx")]
+
+    def __str__(self):
+        return f"{self.payment_order.reference} ({self.reason_code})"
 
 
 class BankTransferProof(models.Model):
@@ -992,6 +1169,7 @@ class BankTransferProof(models.Model):
         indexes = [
             models.Index(fields=["user", "status"]),
             models.Index(fields=["payment_order", "status"]),
+            models.Index(fields=["status", "created_at"], name="bank_proof_status_created_idx"),
         ]
 
     def clean(self):
@@ -1004,72 +1182,114 @@ class BankTransferProof(models.Model):
 
 
 def activate_subscription_from_payment(payment_order):
+    if payment_order.status == PaymentOrder.Status.PAID_REQUIRES_REVIEW:
+        return None
     if not payment_order.can_activate():
         raise ValidationError("Payment order is not paid or approved.")
 
     with transaction.atomic():
         locked_order = PaymentOrder.objects.select_for_update().get(pk=payment_order.pk)
+        get_user_model().objects.select_for_update().get(pk=locked_order.user_id)
+        target_plan_code = locked_order.to_plan_code or locked_order.plan_code
         if locked_order.activated_at:
             return UserSubscription.objects.get(
                 user=locked_order.user,
-                plan_code=locked_order.plan_code,
+                plan_code=target_plan_code,
             )
+        if locked_order.status == PaymentOrder.Status.PAID_REQUIRES_REVIEW:
+            return None
         if not locked_order.can_activate():
             raise ValidationError("Payment order is not paid or approved.")
 
+        from .plans import ADDON_PLAN_CODES, PAID_MAIN_PLAN_CODES, PLAN_DIAMOND
+        from .subscriptions import synchronize_user_subscription_compatibility
+
         now = timezone.now()
-        current_subscription = UserSubscription.objects.filter(
-            user=locked_order.user,
-            plan_code=locked_order.plan_code,
-        ).first()
-        base_start = now
-        if (
-            current_subscription
-            and current_subscription.status == UserSubscription.Status.ACTIVE
-            and current_subscription.expires_at
-            and current_subscription.expires_at > now
-        ):
-            base_start = current_subscription.expires_at
+        operation_type = locked_order.operation_type or PaymentOrder.OperationType.PURCHASE
+        subscriptions = list(
+            UserSubscription.objects.select_for_update().filter(user=locked_order.user)
+        )
+        by_plan = {item.plan_code: item for item in subscriptions}
+        current_target = by_plan.get(target_plan_code)
+
+        def active_now(item):
+            return bool(
+                item
+                and item.status == UserSubscription.Status.ACTIVE
+                and item.starts_at
+                and item.expires_at
+                and item.starts_at <= now < item.expires_at
+            )
+
+        starts_at = now
+        expires_at = now + timedelta(days=locked_order.duration_days)
+
+        def require_review(reason_code):
+            locked_order.status = PaymentOrder.Status.PAID_REQUIRES_REVIEW
+            locked_order.failure_code = reason_code
+            locked_order.failure_message = "تم استلام الدفع ويجري التحقق من تفعيل الاشتراك."
+            locked_order.save(update_fields=[
+                "status", "failure_code", "failure_message", "updated_at",
+            ])
+            PaymentActivationReview.objects.get_or_create(
+                payment_order=locked_order,
+                defaults={"reason_code": reason_code},
+            )
+            return None
+
+        if operation_type == PaymentOrder.OperationType.UPGRADE:
+            if target_plan_code not in PAID_MAIN_PLAN_CODES:
+                raise ValidationError("Only a main subscription can be upgraded.")
+            source = by_plan.get(locked_order.from_plan_code)
+            snapshot_expiry = locked_order.current_expires_at
+            if snapshot_expiry is None or now >= snapshot_expiry or not active_now(source):
+                return require_review("upgrade_source_expired")
+            starts_at = source.starts_at
+            expires_at = source.expires_at
+            for item in subscriptions:
+                if item.plan_code in PAID_MAIN_PLAN_CODES and item.pk != getattr(current_target, "pk", None):
+                    if item.status == UserSubscription.Status.ACTIVE:
+                        item.status = UserSubscription.Status.CANCELED
+                        item.save(update_fields=["status", "updated_at"])
+        elif operation_type == PaymentOrder.OperationType.RENEWAL:
+            if active_now(current_target):
+                starts_at = current_target.starts_at
+                expires_at = current_target.expires_at + timedelta(days=locked_order.duration_days)
+        elif target_plan_code in PAID_MAIN_PLAN_CODES:
+            other_active_main = next(
+                (
+                    item for item in subscriptions
+                    if item.plan_code in PAID_MAIN_PLAN_CODES
+                    and item.plan_code != target_plan_code
+                    and active_now(item)
+                ),
+                None,
+            )
+            if other_active_main:
+                return require_review("active_main_subscription_conflict")
+            if active_now(current_target):
+                return require_review("active_target_subscription_conflict")
 
         subscription, _ = UserSubscription.objects.update_or_create(
             user=locked_order.user,
-            plan_code=locked_order.plan_code,
+            plan_code=target_plan_code,
             defaults={
                 "status": UserSubscription.Status.ACTIVE,
-                "starts_at": now if base_start == now else current_subscription.starts_at,
-                "expires_at": base_start + timedelta(days=locked_order.duration_days),
+                "starts_at": starts_at,
+                "expires_at": expires_at,
                 "activated_by_payment": locked_order,
             },
         )
 
-        group_names = {
-            "basic": "Basic",
-            "silver": "Silver",
-            "vip": "VIP",
-            "diamond": "Diamond",
-        }
-        group_name = group_names.get(locked_order.plan_code)
-        if group_name:
-            group, _ = Group.objects.get_or_create(name=group_name)
-            locked_order.user.groups.add(group)
-
-        profile, _ = StudentProfile.objects.get_or_create(
-            user=locked_order.user,
-            defaults={
-                "display_name": locked_order.user.get_full_name() or locked_order.user.username,
-                "student_name": locked_order.user.get_full_name() or locked_order.user.username,
-                "school": "",
-                "parent_phone": "",
-            },
-        )
-        if locked_order.plan_code in {"basic", "silver", "vip", "diamond"}:
-            profile.is_premium = True
-        if locked_order.plan_code in {"vip", "diamond"}:
-            profile.is_vip = True
-        profile.save(update_fields=["is_premium", "is_vip", "updated_at"])
+        if target_plan_code == PLAN_DIAMOND:
+            for item in subscriptions:
+                if item.plan_code in ADDON_PLAN_CODES and item.status == UserSubscription.Status.ACTIVE:
+                    item.status = UserSubscription.Status.CANCELED
+                    item.save(update_fields=["status", "updated_at"])
 
         locked_order.activated_at = now
         locked_order.save(update_fields=["activated_at", "updated_at"])
+        synchronize_user_subscription_compatibility(locked_order.user)
         return subscription
 
 
@@ -1088,6 +1308,11 @@ class TopGoalUnit(models.Model):
     unit_number = models.IntegerField("رقم الوحدة", default=1)
     
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["grade", "unit_number"], name="topgoal_unit_grade_num_idx"),
+        ]
 
     def __str__(self):
         return f"{self.grade} - {self.title}"
@@ -1112,6 +1337,9 @@ class TopGoalVocabulary(models.Model):
         verbose_name = "مفردات Top Goal"
         verbose_name_plural = "مفردات Top Goal"
         ordering = ['order']
+        indexes = [
+            models.Index(fields=["unit", "order"], name="topgoal_vocab_unit_order_idx"),
+        ]
 
     def __str__(self):
         return self.word
@@ -1132,6 +1360,9 @@ class TopGoalSentence(models.Model):
         verbose_name = "جمل Top Goal"
         verbose_name_plural = "جمل Top Goal"
         ordering = ['order']
+        indexes = [
+            models.Index(fields=["unit", "order"], name="topgoal_sent_unit_order_idx"),
+        ]
 
     def __str__(self):
         return self.english_text[:50]
@@ -1156,6 +1387,9 @@ class TopGoalQuiz(models.Model):
         verbose_name = "اختبار Top Goal"
         verbose_name_plural = "اختبارات Top Goal"
         ordering = ['order']
+        indexes = [
+            models.Index(fields=["unit", "order"], name="topgoal_quiz_unit_order_idx"),
+        ]
 
     def __str__(self):
         return self.question_text[:50]

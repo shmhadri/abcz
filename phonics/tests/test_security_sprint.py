@@ -17,6 +17,7 @@ class SecuritySprintTests(TestCase):
         student = Student.objects.create(name="Private Student")
         anonymous = self.client.get(reverse("generate_certificate", args=[student.id]))
         self.assertEqual(anonymous.status_code, 302)
+
         user = User.objects.create_user(username="normal", password="StrongPass123!")
         self.client.force_login(user)
         forbidden = self.client.get(reverse("generate_certificate", args=[student.id]))
@@ -29,6 +30,7 @@ class SecuritySprintTests(TestCase):
         )
         self.assertEqual(anonymous.status_code, 302)
         self.assertFalse(Student.objects.filter(name="Injected Student").exists())
+
         user = User.objects.create_user(username="cvc-user", password="StrongPass123!")
         self.client.force_login(user)
         retired = self.client.post(
@@ -39,6 +41,7 @@ class SecuritySprintTests(TestCase):
 
     @override_settings(RATE_LIMIT_LOGIN=2)
     def test_login_rate_limit_returns_429(self):
+        # Keep all requests in the same fixed window even on a heavily loaded test host.
         with patch("phonics.security.time.time", return_value=1_700_000_000):
             for _ in range(2):
                 response = self.client.post("/accounts/login/", {"username": "missing", "password": "wrong"})
@@ -49,26 +52,30 @@ class SecuritySprintTests(TestCase):
 
     @override_settings(RATE_LIMIT_LOGIN=2)
     def test_login_account_limit_is_independent_of_ip(self):
-        for ip in ["192.0.2.10", "192.0.2.11"]:
+        # Keep the three requests in one deterministic fixed window.
+        with patch("phonics.security.time.time", return_value=1_700_000_000):
+            for ip in ["192.0.2.10", "192.0.2.11"]:
+                response = self.client.post(
+                    "/accounts/login/", {"username": "same-account", "password": "wrong"}, REMOTE_ADDR=ip
+                )
+                self.assertEqual(response.status_code, 200)
             response = self.client.post(
-                "/accounts/login/", {"username": "same-account", "password": "wrong"}, REMOTE_ADDR=ip
+                "/accounts/login/", {"username": "same-account", "password": "wrong"}, REMOTE_ADDR="192.0.2.12"
             )
-            self.assertEqual(response.status_code, 200)
-        response = self.client.post(
-            "/accounts/login/", {"username": "same-account", "password": "wrong"}, REMOTE_ADDR="192.0.2.12"
-        )
         self.assertEqual(response.status_code, 429)
 
     @override_settings(RATE_LIMIT_LOGIN=2)
     def test_login_ip_limit_is_independent_of_account(self):
-        for username in ["first-account", "second-account"]:
+        # Keep the three requests in one deterministic fixed window.
+        with patch("phonics.security.time.time", return_value=1_700_000_000):
+            for username in ["first-account", "second-account"]:
+                response = self.client.post(
+                    "/accounts/login/", {"username": username, "password": "wrong"}, REMOTE_ADDR="192.0.2.20"
+                )
+                self.assertEqual(response.status_code, 200)
             response = self.client.post(
-                "/accounts/login/", {"username": username, "password": "wrong"}, REMOTE_ADDR="192.0.2.20"
+                "/accounts/login/", {"username": "third-account", "password": "wrong"}, REMOTE_ADDR="192.0.2.20"
             )
-            self.assertEqual(response.status_code, 200)
-        response = self.client.post(
-            "/accounts/login/", {"username": "third-account", "password": "wrong"}, REMOTE_ADDR="192.0.2.20"
-        )
         self.assertEqual(response.status_code, 429)
 
     def test_rate_limit_store_failure_does_not_fail_open(self):

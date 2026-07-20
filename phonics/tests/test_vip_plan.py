@@ -1,10 +1,11 @@
 import json
 
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 
 from phonics.models import BirdTutorProgress, StudentProfile
 from phonics.views import VIP_FEATURE_KEYS
+from phonics.tests.subscription_helpers import grant_active_subscription
 
 
 @override_settings(DISABLE_AUTO_SEED=True)
@@ -68,8 +69,7 @@ class VipPlanTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="vip-user", password="StrongPass123!")
         StudentProfile.objects.create(user=self.user, student_name="VIP Student")
-        vip_group = Group.objects.create(name="VIP")
-        self.user.groups.add(vip_group)
+        grant_active_subscription(self.user, "vip")
         self.client.force_login(self.user)
 
     def post_json(self, url, payload):
@@ -88,7 +88,7 @@ class VipPlanTests(TestCase):
         self.assertContains(response, "ريال شهريًا")
         self.assertContains(response, "للمتابعة الذكية")
         self.assertContains(response, "كل مزايا Silver")
-        self.assertContains(response, "اختيار VIP")
+        self.assertContains(response, "مشترك حاليًا")
         self.assertContains(response, "VIP لا يشمل كل الموقع")
         self.assertNotContains(response, "Full Access")
 

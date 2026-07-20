@@ -11,9 +11,11 @@ import sys
 
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env", override=False)
 
 
 def env_bool(name: str, default: str = "False") -> bool:
@@ -62,7 +64,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "phonics",
+    "phonics.apps.PhonicsConfig",
 ]
 
 MIDDLEWARE = [
@@ -103,7 +105,7 @@ if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.config(
             default=DATABASE_URL,
-            conn_max_age=600,
+            conn_max_age=int(os.getenv("DB_CONN_MAX_AGE", "60")),
             ssl_require=not DEBUG,
         )
     }
@@ -115,8 +117,37 @@ else:
         }
     }
 
+DATABASES["default"]["CONN_MAX_AGE"] = int(os.getenv("DB_CONN_MAX_AGE", "60"))
 DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
+
+REDIS_URL = os.getenv("REDIS_URL", "").strip()
+if IS_PRODUCTION and not REDIS_URL:
+    raise ImproperlyConfigured("REDIS_URL must be configured in production for shared security rate limits.")
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                "SOCKET_CONNECT_TIMEOUT": 3,
+                "SOCKET_TIMEOUT": 3,
+                "RETRY_ON_TIMEOUT": True,
+                "IGNORE_EXCEPTIONS": False,
+            },
+            "KEY_PREFIX": os.getenv("CACHE_KEY_PREFIX", "abcz"),
+            "TIMEOUT": 300,
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "abcz-local-cache",
+            "TIMEOUT": 300,
+        }
+    }
 
 SUBSCRIPTION_CACHE_TIMEOUT = 0 if TESTING else int(os.getenv("SUBSCRIPTION_CACHE_TIMEOUT", "300"))
 STATIC_CONTENT_CACHE_TIMEOUT = 0 if TESTING else int(os.getenv("STATIC_CONTENT_CACHE_TIMEOUT", "1800"))
@@ -171,7 +202,9 @@ RATE_LIMIT_REGISTER = int(os.getenv("RATE_LIMIT_REGISTER", "5"))
 RATE_LIMIT_WRITE = int(os.getenv("RATE_LIMIT_WRITE", "60"))
 RATE_LIMIT_UPLOAD = int(os.getenv("RATE_LIMIT_UPLOAD", "10"))
 RATE_LIMIT_PUBLIC_API = int(os.getenv("RATE_LIMIT_PUBLIC_API", "30"))
+RATE_LIMIT_PAYMENT = int(os.getenv("RATE_LIMIT_PAYMENT", "10"))
 
+# Start in reporting mode; enforce only after production violation reports are reviewed.
 CSP_REPORT_ONLY = os.getenv(
     "CSP_REPORT_ONLY",
     "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
@@ -194,6 +227,8 @@ LOGOUT_REDIRECT_URL = "/"
 
 
 DISABLE_AUTO_SEED = env_bool("DISABLE_AUTO_SEED", "False")
+REQUEST_LOG_ENABLED = (not TESTING) and env_bool("REQUEST_LOG_ENABLED", "True")
+ENABLE_SERVER_TIMING_HEADER = env_bool("ENABLE_SERVER_TIMING_HEADER", "False")
 
 
 # Payment integration placeholders. Keep real secrets in environment variables only.
@@ -202,10 +237,72 @@ MOYASAR_PUBLISHABLE_KEY = os.getenv("MOYASAR_PUBLISHABLE_KEY", "").strip()
 MOYASAR_SECRET_KEY = os.getenv("MOYASAR_SECRET_KEY", "").strip()
 MOYASAR_WEBHOOK_SECRET = os.getenv("MOYASAR_WEBHOOK_SECRET", "").strip()
 MOYASAR_CALLBACK_URL = os.getenv("MOYASAR_CALLBACK_URL", "").strip()
+MOYASAR_API_URL = os.getenv("MOYASAR_API_URL", "https://api.moyasar.com/v1").strip().rstrip("/")
+MOYASAR_ENVIRONMENT = os.getenv("MOYASAR_ENVIRONMENT", "test").strip().lower()
+MOYASAR_CONNECT_TIMEOUT = int(os.getenv("MOYASAR_CONNECT_TIMEOUT", "5"))
+MOYASAR_READ_TIMEOUT = int(os.getenv("MOYASAR_READ_TIMEOUT", "15"))
+MOYASAR_CHECKOUT_ALLOWED_HOSTS = env_list(
+    "MOYASAR_CHECKOUT_ALLOWED_HOSTS",
+    "checkout.moyasar.com",
+)
+MOYASAR_ORDER_REUSE_MINUTES = int(os.getenv("MOYASAR_ORDER_REUSE_MINUTES", "30"))
+MOYASAR_INVOICE_CREATION_STALE_MINUTES = int(os.getenv("MOYASAR_INVOICE_CREATION_STALE_MINUTES", "5"))
+MOYASAR_UNKNOWN_RETRY_MINUTES = int(os.getenv("MOYASAR_UNKNOWN_RETRY_MINUTES", "30"))
+MOYASAR_WEBHOOK_MAX_BODY_BYTES = int(os.getenv("MOYASAR_WEBHOOK_MAX_BODY_BYTES", "65536"))
 
-BANK_TRANSFER_ENABLED = env_bool("BANK_TRANSFER_ENABLED", "True")
+if MOYASAR_ENVIRONMENT not in {"test", "live"}:
+    raise ImproperlyConfigured("MOYASAR_ENVIRONMENT must be either test or live.")
+if MOYASAR_ENVIRONMENT == "live":
+    raise ImproperlyConfigured("Moyasar live mode is disabled during the Sandbox integration phase.")
+if MOYASAR_SECRET_KEY:
+    expected_prefix = "sk_test_"
+    if not MOYASAR_SECRET_KEY.startswith(expected_prefix):
+        raise ImproperlyConfigured(
+            f"MOYASAR_SECRET_KEY does not match the configured {MOYASAR_ENVIRONMENT} environment."
+        )
+
+BANK_TRANSFER_ENABLED = env_bool("BANK_TRANSFER_ENABLED", "False")
 BANK_ACCOUNT_NAME = os.getenv("BANK_ACCOUNT_NAME", "").strip()
 BANK_NAME = os.getenv("BANK_NAME", "").strip()
 BANK_IBAN = os.getenv("BANK_IBAN", "").strip()
 BANK_ACCOUNT_NUMBER = os.getenv("BANK_ACCOUNT_NUMBER", "").strip()
 BANK_TRANSFER_INSTRUCTIONS = os.getenv("BANK_TRANSFER_INSTRUCTIONS", "").strip()
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "request": {
+            "format": (
+                "%(asctime)s %(levelname)s %(name)s request_id=%(request_id)s "
+                "method=%(method)s path=%(path)s status=%(status_code)s duration_ms=%(duration_ms)s"
+            )
+        },
+        "standard": {
+            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "request",
+        },
+        "payment_console": {
+            "class": "logging.StreamHandler",
+            "formatter": "standard",
+        },
+    },
+    "loggers": {
+        "abcz.requests": {
+            "handlers": ["console"],
+            "level": os.getenv("REQUEST_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        "abcz.payments.moyasar": {
+            "handlers": ["payment_console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

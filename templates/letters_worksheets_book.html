@@ -11,8 +11,8 @@
     <header class="book-toolbar" aria-label="أدوات كتاب أوراق العمل">
         <a class="toolbar-link" href="/">رجوع للحروف</a>
         <button class="toolbar-button primary" type="button" id="printLettersBook">طباعة / حفظ PDF</button>
-        <button class="toolbar-button pdf" type="button" id="downloadLettersBookPdf">تحميل PDF</button>
-        <button class="toolbar-button" type="button" id="downloadLettersBookWord">تحميل Word</button>
+        <a class="toolbar-button pdf" id="downloadLettersBookPdf" href="{% url 'letters_worksheets_book_pdf' %}" download>تحميل PDF</a>
+        <a class="toolbar-button" id="downloadLettersBookWord" href="{% url 'letters_worksheets_book_word' %}" download>تحميل Word</a>
     </header>
 
     <main id="lettersWorksheetsBook" class="book-shell">
@@ -113,7 +113,6 @@
         </section>
     </main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
     <script src="{% static 'js/letters_worksheets_book.js' %}" defer></script>
 </body>
 </html>

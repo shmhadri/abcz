@@ -1,10 +1,11 @@
 import json
 
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 
 from phonics.models import BirdTutorProgress, StudentProfile
 from phonics.views import FULL_ACCESS_FEATURE_KEYS, PLAN_DIAMOND, get_subscription_plan
+from phonics.tests.subscription_helpers import grant_active_subscription
 
 
 @override_settings(DISABLE_AUTO_SEED=True)
@@ -37,8 +38,7 @@ class DiamondPlanTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="diamond-user", password="StrongPass123!")
         StudentProfile.objects.create(user=self.user, student_name="Diamond Student")
-        diamond_group = Group.objects.create(name="Diamond")
-        self.user.groups.add(diamond_group)
+        grant_active_subscription(self.user, PLAN_DIAMOND)
         self.client.force_login(self.user)
 
     def post_json(self, url, payload):
@@ -56,7 +56,7 @@ class DiamondPlanTests(TestCase):
         self.assertContains(response, "50")
         self.assertContains(response, "ريال شهريًا")
         self.assertContains(response, "كل الموقع")
-        self.assertContains(response, "اختيار الماسي")
+        self.assertContains(response, "مشترك حاليًا")
 
     def test_diamond_opens_all_major_level_paths(self):
         for path in [

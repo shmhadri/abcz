@@ -3014,10 +3014,78 @@
         let wordsData = [];
         let sentencesData = [];
         let storiesData = [];
+        let cvcStaticWordsFallback = [];
+        const CVC_API_PAGE_SIZE = 100;
+        const CVC_STORY_PAGE_SIZE = 12;
+        const cvcApiPages = {
+            words: { nextPage: 1, totalPages: 1, count: 0, loadedKeys: new Set(), loading: false },
+            sentences: { nextPage: 1, totalPages: 1, count: 0, loadedKeys: new Set(), loading: false },
+            stories: { nextPage: 1, totalPages: 1, count: 0, loadedKeys: new Set(), loading: false },
+        };
         let completedWords = new Set();
         let wordScores = {};
         let timerInterval;
         let seconds = 0;
+
+        function resetCvcPager(kind) {
+            cvcApiPages[kind] = { nextPage: 1, totalPages: 1, count: 0, loadedKeys: new Set(), loading: false };
+        }
+
+        function cvcApiResults(payload) {
+            return payload && Array.isArray(payload.results) ? payload.results : [];
+        }
+
+        function cvcApiUrl(path, state, pageSize, extraParams = "") {
+            const separator = path.includes("?") ? "&" : "?";
+            const params = `page=${state.nextPage}&page_size=${pageSize}&legacy=0${extraParams}`;
+            return `${path}${separator}${params}`;
+        }
+
+        async function fetchCvcApiPage(kind, path, { pageSize = CVC_API_PAGE_SIZE, extraParams = "", keyForItem = item => item.id } = {}) {
+            const state = cvcApiPages[kind];
+            if (!state || state.loading) return [];
+            if (state.nextPage > state.totalPages && state.loadedKeys.size > 0) return [];
+            state.loading = true;
+            try {
+                const response = await fetch(cvcApiUrl(path, state, pageSize, extraParams), { credentials: "same-origin" });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const payload = await response.json();
+                const page = Number(payload.page || state.nextPage);
+                state.count = Number(payload.count || 0);
+                state.totalPages = Math.max(1, Number(payload.total_pages || 1));
+                state.nextPage = page + 1;
+                return cvcApiResults(payload).filter(item => {
+                    const key = String(keyForItem(item) || "");
+                    if (!key || state.loadedKeys.has(key)) return false;
+                    state.loadedKeys.add(key);
+                    return true;
+                });
+            } finally {
+                state.loading = false;
+            }
+        }
+
+        function renderCvcPager(kind, anchorId, loadMoreFunctionName) {
+            const anchor = document.getElementById(anchorId);
+            if (!anchor) return;
+            let pager = document.getElementById(`${kind}Pager`);
+            if (!pager) {
+                pager = document.createElement("div");
+                pager.id = `${kind}Pager`;
+                pager.className = "cvc-mini-note";
+                pager.style.cssText = "text-align:center;margin:18px auto;max-width:520px;";
+                anchor.insertAdjacentElement("afterend", pager);
+            }
+            const state = cvcApiPages[kind];
+            const hasNext = state.nextPage <= state.totalPages;
+            const loaded = state.loadedKeys.size;
+            pager.innerHTML = `
+                <span>${loaded} / ${state.count || loaded}</span>
+                <button class="btn btn-listen" type="button" onclick="${loadMoreFunctionName}()" ${hasNext ? "" : "disabled"} style="margin-inline-start:10px;">
+                    ${hasNext ? "Load more" : "No more pages"}
+                </button>
+            `;
+        }
 
 
         // ============================================
@@ -3312,6 +3380,7 @@
                 { word: "When", emoji: "⏰", category: "Digraphs", family: "wh", arabic_meaning: "متى" },
                 { word: "Whim", emoji: "💭", category: "Digraphs", family: "wh", arabic_meaning: "نزوة" }
             ].map((w, i) => ({ ...w, id: i + 1 })); // Add IDs dynamically
+            cvcStaticWordsFallback = wordsData.map((word, index) => ({ ...word, id: word.id || `static-${index}` }));
 
             console.log("Static CVC Words Loaded:", wordsData.length);
             
@@ -3544,10 +3613,12 @@
 
         async function loadSentences() {
             try {
-                const response = await fetch('/api/cvc-sentences/');
-                const data = await response.json();
-                sentencesData = data.sentences || [];
+                resetCvcPager("sentences");
+                sentencesData = await fetchCvcApiPage("sentences", "/api/cvc-sentences/", {
+                    keyForItem: item => item.id || item.sentence,
+                });
                 displaySentences();
+                renderCvcPager("sentences", "sentencesGrid", "loadMoreCvcSentences");
             } catch (error) {
                 console.error('Error loading sentences:', error);
                 document.getElementById('sentencesLoading').innerHTML =
@@ -3557,14 +3628,44 @@
 
         async function loadStories() {
             try {
-                const response = await fetch('/api/cvc-stories/');
-                const data = await response.json();
-                storiesData = data.stories || [];
+                resetCvcPager("stories");
+                storiesData = await fetchCvcApiPage("stories", "/api/cvc-stories/", {
+                    pageSize: CVC_STORY_PAGE_SIZE,
+                    keyForItem: item => item.id || item.title,
+                });
                 displayStories();
+                renderCvcPager("stories", "storiesGrid", "loadMoreCvcStories");
             } catch (error) {
                 console.error('Error loading stories:', error);
                 document.getElementById('storiesLoading').innerHTML =
                     '<p style="color: #ef4444;">خطأ في تحميل القصص.</p>';
+            }
+        }
+
+        async function loadMoreCvcSentences() {
+            try {
+                const nextItems = await fetchCvcApiPage("sentences", "/api/cvc-sentences/", {
+                    keyForItem: item => item.id || item.sentence,
+                });
+                sentencesData = [...sentencesData, ...nextItems];
+                displaySentences();
+                renderCvcPager("sentences", "sentencesGrid", "loadMoreCvcSentences");
+            } catch (error) {
+                console.error("Error loading more CVC sentences:", error);
+            }
+        }
+
+        async function loadMoreCvcStories() {
+            try {
+                const nextItems = await fetchCvcApiPage("stories", "/api/cvc-stories/", {
+                    pageSize: CVC_STORY_PAGE_SIZE,
+                    keyForItem: item => item.id || item.title,
+                });
+                storiesData = [...storiesData, ...nextItems];
+                displayStories();
+                renderCvcPager("stories", "storiesGrid", "loadMoreCvcStories");
+            } catch (error) {
+                console.error("Error loading more CVC stories:", error);
             }
         }
 
@@ -4731,6 +4832,7 @@
                     family: word.word_family || "",
                     vowel_sound: word.vowel_sound || "",
                     original_category: word.category || "",
+                    _source: "api",
                 };
                 item.category = primaryLevelForWord(item);
                 item._level = item.category;
@@ -6680,25 +6782,32 @@
                 return result;
             };
 
-            async function hydrateWordsFromApi() {
-                const staticWords = [...(wordsData || [])].map((word, index) => {
+            async function hydrateWordsFromApi(append = false) {
+                const staticWords = [...(cvcStaticWordsFallback.length ? cvcStaticWordsFallback : (wordsData || []))].map((word, index) => {
                     const item = { ...word, id: word.id || `static-${index}`, _level: primaryLevelForWord(word) };
                     item.category = item._level;
                     item._levels = levelsForWord(item);
                     return item;
                 });
                 try {
-                    const response = await fetch("{% url 'api_get_cvc_words' %}");
-                    const data = await response.json();
-                    const apiWords = (data.words || []).map(transformApiWord);
-                    const apiKeys = new Set(apiWords.map(word => normalizeText(word.word)));
+                    if (!append) resetCvcPager("words");
+                    const apiWords = (await fetchCvcApiPage("words", "{% url 'api_get_cvc_words' %}", {
+                        keyForItem: item => item.id || item.word,
+                    })).map(transformApiWord);
+                    const existingApiWords = append ? (wordsData || []).filter(word => word._source === "api") : [];
+                    const mergedApiWords = [...existingApiWords, ...apiWords].filter((word, index, list) => {
+                        const key = normalizeText(word.word);
+                        return key && list.findIndex(item => normalizeText(item.word) === key) === index;
+                    });
+                    const apiKeys = new Set(mergedApiWords.map(word => normalizeText(word.word)));
                     const staticExtensions = staticWords.filter(word => !apiKeys.has(normalizeText(word.word)) && ["Blends", "Digraphs"].includes(word._level));
-                    wordsData = [...apiWords, ...staticExtensions];
+                    wordsData = [...mergedApiWords, ...staticExtensions];
                     apiWordsLoaded = true;
                     initFilters();
                     displayWords();
                     updateCvcStats();
-                    document.getElementById("cvcSaveStatus").textContent = `تم تحميل ${apiWords.length} كلمة من قاعدة البيانات، مع إبقاء Blends/Digraphs كدعم إضافي.`;
+                    renderCvcPager("words", "wordsGrid", "loadMoreCvcWords");
+                    document.getElementById("cvcSaveStatus").textContent = `Loaded ${cvcApiPages.words.loadedKeys.size} / ${cvcApiPages.words.count || cvcApiPages.words.loadedKeys.size} CVC word records from the database.`;
                 } catch (error) {
                     wordsData = staticWords;
                     initFilters();
@@ -6707,6 +6816,10 @@
                     document.getElementById("cvcSaveStatus").textContent = "تعذر تحميل API، تم استخدام بيانات احتياطية داخل الصفحة.";
                 }
             }
+
+            window.loadMoreCvcWords = async function loadMoreCvcWords() {
+                await hydrateWordsFromApi(true);
+            };
 
             document.addEventListener("DOMContentLoaded", () => {
                 document.querySelectorAll(".cvc-level-btn[data-cvc-level]").forEach(button => {

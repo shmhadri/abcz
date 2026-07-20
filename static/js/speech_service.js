@@ -2,6 +2,15 @@
     "use strict";
 
     const SpeechService = {};
+    const DEFAULT_PERMISSION_CACHE_MS = 120000;
+    const DEFAULT_TIMEOUT_MS = 11000;
+    const VOICE_LANG_PRIORITY = ["en-US", "en-GB", "en"];
+
+    let microphonePermission = {
+        granted: false,
+        checkedAt: 0
+    };
+    let voiceCache = [];
 
     const MESSAGES = {
         listening: "أستمع الآن...",
@@ -9,10 +18,14 @@
         insecure: "الميكروفون يحتاج HTTPS بعد النشر، أو localhost أثناء التطوير.",
         permission_denied: "تم رفض إذن الميكروفون. افتح إعدادات المتصفح واسمح باستخدام المايك.",
         no_speech: "لم أسمع صوتًا واضحًا. اقترب من المايك وحاول مرة أخرى.",
+        timeout: "انتهى وقت الاستماع قبل وصول صوت واضح. اضغط المايك وتكلم مباشرة.",
         audio_capture: "لم يتم العثور على ميكروفون. تأكد من توصيله ثم حاول مرة أخرى.",
-        network: "حاول في مكان أهدأ وقل الكلمة بوضوح.",
+        network: "لم تتصل خدمة التعرف على الصوت. تأكد من الإنترنت واضغط المايك مرة أخرى.",
+        service_unavailable: "خدمة التعرف على الصوت غير متاحة الآن في المتصفح. جرّب Chrome أو Edge وحدث الصفحة.",
         low_similarity: "حاول مرة أخرى. استمع للكلمة ثم كررها.",
         unknown: "تعذر تشغيل المايك الآن. حاول مرة أخرى.",
+        speaker_unsupported: "المتصفح لا يدعم النطق الصوتي. جرّب Chrome أو Edge.",
+        speaker_error: "تعذر تشغيل الصوت الآن. اضغط السماعة مرة أخرى.",
         excellent: "ممتاز! نطقك صحيح.",
         good: "جيد جدًا، أعدها مرة أخرى لتصل إلى الإتقان.",
         retry: "حاول مرة أخرى. استمع للكلمة ثم كررها.",
@@ -39,6 +52,10 @@
 
     function debug(...args) {
         if (window.ABCZ_DEBUG_SPEECH) console.debug("[SpeechService]", ...args);
+    }
+
+    function nowMs() {
+        return Math.round((window.performance?.now?.() ?? Date.now()) * 10) / 10;
     }
 
     function escapeHtml(value) {
@@ -74,6 +91,8 @@
         if (raw === "no-speech") return "no_speech";
         if (raw === "audio-capture" || raw === "NotFoundError") return "audio_capture";
         if (raw === "network") return "network";
+        if (raw === "service-not-allowed" || raw === "bad-grammar" || raw === "language-not-supported") return "service_unavailable";
+        if (raw === "timeout") return "timeout";
         if (raw === "browser_not_supported") return "browser_not_supported";
         if (raw === "insecure_context") return "insecure_context";
         return "unknown";
@@ -84,10 +103,54 @@
         if (reason === "insecure_context") return MESSAGES.insecure;
         if (reason === "mic_permission_denied") return MESSAGES.permission_denied;
         if (reason === "no_speech") return MESSAGES.no_speech;
+        if (reason === "timeout") return MESSAGES.timeout;
         if (reason === "audio_capture") return MESSAGES.audio_capture;
         if (reason === "network") return MESSAGES.network;
+        if (reason === "service_unavailable") return MESSAGES.service_unavailable;
         if (reason === "low_similarity") return MESSAGES.low_similarity;
         return MESSAGES.unknown;
+    }
+
+    function addMetrics(result, metrics) {
+        const endedAt = nowMs();
+        const totalMs = Math.max(0, Math.round(endedAt - metrics.startedAt));
+        return {
+            ...result,
+            latency_ms: totalMs,
+            speech_metrics: {
+                total_ms: totalMs,
+                permission_ms: metrics.permissionMs,
+                recognition_start_ms: metrics.recognitionStartMs,
+                first_result_ms: metrics.firstResultMs,
+                permission_cached: Boolean(metrics.permissionCached)
+            }
+        };
+    }
+
+    function permissionCacheFresh(cacheMs) {
+        return microphonePermission.granted && (Date.now() - microphonePermission.checkedAt) < cacheMs;
+    }
+
+    function collectAlternatives(event) {
+        const rows = Array.from(event.results || []);
+        const alternatives = [];
+        rows.forEach(result => {
+            Array.from(result || []).forEach(item => {
+                const transcript = String(item.transcript || "").trim();
+                if (!transcript) return;
+                alternatives.push({
+                    transcript,
+                    confidence: typeof item.confidence === "number" ? item.confidence : null
+                });
+            });
+        });
+        const seen = new Set();
+        return alternatives.filter(item => {
+            const key = SpeechService.normalizeText(item.transcript);
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
     }
 
     function injectStyles() {
@@ -101,6 +164,8 @@
             .speech-service-result.retry,.speech-service-result.error{border-color:#f59e0b;background:#fffbeb}
             .speech-service-result strong{font-weight:900}
             .speech-service-result .speech-note{font-size:12px;color:#64748b}
+            .speech-service-result .speech-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:#475569}
+            .speech-service-result .speech-pill{display:inline-flex;align-items:center;border:1px solid #d7e1ee;border-radius:999px;padding:2px 8px;background:rgba(255,255,255,.72)}
         `;
         document.head.appendChild(style);
     }
@@ -120,6 +185,38 @@
         if (!SpeechService.isSecureContextReady()) return MESSAGES.insecure;
         if (!SpeechService.isSupported()) return MESSAGES.unsupported;
         return "";
+    };
+
+    SpeechService.ensureMicrophoneReady = async function (options = {}) {
+        if (options.requestPermission === false || !navigator.mediaDevices?.getUserMedia) {
+            return { ok: true, cached: false, skipped: true };
+        }
+        const cacheMs = Number(options.permissionCacheMs || DEFAULT_PERMISSION_CACHE_MS);
+        if (permissionCacheFresh(cacheMs)) {
+            return { ok: true, cached: true };
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: options.audioConstraints || {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+            stream.getTracks().forEach(track => track.stop());
+            microphonePermission = { granted: true, checkedAt: Date.now() };
+            return { ok: true, cached: false };
+        } catch (error) {
+            microphonePermission = { granted: false, checkedAt: Date.now() };
+            const failure_reason = errorReason(error);
+            return {
+                ok: false,
+                cached: false,
+                failure_reason,
+                browser_error: error?.name || "permission",
+                message: messageForReason(failure_reason)
+            };
+        }
     };
 
     SpeechService.normalizeText = function (text) {
@@ -241,11 +338,16 @@
         if (!el || !result) return;
         injectStyles();
         if (result.error) {
-            el.innerHTML = `<div class="speech-service-result error"><strong>${escapeHtml(result.message || MESSAGES.unknown)}</strong><div class="speech-note">${escapeHtml(MESSAGES.helper_note)}</div></div>`;
+            const latency = result.latency_ms ? `<span class="speech-pill">زمن الاستجابة: ${escapeHtml(result.latency_ms)}ms</span>` : "";
+            el.innerHTML = `<div class="speech-service-result error"><strong>${escapeHtml(result.message || MESSAGES.unknown)}</strong><div class="speech-meta">${latency}</div><div class="speech-note">${escapeHtml(MESSAGES.helper_note)}</div></div>`;
             return;
         }
         const missing = Array.isArray(result.missingWords) && result.missingWords.length
             ? `<div>ملاحظة: نسيت كلمة ${escapeHtml(result.missingWords.slice(0, 5).join(", "))}</div>`
+            : "";
+        const latency = result.latency_ms ? `<span class="speech-pill">زمن التصحيح: ${escapeHtml(result.latency_ms)}ms</span>` : "";
+        const alternatives = Array.isArray(result.alternatives) && result.alternatives.length > 1
+            ? `<span class="speech-pill">بدائل مسموعة: ${escapeHtml(result.alternatives.length)}</span>`
             : "";
         el.innerHTML = `
             <div class="speech-service-result ${escapeHtml(result.status)}">
@@ -254,9 +356,69 @@
                 <div><strong>النسبة:</strong> ${Number(result.score || 0)}%</div>
                 ${missing}
                 <div><strong>الحالة:</strong> ${escapeHtml(SpeechService.statusLabel(result.status))}</div>
+                <div class="speech-meta">${latency}${alternatives}</div>
                 <div class="speech-note">${escapeHtml(MESSAGES.helper_note)}</div>
             </div>
         `;
+    };
+
+    SpeechService.isSynthesisSupported = function () {
+        return Boolean("speechSynthesis" in window && window.SpeechSynthesisUtterance);
+    };
+
+    SpeechService.loadVoices = function () {
+        if (!SpeechService.isSynthesisSupported()) return [];
+        voiceCache = window.speechSynthesis.getVoices() || [];
+        return voiceCache;
+    };
+
+    SpeechService.pickVoice = function (lang = "en-US") {
+        const voices = voiceCache.length ? voiceCache : SpeechService.loadVoices();
+        const normalizedLang = String(lang || "en-US").toLowerCase();
+        return (
+            voices.find(voice => String(voice.lang || "").toLowerCase() === normalizedLang) ||
+            VOICE_LANG_PRIORITY
+                .map(code => voices.find(voice => String(voice.lang || "").toLowerCase().startsWith(code.toLowerCase())))
+                .find(Boolean) ||
+            voices.find(voice => String(voice.lang || "").toLowerCase().startsWith("en")) ||
+            null
+        );
+    };
+
+    SpeechService.speakText = function (text, options = {}) {
+        const message = String(text || "").trim();
+        if (!message) return Promise.resolve({ ok: false, reason: "empty_text" });
+        if (!SpeechService.isSynthesisSupported()) {
+            return Promise.resolve({ ok: false, reason: "speaker_unsupported", message: MESSAGES.speaker_unsupported });
+        }
+        const startedAt = nowMs();
+        return new Promise(resolve => {
+            let settled = false;
+            let watchdogId = null;
+            const settle = value => {
+                if (settled) return;
+                settled = true;
+                if (watchdogId) window.clearTimeout(watchdogId);
+                resolve(value);
+            };
+            try {
+                if (options.cancel !== false) window.speechSynthesis.cancel();
+                const utterance = new window.SpeechSynthesisUtterance(message);
+                utterance.lang = options.lang || "en-US";
+                utterance.rate = Number(options.rate || (message.length <= 3 ? 0.78 : 0.9));
+                utterance.pitch = Number(options.pitch || 1);
+                const voice = options.voice || SpeechService.pickVoice(utterance.lang);
+                if (voice) utterance.voice = voice;
+                watchdogId = window.setTimeout(() => {
+                    settle({ ok: true, latency_ms: Math.max(0, Math.round(nowMs() - startedAt)), watchdog: true });
+                }, Number(options.timeoutMs || Math.min(18000, Math.max(3500, message.length * 140))));
+                utterance.onend = () => settle({ ok: true, latency_ms: Math.max(0, Math.round(nowMs() - startedAt)) });
+                utterance.onerror = event => settle({ ok: false, reason: event.error || "speaker_error", message: MESSAGES.speaker_error });
+                window.speechSynthesis.speak(utterance);
+            } catch (error) {
+                settle({ ok: false, reason: error?.name || "speaker_error", message: MESSAGES.speaker_error });
+            }
+        });
     };
 
     SpeechService.saveProgress = async function (payload, saveProgress) {
@@ -286,16 +448,23 @@
         const section = options.section || "";
         const level = options.level || "";
         const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const metrics = {
+            startedAt: nowMs(),
+            permissionMs: 0,
+            recognitionStartMs: null,
+            firstResultMs: null,
+            permissionCached: false
+        };
 
         if (!SpeechService.isSecureContextReady()) {
-            const result = { error: true, failure_reason: "insecure_context", browser_error: "insecure_context", message: MESSAGES.insecure, targetText, section, level };
+            const result = addMetrics({ error: true, failure_reason: "insecure_context", browser_error: "insecure_context", message: MESSAGES.insecure, targetText, section, level }, metrics);
             options.onError?.(result);
             options.onEnd?.(result);
             return result;
         }
 
         if (!Recognition) {
-            const result = { error: true, failure_reason: "browser_not_supported", browser_error: "browser_not_supported", message: MESSAGES.unsupported, targetText, section, level };
+            const result = addMetrics({ error: true, failure_reason: "browser_not_supported", browser_error: "browser_not_supported", message: MESSAGES.unsupported, targetText, section, level }, metrics);
             options.onError?.(result);
             options.onEnd?.(result);
             return result;
@@ -304,41 +473,42 @@
         options.onStart?.({ targetText, type, section, level, message: MESSAGES.listening });
         debug("start", { targetText, type, section, level });
 
-        if (navigator.mediaDevices?.getUserMedia && options.requestPermission !== false) {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                stream.getTracks().forEach(track => track.stop());
-            } catch (error) {
-                const failure_reason = errorReason(error);
-                const result = { error: true, failure_reason, browser_error: error?.name || "permission", message: messageForReason(failure_reason), targetText, section, level };
-                options.onError?.(result);
-                options.onEnd?.(result);
-                await SpeechService.saveProgress(result, options.saveProgress);
-                return result;
-            }
+        const permissionStartedAt = nowMs();
+        const permission = await SpeechService.ensureMicrophoneReady(options);
+        metrics.permissionMs = Math.max(0, Math.round(nowMs() - permissionStartedAt));
+        metrics.permissionCached = Boolean(permission.cached);
+        if (!permission.ok) {
+            const result = addMetrics({ error: true, ...permission, targetText, section, level, score: 0, status: "retry", is_mastered: false, mastered: false, spokenText: "" }, metrics);
+            options.onError?.(result);
+            options.onEnd?.(result);
+            await SpeechService.saveProgress(result, options.saveProgress);
+            return result;
         }
 
         return await new Promise(resolve => {
             const recognition = new Recognition();
             let settled = false;
             let timeoutId = null;
+            let timeoutExpired = false;
 
             function finish(result) {
                 if (settled) return;
                 settled = true;
                 if (timeoutId) window.clearTimeout(timeoutId);
-                options.onEnd?.(result);
-                resolve(result);
+                const finalResult = addMetrics(result, metrics);
+                options.onEnd?.(finalResult);
+                resolve(finalResult);
             }
 
             async function finishAfterSave(result, callback) {
                 if (settled) return;
                 settled = true;
                 if (timeoutId) window.clearTimeout(timeoutId);
-                callback?.(result);
-                await SpeechService.saveProgress(result, options.saveProgress);
-                options.onEnd?.(result);
-                resolve(result);
+                const finalResult = addMetrics(result, metrics);
+                callback?.(finalResult);
+                await SpeechService.saveProgress(finalResult, options.saveProgress);
+                options.onEnd?.(finalResult);
+                resolve(finalResult);
             }
 
             recognition.lang = options.lang || "en-US";
@@ -346,10 +516,15 @@
             recognition.interimResults = false;
             recognition.maxAlternatives = options.maxAlternatives || 8;
 
+            recognition.onstart = () => {
+                metrics.recognitionStartMs = Math.max(0, Math.round(nowMs() - metrics.startedAt));
+                options.onListening?.({ targetText, type, section, level, message: MESSAGES.listening, speech_metrics: { ...metrics } });
+            };
+
             recognition.onresult = async event => {
-                const alternatives = Array.from(event.results?.[0] || [])
-                    .map(item => String(item.transcript || "").trim())
-                    .filter(Boolean);
+                metrics.firstResultMs = Math.max(0, Math.round(nowMs() - metrics.startedAt));
+                const alternativeRows = collectAlternatives(event);
+                const alternatives = alternativeRows.map(item => item.transcript);
                 const scored = alternatives
                     .map(spoken => {
                         const comparison = type === "word" || type === "sound"
@@ -366,6 +541,7 @@
                     section,
                     level,
                     alternatives,
+                    alternative_confidence: alternativeRows,
                     is_mastered: best.status === "excellent",
                     mastered: best.status !== "retry",
                     failure_reason: best.status === "retry" ? "low_similarity" : null,
@@ -376,7 +552,7 @@
             };
 
             recognition.onerror = async event => {
-                const failure_reason = errorReason(event);
+                const failure_reason = timeoutExpired ? "timeout" : errorReason(event);
                 const result = { error: true, targetText, type, section, level, score: 0, status: "retry", is_mastered: false, mastered: false, spokenText: "", failure_reason, browser_error: event.error || "unknown", message: messageForReason(failure_reason) };
                 debug("error", result);
                 finishAfterSave(result, options.onError);
@@ -384,16 +560,17 @@
 
             recognition.onend = () => {
                 if (!settled) {
-                    const result = { error: true, targetText, type, section, level, score: 0, status: "retry", is_mastered: false, mastered: false, spokenText: "", failure_reason: "no_speech", browser_error: "no-result", message: MESSAGES.no_speech };
-                    options.onError?.(result);
-                    SpeechService.saveProgress(result, options.saveProgress).finally(() => finish(result));
+                    const failure_reason = timeoutExpired ? "timeout" : "no_speech";
+                    const result = { error: true, targetText, type, section, level, score: 0, status: "retry", is_mastered: false, mastered: false, spokenText: "", failure_reason, browser_error: timeoutExpired ? "timeout" : "no-result", message: messageForReason(failure_reason) };
+                    finishAfterSave(result, options.onError);
                 }
             };
 
             try {
                 timeoutId = window.setTimeout(() => {
+                    timeoutExpired = true;
                     try { recognition.abort(); } catch {}
-                }, options.timeoutMs || 12000);
+                }, options.timeoutMs || DEFAULT_TIMEOUT_MS);
                 recognition.start();
             } catch (error) {
                 const failure_reason = errorReason(error);
@@ -415,4 +592,12 @@
 
     window.SpeechService = SpeechService;
     window.PronunciationManager = SpeechService;
+    if (SpeechService.isSynthesisSupported()) {
+        SpeechService.loadVoices();
+        if (typeof window.speechSynthesis.addEventListener === "function") {
+            window.speechSynthesis.addEventListener("voiceschanged", SpeechService.loadVoices);
+        } else {
+            window.speechSynthesis.onvoiceschanged = SpeechService.loadVoices;
+        }
+    }
 })();

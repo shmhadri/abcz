@@ -35,6 +35,7 @@ def rate_limit(scope: str, *, limit_setting: str, default: int, window: int = 60
                 else:
                     count = cache.incr(key)
             except Exception:
+                # Do not silently disable protection when the shared store is unavailable.
                 return JsonResponse(
                     {"error": "rate_limit_unavailable", "message": "Please try again later."},
                     status=503,

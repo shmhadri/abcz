@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إنشاء حساب - Phonics Game Lab</title>
     <link rel="stylesheet" href="{% static 'css/site_public.css' %}">
+    <script defer src="{% static 'js/auth_forms.js' %}"></script>
     <style>
         body {
             background: #f6f8fb;
@@ -49,12 +50,33 @@
         }
 
         input {
+            box-sizing: border-box;
             width: 100%;
             min-height: 44px;
             padding: 10px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             font: inherit;
+        }
+
+        input:focus-visible {
+            outline: 3px solid rgba(67, 97, 238, 0.18);
+            border-color: #4361ee;
+        }
+
+        .field-group:has(.errorlist) input {
+            border-color: #dc2626;
+            background: #fff7f7;
+        }
+
+        .security-note {
+            margin: 4px 0 0;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-size: 0.9rem;
+            font-weight: 750;
         }
 
         .helptext {
@@ -99,20 +121,21 @@
         <section class="auth-layout">
             <article class="auth-card">
                 <p class="eyebrow">إنشاء حساب</p>
-                <h1>أنشئ حسابًا لحفظ تقدم المتعلم والتقارير والشهادات.</h1>
-                <p class="lead">الحساب يساعد ولي الأمر على متابعة التعلم من أي جهاز، ويجعل تجربة الباقات أكثر وضوحًا.</p>
+                <h1>أنشئ حسابك بسرعة وابدأ التعلّم.</h1>
+                <p class="lead">بيانات بسيطة لحفظ تقدمك والوصول إلى اشتراكك من أي جهاز.</p>
 
-                <form method="post">
+                <form method="post" autocomplete="on">
                     {% csrf_token %}
-                    {{ form.non_field_errors }}
+                    <div aria-live="polite">{{ form.non_field_errors }}</div>
                     {% for field in form %}
-                        <div>
+                        <div class="field-group">
                             {{ field.label_tag }}
                             {{ field }}
-                            {{ field.help_text }}
                             {{ field.errors }}
+                            {% if field.help_text %}<span class="helptext">{{ field.help_text|safe }}</span>{% endif %}
                         </div>
                     {% endfor %}
+                    <p class="security-note">لن نطلب كلمة المرور منك خارج صفحة الدخول، ولا تُعرض بيانات الجوال للعامة.</p>
                     <div class="auth-actions">
                         <button class="btn primary" type="submit">إنشاء الحساب</button>
                         <a class="btn" href="{% url 'login' %}">لديك حساب؟ تسجيل الدخول</a>
@@ -121,14 +144,14 @@
             </article>
 
             <aside class="auth-side">
-                <h2>ماذا يحدث بعد التسجيل؟</h2>
+                <h2>حساب سريع وآمن</h2>
                 <ul class="clean-list">
-                    <li>يتم إنشاء ملف طالب مرتبط بالحساب.</li>
-                    <li>يمكن حفظ تقدم الحروف والصوتيات والأنشطة المدعومة.</li>
-                    <li>يمكن الرجوع إلى ملف المتعلم والتقارير من أي وقت.</li>
-                    <li>تظل ميزات كل باقة محكومة بالصلاحيات المحددة في صفحة الأسعار.</li>
+                    <li>نطلب فقط البيانات الأساسية الظاهرة في النموذج.</li>
+                    <li>يُقبل رقم جوال سعودي صحيح فقط، ويُحفظ بصيغة موحدة.</li>
+                    <li>تُطبق قواعد آمنة على كلمة المرور.</li>
+                    <li>يحفظ الحساب تقدمك واشتراكك وتقاريرك.</li>
                 </ul>
-                <p class="legal-note">بإنشاء الحساب، يجب أن تكون بيانات المتعلم مدخلة بموافقته أو بموافقة ولي الأمر أو المسؤول التعليمي عند الحاجة.</p>
+                <p class="legal-note">بإنشاء الحساب، أنت توافق على سياسة الخصوصية والشروط والأحكام.</p>
                 <div class="footer-links">
                     <a href="{% url 'privacy' %}">سياسة الخصوصية</a>
                     <a href="{% url 'terms' %}">الشروط والأحكام</a>

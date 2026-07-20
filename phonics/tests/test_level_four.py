@@ -1,9 +1,10 @@
 from pathlib import Path
 
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 
 from phonics.models import EnglishFoundationProgress, StudentProfile
+from phonics.tests.subscription_helpers import grant_active_subscription
 
 
 @override_settings(DISABLE_AUTO_SEED=True)
@@ -29,8 +30,7 @@ class LevelFourTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(username="level-four-diamond", password="StrongPass123!")
-        diamond_group, _ = Group.objects.get_or_create(name="Diamond")
-        self.user.groups.add(diamond_group)
+        grant_active_subscription(self.user, "diamond")
         self.client.force_login(self.user)
 
     def test_level_four_overview_is_short_dashboard(self):
@@ -188,8 +188,7 @@ class LevelFourTests(TestCase):
     def assert_progress_section_is_accepted(self, section, activity_type, points):
         user = User.objects.create_user(username=f"{section}-user", password="pass12345")
         StudentProfile.objects.create(user=user, student_name=section, grade="Grade 4")
-        diamond_group, _ = Group.objects.get_or_create(name="Diamond")
-        user.groups.add(diamond_group)
+        grant_active_subscription(user, "diamond")
         self.client.force_login(user)
 
         response = self.client.post(

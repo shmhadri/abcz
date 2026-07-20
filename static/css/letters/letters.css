@@ -427,16 +427,17 @@ body {
 .dropdown-menu {
     position: fixed;
     top: 0;
-    right: -330px; /* Start off-screen */
-    width: 320px;
-    height: 100vh;
+    right: min(-380px, -94vw);
+    width: min(380px, 94vw);
+    height: 100dvh;
     background: var(--surface);
     border-left: 1px solid var(--border);
-    padding: 20px;
+    padding: 16px;
+    box-sizing: border-box;
     transition: right 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
     z-index: 2000;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -502,14 +503,14 @@ body {
     .dropdown-menu {
         position: fixed;
         top: 0;
-        right: -330px; 
-        width: min(330px, 92vw);
-        height: 100vh;
+        right: min(-380px, -94vw);
+        width: min(380px, 94vw);
+        height: 100dvh;
         background: var(--surface);
         border-radius: 0;
         border: none;
         border-left: 1px solid var(--border);
-        padding: 20px;
+        padding: 14px;
         transition: right 0.3s ease;
         display: flex; /* Always flex */
         z-index: 2000;
@@ -535,12 +536,13 @@ body {
 .menu-item {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 14px 18px;
+    gap: 12px;
+    min-height: 48px;
+    padding: 11px 14px;
     border-radius: 12px;
     color: #111827;
     text-decoration: none;
-    font-size: 15px;
+    font-size: 0.96rem;
     font-weight: 800;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid transparent;
@@ -550,6 +552,45 @@ body {
     cursor: pointer;
     position: relative;
     overflow: hidden;
+}
+
+.menu-item > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.menu-account-card .menu-item > span {
+    display: grid;
+    gap: 2px;
+}
+
+.menu-item small {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.menu-account-card {
+    display: grid;
+    gap: 5px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(67, 97, 238, 0.08), rgba(255, 255, 255, 0.94));
+}
+
+.menu-account-card .menu-section-label {
+    margin-top: 0;
+}
+
+.menu-item-primary {
+    color: #173b8f;
+    border-color: rgba(67, 97, 238, 0.22);
+    background: #fff;
+}
+
+.night-mode .menu-account-card {
+    background: rgba(67, 97, 238, 0.1);
 }
 
 .menu-item:hover {
@@ -570,6 +611,7 @@ body {
 
 .menu-item i {
     width: 24px;
+    flex: 0 0 28px;
     text-align: center;
     color: #475569;
     font-size: 18px;
@@ -972,6 +1014,8 @@ body {
     position: relative;
     isolation: isolate;
     overflow: hidden;
+    flex: 0 0 auto;
+    line-height: 1.35;
     min-height: 46px;
     padding-inline: 20px;
     color: #ffffff !important;
@@ -3849,38 +3893,6 @@ canvas {
         user-select: none;
         -webkit-user-select: none;
     }
-}
-
-/* ===== FIX: Standard Sidebar Drawer (Mobile + Desktop) ===== */
-#userDropdown {
-    position: fixed;
-    top: 0;
-    right: -280px; /* Start off-screen */
-    width: 280px;
-    height: 100vh;
-    background: var(--surface);
-    border-left: 1px solid var(--border);
-    z-index: 2005; /* Above overlay */
-    
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-    
-    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    visibility: visible;
-    opacity: 1;
-}
-
-/* Open State */
-#userDropdown.show {
-    right: 0 !important;
-}
-
-/* Night Mode */
-.night-mode #userDropdown {
-    background: #0f172a;
-    border-color: rgba(255,255,255,.12);
 }
 
 /* Extracted from templates/letters.html style block 2 */

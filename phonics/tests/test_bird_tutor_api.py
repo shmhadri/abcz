@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 
 from phonics.models import BirdReviewItem, BirdTutorProgress, StudentProfile
+from phonics.tests.subscription_helpers import grant_active_subscription
 
 
 @override_settings(DISABLE_AUTO_SEED=True)
@@ -11,6 +12,7 @@ class BirdTutorApiTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="birdvip", password="StrongPass123!")
         StudentProfile.objects.create(user=self.user, student_name="Bird VIP", is_vip=True)
+        grant_active_subscription(self.user, "vip")
 
     def login(self):
         self.client.login(username="birdvip", password="StrongPass123!")

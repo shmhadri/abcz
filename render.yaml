@@ -6,7 +6,7 @@ services:
     branch: staging-ready
     buildCommand: bash build.sh
     preDeployCommand: python manage.py migrate --noinput
-    startCommand: gunicorn abcz.wsgi:application --log-file -
+    startCommand: sh -c 'gunicorn abcz.wsgi:application --bind 0.0.0.0:${PORT:-8000} --worker-class gthread --workers ${WEB_CONCURRENCY:-2} --threads ${GUNICORN_THREADS:-4} --timeout ${GUNICORN_TIMEOUT:-45} --graceful-timeout ${GUNICORN_GRACEFUL_TIMEOUT:-30} --keep-alive ${GUNICORN_KEEP_ALIVE:-5} --max-requests ${GUNICORN_MAX_REQUESTS:-1000} --max-requests-jitter ${GUNICORN_MAX_REQUESTS_JITTER:-100} --access-logfile - --error-logfile -'
     healthCheckPath: /health/
     autoDeployTrigger: commit
     disk:
@@ -34,6 +34,20 @@ services:
         value: "False"
       - key: RUN_MIGRATIONS_ON_STARTUP
         value: "False"
+      - key: WEB_CONCURRENCY
+        value: "2"
+      - key: GUNICORN_THREADS
+        value: "4"
+      - key: GUNICORN_TIMEOUT
+        value: "45"
+      - key: GUNICORN_GRACEFUL_TIMEOUT
+        value: "30"
+      - key: GUNICORN_KEEP_ALIVE
+        value: "5"
+      - key: GUNICORN_MAX_REQUESTS
+        value: "1000"
+      - key: GUNICORN_MAX_REQUESTS_JITTER
+        value: "100"
       - key: REQUEST_LOG_ENABLED
         value: "True"
       - key: RATE_LIMIT_LOGIN
@@ -46,6 +60,18 @@ services:
         value: "10"
       - key: RATE_LIMIT_PUBLIC_API
         value: "30"
+      - key: DB_CONN_MAX_AGE
+        value: "60"
+      - key: REDIS_URL
+        sync: false
+      - key: CACHE_KEY_PREFIX
+        value: abcz
+      - key: SUBSCRIPTION_CACHE_TIMEOUT
+        value: "300"
+      - key: STATIC_CONTENT_CACHE_TIMEOUT
+        value: "1800"
+      - key: PUBLIC_PAGE_CACHE_TIMEOUT
+        value: "600"
       - key: MOYASAR_ENABLED
         value: "False"
       - key: MOYASAR_PUBLISHABLE_KEY
@@ -56,8 +82,28 @@ services:
         sync: false
       - key: MOYASAR_CALLBACK_URL
         sync: false
+      - key: MOYASAR_API_URL
+        value: "https://api.moyasar.com/v1"
+      - key: MOYASAR_ENVIRONMENT
+        value: "test"
+      - key: MOYASAR_CONNECT_TIMEOUT
+        value: "5"
+      - key: MOYASAR_READ_TIMEOUT
+        value: "15"
+      - key: MOYASAR_CHECKOUT_ALLOWED_HOSTS
+        value: "checkout.moyasar.com"
+      - key: MOYASAR_ORDER_REUSE_MINUTES
+        value: "30"
+      - key: MOYASAR_INVOICE_CREATION_STALE_MINUTES
+        value: "5"
+      - key: MOYASAR_UNKNOWN_RETRY_MINUTES
+        value: "30"
+      - key: MOYASAR_WEBHOOK_MAX_BODY_BYTES
+        value: "65536"
+      - key: RATE_LIMIT_PAYMENT
+        value: "10"
       - key: BANK_TRANSFER_ENABLED
-        value: "True"
+        value: "False"
       - key: BANK_ACCOUNT_NAME
         sync: false
       - key: BANK_NAME

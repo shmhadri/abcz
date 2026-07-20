@@ -1,13 +1,14 @@
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
+
+from phonics.tests.subscription_helpers import grant_active_subscription
 
 
 @override_settings(DISABLE_AUTO_SEED=True)
 class GamesCenterTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="games-basic", password="StrongPass123!")
-        basic_group, _ = Group.objects.get_or_create(name="Basic")
-        self.user.groups.add(basic_group)
+        grant_active_subscription(self.user, "basic")
         self.client.force_login(self.user)
 
     def test_games_center_returns_success(self):

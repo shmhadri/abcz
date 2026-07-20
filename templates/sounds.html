@@ -2724,6 +2724,8 @@
         const localGrammarProgress = JSON.parse(localStorage.getItem(grammarStorageKey) || "{}");
         const mergedCompletedItems = [...new Set([...(serverProgress.completed_items || []), ...localCompletedItems])];
         const savedPatternProgress = serverProgress.last_payload?.pattern_progress || {};
+        let soundProgressSyncInFlight = false;
+        let lastSoundProgressPayloadHash = "";
 
         const state = {
             completed: new Set(mergedCompletedItems),
@@ -4737,10 +4739,41 @@
         async function syncProgress() {
             localSave();
             if (!isAuthenticated) {
-                els.syncStatus.textContent = "محفوظ محليا. سجّل الدخول لربطه بملف المتعلم.";
+                els.syncStatus.textContent = "محفوظ محليا. سجل الدخول لربطه بملف المتعلم.";
                 return;
             }
 
+            const payload = {
+                completed_items: [...state.completed],
+                quiz_attempts: state.quizAttempts,
+                quiz_correct: state.quizCorrect,
+                mic_attempts: state.micAttempts,
+                mic_success: state.micSuccess,
+                worksheet_downloads: state.worksheetDownloads,
+                last_item: state.current?.text || state.micTarget || "",
+                vowel_lessons_completed: Math.max(state.vowelLessonsCompleted, state.practicedVowels.size),
+                practiced_vowels: [...state.practicedVowels],
+                vowel_quiz_attempts: state.vowelQuizAttempts,
+                vowel_quiz_correct: state.vowelQuizCorrect,
+                vowel_microphone_attempts: state.vowelMicAttempts,
+                vowel_microphone_success: state.vowelMicSuccess,
+                last_vowel_practiced: state.lastVowelPracticed,
+                vowel_mastery_percentage: vowelMasteryPercent(),
+                last_payload: {
+                    page: "sounds",
+                    completed_count: state.completed.size,
+                    vowel_mastery_percentage: vowelMasteryPercent(),
+                    pattern_progress: patternProgressSummary(),
+                    speech: state.lastSpeechPayload
+                }
+            };
+            const payloadHash = JSON.stringify(payload);
+            if (soundProgressSyncInFlight || payloadHash === lastSoundProgressPayloadHash) {
+                els.syncStatus.textContent = "التقدم محفوظ.";
+                return;
+            }
+
+            soundProgressSyncInFlight = true;
             try {
                 const response = await fetch("{% url 'sound_progress_api' %}", {
                     method: "POST",
@@ -4748,34 +4781,16 @@
                         "Content-Type": "application/json",
                         "X-CSRFToken": decodeURIComponent(getCookie("csrftoken"))
                     },
-                    body: JSON.stringify({
-                        completed_items: [...state.completed],
-                        quiz_attempts: state.quizAttempts,
-                        quiz_correct: state.quizCorrect,
-                        mic_attempts: state.micAttempts,
-                        mic_success: state.micSuccess,
-                        worksheet_downloads: state.worksheetDownloads,
-                        last_item: state.current?.text || state.micTarget || "",
-                        vowel_lessons_completed: Math.max(state.vowelLessonsCompleted, state.practicedVowels.size),
-                        practiced_vowels: [...state.practicedVowels],
-                        vowel_quiz_attempts: state.vowelQuizAttempts,
-                        vowel_quiz_correct: state.vowelQuizCorrect,
-                        vowel_microphone_attempts: state.vowelMicAttempts,
-                        vowel_microphone_success: state.vowelMicSuccess,
-                        last_vowel_practiced: state.lastVowelPracticed,
-                        vowel_mastery_percentage: vowelMasteryPercent(),
-                        last_payload: {
-                            page: "sounds",
-                            completed_count: state.completed.size,
-                            vowel_mastery_percentage: vowelMasteryPercent(),
-                            pattern_progress: patternProgressSummary(),
-                            speech: state.lastSpeechPayload
-                        }
-                    })
+                    body: payloadHash
                 });
+                if (response.ok) {
+                    lastSoundProgressPayloadHash = payloadHash;
+                }
                 els.syncStatus.textContent = response.ok ? "تمت المزامنة مع ملف المتعلم." : "تعذر حفظ التقدم الآن.";
             } catch (error) {
                 els.syncStatus.textContent = "تعذر الاتصال لحفظ التقدم.";
+            } finally {
+                soundProgressSyncInFlight = false;
             }
         }
 
@@ -4785,6 +4800,16 @@
         }
 
         function speak(text, slow = false) {
+            if (window.SpeechService?.speakText) {
+                SpeechService.speakText(text, {
+                    lang: "en-US",
+                    rate: slow ? 0.78 : (String(text).length <= 3 ? 0.8 : 0.86),
+                    pitch: 1
+                }).then(result => {
+                    if (!result.ok && window.ABCZ_DEBUG_SPEECH) console.debug("[sounds]", "speech synthesis failed", result);
+                });
+                return true;
+            }
             if (!("speechSynthesis" in window)) {
                 return false;
             }
