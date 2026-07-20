@@ -7,16 +7,16 @@
     <title>خطط الاشتراك - Phonics Game Lab</title>
     <style>
         :root {
-            --primary: #4361ee;
-            --primary-dark: #2b277f;
+            --primary: #3b5ccc;
+            --primary-dark: #172554;
             --accent: #10b981;
             --warning: #f59e0b;
             --surface: #ffffff;
-            --surface-soft: #f8fafc;
+            --surface-soft: #f5f7fb;
             --text: #172033;
             --muted: #64748b;
-            --border: #dbe3ef;
-            --shadow: 0 18px 45px rgba(15, 23, 42, 0.1);
+            --border: #e2e8f0;
+            --shadow: 0 18px 50px rgba(30, 41, 59, 0.09);
         }
 
         * {
@@ -27,15 +27,17 @@
             margin: 0;
             min-height: 100vh;
             font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-            background: #ffffff;
+            background: #f8fafc;
             color: var(--text);
             line-height: 1.7;
         }
 
         .pricing-shell {
-            width: min(1180px, calc(100% - 32px));
+            width: min(1320px, calc(100% - 32px));
             margin: 0 auto;
             padding: 28px 0 52px;
+            display: flex;
+            flex-direction: column;
         }
 
         .pricing-nav {
@@ -43,7 +45,13 @@
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            margin-bottom: 34px;
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: 0 10px 35px rgba(30, 41, 59, 0.06);
+            order: 1;
         }
 
         .pricing-links {
@@ -51,6 +59,10 @@
             flex-wrap: wrap;
             align-items: center;
             gap: 10px;
+        }
+
+        .pricing-links form {
+            margin: 0;
         }
 
         .brand {
@@ -79,14 +91,27 @@
             font-weight: 900;
             background: var(--surface-soft);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 18px;
+            border-radius: 12px;
+            padding: 9px 15px;
+            transition: 160ms ease;
+        }
+
+        .back-link:hover {
+            border-color: #b9c7f5;
+            background: #eef2ff;
+            transform: translateY(-1px);
         }
 
         .hero {
-            max-width: 760px;
-            margin: 0 auto 30px;
+            max-width: none;
+            margin: 0 auto 28px;
             text-align: center;
+            padding: clamp(32px, 6vw, 68px) 22px;
+            border: 1px solid #dce5ff;
+            border-radius: 28px;
+            background: radial-gradient(circle at 15% 25%, rgba(16, 185, 129, 0.12), transparent 26%), radial-gradient(circle at 85% 10%, rgba(59, 92, 204, 0.16), transparent 30%), linear-gradient(145deg, #ffffff 0%, #f3f6ff 100%);
+            box-shadow: var(--shadow);
+            order: 2;
         }
 
         .hero h1 {
@@ -101,6 +126,8 @@
             color: var(--muted);
             font-size: 1.08rem;
             font-weight: 800;
+            max-width: 720px;
+            margin-inline: auto;
         }
 
         .hero-actions {
@@ -117,7 +144,7 @@
             justify-content: center;
             min-height: 44px;
             padding: 0 18px;
-            border-radius: 8px;
+            border-radius: 12px;
             border: 1px solid var(--border);
             background: var(--surface-soft);
             color: var(--primary);
@@ -135,16 +162,17 @@
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 12px;
-            margin: 0 0 24px;
+            margin: 0 0 46px;
+            order: 3;
         }
 
         .level-pill {
             min-height: 86px;
             padding: 14px;
-            border-radius: 8px;
+            border-radius: 16px;
             border: 1px solid var(--border);
             background: var(--surface);
-            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
             display: grid;
             gap: 3px;
         }
@@ -162,59 +190,141 @@
 
         .plans {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 20px;
             align-items: stretch;
         }
 
+        .section-heading {
+            max-width: 760px;
+            margin: 0 auto 24px;
+            text-align: center;
+        }
+
+        .section-kicker {
+            display: inline-flex;
+            margin-bottom: 8px;
+            padding: 5px 12px;
+            color: var(--primary);
+            background: #eef2ff;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 900;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: clamp(1.65rem, 3vw, 2.25rem);
+        }
+
+        .section-heading p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .main-subscriptions {
+            margin-bottom: 54px;
+            order: 4;
+        }
+
+        .primary-plans .plan:first-child {
+            grid-column: 1 / -1;
+            min-height: auto;
+            display: grid;
+            grid-template-columns: auto minmax(140px, 0.8fr) auto minmax(260px, 1.5fr) auto;
+            align-items: center;
+        }
+
+        .primary-plans .plan:first-child .plan-action {
+            margin-top: 0;
+            min-width: 150px;
+        }
+
         .level-subscriptions {
-            margin: 0 0 26px;
+            margin: 0;
+            padding: clamp(26px, 4vw, 42px);
+            border: 1px solid #dce5ff;
+            border-radius: 28px;
+            background: linear-gradient(180deg, #f4f7ff 0%, #ffffff 100%);
+            order: 5;
         }
 
         .level-subscriptions h2 {
-            margin: 0 0 8px;
+            margin: 0;
             color: var(--primary-dark);
             text-align: center;
         }
 
         .level-subscriptions > p {
             max-width: 760px;
-            margin: 0 auto 16px;
+            margin: 8px auto 22px;
             color: var(--muted);
             text-align: center;
             font-weight: 800;
         }
 
+        .addon-plans {
+            max-width: 960px;
+            margin: 0 auto;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
         .plan {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 24px;
+            border-radius: 22px;
+            padding: 24px 22px;
             box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
             gap: 18px;
             min-height: 100%;
+            position: relative;
+            overflow: hidden;
+            transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+        }
+
+        .plan::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto;
+            height: 5px;
+            background: #cbd5e1;
+        }
+
+        .plan:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 24px 62px rgba(30, 41, 59, 0.14);
         }
 
         .plan.featured {
             border: 2px solid var(--primary);
         }
 
+        .plan.featured::before { background: var(--primary); }
+
         .plan.silver {
             border: 2px solid #0ea5e9;
             background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 54%);
         }
+
+        .plan.silver::before { background: #0ea5e9; }
 
         .plan.vip {
             border: 2px solid var(--warning);
             background: linear-gradient(180deg, #fff7ed 0%, #ffffff 56%);
         }
 
+        .plan.vip::before { background: var(--warning); }
+
         .plan.diamond {
             border: 2px solid #172f77;
             background: linear-gradient(180deg, #eef4ff 0%, #ffffff 56%);
         }
+
+        .plan.diamond::before { background: linear-gradient(90deg, #172f77, #2357d9, #0f9f6e); }
 
         .plan-badge {
             align-self: start;
@@ -296,11 +406,24 @@
             align-items: center;
             min-height: 44px;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 0 18px;
             color: #ffffff;
             background: var(--primary);
             font-weight: 900;
+            transition: 160ms ease;
+        }
+
+        .plan-action:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.04);
+        }
+
+        .back-link:focus-visible,
+        .hero-action:focus-visible,
+        .plan-action:focus-visible {
+            outline: 3px solid rgba(59, 92, 204, 0.3);
+            outline-offset: 3px;
         }
 
         .plan-action.secondary {
@@ -322,12 +445,33 @@
             text-align: center;
             color: var(--muted);
             font-weight: 700;
+            order: 6;
+        }
+
+        .current-plan-banner {
+            margin: 0 0 16px;
+            padding: 12px 18px;
+            text-align: center;
+            color: #14532d;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 14px;
+            font-weight: 800;
+            order: 0;
         }
 
         @media (max-width: 980px) {
             .plans,
             .level-roadmap {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .primary-plans .plan:first-child {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .primary-plans .plan:first-child .plan-action {
+                margin-top: auto;
             }
         }
 
@@ -338,14 +482,47 @@
             }
 
             .plans,
-            .level-roadmap {
+            .level-roadmap,
+            .addon-plans {
                 grid-template-columns: 1fr;
+            }
+
+            .primary-plans .plan:first-child {
+                grid-column: auto;
+                display: flex;
+            }
+
+            .pricing-shell {
+                width: min(100% - 20px, 1320px);
+                padding-top: 10px;
+            }
+
+            .plan,
+            .level-subscriptions {
+                border-radius: 18px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .back-link,
+            .plan,
+            .plan-action {
+                transition: none;
+            }
+
+            .back-link:hover,
+            .plan:hover,
+            .plan-action:hover {
+                transform: none;
             }
         }
     </style>
 </head>
 <body>
     <main class="pricing-shell">
+        {% if current_main_plan %}
+            <p class="current-plan-banner"><strong>باقتك الحالية:</strong> {{ current_main_plan.name_ar }}</p>
+        {% endif %}
         <nav class="pricing-nav" aria-label="التنقل">
             <a class="brand" href="/">
                 <span class="brand-mark">A</span>
@@ -358,7 +535,7 @@
                 <a class="back-link" href="{% url 'guide' %}">التعليمات</a>
                 {% if request.user.is_authenticated %}
                     <a class="back-link" href="{% url 'profile_dashboard' %}">ملف المتعلم</a>
-                    <a class="back-link" href="{% url 'logout' %}">خروج</a>
+                    <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="back-link" type="submit">خروج</button></form>
                 {% else %}
                     <a class="back-link" href="{% url 'login' %}">تسجيل الدخول</a>
                 {% endif %}
@@ -396,7 +573,7 @@
         <section class="level-subscriptions" aria-label="اشتراكات المستويات">
             <h2>اشتراكات المستويات المتقدمة</h2>
             <p>المستوى الثالث والمستوى الرابع لكل واحد اشتراك واحد فقط: 15 ريال شهريًا، بدون أنواع متعددة.</p>
-            <div class="plans">
+            <div class="plans addon-plans">
                 <article class="plan" id="level-3-plan">
                     <span class="plan-badge">المستوى الثالث</span>
                     <div>
@@ -413,7 +590,9 @@
                         <li>CVC Worksheets.</li>
                         <li>CVC Certificate حسب الإنجاز.</li>
                     </ul>
-                    <a class="plan-action" href="{% url 'checkout' 'level-3' %}">اشترك في المستوى الثالث</a>
+                    {% if level_3_action.allowed %}
+                        <a class="plan-action" href="{% url 'checkout' 'level-3' %}">{{ level_3_action.label }}{% if level_3_action.amount_due %} - {{ level_3_action.amount_due }} ريال{% endif %}</a>
+                    {% else %}<span class="plan-action secondary">{{ level_3_action.label }}</span>{% endif %}
                 </article>
 
                 <article class="plan" id="level-4-plan">
@@ -432,12 +611,20 @@
                         <li>Common Sentences and Conversations.</li>
                         <li>Level Four Certificate حسب الإنجاز.</li>
                     </ul>
-                    <a class="plan-action" href="{% url 'checkout' 'level-4' %}">اشترك في المستوى الرابع</a>
+                    {% if level_4_action.allowed %}
+                        <a class="plan-action" href="{% url 'checkout' 'level-4' %}">{{ level_4_action.label }}{% if level_4_action.amount_due %} - {{ level_4_action.amount_due }} ريال{% endif %}</a>
+                    {% else %}<span class="plan-action secondary">{{ level_4_action.label }}</span>{% endif %}
                 </article>
             </div>
         </section>
 
-        <section class="plans" aria-label="خطط الاشتراك">
+        <section class="main-subscriptions" aria-labelledby="main-plans-title">
+            <header class="section-heading">
+                <span class="section-kicker">الباقات الرئيسية</span>
+                <h2 id="main-plans-title">اختر الباقة المناسبة لتعلّمك</h2>
+                <p>ابدأ بالباقة التي تناسب احتياجك الآن، ويمكنك الترقية إلى باقة أعلى عند الحاجة.</p>
+            </header>
+            <div class="plans primary-plans">
             <article class="plan">
                 <span class="plan-badge">تجربة مجانية</span>
                 <div>
@@ -467,7 +654,9 @@
                     <li>تقرير الإنجاز.</li>
                     <li>شهادة المستوى الأول حسب الإنجاز.</li>
                 </ul>
-                <a class="plan-action" href="{% url 'checkout' 'basic' %}">اختيار Basic</a>
+                {% if basic_action.allowed %}
+                    <a class="plan-action" href="{% url 'checkout' 'basic' %}">{{ basic_action.label }}{% if basic_action.amount_due %} - {{ basic_action.amount_due }} ريال{% endif %}</a>
+                {% else %}<span class="plan-action secondary">{{ basic_action.label }}</span>{% endif %}
             </article>
 
             <article class="plan silver">
@@ -490,7 +679,9 @@
                     <li>طباعة أوراق العمل.</li>
                     <li>تحميل أوراق العمل PDF.</li>
                 </ul>
-                <a class="plan-action silver-action" href="{% url 'checkout' 'silver' %}">اختيار Silver</a>
+                {% if silver_action.allowed %}
+                    <a class="plan-action silver-action" href="{% url 'checkout' 'silver' %}">{{ silver_action.label }}{% if silver_action.amount_due %} - {{ silver_action.amount_due }} ريال{% endif %}</a>
+                {% else %}<span class="plan-action secondary">{{ silver_action.label }}</span>{% endif %}
             </article>
 
             <article class="plan vip">
@@ -524,7 +715,9 @@
                     <li>خطة مراجعة أقوى.</li>
                 </ul>
                 <p class="description">VIP لا يشمل كل الموقع. لفتح جميع المستويات والميزات استخدم الباقة الماسية.</p>
-                <a class="plan-action" href="{% url 'checkout' 'vip' %}">اختيار VIP</a>
+                {% if vip_action.allowed %}
+                    <a class="plan-action" href="{% url 'checkout' 'vip' %}">{{ vip_action.label }}{% if vip_action.amount_due %} - {{ vip_action.amount_due }} ريال{% endif %}</a>
+                {% else %}<span class="plan-action secondary">{{ vip_action.label }}</span>{% endif %}
             </article>
 
             <article class="plan diamond">
@@ -544,11 +737,16 @@
                     <li>كل الألعاب والتقارير والشهادات المتاحة.</li>
                     <li>فتح مباشر لكل الميزات الحالية داخل الموقع.</li>
                 </ul>
-                <a class="plan-action diamond-action" href="{% url 'checkout' 'diamond' %}">اختيار الماسي</a>
+                {% if diamond_action.allowed %}
+                    <a class="plan-action diamond-action" href="{% url 'checkout' 'diamond' %}">{{ diamond_action.label }}{% if diamond_action.amount_due %} - {{ diamond_action.amount_due }} ريال{% endif %}</a>
+                {% else %}<span class="plan-action secondary">{{ diamond_action.label }}</span>{% endif %}
             </article>
+            </div>
         </section>
 
-        <p class="note">الدفع الحقيقي غير مفعل الآن. يتم إنشاء طلب دفع فقط، ولا يتم تفعيل الاشتراك إلا بعد نجاح الدفع أو اعتماد التحويل البنكي.</p>
+        {% if not moyasar.enabled %}
+            <p class="note">الدفع عبر ميسر غير مفعل حاليًا. لا يتم تفعيل الاشتراك إلا بعد نجاح الدفع أو اعتماد التحويل البنكي.</p>
+        {% endif %}
         <p class="note">
             <a href="{% url 'about' %}">من نحن</a>
             ·

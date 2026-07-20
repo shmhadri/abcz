@@ -11,9 +11,11 @@ import sys
 
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env", override=False)
 
 
 def env_bool(name: str, default: str = "False") -> bool:
@@ -120,6 +122,8 @@ DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
 
 REDIS_URL = os.getenv("REDIS_URL", "").strip()
+if IS_PRODUCTION and not REDIS_URL:
+    raise ImproperlyConfigured("REDIS_URL must be configured in production for shared security rate limits.")
 if REDIS_URL:
     CACHES = {
         "default": {
@@ -130,7 +134,7 @@ if REDIS_URL:
                 "SOCKET_CONNECT_TIMEOUT": 3,
                 "SOCKET_TIMEOUT": 3,
                 "RETRY_ON_TIMEOUT": True,
-                "IGNORE_EXCEPTIONS": True,
+                "IGNORE_EXCEPTIONS": False,
             },
             "KEY_PREFIX": os.getenv("CACHE_KEY_PREFIX", "abcz"),
             "TIMEOUT": 300,
@@ -187,8 +191,24 @@ STORAGES = {
 # Production security
 SECURE_SSL_REDIRECT = (not DEBUG) and (not TESTING) and env_bool("SECURE_SSL_REDIRECT", "True")
 SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SAMESITE = "Lax"
 SECURE_PROXY_SSL_HEADER = None if DEBUG else ("HTTP_X_FORWARDED_PROTO", "https")
+
+RATE_LIMIT_LOGIN = int(os.getenv("RATE_LIMIT_LOGIN", "10"))
+RATE_LIMIT_REGISTER = int(os.getenv("RATE_LIMIT_REGISTER", "5"))
+RATE_LIMIT_WRITE = int(os.getenv("RATE_LIMIT_WRITE", "60"))
+RATE_LIMIT_UPLOAD = int(os.getenv("RATE_LIMIT_UPLOAD", "10"))
+RATE_LIMIT_PUBLIC_API = int(os.getenv("RATE_LIMIT_PUBLIC_API", "30"))
+RATE_LIMIT_PAYMENT = int(os.getenv("RATE_LIMIT_PAYMENT", "10"))
+
+# Start in reporting mode; enforce only after production violation reports are reviewed.
+CSP_REPORT_ONLY = os.getenv(
+    "CSP_REPORT_ONLY",
+    "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+).strip()
 
 if not DEBUG:
     SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "31536000"))
@@ -217,6 +237,29 @@ MOYASAR_PUBLISHABLE_KEY = os.getenv("MOYASAR_PUBLISHABLE_KEY", "").strip()
 MOYASAR_SECRET_KEY = os.getenv("MOYASAR_SECRET_KEY", "").strip()
 MOYASAR_WEBHOOK_SECRET = os.getenv("MOYASAR_WEBHOOK_SECRET", "").strip()
 MOYASAR_CALLBACK_URL = os.getenv("MOYASAR_CALLBACK_URL", "").strip()
+MOYASAR_API_URL = os.getenv("MOYASAR_API_URL", "https://api.moyasar.com/v1").strip().rstrip("/")
+MOYASAR_ENVIRONMENT = os.getenv("MOYASAR_ENVIRONMENT", "test").strip().lower()
+MOYASAR_CONNECT_TIMEOUT = int(os.getenv("MOYASAR_CONNECT_TIMEOUT", "5"))
+MOYASAR_READ_TIMEOUT = int(os.getenv("MOYASAR_READ_TIMEOUT", "15"))
+MOYASAR_CHECKOUT_ALLOWED_HOSTS = env_list(
+    "MOYASAR_CHECKOUT_ALLOWED_HOSTS",
+    "checkout.moyasar.com",
+)
+MOYASAR_ORDER_REUSE_MINUTES = int(os.getenv("MOYASAR_ORDER_REUSE_MINUTES", "30"))
+MOYASAR_INVOICE_CREATION_STALE_MINUTES = int(os.getenv("MOYASAR_INVOICE_CREATION_STALE_MINUTES", "5"))
+MOYASAR_UNKNOWN_RETRY_MINUTES = int(os.getenv("MOYASAR_UNKNOWN_RETRY_MINUTES", "30"))
+MOYASAR_WEBHOOK_MAX_BODY_BYTES = int(os.getenv("MOYASAR_WEBHOOK_MAX_BODY_BYTES", "65536"))
+
+if MOYASAR_ENVIRONMENT not in {"test", "live"}:
+    raise ImproperlyConfigured("MOYASAR_ENVIRONMENT must be either test or live.")
+if MOYASAR_ENVIRONMENT == "live":
+    raise ImproperlyConfigured("Moyasar live mode is disabled during the Sandbox integration phase.")
+if MOYASAR_SECRET_KEY:
+    expected_prefix = "sk_test_"
+    if not MOYASAR_SECRET_KEY.startswith(expected_prefix):
+        raise ImproperlyConfigured(
+            f"MOYASAR_SECRET_KEY does not match the configured {MOYASAR_ENVIRONMENT} environment."
+        )
 
 BANK_TRANSFER_ENABLED = env_bool("BANK_TRANSFER_ENABLED", "True")
 BANK_ACCOUNT_NAME = os.getenv("BANK_ACCOUNT_NAME", "").strip()
@@ -236,17 +279,29 @@ LOGGING = {
                 "method=%(method)s path=%(path)s status=%(status_code)s duration_ms=%(duration_ms)s"
             )
         },
+        "standard": {
+            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
+        },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "request",
         },
+        "payment_console": {
+            "class": "logging.StreamHandler",
+            "formatter": "standard",
+        },
     },
     "loggers": {
         "abcz.requests": {
             "handlers": ["console"],
             "level": os.getenv("REQUEST_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        "abcz.payments.moyasar": {
+            "handlers": ["payment_console"],
+            "level": "INFO",
             "propagate": False,
         },
     },

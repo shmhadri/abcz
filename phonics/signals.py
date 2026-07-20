@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.signals import user_logged_in
 from django.db import transaction
 from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
@@ -44,3 +45,10 @@ def invalidate_group_membership_cache(sender, instance, action, reverse, pk_set,
 
     for user_id in user_ids:
         _invalidate_on_commit(user_id)
+
+
+@receiver(user_logged_in)
+def synchronize_subscription_state_on_login(sender, request, user, **kwargs):
+    from .subscriptions import synchronize_user_subscription_compatibility
+
+    synchronize_user_subscription_compatibility(user)

@@ -9,34 +9,47 @@ Phonics App Views - SECURED & OPTIMIZED (SAFE VERSION)
 from __future__ import annotations
 
 import json
+import hashlib
 import logging
 import math
 import re
+import uuid
+import secrets
+from functools import lru_cache
+from io import BytesIO
 from decimal import Decimal, InvalidOperation
 from datetime import datetime, timedelta
 from pathlib import Path
+from xml.sax.saxutils import escape
+from zipfile import ZIP_DEFLATED, ZipFile
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login as auth_login, logout as auth_logout
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.management import call_command
-from django.db import models, transaction
+from django.db import IntegrityError, models, transaction
 from django.db.models import Count, F, Max, Q, Sum
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils import timezone
-from django.views.decorators.cache import cache_page
+from django.views.decorators.cache import cache_page, never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.utils import ImageReader
+from reportlab.lib.units import mm
+from reportlab.pdfgen import canvas
 from xhtml2pdf import pisa
 
-from .forms import StudentProfileForm, StudentRegistrationForm
+from .forms import SecureAuthenticationForm, StudentProfileForm, StudentRegistrationForm
 from .models import (
     Student,
     StudentProfile,
@@ -53,23 +66,59 @@ from .models import (
     EnglishFoundationProgress,
     UserSubscription,
     PaymentOrder,
+    PaymentWebhookEvent,
     BankTransferProof,
     activate_subscription_from_payment,
 )
 from .cache_helpers import (
-    get_cached_active_plan_codes,
-    get_cached_feature_keys,
     get_cached_static_value,
-    get_cached_subscription_plan,
-    get_cached_user_group_slugs,
     safe_cache_get,
     safe_cache_set,
 )
 from .middleware import get_current_request
+from .security import client_ip, login_identity, rate_limit
+from .payments.moyasar import (
+    MoyasarAPIError,
+    MoyasarConfigurationError,
+    MoyasarInvalidResponseError,
+    MoyasarNetworkError,
+    create_invoice as create_moyasar_invoice,
+    validate_checkout_url as validate_moyasar_checkout_url,
+)
+from .payments.reconciliation import reconcile_payment_order
+from .plans import (
+    BASIC_FEATURE_KEYS,
+    FEATURE_KEYS_BY_PLAN,
+    FULL_ACCESS_FEATURE_KEYS,
+    FULL_ACCESS_ONLY_FEATURE_KEYS,
+    LEVEL_FOUR_FEATURE_KEYS,
+    LEVEL_THREE_FEATURE_KEYS,
+    PLAN_BASIC,
+    PLAN_CATALOG,
+    PLAN_DIAMOND,
+    PLAN_FREE,
+    PLAN_FULL_ACCESS,
+    PLAN_LEVEL_FOUR,
+    PLAN_LEVEL_THREE,
+    PLAN_SILVER,
+    PLAN_VIP,
+    SILVER_FEATURE_KEYS,
+    VIP_FEATURE_KEYS,
+    normalize_plan_code,
+)
+from .subscriptions import (
+    PurchaseNotAllowed,
+    get_user_entitlements,
+    purchase_options_for_user,
+    quote_plan_purchase,
+    subscription_dashboard_context,
+    synchronize_user_subscription_compatibility,
+)
 
 
 PUBLIC_PAGE_CACHE_TIMEOUT = getattr(settings, "PUBLIC_PAGE_CACHE_TIMEOUT", 600)
 logger = logging.getLogger("abcz.performance")
+payment_logger = logging.getLogger("abcz.payments.moyasar")
 
 LEADERBOARD_CACHE_TIMEOUT = 60
 LEADERBOARD_LIMIT = 100
@@ -91,14 +140,14 @@ def ensure_seed_data():
     """
     Auto-populate database on first request if empty.
     Works on Render Free tier without shell/pre-deploy access.
-    
+
     This runs ONCE when the first API call is made and database is empty.
     Safe to call multiple times - checks if data exists first.
     """
     # Skip during tests
     if getattr(settings, "DISABLE_AUTO_SEED", False):
         return
-    
+
     seed_cache_key = f"cvc-seed-ready:{CVC_CONTENT_CACHE_VERSION}"
     if safe_cache_get(seed_cache_key) is True:
         return
@@ -107,14 +156,14 @@ def ensure_seed_data():
     try:
         has_words = CVCWord.objects.exists()
         has_sentences = CVCSentence.objects.exists()
-        
+
         # If we have data, no need to seed
         if has_words and has_sentences:
             safe_cache_set(seed_cache_key, True, timeout=CVC_SEED_CHECK_CACHE_TIMEOUT)
             return
-        
+
         print("🌱 Database is empty. Auto-seeding...")
-        
+
         # Use transaction for safety
         with transaction.atomic():
             # Populate CVC data
@@ -122,10 +171,10 @@ def ensure_seed_data():
                 print("📚 Populating CVC data...")
                 call_command("populate_all_cvc")
                 safe_cache_set(seed_cache_key, True, timeout=CVC_SEED_CHECK_CACHE_TIMEOUT)
-            
-        
+
+
         print("✅ Auto-seed completed successfully!")
-        
+
     except Exception as e:
         # Log error but don't crash the app
         print(f"❌ Auto-seed failed: {e}")
@@ -163,10 +212,11 @@ def parse_json_safely(request):
         if not isinstance(data, dict):
             return None, _json_error("JSON must be an object", 400)
         return data, None
-    except (json.JSONDecodeError, UnicodeDecodeError) as e:
-        return None, _json_error("Invalid JSON format", 400, details=str(e))
-    except Exception as e:
-        return None, _json_error("Failed to parse request", 400, details=str(e))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return None, _json_error("Invalid JSON format", 400)
+    except Exception:
+        logger.exception("request_json_parse_failed request_id=%s", getattr(request, "request_id", ""))
+        return None, _json_error("Failed to parse request", 400, request_id=getattr(request, "request_id", ""))
 
 
 def get_request_feature_cache(user):
@@ -217,6 +267,7 @@ def serialize_student_profile(profile):
         return {
             "display_name": "",
             "student_name": "",
+            "city": "",
             "grade": "",
             "school": "",
             "parent_phone": "",
@@ -227,6 +278,7 @@ def serialize_student_profile(profile):
     return {
         "display_name": profile.display_name,
         "student_name": profile.student_name,
+        "city": profile.city,
         "grade": profile.grade,
         "school": profile.school,
         "parent_phone": profile.parent_phone,
@@ -237,110 +289,13 @@ def serialize_student_profile(profile):
 
 FREE_LEVEL_ONE_LETTERS = {"A", "B"}
 
-PLAN_FREE = "free"
-PLAN_BASIC = "basic"
-PLAN_SILVER = "silver"
-PLAN_VIP = "vip"
-PLAN_DIAMOND = "diamond"
-PLAN_FULL_ACCESS = "full_access"
-PLAN_LEVEL_THREE = "level_3"
-PLAN_LEVEL_FOUR = "level_4"
-
-BASIC_FEATURE_KEYS = {
-    "letters_full",
-    "letter_sounds_basic",
-    "internal_games",
-    "student_progress",
-    "basic_parent_report",
-    "letter_certificate_basic",
-}
-
-SILVER_FEATURE_KEYS = BASIC_FEATURE_KEYS | {
-    "sounds_basic",
-    "sounds_full",
-    "vowels",
-    "digraphs",
-    "ending_sounds",
-    "trigraphs",
-    "advanced_patterns_preview",
-    "sounds_mic",
-    "worksheets_level1",
-    "worksheets_print_level1",
-    "worksheets_download_level1",
-    "sounds_worksheets",
-}
-
-VIP_FEATURE_KEYS = SILVER_FEATURE_KEYS | {
-    "book_download_level1",
-    "full_book_download",
-    "wordwall_level1",
-    "bird_tutor",
-    "bird_tutor_trial",
-    "bird_tutor_full",
-    "bird_xp",
-    "bird_error_review",
-    "bird_parent_report",
-    "parent_report_detailed",
-    "smart_review_plan",
-    "gold_certificate",
-    "honor_board_consent",
-    "leaderboard",
-    "mistake_review",
-    "improvement_report",
-    "audio_question_reading",
-    "step_by_step_error_review",
-}
-
-FULL_ACCESS_ONLY_FEATURE_KEYS = {
-    "cvc_words",
-    "word_families",
-    "cvc_sentences",
-    "cvc_stories",
-    "pronouns",
-    "cvc_worksheets",
-    "cvc_certificate",
-    "level_four",
-    "level_four_full",
-    "level4_foundation",
-    "full_access",
-}
-
-LEVEL_THREE_FEATURE_KEYS = {
-    "cvc_words",
-    "word_families",
-    "cvc_sentences",
-    "cvc_stories",
-    "pronouns",
-    "cvc_worksheets",
-    "cvc_certificate",
-}
-
-LEVEL_FOUR_FEATURE_KEYS = {
-    "level_four",
-    "level_four_full",
-    "level4_foundation",
-}
-
-FULL_ACCESS_FEATURE_KEYS = VIP_FEATURE_KEYS | FULL_ACCESS_ONLY_FEATURE_KEYS
-
-FEATURE_KEYS_BY_PLAN = {
-    PLAN_FREE: set(),
-    PLAN_BASIC: BASIC_FEATURE_KEYS,
-    PLAN_SILVER: SILVER_FEATURE_KEYS,
-    PLAN_VIP: VIP_FEATURE_KEYS,
-    PLAN_DIAMOND: FULL_ACCESS_FEATURE_KEYS,
-    PLAN_FULL_ACCESS: FULL_ACCESS_FEATURE_KEYS,
-    PLAN_LEVEL_THREE: LEVEL_THREE_FEATURE_KEYS,
-    PLAN_LEVEL_FOUR: LEVEL_FOUR_FEATURE_KEYS,
-}
-
 CHECKOUT_PLANS = {
     PLAN_BASIC: {
         "code": PLAN_BASIC,
         "name": "Basic",
         "name_ar": "Basic",
-        "price_sar": Decimal("19.00"),
-        "duration_days": 30,
+        "price_sar": PLAN_CATALOG[PLAN_BASIC]["price"],
+        "duration_days": PLAN_CATALOG[PLAN_BASIC]["duration_days"],
         "description": "المستوى الأول: الحروف الإنجليزية A-Z مع الألعاب الداخلية والتقدم وشهادة المستوى الأول حسب الإنجاز.",
         "features": [
             "المستوى الأول: الحروف الإنجليزية A-Z.",
@@ -355,8 +310,8 @@ CHECKOUT_PLANS = {
         "code": PLAN_SILVER,
         "name": "Silver",
         "name_ar": "Silver",
-        "price_sar": Decimal("27.00"),
-        "duration_days": 30,
+        "price_sar": PLAN_CATALOG[PLAN_SILVER]["price"],
+        "duration_days": PLAN_CATALOG[PLAN_SILVER]["duration_days"],
         "description": "الحروف والصوتيات والنطق مع أوراق عمل قابلة للطباعة والتحميل.",
         "features": [
             "كل مزايا Basic.",
@@ -373,8 +328,8 @@ CHECKOUT_PLANS = {
         "code": PLAN_VIP,
         "name": "VIP",
         "name_ar": "VIP",
-        "price_sar": Decimal("39.00"),
-        "duration_days": 30,
+        "price_sar": PLAN_CATALOG[PLAN_VIP]["price"],
+        "duration_days": PLAN_CATALOG[PLAN_VIP]["duration_days"],
         "description": "الحروف والصوتيات مع الكتاب الكامل وWordwall والعصفور الذكي والتقارير المتقدمة.",
         "features": [
             "كل مزايا Silver.",
@@ -390,8 +345,8 @@ CHECKOUT_PLANS = {
         "code": PLAN_DIAMOND,
         "name": "Diamond",
         "name_ar": "الماسي",
-        "price_sar": Decimal("50.00"),
-        "duration_days": 30,
+        "price_sar": PLAN_CATALOG[PLAN_DIAMOND]["price"],
+        "duration_days": PLAN_CATALOG[PLAN_DIAMOND]["duration_days"],
         "description": "اشتراك واحد يفتح كل الموقع وجميع المستويات والميزات الحالية.",
         "features": [
             "كل مزايا VIP.",
@@ -406,8 +361,8 @@ CHECKOUT_PLANS = {
         "code": PLAN_LEVEL_THREE,
         "name": "Level 3",
         "name_ar": "المستوى الثالث",
-        "price_sar": Decimal("15.00"),
-        "duration_days": 30,
+        "price_sar": PLAN_CATALOG[PLAN_LEVEL_THREE]["price"],
+        "duration_days": PLAN_CATALOG[PLAN_LEVEL_THREE]["duration_days"],
         "description": "قراءة CVC، عائلات الكلمات، الجمل، القصص القصيرة، وأوراق العمل الخاصة بالمستوى الثالث.",
         "features": [
             "CVC Words.",
@@ -422,8 +377,8 @@ CHECKOUT_PLANS = {
         "code": PLAN_LEVEL_FOUR,
         "name": "Level 4",
         "name_ar": "المستوى الرابع",
-        "price_sar": Decimal("15.00"),
-        "duration_days": 30,
+        "price_sar": PLAN_CATALOG[PLAN_LEVEL_FOUR]["price"],
+        "duration_days": PLAN_CATALOG[PLAN_LEVEL_FOUR]["duration_days"],
         "description": "قراءة واستماع وتحدث وكتابة وجمل شائعة ومحادثات ضمن المستوى الرابع.",
         "features": [
             "Reading.",
@@ -450,26 +405,6 @@ def upgrade_message_for_feature(feature_key, fallback_message):
     return fallback_message
 
 
-def _user_group_slugs(user):
-    if not user.is_authenticated:
-        return set()
-
-    cache = get_request_feature_cache(user)
-    if cache is not None and "group_slugs" in cache:
-        return cache["group_slugs"]
-
-    def calculate_group_slugs():
-        return {
-            group.name.strip().lower().replace(" ", "_").replace("-", "_")
-            for group in user.groups.all()
-        }
-
-    group_slugs = get_cached_user_group_slugs(user, calculate_group_slugs)
-    if cache is not None:
-        cache["group_slugs"] = group_slugs
-    return group_slugs
-
-
 def get_active_subscription_plan_codes(user):
     if not user.is_authenticated:
         return set()
@@ -478,18 +413,7 @@ def get_active_subscription_plan_codes(user):
     if cache is not None and "active_plan_codes" in cache:
         return cache["active_plan_codes"]
 
-    def calculate_active_plan_codes():
-        now = timezone.now()
-        return set(
-            UserSubscription.objects.filter(
-                user=user,
-                status=UserSubscription.Status.ACTIVE,
-                starts_at__lte=now,
-                expires_at__gt=now,
-            ).values_list("plan_code", flat=True)
-        )
-
-    active_plan_codes = get_cached_active_plan_codes(user, calculate_active_plan_codes)
+    active_plan_codes = set(get_user_entitlements(user).plan_codes)
     if cache is not None:
         cache["active_plan_codes"] = active_plan_codes
     return active_plan_codes
@@ -503,30 +427,8 @@ def get_subscription_plan(user):
     if cache is not None and "subscription_plan" in cache:
         return cache["subscription_plan"]
 
-    def calculate_subscription_plan():
-        group_slugs = _user_group_slugs(user)
-        active_plan_codes = get_active_subscription_plan_codes(user)
-        profile = get_or_create_student_profile(user)
-
-        plan = PLAN_FREE
-        if (
-            PLAN_DIAMOND in group_slugs
-            or PLAN_DIAMOND in active_plan_codes
-            or "الماسي" in group_slugs
-            or "diamond_plan" in group_slugs
-            or PLAN_FULL_ACCESS in group_slugs
-            or "fullaccess" in group_slugs
-        ):
-            plan = PLAN_DIAMOND
-        elif (profile and profile.is_vip) or PLAN_VIP in group_slugs or PLAN_VIP in active_plan_codes:
-            plan = PLAN_VIP
-        elif PLAN_SILVER in group_slugs or PLAN_SILVER in active_plan_codes:
-            plan = PLAN_SILVER
-        elif (profile and profile.is_premium) or PLAN_BASIC in group_slugs or PLAN_BASIC in active_plan_codes:
-            plan = PLAN_BASIC
-        return plan
-
-    plan = get_cached_subscription_plan(user, calculate_subscription_plan)
+    snapshot = get_user_entitlements(user)
+    plan = snapshot.main_subscription.plan_code if snapshot.main_subscription else PLAN_FREE
     if cache is not None:
         cache["subscription_plan"] = plan
     return plan
@@ -537,13 +439,7 @@ def get_feature_keys(user):
     if cache is not None and "feature_keys" in cache:
         return cache["feature_keys"]
 
-    def calculate_feature_keys():
-        keys = set(FEATURE_KEYS_BY_PLAN.get(get_subscription_plan(user), set()))
-        for plan_code in get_active_subscription_plan_codes(user):
-            keys.update(FEATURE_KEYS_BY_PLAN.get(plan_code, set()))
-        return keys
-
-    feature_keys = get_cached_feature_keys(user, calculate_feature_keys)
+    feature_keys = set(get_user_entitlements(user).entitlements)
     if cache is not None:
         cache["feature_keys"] = feature_keys
     return feature_keys
@@ -1522,6 +1418,8 @@ CURRICULUM_STAGES = [
 # ============================================
 
 @require_POST
+@login_required
+@rate_limit("letter-progress", limit_setting="RATE_LIMIT_WRITE", default=60)
 def save_progress(request):
     """
     Expected JSON: {student, letter, score}
@@ -1531,13 +1429,11 @@ def save_progress(request):
     if error:
         return error
 
-    student_name = (data.get("student") or "").strip()
-    grade = (data.get("grade") or "").strip()[:80]
     letter_raw = data.get("letter")
     score_raw = data.get("score")
 
-    if not student_name or letter_raw is None or score_raw is None:
-        return _json_error("Missing required fields: student, letter, score", 400)
+    if letter_raw is None or score_raw is None:
+        return _json_error("Missing required fields: letter, score", 400)
 
     letter, error = validate_letter(letter_raw)
     if error:
@@ -1556,16 +1452,11 @@ def save_progress(request):
 
     try:
         with transaction.atomic():
-            student, _ = Student.objects.get_or_create(name=student_name)
-            if grade and student.grade != grade:
-                student.grade = grade
-                student.save(update_fields=["grade", "updated_at"])
-
             # enforce previous letter completion
             if letter != "A":
                 prev_letter = chr(ord(letter) - 1)
                 prev_passed = LetterProgress.objects.filter(
-                    student=student,
+                    user=request.user,
                     letter=prev_letter,
                     passed=True
                 ).exists()
@@ -1577,7 +1468,7 @@ def save_progress(request):
                     }, status=400)
 
             lp, created = LetterProgress.objects.get_or_create(
-                student=student,
+                user=request.user,
                 letter=letter,
                 defaults={"score": 0, "passed": False},
             )
@@ -1598,8 +1489,9 @@ def save_progress(request):
             "created": created
         })
 
-    except Exception as e:
-        return _json_error("Database error", 500, details=str(e))
+    except Exception:
+        logger.exception("letter_progress_save_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Database error", 500, request_id=getattr(request, "request_id", ""))
 
 
 @require_POST
@@ -1696,8 +1588,9 @@ def save_letter_progress_api(request):
             "created": created,
             "progress": serialize_letter_progress(progress),
         })
-    except Exception as e:
-        return _json_error("Failed to save letter progress", 500, details=str(e))
+    except Exception:
+        logger.exception("account_letter_progress_save_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Failed to save letter progress", 500, request_id=getattr(request, "request_id", ""))
 
 
 @login_required
@@ -1757,8 +1650,9 @@ def bird_tutor_progress_api(request):
                 "last_used_at": progress.last_used_at.isoformat() if progress.last_used_at else None,
             },
         })
-    except Exception as e:
-        return _json_error("Failed to save bird tutor progress", 500, details=str(e))
+    except Exception:
+        logger.exception("bird_tutor_progress_save_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Failed to save bird tutor progress", 500, request_id=getattr(request, "request_id", ""))
 
 
 @login_required
@@ -1823,8 +1717,9 @@ def bird_tutor_review_api(request):
             ])
 
         return JsonResponse({"status": "ok", "item": serialize_bird_review_item(item)})
-    except Exception as e:
-        return _json_error("Failed to update bird tutor review item", 500, details=str(e))
+    except Exception:
+        logger.exception("bird_review_update_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Failed to update bird tutor review item", 500, request_id=getattr(request, "request_id", ""))
 
 
 # ظ‡ط°ط§ endpoint ط®ط§ط±ط¬ظٹ (ظ„ط§ط­ظ‚ظ‹ط§ ط­ط·ظٹ API KEY)
@@ -1843,16 +1738,20 @@ def speech_check(request):
             "correct": False,
             "message": "This endpoint is a compatibility placeholder. Current pronunciation practice uses browser Web Speech text recognition, not deep server-side audio analysis."
         })
-    except Exception as e:
-        return _json_error("Speech check failed", 500, details=str(e))
+    except Exception:
+        logger.exception("speech_check_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Speech check failed", 500, request_id=getattr(request, "request_id", ""))
 
 
 @require_GET
+@login_required
 def generate_certificate(request, student_id):
     """
     PDF certificate if completed A-Z
     """
     try:
+        if not request.user.is_staff:
+            raise Http404("Certificate not found")
         student = get_object_or_404(Student, id=student_id)
 
         passed_count = LetterProgress.objects.filter(student=student, passed=True).count()
@@ -1882,10 +1781,15 @@ def generate_certificate(request, student_id):
         if pisa_status.err:
             return _json_error("PDF generation failed", 500)
 
+        response["Cache-Control"] = "private, no-store"
+        response["Pragma"] = "no-cache"
         return response
 
-    except Exception as e:
-        return _json_error("Certificate generation failed", 500, details=str(e))
+    except Http404:
+        raise
+    except Exception:
+        logger.exception("certificate_generation_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Certificate generation failed", 500, request_id=getattr(request, "request_id", ""))
 
 
 # ============================================
@@ -1893,39 +1797,55 @@ def generate_certificate(request, student_id):
 # ============================================
 
 
+@sensitive_post_parameters("password1", "password2")
+@never_cache
 @require_http_methods(["GET", "POST"])
+@rate_limit("register", limit_setting="RATE_LIMIT_REGISTER", default=5)
 def register(request):
     if request.user.is_authenticated:
         return redirect("index")
 
     form = StudentRegistrationForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        user = form.save()
+        with transaction.atomic():
+            user = form.save()
         auth_login(request, user)
-        messages.success(request, "طھظ… ط¥ظ†ط´ط§ط، ط§ظ„ط­ط³ط§ط¨ ط¨ظ†ط¬ط§ط­.")
+        messages.success(request, "تم إنشاء الحساب وتسجيل الدخول بنجاح.")
         return redirect("index")
 
     return render(request, "accounts/register.html", {"form": form})
 
 
+@sensitive_post_parameters("password")
+@never_cache
 @require_http_methods(["GET", "POST"])
+@rate_limit("login-ip", limit_setting="RATE_LIMIT_LOGIN", default=10)
+@rate_limit("login-account", limit_setting="RATE_LIMIT_LOGIN", default=10, identity=login_identity)
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("index")
 
-    form = AuthenticationForm(request, data=request.POST or None)
+    form = SecureAuthenticationForm(request, data=request.POST or None)
     if request.method == "POST" and form.is_valid():
         auth_login(request, form.get_user())
-        messages.success(request, "طھظ… طھط³ط¬ظٹظ„ ط§ظ„ط¯ط®ظˆظ„ ط¨ظ†ط¬ط§ط­.")
-        return redirect(request.GET.get("next") or "index")
+        messages.success(request, "تم تسجيل الدخول بنجاح.")
+        next_url = request.GET.get("next") or ""
+        if url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=not settings.DEBUG,
+        ):
+            return redirect(next_url)
+        return redirect("index")
 
     return render(request, "accounts/login.html", {"form": form})
 
 
-@require_GET
+@login_required
+@require_POST
 def logout_view(request):
     auth_logout(request)
-    messages.success(request, "طھظ… طھط³ط¬ظٹظ„ ط§ظ„ط®ط±ظˆط¬.")
+    messages.success(request, "تم تسجيل الخروج.")
     return redirect("index")
 
 
@@ -2289,6 +2209,460 @@ def letters_worksheets_book(request):
     })
 
 
+def draw_centered_text(pdf, x, y, text, font="Helvetica-Bold", size=18, color=colors.black):
+    pdf.setFillColor(color)
+    pdf.setFont(font, size)
+    pdf.drawCentredString(x, y, str(text))
+
+
+def letters_book_emoji_font_path():
+    candidates = [
+        Path("C:/Windows/Fonts/seguiemj.ttf"),
+        Path("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"),
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    return None
+
+
+@lru_cache(maxsize=128)
+def letters_book_emoji_image(emoji):
+    emoji = str(emoji or "").strip()
+    if not emoji:
+        return None
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except Exception:
+        return None
+
+    font_path = letters_book_emoji_font_path()
+    if not font_path:
+        return None
+
+    try:
+        image = Image.new("RGBA", (120, 120), (255, 255, 255, 0))
+        draw = ImageDraw.Draw(image)
+        font = ImageFont.truetype(str(font_path), 72)
+        bbox = draw.textbbox((0, 0), emoji, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        x = (120 - text_width) / 2 - bbox[0]
+        y = (120 - text_height) / 2 - bbox[1] - 2
+        draw.text((x, y), emoji, font=font, fill=(30, 41, 59, 255))
+        output = BytesIO()
+        image.save(output, format="PNG")
+        output.seek(0)
+        return ImageReader(output)
+    except Exception:
+        return None
+
+
+def draw_letters_book_pdf(letters):
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    blue = colors.HexColor("#4361ee")
+    pink = colors.HexColor("#f72585")
+    slate = colors.HexColor("#1e293b")
+    muted = colors.HexColor("#64748b")
+    line = colors.HexColor("#cbd5e1")
+    soft_blue = colors.HexColor("#f0f9ff")
+    soft_pink = colors.HexColor("#fff0f5")
+    soft_gray = colors.HexColor("#f8fafc")
+
+    def header(letter):
+        pdf.setStrokeColor(blue)
+        pdf.setLineWidth(2)
+        pdf.roundRect(10 * mm, 10 * mm, width - 20 * mm, height - 20 * mm, 10 * mm, stroke=1, fill=0)
+        pdf.setFillColor(blue)
+        pdf.circle(28 * mm, height - 27 * mm, 9 * mm, stroke=0, fill=1)
+        draw_centered_text(pdf, 28 * mm, height - 30 * mm, letter, size=24, color=colors.white)
+        pdf.setFillColor(slate)
+        pdf.setFont("Helvetica-Bold", 22)
+        pdf.drawString(42 * mm, height - 25 * mm, f"Letter {letter} Worksheet")
+        pdf.setFillColor(muted)
+        pdf.setFont("Helvetica", 11)
+        pdf.drawString(42 * mm, height - 31 * mm, f"Learn the letter {letter}")
+        pdf.setStrokeColor(line)
+        pdf.line(16 * mm, height - 39 * mm, width - 16 * mm, height - 39 * mm)
+        pdf.setFont("Helvetica", 10)
+        pdf.setFillColor(slate)
+        pdf.drawRightString(width - 16 * mm, height - 25 * mm, "Name: ____________________")
+        pdf.drawRightString(width - 16 * mm, height - 32 * mm, "Date: ____________________")
+
+    def draw_picture_box(x, y, word, size=23 * mm):
+        pdf.setStrokeColor(line)
+        pdf.setFillColor(colors.white)
+        pdf.roundRect(x, y, size, size, 6 * mm, stroke=1, fill=1)
+        image = letters_book_emoji_image(word.get("emoji"))
+        if image:
+            pdf.drawImage(
+                image,
+                x + 4 * mm,
+                y + 4 * mm,
+                width=size - 8 * mm,
+                height=size - 8 * mm,
+                mask="auto",
+                preserveAspectRatio=True,
+                anchor="c",
+            )
+        else:
+            pdf.setFillColor(blue)
+            pdf.circle(x + size / 2, y + size / 2, size / 3, stroke=0, fill=1)
+            draw_centered_text(
+                pdf,
+                x + size / 2,
+                y + size / 2 - 4,
+                str(word.get("word") or "?")[:1].upper(),
+                size=18,
+                color=colors.white,
+            )
+
+    def draw_word_box(x, y, word):
+        pdf.setStrokeColor(line)
+        pdf.setFillColor(soft_gray)
+        pdf.roundRect(x, y, 74 * mm, 13 * mm, 4 * mm, stroke=1, fill=1)
+        image = letters_book_emoji_image(word.get("emoji"))
+        if image:
+            pdf.drawImage(image, x + 3 * mm, y + 3 * mm, width=7 * mm, height=7 * mm, mask="auto")
+            word_x = x + 13 * mm
+        else:
+            word_x = x + 5 * mm
+        pdf.setFillColor(slate)
+        pdf.setFont("Helvetica-Bold", 16)
+        pdf.drawString(word_x, y + 4 * mm, str(word.get("word") or "").lower())
+        pdf.setFillColor(colors.HexColor("#94a3b8"))
+        pdf.setFont("Helvetica", 16)
+        pdf.drawRightString(x + 69 * mm, y + 4 * mm, "________")
+
+    # Cover
+    pdf.setFillColor(colors.white)
+    pdf.rect(0, 0, width, height, stroke=0, fill=1)
+    pdf.setFillColor(blue)
+    pdf.roundRect(width / 2 - 22 * mm, height - 78 * mm, 44 * mm, 44 * mm, 8 * mm, stroke=0, fill=1)
+    draw_centered_text(pdf, width / 2, height - 61 * mm, "PGL", size=30, color=colors.white)
+    draw_centered_text(pdf, width / 2, height - 95 * mm, "Phonics Game Lab", size=18, color=blue)
+    draw_centered_text(pdf, width / 2, height - 118 * mm, "English Letters Worksheets Book", size=28, color=slate)
+    draw_centered_text(pdf, width / 2, height - 135 * mm, "A-Z printable phonics workbook", font="Helvetica", size=18, color=muted)
+    pdf.setFillColor(slate)
+    pdf.setFont("Helvetica", 16)
+    pdf.drawString(28 * mm, height - 180 * mm, "Student name: ______________________________")
+    pdf.drawString(28 * mm, height - 194 * mm, "Class: _____________________________________")
+    pdf.drawString(28 * mm, height - 208 * mm, "Date: ______________________________________")
+    pdf.showPage()
+
+    for item in letters:
+        letter = item["letter"]
+        lower = item["lower"]
+        words = item.get("words") or []
+        first = words[0] if words else {"word": lower, "emoji": ""}
+        first_word = first["word"] if words else lower
+
+        header(letter)
+
+        y = height - 52 * mm
+        pdf.setStrokeColor(line)
+        pdf.setFillColor(soft_gray)
+        pdf.roundRect(16 * mm, y - 38 * mm, 82 * mm, 38 * mm, 6 * mm, stroke=1, fill=1)
+        pdf.setFillColor(pink)
+        pdf.setFont("Helvetica-Bold", 12)
+        pdf.drawString(22 * mm, y - 9 * mm, "Color:")
+        draw_centered_text(pdf, 57 * mm, y - 31 * mm, f"{letter}  {lower}", size=54, color=slate)
+
+        pdf.setFillColor(soft_blue)
+        pdf.roundRect(106 * mm, y - 38 * mm, 88 * mm, 38 * mm, 6 * mm, stroke=1, fill=1)
+        draw_picture_box(112 * mm, y - 32 * mm, first, size=24 * mm)
+        draw_centered_text(pdf, 157 * mm, y - 17 * mm, first_word.upper(), font="Helvetica-Bold", size=27, color=colors.HexColor("#0284c7"))
+        draw_centered_text(pdf, 157 * mm, y - 29 * mm, f"{first_word.lower()} starts with {letter}", font="Helvetica", size=10, color=colors.HexColor("#0284c7"))
+
+        y -= 50 * mm
+        pdf.setStrokeColor(line)
+        pdf.setFillColor(colors.white)
+        pdf.roundRect(16 * mm, y - 50 * mm, width - 32 * mm, 50 * mm, 6 * mm, stroke=1, fill=1)
+        pdf.setFillColor(pink)
+        pdf.setFont("Helvetica-Bold", 13)
+        pdf.drawString(22 * mm, y - 9 * mm, "Trace and Write:")
+        trace_rows = [
+            (letter, "   ".join([letter] * 7)),
+            (lower, "   ".join([lower] * 7)),
+            (f"{letter}{lower}", "   ".join([f"{letter}{lower}"] * 6)),
+        ]
+        row_y = y - 20 * mm
+        for label, trace in trace_rows:
+            pdf.setStrokeColor(colors.HexColor("#94a3b8"))
+            pdf.line(28 * mm, row_y - 2 * mm, width - 24 * mm, row_y - 2 * mm)
+            pdf.setFillColor(slate)
+            pdf.setFont("Helvetica-Bold", 24)
+            pdf.drawString(23 * mm, row_y, label)
+            pdf.setFillColor(colors.HexColor("#cbd5e1"))
+            pdf.setFont("Courier", 24)
+            pdf.drawString(50 * mm, row_y, trace)
+            row_y -= 12 * mm
+
+        y -= 61 * mm
+        pdf.setFillColor(pink)
+        pdf.setFont("Helvetica-Bold", 13)
+        pdf.drawString(16 * mm, y, "Trace the Words:")
+        word_y = y - 18 * mm
+        for index, word in enumerate(words[:5]):
+            x = 16 * mm if index % 2 == 0 else 106 * mm
+            if index and index % 2 == 0:
+                word_y -= 17 * mm
+            draw_word_box(x, word_y, word)
+
+        y = 62 * mm
+        pdf.setStrokeColor(line)
+        pdf.setFillColor(soft_pink)
+        pdf.roundRect(16 * mm, y - 38 * mm, width - 32 * mm, 38 * mm, 6 * mm, stroke=1, fill=1)
+        pdf.setFillColor(colors.HexColor("#db2777"))
+        pdf.setFont("Helvetica-Bold", 13)
+        pdf.drawString(22 * mm, y - 10 * mm, f"Find and Circle the letter '{letter}':")
+        cloud = [letter, "B", letter, "D", lower, "m", letter, "s", lower, "T", "R", letter, "n", lower]
+        pdf.setFillColor(colors.HexColor("#475569"))
+        pdf.setFont("Helvetica-Bold", 18)
+        pdf.drawCentredString(width / 2, y - 26 * mm, "   ".join(cloud))
+
+        pdf.setFillColor(colors.HexColor("#94a3b8"))
+        pdf.setFont("Helvetica", 9)
+        pdf.drawCentredString(width / 2, 14 * mm, "Great Job! - Phonics Game Lab")
+        pdf.showPage()
+
+    pdf.save()
+    return buffer.getvalue()
+
+
+def docx_escape(value):
+    return escape(str(value or ""), {'"': "&quot;"})
+
+
+def docx_run(text, *, bold=False, size=22, color=None):
+    props = [
+        '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>',
+        f'<w:sz w:val="{int(size)}"/>',
+        f'<w:szCs w:val="{int(size)}"/>',
+    ]
+    if bold:
+        props.append("<w:b/>")
+    if color:
+        props.append(f'<w:color w:val="{color}"/>')
+    return (
+        "<w:r><w:rPr>"
+        + "".join(props)
+        + f'</w:rPr><w:t xml:space="preserve">{docx_escape(text)}</w:t></w:r>'
+    )
+
+
+def docx_paragraph(text="", *, bold=False, size=22, color=None, align=None):
+    paragraph_props = f'<w:pPr><w:jc w:val="{align}"/></w:pPr>' if align else ""
+    return f"<w:p>{paragraph_props}{docx_run(text, bold=bold, size=size, color=color)}</w:p>"
+
+
+def docx_page_break():
+    return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
+
+
+def docx_cell(content, *, width=4500, shade=None, valign="center"):
+    shade_xml = f'<w:shd w:fill="{shade}"/>' if shade else ""
+    return (
+        "<w:tc>"
+        f'<w:tcPr><w:tcW w:w="{width}" w:type="dxa"/><w:vAlign w:val="{valign}"/>{shade_xml}</w:tcPr>'
+        f"{content}"
+        "</w:tc>"
+    )
+
+
+def docx_table(rows, *, border_color="CBD5E1"):
+    borders = "".join(
+        f'<w:{edge} w:val="single" w:sz="8" w:space="0" w:color="{border_color}"/>'
+        for edge in ["top", "left", "bottom", "right", "insideH", "insideV"]
+    )
+    row_xml = []
+    for row in rows:
+        row_xml.append("<w:tr>" + "".join(row) + "</w:tr>")
+    return (
+        "<w:tbl>"
+        f'<w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders>{borders}</w:tblBorders>'
+        '<w:tblCellMar><w:top w:w="120" w:type="dxa"/><w:left w:w="160" w:type="dxa"/>'
+        '<w:bottom w:w="120" w:type="dxa"/><w:right w:w="160" w:type="dxa"/></w:tblCellMar></w:tblPr>'
+        + "".join(row_xml)
+        + "</w:tbl>"
+    )
+
+
+def build_letters_book_docx(letters):
+    body = []
+    body.append(docx_paragraph("PGL", bold=True, size=64, color="4361EE", align="center"))
+    body.append(docx_paragraph("Phonics Game Lab", bold=True, size=32, color="2563EB", align="center"))
+    body.append(docx_paragraph("English Letters Worksheets Book", bold=True, size=44, color="111827", align="center"))
+    body.append(docx_paragraph("A-Z printable phonics workbook", bold=True, size=28, color="64748B", align="center"))
+    body.append(docx_paragraph(""))
+    body.append(docx_paragraph("Student name: ______________________________", size=26))
+    body.append(docx_paragraph("Class: _____________________________________", size=26))
+    body.append(docx_paragraph("Date: ______________________________________", size=26))
+    body.append(docx_page_break())
+
+    for index, item in enumerate(letters):
+        letter = item["letter"]
+        lower = item["lower"]
+        words = item.get("words") or []
+        first = words[0] if words else {"word": lower, "emoji": ""}
+        first_word = str(first.get("word") or lower).lower()
+
+        body.append(docx_table([
+            [
+                docx_cell(docx_paragraph(letter, bold=True, size=34, color="FFFFFF", align="center"), width=900, shade="4361EE"),
+                docx_cell(
+                    docx_paragraph(f"Letter {letter} Worksheet", bold=True, size=30, color="111827")
+                    + docx_paragraph(f"Learn the letter {letter}", size=18, color="64748B"),
+                    width=5600,
+                ),
+                docx_cell(
+                    docx_paragraph("Name: ____________________", size=16)
+                    + docx_paragraph("Date: ____________________", size=16),
+                    width=3000,
+                ),
+            ],
+        ]))
+        body.append(docx_paragraph(""))
+
+        body.append(docx_table([
+            [
+                docx_cell(
+                    docx_paragraph("Color:", bold=True, size=18, color="F72585")
+                    + docx_paragraph(f"{letter}  {lower}", bold=True, size=70, color="111827", align="center"),
+                    width=4600,
+                    shade="F8FAFC",
+                ),
+                docx_cell(
+                    docx_paragraph(str(first.get("emoji") or ""), size=42, align="center")
+                    + docx_paragraph(first_word.upper(), bold=True, size=42, color="0284C7", align="center")
+                    + docx_paragraph(f"{first_word} starts with {letter}", size=18, color="0284C7", align="center"),
+                    width=4600,
+                    shade="F0F9FF",
+                ),
+            ],
+        ]))
+        body.append(docx_paragraph(""))
+
+        trace_rows = [
+            (letter, "    ".join([letter] * 7)),
+            (lower, "    ".join([lower] * 7)),
+            (f"{letter}{lower}", "    ".join([f"{letter}{lower}"] * 5)),
+        ]
+        body.append(docx_paragraph("Trace and Write:", bold=True, size=20, color="F72585"))
+        body.append(docx_table([
+            [
+                docx_cell(docx_paragraph(label, bold=True, size=30), width=900),
+                docx_cell(docx_paragraph(trace, size=28, color="CBD5E1"), width=8200),
+            ]
+            for label, trace in trace_rows
+        ]))
+        body.append(docx_paragraph(""))
+
+        body.append(docx_paragraph("Trace the Words:", bold=True, size=20, color="F72585"))
+        word_rows = []
+        for word_index in range(0, len(words[:5]), 2):
+            row = []
+            for word in words[word_index:word_index + 2]:
+                label = f'{word.get("emoji") or ""}  {str(word.get("word") or "").lower()}      __________'
+                row.append(docx_cell(docx_paragraph(label, bold=True, size=22), width=4600, shade="F8FAFC"))
+            if len(row) == 1:
+                row.append(docx_cell(docx_paragraph(""), width=4600, shade="F8FAFC"))
+            word_rows.append(row)
+        body.append(docx_table(word_rows))
+        body.append(docx_paragraph(""))
+
+        cloud = "   ".join([letter, "B", letter, "D", lower, "m", letter, "s", lower, "T", "R", letter, "n", lower])
+        body.append(docx_table([
+            [
+                docx_cell(
+                    docx_paragraph(f"Find and Circle the letter '{letter}':", bold=True, size=20, color="F72585")
+                    + docx_paragraph(cloud, bold=True, size=28, color="475569", align="center"),
+                    width=9200,
+                    shade="FFF0F5",
+                )
+            ],
+        ]))
+        body.append(docx_paragraph("Great Job! - Phonics Game Lab", size=16, color="94A3B8", align="center"))
+        if index < len(letters) - 1:
+            body.append(docx_page_break())
+
+    document_xml = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    {''.join(body)}
+    <w:sectPr>
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/>
+      <w:pgBorders w:offsetFrom="page">
+        <w:top w:val="single" w:sz="18" w:space="18" w:color="4361EE"/>
+        <w:left w:val="single" w:sz="18" w:space="18" w:color="4361EE"/>
+        <w:bottom w:val="single" w:sz="18" w:space="18" w:color="4361EE"/>
+        <w:right w:val="single" w:sz="18" w:space="18" w:color="4361EE"/>
+      </w:pgBorders>
+    </w:sectPr>
+  </w:body>
+</w:document>"""
+
+    styles_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+    <w:name w:val="Normal"/>
+    <w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:sz w:val="22"/></w:rPr>
+  </w:style>
+</w:styles>"""
+
+    buffer = BytesIO()
+    with ZipFile(buffer, "w", ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>""")
+        archive.writestr("_rels/.rels", """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>""")
+        archive.writestr("word/_rels/document.xml.rels", """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>""")
+        archive.writestr("word/document.xml", document_xml)
+        archive.writestr("word/styles.xml", styles_xml)
+    return buffer.getvalue()
+
+
+@ensure_csrf_cookie
+@require_GET
+def letters_worksheets_book_pdf(request):
+    blocked = require_feature(request, "book_download_level1", UPGRADE_VIP_OR_FULL_MESSAGE)
+    if blocked:
+        return blocked
+
+    pdf_bytes = draw_letters_book_pdf(letter_worksheet_book_items())
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="english_letters_worksheets_book.pdf"'
+    return response
+
+
+@ensure_csrf_cookie
+@require_GET
+def letters_worksheets_book_word(request):
+    blocked = require_feature(request, "book_download_level1", UPGRADE_VIP_OR_FULL_MESSAGE)
+    if blocked:
+        return blocked
+
+    docx_bytes = build_letters_book_docx(letter_worksheet_book_items())
+    response = HttpResponse(
+        docx_bytes,
+        content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
+    response["Content-Disposition"] = 'attachment; filename="english_letters_worksheets_book.docx"'
+    return response
+
+
 @ensure_csrf_cookie
 @require_GET
 def games_view(request):
@@ -2479,6 +2853,8 @@ def common_sentences_worksheet(request):
 @login_required
 @require_GET
 def profile_dashboard(request):
+    synchronize_user_subscription_compatibility(request.user)
+    subscription_summary = subscription_dashboard_context(request.user)
     profile = get_or_create_student_profile(request.user)
     profile.is_vip = has_feature(request.user, "parent_report_detailed")
     bird_progress = getattr(request.user, "bird_tutor_progress", None)
@@ -2550,6 +2926,25 @@ def profile_dashboard(request):
     english_foundation_points = sum(section["points"] for section in english_foundation_sections)
     english_foundation_completed = len([section for section in english_foundation_sections if section["completed"]])
 
+    payment_orders = list(PaymentOrder.objects.filter(user=request.user).order_by("-created_at")[:20])
+    checkout_cutoff = timezone.now() - timedelta(
+        minutes=getattr(settings, "MOYASAR_ORDER_REUSE_MINUTES", 30)
+    )
+    for payment_order in payment_orders:
+        payment_order.reopen_checkout_url = ""
+        if (
+            payment_order.provider == PaymentOrder.Provider.MOYASAR
+            and payment_order.status == PaymentOrder.Status.INITIATED
+            and payment_order.created_at >= checkout_cutoff
+            and payment_order.checkout_url
+        ):
+            try:
+                payment_order.reopen_checkout_url = validate_moyasar_checkout_url(
+                    payment_order.checkout_url
+                )
+            except MoyasarInvalidResponseError:
+                pass
+
     return render(request, "accounts/profile_dashboard.html", {
         "profile": profile,
         "bird_progress": bird_progress,
@@ -2604,6 +2999,8 @@ def profile_dashboard(request):
         "average_letter_score": round(average_score or 0),
         "recent_completed_letters": recent_completed_letters,
         "has_letter_progress": letter_progress_qs.exists(),
+        "payment_orders": payment_orders,
+        "subscription_summary": subscription_summary,
     })
 
 
@@ -4723,7 +5120,7 @@ PAYMENT_METHODS = {
 
 
 def get_checkout_plan_or_404(plan_code):
-    normalized_code = (plan_code or "").strip().lower().replace("-", "_")
+    normalized_code = normalize_plan_code(plan_code)
     plan = CHECKOUT_PLANS.get(normalized_code)
     if not plan:
         raise Http404("Subscription plan not found.")
@@ -4752,35 +5149,302 @@ def moyasar_context():
         "publishable_key_configured": bool(publishable_key),
         "secret_key_configured": bool(getattr(settings, "MOYASAR_SECRET_KEY", "")),
         "callback_url_configured": bool(getattr(settings, "MOYASAR_CALLBACK_URL", "")),
+        "environment": getattr(settings, "MOYASAR_ENVIRONMENT", "test"),
     }
 
 
-def create_payment_order_for_plan(user, plan, method_slug):
+def create_payment_order_for_plan(user, plan, method_slug, *, quote=None):
     method_config = PAYMENT_METHODS.get(method_slug)
     if not method_config:
         raise Http404("Payment method not found.")
+    quote = quote or quote_plan_purchase(user, plan["code"])
 
-    order = PaymentOrder.objects.create(
+    order = PaymentOrder(
         user=user,
         plan_code=plan["code"],
         plan_name=plan["name_ar"],
         duration_days=plan["duration_days"],
-        amount_halalas=plan_amount_halalas(plan),
-        amount_sar=plan["price_sar"],
+        operation_type=quote.operation_type,
+        from_plan_code=quote.from_plan_code,
+        to_plan_code=quote.target_plan_code,
+        original_price=quote.original_price,
+        target_price=quote.target_price,
+        amount_due=quote.amount_due,
+        current_expires_at=quote.current_expires_at,
+        amount_halalas=int((quote.amount_due * Decimal("100")).to_integral_value()),
+        amount_sar=quote.amount_due,
         currency="SAR",
         status=method_config["status"],
         method=method_config["method"],
         provider=method_config["provider"],
+        payment_environment=(
+            getattr(settings, "MOYASAR_ENVIRONMENT", PaymentOrder.Environment.TEST)
+            if method_config["provider"] == PaymentOrder.Provider.MOYASAR
+            else PaymentOrder.Environment.TEST
+        ),
         provider_status="created_locally",
         metadata={
+            "schema_version": 2,
             "user_id": user.id,
             "plan_code": plan["code"],
             "method": method_slug,
+            "operation_type": quote.operation_type,
         },
     )
-    order.metadata = {**order.metadata, "payment_order_id": order.id}
+    order.full_clean()
+    order.save()
+    order.metadata = {
+        **order.metadata,
+        "payment_order_id": order.id,
+        "quote_reference": str(order.idempotency_key),
+    }
     order.save(update_fields=["metadata", "updated_at"])
     return order
+
+
+def _moyasar_checkout_urls(request, order, plan):
+    success_url = request.build_absolute_uri(
+        f"{reverse('moyasar_callback')}?order={order.id}"
+    )
+    back_url = request.build_absolute_uri(reverse("checkout", args=[plan["code"]]))
+    callback_url = getattr(settings, "MOYASAR_CALLBACK_URL", "").strip()
+    return success_url, back_url, callback_url
+
+
+def _record_moyasar_failure(order_id, creation_token, exc):
+    if isinstance(exc, MoyasarConfigurationError):
+        failure_code = "configuration_error"
+    elif isinstance(exc, MoyasarNetworkError):
+        failure_code = "network_error"
+    elif isinstance(exc, MoyasarAPIError):
+        failure_code = f"api_{exc.status_code}"
+    else:
+        failure_code = "invalid_provider_response"
+    ambiguous = isinstance(exc, (MoyasarNetworkError, MoyasarInvalidResponseError))
+    if isinstance(exc, MoyasarAPIError) and exc.status_code >= 500:
+        ambiguous = True
+    configuration_error = isinstance(exc, MoyasarConfigurationError)
+    retryable = False
+    if isinstance(exc, MoyasarAPIError) and exc.status_code == 429:
+        retryable = True
+
+    with transaction.atomic():
+        order = PaymentOrder.objects.select_for_update().get(pk=order_id)
+        if order.invoice_creation_token != creation_token or order.status != PaymentOrder.Status.CREATING_INVOICE:
+            return order, "redirect" if order.moyasar_invoice_id and order.checkout_url else "pending"
+        if ambiguous:
+            order.status = PaymentOrder.Status.INVOICE_CREATION_UNKNOWN
+            outcome = "unknown"
+        elif configuration_error or retryable:
+            order.status = PaymentOrder.Status.PENDING
+            order.invoice_creation_token = None
+            outcome = "error" if configuration_error else "pending"
+        else:
+            order.status = PaymentOrder.Status.FAILED
+            order.invoice_creation_token = None
+            order.failed_at = timezone.now()
+            outcome = "error"
+        order.provider_status = failure_code
+        order.failure_code = failure_code
+        order.failure_message = (
+            "جاري التحقق من عملية الدفع."
+            if ambiguous else "تعذر فتح صفحة الدفع حاليًا. حاول مرة أخرى."
+        )
+        order.save(update_fields=[
+            "status", "invoice_creation_token", "provider_status", "failure_code",
+            "failure_message", "failed_at", "updated_at",
+        ])
+    payment_logger.warning(
+        "moyasar_invoice_start_failed payment_order_id=%s error_type=%s status_code=%s provider_request_id=%s",
+        order_id,
+        type(exc).__name__,
+        getattr(exc, "status_code", "none"),
+        getattr(exc, "request_id", "") or "missing",
+    )
+    return order, outcome
+
+
+def start_moyasar_invoice_checkout(request, plan, method_slug):
+    now = timezone.now()
+    cutoff = now - timedelta(
+        minutes=max(1, int(getattr(settings, "MOYASAR_ORDER_REUSE_MINUTES", 30)))
+    )
+    unknown_retry_cutoff = now - timedelta(
+        minutes=max(1, int(getattr(settings, "MOYASAR_UNKNOWN_RETRY_MINUTES", 30)))
+    )
+    stale_creation_cutoff = now - timedelta(
+        minutes=max(1, int(getattr(settings, "MOYASAR_INVOICE_CREATION_STALE_MINUTES", 5)))
+    )
+
+    # Phase one: short DB transaction. The user lock is only used to serialize the
+    # no-existing-order case; no provider call occurs while this lock is held.
+    with transaction.atomic():
+        from django.contrib.auth import get_user_model
+        get_user_model().objects.select_for_update().get(pk=request.user.pk)
+        quote = quote_plan_purchase(request.user, plan["code"], now=now, lock=True)
+        review_order = (
+            PaymentOrder.objects.select_for_update()
+            .filter(
+                user=request.user,
+                status=PaymentOrder.Status.PAID_REQUIRES_REVIEW,
+            )
+            .filter(Q(to_plan_code=plan["code"]) | Q(to_plan_code="", plan_code=plan["code"]))
+            .order_by("-created_at")
+            .first()
+        )
+        if review_order:
+            return review_order, "pending"
+        quoted_halalas = int((quote.amount_due * Decimal("100")).to_integral_value())
+        recent_orders = list(
+            PaymentOrder.objects.select_for_update()
+            .filter(
+                Q(to_plan_code=quote.target_plan_code) | Q(to_plan_code="", plan_code=plan["code"]),
+                user=request.user,
+                plan_code=plan["code"],
+                operation_type=quote.operation_type,
+                amount_halalas=quoted_halalas,
+                currency="SAR",
+                method=PAYMENT_METHODS[method_slug]["method"],
+                provider=PaymentOrder.Provider.MOYASAR,
+                created_at__gte=cutoff,
+            )
+            .order_by("-created_at")
+        )
+
+        paid_order = next((o for o in recent_orders if o.status == PaymentOrder.Status.PAID), None)
+        if paid_order:
+            return paid_order, "paid"
+
+        for existing in recent_orders:
+            if (
+                existing.status == PaymentOrder.Status.INITIATED
+                and existing.moyasar_invoice_id
+                and existing.checkout_url
+            ):
+                try:
+                    validate_moyasar_checkout_url(existing.checkout_url)
+                    return existing, "redirect"
+                except MoyasarInvalidResponseError:
+                    existing.status = PaymentOrder.Status.FAILED
+                    existing.provider_status = "unsafe_saved_checkout_url"
+                    existing.failure_code = "unsafe_checkout_url"
+                    existing.failure_message = "تعذر فتح صفحة الدفع حاليًا. حاول مرة أخرى."
+                    existing.failed_at = timezone.now()
+                    existing.save(update_fields=[
+                        "status", "provider_status", "failure_code", "failure_message", "failed_at", "updated_at"
+                    ])
+
+        unknown_order = next(
+            (o for o in recent_orders if o.status == PaymentOrder.Status.INVOICE_CREATION_UNKNOWN),
+            None,
+        )
+        if unknown_order:
+            if unknown_order.invoice_creation_started_at and unknown_order.invoice_creation_started_at > unknown_retry_cutoff:
+                return unknown_order, "unknown"
+            # No documented remote invoice idempotency exists. Retry only after the
+            # configured waiting period and keep the same local PaymentOrder.
+            unknown_order.status = PaymentOrder.Status.PENDING
+            unknown_order.invoice_creation_token = None
+            unknown_order.save(update_fields=["status", "invoice_creation_token", "updated_at"])
+
+        creating_order = next(
+            (o for o in recent_orders if o.status == PaymentOrder.Status.CREATING_INVOICE),
+            None,
+        )
+        if creating_order:
+            if (
+                creating_order.invoice_creation_started_at
+                and creating_order.invoice_creation_started_at <= stale_creation_cutoff
+            ):
+                creating_order.status = PaymentOrder.Status.INVOICE_CREATION_UNKNOWN
+                creating_order.provider_status = "invoice_creation_stale"
+                creating_order.failure_code = "invoice_creation_stale"
+                creating_order.failure_message = "جاري التحقق من عملية الدفع."
+                creating_order.save(update_fields=[
+                    "status", "provider_status", "failure_code", "failure_message", "updated_at"
+                ])
+                return creating_order, "unknown"
+            return creating_order, "pending"
+
+        order = next(
+            (
+                o for o in recent_orders
+                if o.status == PaymentOrder.Status.PENDING and not o.moyasar_invoice_id
+            ),
+            None,
+        )
+        if order is None:
+            order = create_payment_order_for_plan(request.user, plan, method_slug, quote=quote)
+        creation_token = uuid.uuid4()
+        order.status = PaymentOrder.Status.CREATING_INVOICE
+        order.provider_status = "creating_invoice"
+        order.invoice_creation_token = creation_token
+        order.invoice_creation_started_at = now
+        order.failure_code = None
+        order.failure_message = None
+        order.save(update_fields=[
+            "status", "provider_status", "invoice_creation_token", "invoice_creation_started_at",
+            "failure_code", "failure_message", "updated_at",
+        ])
+
+    # External call: deliberately outside every transaction and row lock.
+    try:
+        if not getattr(settings, "MOYASAR_ENABLED", False):
+            raise MoyasarConfigurationError("Moyasar payment is not enabled.")
+        success_url, back_url, callback_url = _moyasar_checkout_urls(request, order, plan)
+        invoice = create_moyasar_invoice(
+            payment_order_id=order.id,
+            user_id=request.user.id,
+            plan_code=order.to_plan_code or order.plan_code,
+            operation_type=order.operation_type,
+            quote_reference=str(order.idempotency_key),
+            amount_sar=order.amount_sar,
+            amount_halalas=order.amount_halalas,
+            currency=order.currency,
+            description=f"ABCZ {order.plan_name} subscription - {order.reference}",
+            success_url=success_url,
+            back_url=back_url,
+            callback_url=callback_url,
+        )
+    except (MoyasarConfigurationError, MoyasarNetworkError, MoyasarAPIError, MoyasarInvalidResponseError, ValueError) as exc:
+        return _record_moyasar_failure(order.id, creation_token, exc)
+
+    # Phase two: short transaction that only commits the result for this attempt.
+    try:
+        with transaction.atomic():
+            locked = PaymentOrder.objects.select_for_update().get(pk=order.id)
+            if locked.invoice_creation_token != creation_token or locked.status != PaymentOrder.Status.CREATING_INVOICE:
+                if locked.moyasar_invoice_id and locked.checkout_url:
+                    return locked, "redirect"
+                return locked, "pending"
+            locked.moyasar_invoice_id = invoice.invoice_id
+            locked.checkout_url = invoice.checkout_url
+            locked.payment_environment = PaymentOrder.Environment.TEST
+            locked.provider = PaymentOrder.Provider.MOYASAR
+            locked.status = PaymentOrder.Status.INITIATED
+            locked.provider_status = invoice.status or "initiated"
+            locked.failure_code = None
+            locked.failure_message = None
+            locked.failed_at = None
+            locked.invoice_creation_token = None
+            locked.full_clean()
+            locked.save(update_fields=[
+                "moyasar_invoice_id", "checkout_url", "payment_environment", "provider", "status",
+                "provider_status", "failure_code", "failure_message", "failed_at",
+                "invoice_creation_token", "updated_at",
+            ])
+    except (ValidationError, IntegrityError) as exc:
+        payment_logger.warning(
+            "moyasar_invoice_storage_rejected payment_order_id=%s error_type=%s",
+            order.id,
+            type(exc).__name__,
+        )
+        return _record_moyasar_failure(
+            order.id,
+            creation_token,
+            MoyasarInvalidResponseError("Moyasar invoice could not be stored safely."),
+        )
+    return locked, "redirect"
 
 
 def flatten_validation_errors(error):
@@ -4797,15 +5461,21 @@ def get_owned_payment_order_or_404(request, order_id):
 
 
 def readable_payment_status_text(order, status_type):
-    if status_type == "success":
+    if order and order.status in {PaymentOrder.Status.PAID, PaymentOrder.Status.BANK_APPROVED}:
         return (
             "تم الدفع بنجاح",
             "تم تفعيل الاشتراك إذا كانت حالة الدفع مؤكدة من مزود الدفع.",
         )
-    if status_type == "failed":
+    if order and order.status in {PaymentOrder.Status.FAILED, PaymentOrder.Status.BANK_REJECTED}:
         return (
             "لم تكتمل عملية الدفع",
             "يمكنك المحاولة مرة أخرى أو اختيار طريقة دفع أخرى.",
+        )
+
+    if order and order.status == PaymentOrder.Status.CANCELED:
+        return (
+            "تم إلغاء عملية الدفع",
+            "لم يتم تنفيذ الدفع أو تفعيل الاشتراك. يمكنك المحاولة مرة أخرى.",
         )
 
     if order and order.provider_status == "callback_received_pending_provider_verification":
@@ -4825,13 +5495,26 @@ def readable_payment_status_text(order, status_type):
         )
 
     return (
-        "الدفع قيد المعالجة",
-        "عملية الدفع قيد المعالجة. لا يتم تفعيل الاشتراك إلا بعد نجاح الدفع أو اعتماد التحويل البنكي.",
+        "جاري التحقق من عملية الدفع",
+        "لم يتم تأكيد الدفع بعد. لا يتم تفعيل الاشتراك إلا بعد التحقق النهائي من مزود الدفع.",
     )
 
 
 def payment_status_payload(order, status_type, title, message):
-    title, message = readable_payment_status_text(order, status_type)
+    if order:
+        title, message = readable_payment_status_text(order, status_type)
+    if order and order.status in {PaymentOrder.Status.PAID, PaymentOrder.Status.BANK_APPROVED}:
+        status_type = "success"
+    elif order and order.status in {
+        PaymentOrder.Status.FAILED,
+        PaymentOrder.Status.EXPIRED,
+        PaymentOrder.Status.BANK_REJECTED,
+    }:
+        status_type = "failed"
+    elif order and order.status == PaymentOrder.Status.CANCELED:
+        status_type = "canceled"
+    elif order:
+        status_type = "pending"
     return {
         "order": order,
         "status_type": status_type,
@@ -4841,18 +5524,62 @@ def payment_status_payload(order, status_type, title, message):
     }
 
 
-@cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
 @require_GET
 def pricing(request):
-    return render(request, "pricing.html")
+    if request.user.is_authenticated:
+        options = purchase_options_for_user(request.user)
+        snapshot = get_user_entitlements(request.user)
+        current_main_plan = (
+            CHECKOUT_PLANS.get(snapshot.main_subscription.plan_code)
+            if snapshot.main_subscription else None
+        )
+    else:
+        options = {
+            code: {"allowed": True, "state": "purchase", "label": "اشترك الآن"}
+            for code in CHECKOUT_PLANS
+        }
+        current_main_plan = None
+    return render(request, "pricing.html", {
+        "current_main_plan": current_main_plan,
+        "basic_action": options[PLAN_BASIC],
+        "silver_action": options[PLAN_SILVER],
+        "vip_action": options[PLAN_VIP],
+        "diamond_action": options[PLAN_DIAMOND],
+        "level_3_action": options[PLAN_LEVEL_THREE],
+        "level_4_action": options[PLAN_LEVEL_FOUR],
+        "moyasar": moyasar_context(),
+    })
 
 
 @login_required
 @require_GET
 def checkout(request, plan_code):
     plan = get_checkout_plan_or_404(plan_code)
+    try:
+        quote = quote_plan_purchase(request.user, plan["code"])
+        purchase_option = {
+            "allowed": True,
+            "state": quote.ui_state,
+            "label": quote.ui_label,
+            "amount_due": quote.amount_due,
+            "operation_type": quote.operation_type,
+        }
+    except PurchaseNotAllowed as exc:
+        if exc.code == "included_in_diamond":
+            label = "مشمولة في باقتك الحالية"
+        elif exc.code == "active_subscription":
+            label = "مشترك حاليًا"
+        else:
+            label = "غير متاحة"
+        purchase_option = {
+            "allowed": False,
+            "state": exc.code,
+            "label": label,
+            "message": str(exc),
+        }
     return render(request, "checkout.html", {
         "plan": plan,
+        "purchase_option": purchase_option,
         "moyasar": moyasar_context(),
         "bank_transfer": bank_transfer_context(),
         "payment_methods": PAYMENT_METHODS,
@@ -4861,6 +5588,7 @@ def checkout(request, plan_code):
 
 @login_required
 @require_POST
+@rate_limit("payment-start", limit_setting="RATE_LIMIT_PAYMENT", default=10)
 def create_payment_order(request, plan_code, method_slug):
     plan = get_checkout_plan_or_404(plan_code)
     if method_slug not in PAYMENT_METHODS:
@@ -4870,24 +5598,38 @@ def create_payment_order(request, plan_code, method_slug):
         messages.error(request, "التحويل البنكي غير متاح حاليًا. اختر طريقة دفع أخرى.")
         return redirect("checkout", plan_code=plan["code"])
 
-    order = create_payment_order_for_plan(request.user, plan, method_slug)
-
     if method_slug == "bank_transfer":
+        try:
+            with transaction.atomic():
+                from django.contrib.auth import get_user_model
+                get_user_model().objects.select_for_update().get(pk=request.user.pk)
+                quote = quote_plan_purchase(request.user, plan["code"], lock=True)
+                order = create_payment_order_for_plan(request.user, plan, method_slug, quote=quote)
+        except PurchaseNotAllowed as exc:
+            raise PermissionDenied(str(exc)) from exc
         messages.info(request, "تم إنشاء طلب التحويل البنكي. ارفع الإيصال بعد إتمام التحويل.")
         return redirect("bank_transfer_proof", order_id=order.id)
 
-    order.provider_status = "moyasar_integration_ready"
-    order.save(update_fields=["provider_status", "updated_at"])
-    messages.info(
-        request,
-        "تم إنشاء طلب الدفع. تكامل ميسر/STC Pay جاهز للتفعيل لاحقًا عبر Sandbox بدون تفعيل اشتراك الآن.",
-    )
-    return redirect(f"{reverse('payment_pending')}?order={order.id}")
+    try:
+        order, outcome = start_moyasar_invoice_checkout(request, plan, method_slug)
+    except PurchaseNotAllowed as exc:
+        raise PermissionDenied(str(exc)) from exc
+    if outcome == "redirect":
+        return redirect(order.checkout_url)
+    if outcome == "paid":
+        return redirect(f"{reverse('payment_success')}?order={order.id}")
+    if outcome in {"pending", "unknown"}:
+        messages.info(request, "جاري التحقق من عملية الدفع.")
+        return redirect(f"{reverse('payment_pending')}?order={order.id}")
+
+    messages.error(request, "تعذر فتح صفحة الدفع حاليًا. حاول مرة أخرى.")
+    return redirect("checkout", plan_code=plan["code"])
 
 
 @login_required
 @ensure_csrf_cookie
 @require_http_methods(["GET", "POST"])
+@rate_limit("bank-receipt", limit_setting="RATE_LIMIT_UPLOAD", default=10)
 def bank_transfer_proof(request, order_id):
     order = get_owned_payment_order_or_404(request, order_id)
     if order.method != PaymentOrder.Method.BANK_TRANSFER:
@@ -4983,6 +5725,8 @@ def payment_pending(request):
     message = "عملية الدفع قيد المعالجة. لا يتم تفعيل الاشتراك إلا بعد نجاح الدفع أو اعتماد التحويل البنكي."
     if request.GET.get("bank"):
         message = "تم رفع الإيصال والطلب قيد المراجعة. سيتم تفعيل الاشتراك بعد الاعتماد الإداري."
+    elif order and order.status == PaymentOrder.Status.PAID_REQUIRES_REVIEW:
+        message = "تم استلام الدفع ويجري التحقق من الترقية. لن تُمنح صلاحيات جديدة حتى تكتمل المراجعة."
     return render(request, "payment_status.html", payment_status_payload(
         order,
         "pending",
@@ -4994,42 +5738,176 @@ def payment_pending(request):
 @login_required
 @require_GET
 def moyasar_callback(request):
-    payment_id = (request.GET.get("id") or request.GET.get("payment_id") or "").strip()
+    order_value = request.GET.get("order") or ""
     order = None
-    if (request.GET.get("order") or "").isdigit():
-        order = get_owned_payment_order_or_404(request, request.GET["order"])
+    if order_value.isdigit():
+        order = PaymentOrder.objects.filter(
+            pk=order_value,
+            user=request.user,
+            provider=PaymentOrder.Provider.MOYASAR,
+        ).first()
+    if not order:
+        invoice_value = str(request.GET.get("invoice_id") or request.GET.get("id") or "")
+        masked_invoice = (
+            f"{invoice_value[:4]}...{invoice_value[-4:]}" if len(invoice_value) > 8 else "missing"
+        )
+        payment_logger.warning(
+            "moyasar_callback_order_missing request_id=%s invoice_id=%s",
+            getattr(request, "request_id", "missing"),
+            masked_invoice,
+        )
+        return render(request, "payment_status.html", payment_status_payload(
+            None,
+            "pending",
+            "الدفع قيد التحقق",
+            "تم استلام نتيجة الدفع، وجارٍ التحقق من العملية. لم يتم منح أي صلاحية حتى يكتمل التحقق.",
+        ), status=202)
 
-    if order and payment_id and not order.provider_payment_id:
-        order.provider_payment_id = payment_id[:120]
-        order.provider_status = "callback_received_pending_provider_verification"
-        order.save(update_fields=["provider_payment_id", "provider_status", "updated_at"])
-
-    return render(request, "payment_status.html", payment_status_payload(
-        order,
-        "pending",
-        "تم الرجوع من ميسر",
-        "لم يتم تفعيل الاشتراك من بيانات الرابط فقط. يجب التحقق من حالة الدفع من ميسر قبل أي تفعيل.",
-    ), status=202)
+    # Browser query values are deliberately ignored. Reconciliation uses only the
+    # locally stored invoice ID and the server-to-server Moyasar response.
+    try:
+        reconcile_payment_order(order.id)
+    except Exception:
+        payment_logger.exception(
+            "moyasar_callback_reconciliation_error payment_order_id=%s", order.id
+        )
+    order.refresh_from_db()
+    if order.status == PaymentOrder.Status.PAID and order.activated_at:
+        destination = "payment_success"
+    elif order.status in {
+        PaymentOrder.Status.FAILED,
+        PaymentOrder.Status.EXPIRED,
+        PaymentOrder.Status.CANCELED,
+    }:
+        destination = "payment_failed"
+    else:
+        destination = "payment_pending"
+    return redirect(f"{reverse(destination)}?order={order.id}")
 
 
 @csrf_exempt
 @require_POST
 def moyasar_webhook(request):
-    webhook_secret = getattr(settings, "MOYASAR_WEBHOOK_SECRET", "")
+    webhook_secret = str(getattr(settings, "MOYASAR_WEBHOOK_SECRET", "") or "")
     if not webhook_secret:
         return JsonResponse({
             "status": "webhook_disabled",
             "message": "Moyasar webhook is not enabled until MOYASAR_WEBHOOK_SECRET is configured.",
         }, status=503)
 
-    signature = request.headers.get("X-Moyasar-Signature", "")
-    if not signature:
-        return JsonResponse({"error": "missing_signature"}, status=403)
+    max_body_bytes = max(1024, int(getattr(settings, "MOYASAR_WEBHOOK_MAX_BODY_BYTES", 65536)))
+    try:
+        content_length = int(request.META.get("CONTENT_LENGTH") or 0)
+    except (TypeError, ValueError):
+        return JsonResponse({"status": "invalid_content_length"}, status=400)
+    if content_length > max_body_bytes:
+        return JsonResponse({"status": "payload_too_large"}, status=413)
+    raw_body = request.body
+    if len(raw_body) > max_body_bytes:
+        return JsonResponse({"status": "payload_too_large"}, status=413)
+    try:
+        payload = json.loads(raw_body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({"status": "invalid_json"}, status=400)
+    if not isinstance(payload, dict):
+        return JsonResponse({"status": "invalid_payload"}, status=400)
 
-    return JsonResponse({
-        "status": "verification_required",
-        "message": "Webhook received but provider signature verification must be completed before activation.",
-    }, status=202)
+    supplied_secret = payload.get("secret_token")
+    if not isinstance(supplied_secret, str) or not secrets.compare_digest(
+        supplied_secret, webhook_secret
+    ):
+        return JsonResponse({"status": "forbidden"}, status=403)
+
+    event_id = payload.get("id")
+    event_type = payload.get("type")
+    event_live = payload.get("live")
+    allowed_event_types = {
+        "payment_paid",
+        "payment_failed",
+        "payment_refunded",
+        "payment_voided",
+        "payment_authorized",
+        "payment_captured",
+        "payment_verified",
+    }
+    if (
+        not isinstance(event_id, str)
+        or not event_id.strip()
+        or len(event_id.strip()) > 120
+        or event_type not in allowed_event_types
+        or not isinstance(event_live, bool)
+    ):
+        return JsonResponse({"status": "invalid_event"}, status=400)
+    if event_live or getattr(settings, "MOYASAR_ENVIRONMENT", "test") != "test":
+        return JsonResponse({"status": "environment_mismatch"}, status=403)
+
+    data = payload.get("data")
+    invoice_id = data.get("invoice_id") if isinstance(data, dict) else None
+    order = None
+    if isinstance(invoice_id, str) and invoice_id:
+        order = PaymentOrder.objects.filter(
+            provider=PaymentOrder.Provider.MOYASAR,
+            payment_environment=PaymentOrder.Environment.TEST,
+            moyasar_invoice_id=invoice_id,
+        ).first()
+
+    try:
+        with transaction.atomic():
+            webhook_event = PaymentWebhookEvent.objects.create(
+                provider=PaymentOrder.Provider.MOYASAR,
+                event_id=event_id.strip(),
+                event_type=event_type,
+                payment_environment=PaymentOrder.Environment.TEST,
+                payment_order=order,
+                processing_status=PaymentWebhookEvent.ProcessingStatus.RECEIVED,
+                payload_hash=hashlib.sha256(raw_body).hexdigest(),
+            )
+    except IntegrityError:
+        return JsonResponse({"status": "duplicate"}, status=200)
+
+    if order is None:
+        webhook_event.processing_status = PaymentWebhookEvent.ProcessingStatus.IGNORED
+        webhook_event.failure_code = "unknown_invoice"
+        webhook_event.processed_at = timezone.now()
+        webhook_event.save(update_fields=[
+            "processing_status", "failure_code", "processed_at",
+        ])
+        return JsonResponse({"status": "accepted"}, status=202)
+
+    webhook_event.processing_status = PaymentWebhookEvent.ProcessingStatus.PROCESSING
+    webhook_event.save(update_fields=["processing_status"])
+    try:
+        result = reconcile_payment_order(order.id)
+    except Exception:
+        payment_logger.exception(
+            "moyasar_webhook_reconciliation_error payment_order_id=%s event_id=%s",
+            order.id,
+            webhook_event.event_id,
+        )
+        webhook_event.processing_status = PaymentWebhookEvent.ProcessingStatus.FAILED
+        webhook_event.failure_code = "reconciliation_error"
+        response_status = 202
+    else:
+        status_map = {
+            "paid": PaymentWebhookEvent.ProcessingStatus.PROCESSED,
+            "failed": PaymentWebhookEvent.ProcessingStatus.PROCESSED,
+            "expired": PaymentWebhookEvent.ProcessingStatus.PROCESSED,
+            "canceled": PaymentWebhookEvent.ProcessingStatus.PROCESSED,
+            "pending": PaymentWebhookEvent.ProcessingStatus.PENDING,
+            "review": PaymentWebhookEvent.ProcessingStatus.PROCESSED,
+            "mismatch": PaymentWebhookEvent.ProcessingStatus.MISMATCH,
+            "invalid": PaymentWebhookEvent.ProcessingStatus.IGNORED,
+        }
+        webhook_event.processing_status = status_map.get(
+            result.status, PaymentWebhookEvent.ProcessingStatus.FAILED
+        )
+        webhook_event.failure_code = result.code or None
+        response_status = 200 if result.status not in {"pending"} else 202
+    webhook_event.processed_at = timezone.now()
+    webhook_event.save(update_fields=[
+        "processing_status", "failure_code", "processed_at",
+    ])
+    return JsonResponse({"status": "accepted"}, status=response_status)
 
 
 @cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
@@ -5423,8 +6301,9 @@ def leaderboard_api(request):
 
     try:
         return JsonResponse({"rows": build_leaderboard_rows(request.GET)})
-    except Exception as e:
-        return _json_error("Failed to load leaderboard", 500, details=str(e))
+    except Exception:
+        logger.exception("leaderboard_load_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Failed to load leaderboard", 500, request_id=getattr(request, "request_id", ""))
 
 
 def get_leaderboard_period_start(period):
@@ -5966,7 +6845,6 @@ def parse_pagination_params(request):
     return page, page_size
 
 
-
 def get_cached_cvc_content_count(kind, model, *, extra=0):
     cache_key = f"cvc-count:{CVC_CONTENT_CACHE_VERSION}:{kind}"
     cached = safe_cache_get(cache_key)
@@ -5975,6 +6853,7 @@ def get_cached_cvc_content_count(kind, model, *, extra=0):
     count = model.objects.count()
     safe_cache_set(cache_key, count, timeout=CVC_COUNT_CACHE_TIMEOUT)
     return max(count + extra, 1)
+
 
 def paginate_queryset(qs, request, *, resource, serializer, legacy_key, cache_extra="", timeout=300):
     page, page_size = parse_pagination_params(request)
@@ -6103,90 +6982,36 @@ def get_cvc_stories_api(request):
 
     # Auto-seed if database is empty
     ensure_seed_data()
-    
+
     try:
-        qs = CVCStory.objects.all()
-        if "order" in [f.name for f in CVCStory._meta.get_fields()]:
-            qs = qs.order_by("order")
-        else:
-            qs = qs.order_by("id")
-
-        stories = []
-        for s in qs:
-            stories.append({
-                "id": s.id,
-                "title": getattr(s, "title", ""),
-                "content": getattr(s, "content", "") or getattr(s, "story", ""),
-                "arabic_explanation": getattr(s, "arabic_explanation", "") or getattr(s, "explanation_ar", ""),
-                "image_url": getattr(s, "image_url", "") or getattr(s, "image", ""),
-                "quiz_data": getattr(s, "quiz_data", None),
-                "difficulty": getattr(s, "difficulty", None),
-            })
-
-        return JsonResponse({"stories": stories, "count": len(stories)})
-
+        summary = request.GET.get("summary") in {"1", "true", "yes"}
+        qs = CVCStory.objects.all().order_by("order", "id")
+        return paginate_queryset(
+            qs,
+            request,
+            resource="stories",
+            serializer=lambda story: cvc_story_payload(story, summary=summary),
+            legacy_key="stories",
+            cache_extra=f"summary:{int(summary)}",
+        )
     except Exception as e:
-        return _json_error("Failed to fetch CVC stories", 500, details=str(e))
+        log_public_api_exception(request, "failed_fetch_cvc_stories", e)
+        return _json_error("Failed to fetch CVC stories", 500)
 
 
 @require_POST
+@login_required
+@rate_limit("legacy-cvc-progress", limit_setting="RATE_LIMIT_WRITE", default=60)
 def save_cvc_progress_api(request):
     blocked = require_feature(request, "cvc_words", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
         return blocked
 
-    data, error = parse_json_safely(request)
-    if error:
-        return error
-
-    student_name = (data.get("student") or "").strip()
-    progress_type = (data.get("type") or "").strip()
-    points_raw = data.get("points", 0)
-
-    if not student_name or not progress_type:
-        return _json_error("Missing required fields: student, type", 400)
-
-    valid_types = {"word", "sentence", "story", "quiz", "spelling", "mic"}
-    if progress_type not in valid_types:
-        return _json_error(f"Invalid type. Must be one of: {sorted(valid_types)}", 400)
-
-    points, error = validate_int(points_raw, min_val=0, max_val=1000, field_name="points")
-    if error:
-        return error
-
-    try:
-        with transaction.atomic():
-            student, _ = Student.objects.get_or_create(name=student_name)
-            cvc_progress, created = CVCProgress.objects.get_or_create(student=student)
-
-            if progress_type == "word":
-                cvc_progress.update_word_score(points)
-
-            elif progress_type == "sentence":
-                reading_time = data.get("reading_time", 0)
-                try:
-                    reading_time = float(reading_time or 0)
-                except (ValueError, TypeError):
-                    return _json_error("Invalid reading_time format. Must be a number.", 400)
-                cvc_progress.update_sentence_score(points, reading_time)
-
-            elif progress_type == "story":
-                cvc_progress.mark_story_complete()
-
-            elif progress_type in {"quiz", "spelling", "mic"}:
-                cvc_progress.update_word_score(points)
-
-        return JsonResponse({
-            "status": "ok",
-            "total_score": cvc_progress.total_score,
-            "words_completed": cvc_progress.words_completed,
-            "sentences_completed": cvc_progress.sentences_completed,
-            "stories_completed": cvc_progress.stories_completed,
-            "created": created
-        })
-
-    except Exception as e:
-        return _json_error("Failed to save progress", 500, details=str(e))
+    return JsonResponse({
+        "error": "legacy_endpoint_retired",
+        "message": "Use the authenticated CVC reading progress endpoint.",
+        "replacement": reverse("api_cvc_reading_progress"),
+    }, status=410)
 
 
 @require_http_methods(["GET", "POST"])
@@ -6484,6 +7309,7 @@ def cvc_reading_progress_api(request):
 
 @csrf_exempt
 @require_POST
+@rate_limit("pronunciation", limit_setting="RATE_LIMIT_PUBLIC_API", default=30)
 def check_cvc_pronunciation(request):
     blocked = require_feature(request, "cvc_words", UPGRADE_LEVEL_THREE_MESSAGE)
     if blocked:
@@ -6510,7 +7336,6 @@ def check_cvc_pronunciation(request):
             "message": "ط±ط§ط¦ط¹! ظ†ط·ظ‚ ظ…ظ…طھط§ط²" if accuracy >= 80 else "ط¬ظٹط¯طŒ ط­ط§ظˆظ„ ظ…ط±ط© ط£ط®ط±ظ‰"
         })
 
-    except Exception as e:
-        return _json_error("Pronunciation check failed", 500, details=str(e))
-
-
+    except Exception:
+        logger.exception("pronunciation_check_failed request_id=%s", getattr(request, "request_id", ""))
+        return _json_error("Pronunciation check failed", 500, request_id=getattr(request, "request_id", ""))

@@ -4,7 +4,8 @@ from .models import (
     Student, StudentProfile, LetterProgress,
     BirdTutorProgress, BirdReviewItem, ExternalGame,
     CVCWord, CVCSentence, CVCStory, CVCProgress,
-    EnglishFoundationProgress, UserSubscription, PaymentOrder,
+    EnglishFoundationProgress, UserSubscription, PaymentOrder, PaymentWebhookEvent,
+    PaymentActivationReview,
     BankTransferProof, activate_subscription_from_payment,
     TopGoalUnit, TopGoalVocabulary, TopGoalSentence, TopGoalQuiz
 )
@@ -20,8 +21,8 @@ class StudentAdmin(admin.ModelAdmin):
 
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'display_name', 'student_name', 'school', 'parent_phone', 'is_premium', 'is_vip', 'updated_at']
-    search_fields = ['user__username', 'user__email', 'display_name', 'student_name', 'school', 'parent_phone']
+    list_display = ['user', 'display_name', 'student_name', 'city', 'parent_phone', 'is_premium', 'is_vip', 'updated_at']
+    search_fields = ['user__username', 'user__email', 'display_name', 'student_name', 'city', 'parent_phone']
     list_filter = ['is_premium', 'is_vip', 'created_at']
     readonly_fields = ['created_at', 'updated_at']
 
@@ -67,7 +68,11 @@ class PaymentOrderAdmin(admin.ModelAdmin):
     search_fields = ['user__username', 'user__email', 'plan_code', 'provider_payment_id']
     readonly_fields = [
         'reference', 'amount_halalas', 'currency', 'provider_payment_id',
-        'checkout_url', 'metadata', 'activated_at', 'created_at', 'updated_at'
+        'moyasar_invoice_id', 'moyasar_payment_id', 'payment_environment',
+        'idempotency_key', 'invoice_creation_token', 'invoice_creation_started_at',
+        'checkout_url', 'metadata', 'paid_at', 'failed_at',
+        'canceled_at', 'failure_code', 'failure_message', 'activated_at',
+        'created_at', 'updated_at'
     ]
     actions = ['approve_bank_transfer', 'reject_bank_transfer']
 
@@ -107,6 +112,28 @@ class PaymentOrderAdmin(admin.ModelAdmin):
             )
             rejected += 1
         self.message_user(request, f'Rejected {rejected} bank transfer order(s).')
+
+
+@admin.register(PaymentWebhookEvent)
+class PaymentWebhookEventAdmin(admin.ModelAdmin):
+    list_display = [
+        'event_id', 'event_type', 'payment_environment', 'payment_order',
+        'processing_status', 'received_at', 'processed_at',
+    ]
+    list_filter = ['provider', 'event_type', 'payment_environment', 'processing_status', 'received_at']
+    search_fields = ['event_id', 'payment_order__id', 'payment_order__user__username']
+    readonly_fields = [
+        'provider', 'event_id', 'event_type', 'payment_environment', 'payment_order',
+        'received_at', 'processed_at', 'processing_status', 'failure_code', 'payload_hash',
+    ]
+
+
+@admin.register(PaymentActivationReview)
+class PaymentActivationReviewAdmin(admin.ModelAdmin):
+    list_display = ['payment_order', 'reason_code', 'status', 'created_at', 'resolved_at']
+    list_filter = ['reason_code', 'status', 'created_at']
+    search_fields = ['payment_order__id', 'payment_order__user__username']
+    readonly_fields = ['payment_order', 'reason_code', 'created_at']
 
 
 @admin.register(BankTransferProof)

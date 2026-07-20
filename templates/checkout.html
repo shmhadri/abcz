@@ -205,6 +205,13 @@
 </head>
 <body>
     <main class="shell">
+        {% if messages %}
+            <section aria-live="polite">
+                {% for message in messages %}
+                    <div class="notice">{{ message }}</div>
+                {% endfor %}
+            </section>
+        {% endif %}
         <nav class="topbar" aria-label="التنقل">
             <a class="brand" href="/">
                 <span class="brand-mark">A</span>
@@ -222,7 +229,10 @@
             <aside class="panel summary">
                 <h2>{{ plan.name_ar }}</h2>
                 <p class="lead">{{ plan.description }}</p>
-                <div class="price"><strong>{{ plan.price_sar|floatformat:0 }}</strong><span>ريال شهريًا</span></div>
+                <div class="price"><strong>{% if purchase_option.allowed %}{{ purchase_option.amount_due|floatformat:0 }}{% else %}{{ plan.price_sar|floatformat:0 }}{% endif %}</strong><span>ريال</span></div>
+                {% if purchase_option.allowed %}
+                    <div class="notice">نوع العملية: {{ purchase_option.label }}</div>
+                {% endif %}
                 <ul class="features">
                     {% for feature in plan.features %}
                         <li>{{ feature }}</li>
@@ -234,11 +244,19 @@
             <section class="methods" aria-label="طرق الدفع">
                 <h2>طريقة الدفع</h2>
 
+                {% if not purchase_option.allowed %}
+                    <article class="method">
+                        <h3>{{ purchase_option.label }}</h3>
+                        <p>{{ purchase_option.message }}</p>
+                        <a class="action" href="{% url 'pricing' %}">العودة إلى الباقات</a>
+                    </article>
+                {% else %}
+
                 <article class="method">
                     <h3>بطاقة / مدى / Apple Pay / Samsung Pay عبر Moyasar</h3>
                     <p>ادفع بأمان عبر ميسر عند تفعيل Sandbox أو الإنتاج لاحقًا. الموقع لا يحفظ بيانات البطاقة أو CVV.</p>
                     <div class="method-meta">
-                        {% if moyasar.enabled and moyasar.publishable_key_configured %}
+                        {% if moyasar.enabled and moyasar.secret_key_configured %}
                             <span class="pill ready">ميسر مهيأ</span>
                         {% else %}
                             <span class="pill pending">جاهز للتفعيل لاحقًا</span>
@@ -278,6 +296,7 @@
                         <button class="action bank" type="submit">أرفع إيصال تحويل بنكي</button>
                     </form>
                 </article>
+                {% endif %}
             </section>
         </section>
     </main>

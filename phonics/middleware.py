@@ -67,4 +67,8 @@ class RequestTimingMiddleware:
         if settings.DEBUG or getattr(settings, "ENABLE_SERVER_TIMING_HEADER", False):
             response["Server-Timing"] = f"app;dur={duration_ms:.1f}"
 
+        csp_report_only = getattr(settings, "CSP_REPORT_ONLY", "")
+        if csp_report_only:
+            response.setdefault("Content-Security-Policy-Report-Only", csp_report_only)
+
         return response

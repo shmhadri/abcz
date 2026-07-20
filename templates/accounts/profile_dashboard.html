@@ -195,6 +195,17 @@
             font-weight: 800;
         }
 
+        .payments-table { width: 100%; border-collapse: collapse; }
+        .payments-table th, .payments-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: right;
+            vertical-align: middle;
+        }
+        .payments-table th { color: var(--muted); font-size: 0.88rem; }
+        .payment-pending { color: #9a3412; font-weight: 900; }
+        .table-wrap { overflow-x: auto; }
+
         .upgrade {
             border-color: rgba(245, 158, 11, 0.34);
             background: linear-gradient(135deg, #fff7ed 0%, #ffffff 66%);
@@ -222,7 +233,7 @@
                 <a class="btn" href="/curriculum/">خطة المنهج</a>
                 <a class="btn" href="/pricing/">الخطط</a>
                 <a class="btn" href="{% url 'guide' %}">التعليمات</a>
-                <a class="btn" href="{% url 'logout' %}">تسجيل الخروج</a>
+                <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn" type="submit">تسجيل الخروج</button></form>
             </div>
         </nav>
 
@@ -239,6 +250,101 @@
                 <span class="pill locked">VIP: غير نشط</span>
             {% endif %}
         </div>
+
+        <section class="panel" aria-label="الاشتراك الحالي">
+            <h2>الاشتراك الحالي</h2>
+            {% if subscription_summary.main_subscription or subscription_summary.addon_subscriptions %}
+                <div class="status-row">
+                    {% if subscription_summary.main_plan %}
+                        <span class="pill vip">الباقة الرئيسية: {{ subscription_summary.main_plan.name }}</span>
+                    {% endif %}
+                    {% for addon in subscription_summary.addon_subscriptions %}
+                        <span class="pill">إضافة نشطة: {{ addon.plan_code }}</span>
+                    {% endfor %}
+                    {% for addon_code in subscription_summary.included_addons %}
+                        <span class="pill">مشمولة: {{ addon_code }}</span>
+                    {% endfor %}
+                </div>
+                <div class="details-grid">
+                    <p><strong>الحالة:</strong>
+                        {% if subscription_summary.status == "active" %}مشترك حاليًا
+                        {% elif subscription_summary.status == "ending_soon" %}مشترك حاليًا — ينتهي قريبًا
+                        {% elif subscription_summary.status == "pending_payment" %}قيد الدفع
+                        {% else %}منتهي{% endif %}
+                    </p>
+                    <p><strong>بداية الاشتراك:</strong> {{ subscription_summary.starts_at_riyadh|date:"Y-m-d H:i"|default:"-" }}</p>
+                    <p><strong>نهاية الاشتراك:</strong> {{ subscription_summary.expires_at_riyadh|date:"Y-m-d H:i"|default:"-" }}</p>
+                    <p><strong>المتبقي:</strong> {{ subscription_summary.remaining_days }} يوم و{{ subscription_summary.remaining_hours }} ساعة</p>
+                </div>
+                {% if subscription_summary.content_labels %}
+                    <h3>المحتوى المفتوح</h3>
+                    <ul>
+                        {% for label in subscription_summary.content_labels %}<li>{{ label }}</li>{% endfor %}
+                    </ul>
+                {% endif %}
+                <div class="nav-actions">
+                    {% if subscription_summary.renew_plan_code %}
+                        <a class="btn" href="{% url 'checkout' subscription_summary.renew_plan_code %}">تجديد</a>
+                    {% endif %}
+                    {% for upgrade in subscription_summary.upgrades %}
+                        <a class="btn" href="{% url 'checkout' upgrade.code %}">ترقية إلى {{ upgrade.code }}</a>
+                    {% endfor %}
+                </div>
+            {% elif subscription_summary.status == "pending_payment" %}
+                <p>توجد عملية دفع قيد الاستكمال.</p>
+            {% elif subscription_summary.status == "expired" %}
+                <p>الاشتراك منتهي. يمكنك اختيار باقة جديدة من صفحة الأسعار.</p>
+                {% if subscription_summary.renew_plan_code %}
+                    <div class="nav-actions">
+                        <a class="btn" href="{% url 'checkout' subscription_summary.renew_plan_code %}">تجديد</a>
+                    </div>
+                {% endif %}
+            {% else %}
+                <p>لا يوجد اشتراك نشط حاليًا.</p>
+            {% endif %}
+        </section>
+
+        <section class="panel" aria-label="سجل طلبات الدفع">
+            <h2>سجل الدفع</h2>
+            {% if payment_orders %}
+                <div class="table-wrap">
+                    <table class="payments-table">
+                        <thead>
+                            <tr>
+                                <th>الخطة</th>
+                                <th>المبلغ</th>
+                                <th>طريقة الدفع</th>
+                                <th>الحالة</th>
+                                <th>تاريخ الإنشاء</th>
+                                <th>تاريخ الدفع</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment_order in payment_orders %}
+                                <tr>
+                                    <td>{{ payment_order.plan_name }}</td>
+                                    <td>{{ payment_order.amount_sar }} {{ payment_order.currency }}</td>
+                                    <td>{{ payment_order.get_method_display }}</td>
+                                    <td>{{ payment_order.get_status_display }}</td>
+                                    <td>{{ payment_order.created_at|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ payment_order.paid_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                                    <td>
+                                        {% if payment_order.reopen_checkout_url %}
+                                            <a class="btn" href="{{ payment_order.reopen_checkout_url }}">إعادة فتح الدفع</a>
+                                        {% elif payment_order.status == "pending" or payment_order.status == "initiated" or payment_order.status == "creating_invoice" or payment_order.status == "invoice_creation_unknown" %}
+                                            <span class="payment-pending">جاري التحقق</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="empty">لا توجد طلبات دفع حتى الآن.</p>
+            {% endif %}
+        </section>
 
         <section class="panel" aria-label="Sound practice progress">
             <h2>تقدم الصوتيات</h2>
