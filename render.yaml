@@ -103,7 +103,7 @@ services:
       - key: RATE_LIMIT_PAYMENT
         value: "10"
       - key: BANK_TRANSFER_ENABLED
-        value: "True"
+        value: "False"
       - key: BANK_ACCOUNT_NAME
         sync: false
       - key: BANK_NAME

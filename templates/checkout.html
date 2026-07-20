@@ -282,6 +282,7 @@
                     </form>
                 </article>
 
+                {% if bank_transfer.enabled %}
                 <article class="method">
                     <h3>تحويل بنكي</h3>
                     <p>حوّل المبلغ ثم ارفع الإيصال للمراجعة. يتم التفعيل بعد اعتماد الإدارة فقط.</p>
@@ -296,6 +297,7 @@
                         <button class="action bank" type="submit">أرفع إيصال تحويل بنكي</button>
                     </form>
                 </article>
+                {% endif %}
                 {% endif %}
             </section>
         </section>

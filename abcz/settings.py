@@ -261,7 +261,7 @@ if MOYASAR_SECRET_KEY:
             f"MOYASAR_SECRET_KEY does not match the configured {MOYASAR_ENVIRONMENT} environment."
         )
 
-BANK_TRANSFER_ENABLED = env_bool("BANK_TRANSFER_ENABLED", "True")
+BANK_TRANSFER_ENABLED = env_bool("BANK_TRANSFER_ENABLED", "False")
 BANK_ACCOUNT_NAME = os.getenv("BANK_ACCOUNT_NAME", "").strip()
 BANK_NAME = os.getenv("BANK_NAME", "").strip()
 BANK_IBAN = os.getenv("BANK_IBAN", "").strip()

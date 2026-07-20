@@ -45,7 +45,7 @@ from phonics.payments.moyasar import (
 from phonics.payments.reconciliation import reconcile_payment_order
 
 
-@override_settings(DISABLE_AUTO_SEED=True, RATE_LIMIT_PAYMENT=1000)
+@override_settings(DISABLE_AUTO_SEED=True, RATE_LIMIT_PAYMENT=1000, BANK_TRANSFER_ENABLED=True)
 class PaymentCheckoutTests(TestCase):
     def setUp(self):
         self.media_root = tempfile.mkdtemp()
@@ -165,6 +165,17 @@ class PaymentCheckoutTests(TestCase):
         self.assertIn(reverse("bank_transfer_proof", args=[order.id]), response["Location"])
         self.assertEqual(UserSubscription.objects.count(), 0)
 
+    @override_settings(BANK_TRANSFER_ENABLED=False)
+    def test_disabled_bank_transfer_is_hidden_and_cannot_create_an_order(self):
+        checkout = self.client.get(reverse("checkout", args=["silver"]))
+        response = self.client.post(reverse("create_payment_order", args=["silver", "bank_transfer"]))
+
+        self.assertEqual(checkout.status_code, 200)
+        self.assertNotContains(checkout, "أرفع إيصال تحويل بنكي")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], reverse("checkout", args=["silver"]))
+        self.assertFalse(PaymentOrder.objects.exists())
+
     def test_bank_transfer_receipt_upload_accepts_jpg_png_and_pdf(self):
         cases = [
             ("receipt.jpg", b"\xff\xd8\xff", "image/jpeg"),
@@ -250,6 +261,37 @@ class PaymentCheckoutTests(TestCase):
         stored_name = BankTransferProof.objects.get(payment_order=order).receipt_file.name
         self.assertNotIn("..", stored_name)
         self.assertNotIn("odd", stored_name)
+
+    def test_bank_transfer_receipt_uses_unique_random_storage_names(self):
+        order = self.create_order(
+            method=PaymentOrder.Method.BANK_TRANSFER,
+            provider=PaymentOrder.Provider.MANUAL_BANK,
+            status=PaymentOrder.Status.AWAITING_BANK_REVIEW,
+        )
+        proof = BankTransferProof(user=self.user, payment_order=order)
+        receipt_field = BankTransferProof._meta.get_field("receipt_file")
+        first_token = "a" * 40
+        second_token = "b" * 40
+
+        with patch(
+            "phonics.models.secrets.token_hex",
+            side_effect=[first_token, second_token],
+        ) as token_hex:
+            first_path = receipt_field.generate_filename(proof, "original-receipt.png")
+            second_path = receipt_field.generate_filename(proof, "original-receipt.png")
+
+        first_path = first_path.replace("\\", "/")
+        second_path = second_path.replace("\\", "/")
+
+        expected_prefix = (
+            f"bank_transfer_receipts/user_{self.user.id}/order_{order.id}/"
+        )
+        self.assertEqual(first_path, f"{expected_prefix}{first_token}.png")
+        self.assertEqual(second_path, f"{expected_prefix}{second_token}.png")
+        self.assertNotIn("original-receipt", first_path)
+        self.assertNotIn("original-receipt", second_path)
+        self.assertNotEqual(first_path, second_path)
+        self.assertEqual(token_hex.call_count, 2)
 
     def test_bank_transfer_rejects_html_named_pdf_and_signature_extension_mismatch(self):
         for filename, content in [

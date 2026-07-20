@@ -5133,7 +5133,7 @@ def plan_amount_halalas(plan):
 
 def bank_transfer_context():
     return {
-        "enabled": getattr(settings, "BANK_TRANSFER_ENABLED", True),
+        "enabled": getattr(settings, "BANK_TRANSFER_ENABLED", False),
         "account_name": getattr(settings, "BANK_ACCOUNT_NAME", ""),
         "bank_name": getattr(settings, "BANK_NAME", ""),
         "iban": getattr(settings, "BANK_IBAN", ""),
@@ -5594,7 +5594,11 @@ def create_payment_order(request, plan_code, method_slug):
     if method_slug not in PAYMENT_METHODS:
         raise Http404("Payment method not found.")
 
-    if method_slug == "bank_transfer" and not getattr(settings, "BANK_TRANSFER_ENABLED", True):
+    if method_slug == "bank_transfer" and not getattr(settings, "BANK_TRANSFER_ENABLED", False):
+        try:
+            quote_plan_purchase(request.user, plan["code"])
+        except PurchaseNotAllowed as exc:
+            raise PermissionDenied(str(exc)) from exc
         messages.error(request, "التحويل البنكي غير متاح حاليًا. اختر طريقة دفع أخرى.")
         return redirect("checkout", plan_code=plan["code"])
 
@@ -6984,7 +6988,7 @@ def get_cvc_stories_api(request):
     ensure_seed_data()
 
     try:
-        summary = request.GET.get("summary") in {"1", "true", "yes"}
+        summary = str(request.GET.get("summary", "")).strip().lower() in {"1", "true", "yes"}
         qs = CVCStory.objects.all().order_by("order", "id")
         return paginate_queryset(
             qs,
