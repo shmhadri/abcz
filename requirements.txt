@@ -23,6 +23,7 @@ pycairo==1.29.0
 pycparser==2.23
 pyHanko==0.32.0
 pyhanko-certvalidator==0.29.0
+PyMuPDF==1.26.7
 pypdf==6.4.0
 python-bidi==0.6.7
 python-dotenv==1.0.1
