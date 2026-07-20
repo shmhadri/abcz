@@ -681,6 +681,30 @@ class MoyasarReconciliationTests(TestCase):
         self.assertEqual(fetch_mock.call_count, 1)
         self.assertEqual(UserSubscription.objects.count(), 1)
 
+    @override_settings(MOYASAR_ENVIRONMENT="live", MOYASAR_SECRET_KEY="sk_live_unit_only")
+    @patch("phonics.payments.reconciliation.fetch_invoice")
+    def test_live_webhook_reconciles_only_a_live_order(self, fetch_mock):
+        self.order.payment_environment = PaymentOrder.Environment.LIVE
+        self.order.save(update_fields=["payment_environment", "updated_at"])
+        invoice = self.invoice()
+        invoice["live"] = True
+        invoice["payments"][0]["live"] = True
+        fetch_mock.return_value = invoice
+        payload = self.webhook_payload(id="evt_live_reconcile", live=True)
+
+        response = self.client.post(
+            reverse("moyasar_webhook"),
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.order.refresh_from_db()
+        event = PaymentWebhookEvent.objects.get(event_id="evt_live_reconcile")
+        self.assertEqual(self.order.status, PaymentOrder.Status.PAID)
+        self.assertEqual(event.payment_environment, PaymentOrder.Environment.LIVE)
+        self.assertEqual(UserSubscription.objects.count(), 1)
+
     @patch("phonics.payments.reconciliation.fetch_invoice")
     def test_late_upgrade_webhook_then_callback_creates_one_review(self, fetch_mock):
         expired_at = timezone.now() - timedelta(seconds=1)
@@ -1219,6 +1243,18 @@ class MoyasarServiceTests(SimpleTestCase):
     def test_live_key_is_rejected_in_test_environment(self):
         with self.assertRaises(MoyasarConfigurationError):
             create_invoice(**self.invoice_kwargs())
+
+    @override_settings(
+        MOYASAR_SECRET_KEY="sk_live_unit_only",
+        MOYASAR_ENVIRONMENT="live",
+        ALLOWED_HOSTS=["example.com"],
+    )
+    @patch("phonics.payments.moyasar.requests.post")
+    def test_live_key_is_accepted_in_live_environment(self, post_mock):
+        post_mock.return_value = self.valid_response()
+        invoice = create_invoice(**self.invoice_kwargs())
+        self.assertEqual(invoice.invoice_id, "inv_123")
+        self.assertEqual(post_mock.call_args.kwargs["auth"], ("sk_live_unit_only", ""))
 
     @patch("phonics.payments.moyasar.requests.post")
     def test_success_response_is_validated_and_returned(self, post_mock):

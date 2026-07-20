@@ -72,18 +72,29 @@ def _configuration() -> tuple[str, str, tuple[int, int]]:
     environment = str(getattr(settings, "MOYASAR_ENVIRONMENT", "test") or "test").strip().lower()
     if environment not in {"test", "live"}:
         raise MoyasarConfigurationError("Moyasar payment environment is invalid.")
-    if environment != "test":
-        raise MoyasarConfigurationError("Moyasar live mode is disabled during Sandbox integration.")
     if not secret_key:
         raise MoyasarConfigurationError("Moyasar payment is not configured.")
-    expected_prefix = "sk_test_"
-    if not secret_key.startswith(expected_prefix):
+    expected_prefix = f"sk_{environment}_"
+    if not secret_key.startswith(expected_prefix) or len(secret_key) <= len(expected_prefix):
         raise MoyasarConfigurationError("Moyasar key does not match the configured environment.")
 
     api_url = str(getattr(settings, "MOYASAR_API_URL", "https://api.moyasar.com/v1")).rstrip("/")
     parsed_api_url = urlparse(api_url)
-    if parsed_api_url.scheme != "https" or not parsed_api_url.hostname:
-        raise MoyasarConfigurationError("Moyasar API URL must be HTTPS.")
+    try:
+        api_port = parsed_api_url.port
+    except ValueError as exc:
+        raise MoyasarConfigurationError("Moyasar API URL contains an invalid port.") from exc
+    if (
+        parsed_api_url.scheme != "https"
+        or (parsed_api_url.hostname or "").lower().rstrip(".") != "api.moyasar.com"
+        or parsed_api_url.username
+        or parsed_api_url.password
+        or api_port not in {None, 443}
+        or parsed_api_url.path.rstrip("/") != "/v1"
+        or parsed_api_url.query
+        or parsed_api_url.fragment
+    ):
+        raise MoyasarConfigurationError("Moyasar API URL must be the official HTTPS v1 endpoint.")
     timeouts = (
         int(getattr(settings, "MOYASAR_CONNECT_TIMEOUT", 5)),
         int(getattr(settings, "MOYASAR_READ_TIMEOUT", 15)),
@@ -91,6 +102,33 @@ def _configuration() -> tuple[str, str, tuple[int, int]]:
     if min(timeouts) <= 0:
         raise MoyasarConfigurationError("Moyasar timeouts must be positive.")
     return secret_key, api_url, timeouts
+
+
+def _validate_live_application_url(value: str, label: str) -> None:
+    parsed = urlparse(str(value or "").strip())
+    hostname = (parsed.hostname or "").lower().rstrip(".")
+    allowed_hosts = {
+        str(host).strip().lower().rstrip(".")
+        for host in getattr(settings, "ALLOWED_HOSTS", [])
+        if str(host).strip() and str(host).strip() != "*"
+    }
+    try:
+        port = parsed.port
+    except ValueError:
+        port = -1
+    if (
+        parsed.scheme != "https"
+        or not hostname
+        or hostname not in allowed_hosts
+        or hostname in {"localhost", "127.0.0.1", "testserver"}
+        or parsed.username
+        or parsed.password
+        or port not in {None, 443}
+        or parsed.fragment
+    ):
+        raise MoyasarConfigurationError(
+            f"{label} must use HTTPS on an official application host."
+        )
 
 
 def validate_checkout_url(checkout_url: str) -> str:
@@ -147,6 +185,10 @@ def create_invoice(
     if currency != "SAR":
         raise ValueError("Moyasar invoices must use SAR.")
     secret_key, api_url, timeouts = _configuration()
+    if getattr(settings, "MOYASAR_ENVIRONMENT", "test") == "live":
+        _validate_live_application_url(success_url, "Moyasar success URL")
+        _validate_live_application_url(back_url, "Moyasar back URL")
+        _validate_live_application_url(callback_url, "Moyasar callback URL")
     payload = {
         "amount": canonical_halalas,
         "currency": "SAR",
