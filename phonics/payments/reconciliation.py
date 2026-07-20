@@ -83,6 +83,7 @@ def _mismatch(order_id: int, code: str) -> ReconciliationResult:
 
 
 def _trusted_paid_payment(invoice: dict, order: PaymentOrder) -> tuple[dict | None, str]:
+    expected_live = order.payment_environment == PaymentOrder.Environment.LIVE
     trusted = []
     for payment in invoice["payments"]:
         if not isinstance(payment, dict) or payment.get("status") != "paid":
@@ -96,7 +97,7 @@ def _trusted_paid_payment(invoice: dict, order: PaymentOrder) -> tuple[dict | No
             continue
         if payment.get("currency") != "SAR":
             continue
-        if "live" in payment and payment.get("live") is not False:
+        if "live" in payment and payment.get("live") is not expected_live:
             continue
         trusted.append(payment)
     unique_ids = {payment["id"] for payment in trusted}
@@ -110,10 +111,9 @@ def reconcile_payment_order(payment_order_id: int) -> ReconciliationResult:
     order = PaymentOrder.objects.get(pk=payment_order_id)
     if order.provider != PaymentOrder.Provider.MOYASAR or order.method not in MOYASAR_METHODS:
         return ReconciliationResult("invalid", order.id, "not_moyasar_order")
-    if order.payment_environment != PaymentOrder.Environment.TEST:
-        return _mismatch(order.id, "environment_not_test")
-    if getattr(settings, "MOYASAR_ENVIRONMENT", "test") != "test":
-        return _mismatch(order.id, "runtime_environment_not_test")
+    runtime_environment = str(getattr(settings, "MOYASAR_ENVIRONMENT", "test") or "test").lower()
+    if order.payment_environment != runtime_environment:
+        return _mismatch(order.id, "runtime_environment_mismatch")
     if not order.moyasar_invoice_id:
         return ReconciliationResult("pending", order.id, "invoice_not_created")
     if order.status == PaymentOrder.Status.PAID and order.activated_at:
@@ -161,9 +161,10 @@ def reconcile_payment_order(payment_order_id: int) -> ReconciliationResult:
         return _mismatch(order.id, "metadata_operation_mismatch")
     if metadata.get("quote_reference") != str(order.idempotency_key):
         return _mismatch(order.id, "metadata_quote_reference_mismatch")
-    # Fetch Invoice does not currently document a live flag. When present it must
-    # be false; otherwise the authenticated sk_test_ credential is the boundary.
-    if "live" in invoice and invoice.get("live") is not False:
+    # The authenticated environment-specific secret is the boundary when the
+    # invoice response omits `live`; when present it must match the stored order.
+    expected_live = order.payment_environment == PaymentOrder.Environment.LIVE
+    if "live" in invoice and invoice.get("live") is not expected_live:
         return _mismatch(order.id, "invoice_environment_mismatch")
 
     invoice_status = invoice["status"]
@@ -191,7 +192,7 @@ def reconcile_payment_order(payment_order_id: int) -> ReconciliationResult:
                 locked.moyasar_invoice_id != invoice["id"]
                 or locked.amount_halalas != invoice["amount"]
                 or locked.currency != invoice["currency"]
-                or locked.payment_environment != PaymentOrder.Environment.TEST
+                or locked.payment_environment != runtime_environment
             ):
                 raise ValidationError("Payment order changed during reconciliation.")
             if PaymentOrder.objects.filter(moyasar_payment_id=payment_id).exclude(pk=locked.pk).exists():

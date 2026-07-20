@@ -8,6 +8,7 @@ environment-driven security settings.
 from pathlib import Path
 import os
 import sys
+from urllib.parse import urlparse
 
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
@@ -237,6 +238,7 @@ MOYASAR_PUBLISHABLE_KEY = os.getenv("MOYASAR_PUBLISHABLE_KEY", "").strip()
 MOYASAR_SECRET_KEY = os.getenv("MOYASAR_SECRET_KEY", "").strip()
 MOYASAR_WEBHOOK_SECRET = os.getenv("MOYASAR_WEBHOOK_SECRET", "").strip()
 MOYASAR_CALLBACK_URL = os.getenv("MOYASAR_CALLBACK_URL", "").strip()
+MOYASAR_WEBHOOK_URL = os.getenv("MOYASAR_WEBHOOK_URL", "").strip()
 MOYASAR_API_URL = os.getenv("MOYASAR_API_URL", "https://api.moyasar.com/v1").strip().rstrip("/")
 MOYASAR_ENVIRONMENT = os.getenv("MOYASAR_ENVIRONMENT", "test").strip().lower()
 MOYASAR_CONNECT_TIMEOUT = int(os.getenv("MOYASAR_CONNECT_TIMEOUT", "5"))
@@ -252,13 +254,111 @@ MOYASAR_WEBHOOK_MAX_BODY_BYTES = int(os.getenv("MOYASAR_WEBHOOK_MAX_BODY_BYTES",
 
 if MOYASAR_ENVIRONMENT not in {"test", "live"}:
     raise ImproperlyConfigured("MOYASAR_ENVIRONMENT must be either test or live.")
+
+expected_secret_prefix = f"sk_{MOYASAR_ENVIRONMENT}_"
+expected_publishable_prefix = f"pk_{MOYASAR_ENVIRONMENT}_"
+if MOYASAR_SECRET_KEY and (
+    not MOYASAR_SECRET_KEY.startswith(expected_secret_prefix)
+    or len(MOYASAR_SECRET_KEY) <= len(expected_secret_prefix)
+):
+    raise ImproperlyConfigured(
+        f"MOYASAR_SECRET_KEY does not match the configured {MOYASAR_ENVIRONMENT} environment."
+    )
+if MOYASAR_PUBLISHABLE_KEY and (
+    not MOYASAR_PUBLISHABLE_KEY.startswith(expected_publishable_prefix)
+    or len(MOYASAR_PUBLISHABLE_KEY) <= len(expected_publishable_prefix)
+):
+    raise ImproperlyConfigured(
+        f"MOYASAR_PUBLISHABLE_KEY does not match the configured {MOYASAR_ENVIRONMENT} environment."
+    )
+
+parsed_moyasar_api_url = urlparse(MOYASAR_API_URL)
+try:
+    moyasar_api_port = parsed_moyasar_api_url.port
+except ValueError as exc:
+    raise ImproperlyConfigured("MOYASAR_API_URL contains an invalid port.") from exc
+if (
+    parsed_moyasar_api_url.scheme != "https"
+    or (parsed_moyasar_api_url.hostname or "").lower().rstrip(".") != "api.moyasar.com"
+    or parsed_moyasar_api_url.username
+    or parsed_moyasar_api_url.password
+    or moyasar_api_port not in {None, 443}
+    or parsed_moyasar_api_url.path.rstrip("/") != "/v1"
+    or parsed_moyasar_api_url.query
+    or parsed_moyasar_api_url.fragment
+):
+    raise ImproperlyConfigured("MOYASAR_API_URL must be the official HTTPS Moyasar v1 API URL.")
+
 if MOYASAR_ENVIRONMENT == "live":
-    raise ImproperlyConfigured("Moyasar live mode is disabled during the Sandbox integration phase.")
-if MOYASAR_SECRET_KEY:
-    expected_prefix = "sk_test_"
-    if not MOYASAR_SECRET_KEY.startswith(expected_prefix):
+    required_live_settings = {
+        "MOYASAR_PUBLISHABLE_KEY": MOYASAR_PUBLISHABLE_KEY,
+        "MOYASAR_SECRET_KEY": MOYASAR_SECRET_KEY,
+        "MOYASAR_WEBHOOK_SECRET": MOYASAR_WEBHOOK_SECRET,
+        "MOYASAR_CALLBACK_URL": MOYASAR_CALLBACK_URL,
+        "MOYASAR_WEBHOOK_URL": MOYASAR_WEBHOOK_URL,
+    }
+    missing_live_settings = [name for name, value in required_live_settings.items() if not value]
+    if not MOYASAR_ENABLED:
+        missing_live_settings.insert(0, "MOYASAR_ENABLED=True")
+    if missing_live_settings:
         raise ImproperlyConfigured(
-            f"MOYASAR_SECRET_KEY does not match the configured {MOYASAR_ENVIRONMENT} environment."
+            "Moyasar live mode requires complete configuration: "
+            + ", ".join(missing_live_settings)
+        )
+
+    parsed_callback_url = urlparse(MOYASAR_CALLBACK_URL)
+    callback_host = (parsed_callback_url.hostname or "").lower().rstrip(".")
+    try:
+        callback_port = parsed_callback_url.port
+    except ValueError as exc:
+        raise ImproperlyConfigured("MOYASAR_CALLBACK_URL contains an invalid port.") from exc
+    official_app_hosts = {
+        str(host).strip().lower().rstrip(".")
+        for host in ALLOWED_HOSTS
+        if str(host).strip() and str(host).strip() != "*"
+    }
+    if (
+        parsed_callback_url.scheme != "https"
+        or not callback_host
+        or callback_host not in official_app_hosts
+        or callback_host in {"localhost", "127.0.0.1", "testserver"}
+        or parsed_callback_url.username
+        or parsed_callback_url.password
+        or callback_port not in {None, 443}
+        or parsed_callback_url.fragment
+    ):
+        raise ImproperlyConfigured(
+            "MOYASAR_CALLBACK_URL must use HTTPS on an official application host from ALLOWED_HOSTS."
+        )
+    checkout_hosts = {
+        str(host).strip().lower().rstrip(".")
+        for host in MOYASAR_CHECKOUT_ALLOWED_HOSTS
+        if str(host).strip()
+    }
+    if not checkout_hosts or not checkout_hosts.issubset({"checkout.moyasar.com"}):
+        raise ImproperlyConfigured(
+            "MOYASAR_CHECKOUT_ALLOWED_HOSTS may contain only official Moyasar checkout hosts in live mode."
+        )
+
+    parsed_webhook_url = urlparse(MOYASAR_WEBHOOK_URL)
+    webhook_host = (parsed_webhook_url.hostname or "").lower().rstrip(".")
+    try:
+        webhook_port = parsed_webhook_url.port
+    except ValueError as exc:
+        raise ImproperlyConfigured("MOYASAR_WEBHOOK_URL contains an invalid port.") from exc
+    if (
+        parsed_webhook_url.scheme != "https"
+        or not webhook_host
+        or webhook_host not in official_app_hosts
+        or webhook_host in {"localhost", "127.0.0.1", "testserver"}
+        or parsed_webhook_url.username
+        or parsed_webhook_url.password
+        or webhook_port not in {None, 443}
+        or parsed_webhook_url.query
+        or parsed_webhook_url.fragment
+    ):
+        raise ImproperlyConfigured(
+            "MOYASAR_WEBHOOK_URL must use HTTPS on an official application host from ALLOWED_HOSTS."
         )
 
 BANK_TRANSFER_ENABLED = env_bool("BANK_TRANSFER_ENABLED", "False")

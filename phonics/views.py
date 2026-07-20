@@ -5419,7 +5419,9 @@ def start_moyasar_invoice_checkout(request, plan, method_slug):
                 return locked, "pending"
             locked.moyasar_invoice_id = invoice.invoice_id
             locked.checkout_url = invoice.checkout_url
-            locked.payment_environment = PaymentOrder.Environment.TEST
+            locked.payment_environment = getattr(
+                settings, "MOYASAR_ENVIRONMENT", PaymentOrder.Environment.TEST
+            )
             locked.provider = PaymentOrder.Provider.MOYASAR
             locked.status = PaymentOrder.Status.INITIATED
             locked.provider_status = invoice.status or "initiated"
@@ -5842,7 +5844,9 @@ def moyasar_webhook(request):
         or not isinstance(event_live, bool)
     ):
         return JsonResponse({"status": "invalid_event"}, status=400)
-    if event_live or getattr(settings, "MOYASAR_ENVIRONMENT", "test") != "test":
+    runtime_environment = str(getattr(settings, "MOYASAR_ENVIRONMENT", "test") or "test").lower()
+    expected_live = runtime_environment == PaymentOrder.Environment.LIVE
+    if event_live is not expected_live:
         return JsonResponse({"status": "environment_mismatch"}, status=403)
 
     data = payload.get("data")
@@ -5851,7 +5855,7 @@ def moyasar_webhook(request):
     if isinstance(invoice_id, str) and invoice_id:
         order = PaymentOrder.objects.filter(
             provider=PaymentOrder.Provider.MOYASAR,
-            payment_environment=PaymentOrder.Environment.TEST,
+            payment_environment=runtime_environment,
             moyasar_invoice_id=invoice_id,
         ).first()
 
@@ -5861,7 +5865,7 @@ def moyasar_webhook(request):
                 provider=PaymentOrder.Provider.MOYASAR,
                 event_id=event_id.strip(),
                 event_type=event_type,
-                payment_environment=PaymentOrder.Environment.TEST,
+                payment_environment=runtime_environment,
                 payment_order=order,
                 processing_status=PaymentWebhookEvent.ProcessingStatus.RECEIVED,
                 payload_hash=hashlib.sha256(raw_body).hexdigest(),
