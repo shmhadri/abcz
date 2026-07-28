@@ -15,9 +15,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import path, include
 
+
+def google_site_verification(request):
+    return HttpResponse(
+        "google-site-verification: googlea532a5ae726057b6.html",
+        content_type="text/plain; charset=utf-8",
+    )
+
+
 urlpatterns = [
+    path(
+        'googlea532a5ae726057b6.html',
+        google_site_verification,
+        name='google_site_verification',
+    ),
     path('admin/', admin.site.urls),
     path('', include('phonics.urls')),
 ]

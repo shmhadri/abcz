@@ -107,6 +107,7 @@ from .plans import (
     normalize_plan_code,
 )
 from .subscriptions import (
+    PENDING_PAYMENT_STATUSES,
     PurchaseNotAllowed,
     get_user_entitlements,
     purchase_options_for_user,
@@ -2926,7 +2927,11 @@ def profile_dashboard(request):
     english_foundation_points = sum(section["points"] for section in english_foundation_sections)
     english_foundation_completed = len([section for section in english_foundation_sections if section["completed"]])
 
-    payment_orders = list(PaymentOrder.objects.filter(user=request.user).order_by("-created_at")[:20])
+    payment_orders = list(
+        PaymentOrder.objects.filter(user=request.user)
+        .exclude(status__in=PENDING_PAYMENT_STATUSES)
+        .order_by("-created_at")[:20]
+    )
     checkout_cutoff = timezone.now() - timedelta(
         minutes=getattr(settings, "MOYASAR_ORDER_REUSE_MINUTES", 30)
     )
