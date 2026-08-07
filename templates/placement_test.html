@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="اختبار قصير يساعدك على اختيار مسار تعلم الإنجليزية المناسب في Phonics Game Lab.">
     <title>اختبار تحديد المستوى - Phonics Game Lab</title>
     <link rel="stylesheet" href="{% static 'css/site_public.css' %}">
 </head>
@@ -14,42 +15,71 @@
         <section class="hero placement-hero">
             <p class="eyebrow">Placement Test</p>
             <h1>اختبار تحديد المستوى</h1>
-            <p class="lead">أجب عن 20 سؤالا قصيرا في الحروف، الأصوات، الصوتيات، CVC، والجمل. النتيجة تقترح المسار المناسب ولا تمنح شهادة.</p>
+            <p class="lead">أجب عن 20 سؤالًا قصيرًا في الحروف والأصوات والصوتيات وقراءة CVC والجمل. ستحصل على مسار مقترح وتقرير مبسط عن نقاط القوة وما يحتاج إلى مراجعة.</p>
             <div class="placement-summary" aria-label="ملخص الاختبار">
-                <span>20 سؤالا</span>
+                <span>20 سؤالًا</span>
+                <span>5 دقائق تقريبًا</span>
                 <span>نتيجة فورية</span>
-                <span>توجيه للمستوى المناسب</span>
+                <span>حفظ تلقائي للتقدم</span>
             </div>
         </section>
 
-        <form class="placement-form" data-placement-form data-endpoint="{% url 'placement_test' %}">
-            {% csrf_token %}
-            {% for question in questions %}
-                <fieldset class="placement-question" data-section="{{ question.section }}">
-                    <legend>
-                        <span>{{ forloop.counter }}</span>
-                        {{ question.section_label }}
-                    </legend>
-                    <h2>{{ question.question }}</h2>
-                    <p class="question-prompt">{{ question.prompt }}</p>
-                    <div class="placement-options">
-                        {% for option in question.options %}
-                            <label class="option-row">
-                                <input type="radio" name="{{ question.id }}" value="{{ option }}">
-                                <span>{{ option }}</span>
-                            </label>
-                        {% endfor %}
-                    </div>
-                </fieldset>
-            {% endfor %}
+        <noscript>
+            <div class="placement-notice">يلزم تفعيل JavaScript لعرض النتيجة والتنقل بين أسئلة الاختبار.</div>
+        </noscript>
 
-            <div class="placement-actions">
-                <button class="btn primary" type="submit">عرض النتيجة</button>
-                <a class="btn" href="{% url 'levels' %}">أعرف مستواي - اختر المستوى</a>
+        <form class="placement-form" data-placement-form data-endpoint="{% url 'placement_test' %}" novalidate>
+            {% csrf_token %}
+
+            <div class="placement-progress-panel" data-placement-progress-panel>
+                <div class="placement-progress-copy">
+                    <strong data-progress-title>السؤال 1 من 20</strong>
+                    <span data-progress-section>الحروف الإنجليزية</span>
+                </div>
+                <div class="placement-progress-track" role="progressbar" aria-label="نسبة إكمال الاختبار" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-progress-track>
+                    <span data-progress-bar></span>
+                </div>
+                <div class="placement-progress-meta">
+                    <span data-answered-count>تمت الإجابة عن 0 من 20</span>
+                    <button class="placement-reset" type="button" data-reset-test>بدء من جديد</button>
+                </div>
             </div>
+
+            <div class="placement-question-stage" data-question-stage>
+                {% for question in questions %}
+                    <fieldset class="placement-question" data-section="{{ question.section }}" data-question-index="{{ forloop.counter0 }}">
+                        <legend>
+                            <span>{{ forloop.counter }}</span>
+                            {{ question.section_label }}
+                        </legend>
+                        <h2>{{ question.question }}</h2>
+                        <p class="question-prompt" dir="auto">{{ question.prompt }}</p>
+                        <div class="placement-options">
+                            {% for option in question.options %}
+                                <label class="option-row">
+                                    <input type="radio" name="{{ question.id }}" value="{{ option }}">
+                                    <span dir="auto">{{ option }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <p class="placement-question-error" data-question-error hidden>اختر إجابة للمتابعة.</p>
+                    </fieldset>
+                {% endfor %}
+            </div>
+
+            <div class="placement-actions placement-step-actions">
+                <button class="btn" type="button" data-previous-question disabled>السؤال السابق</button>
+                <button class="btn primary" type="button" data-next-question>السؤال التالي</button>
+                <button class="btn primary" type="submit" data-submit-test hidden>عرض النتيجة</button>
+            </div>
+            <p class="placement-shortcut-hint">يمكنك اختيار الإجابة بلوحة المفاتيح ثم الضغط على Enter للمتابعة.</p>
         </form>
 
-        <section class="result-card" data-placement-result hidden aria-live="polite"></section>
+        <section class="result-card placement-result-card" data-placement-result hidden aria-live="polite" tabindex="-1"></section>
+
+        <div class="placement-secondary-action">
+            <a class="btn" href="{% url 'levels' %}">عرض جميع المستويات بدون اختبار</a>
+        </div>
     </main>
 
     <script id="placementQuestions" type="application/json">{{ questions_json|safe }}</script>

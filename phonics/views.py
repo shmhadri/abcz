@@ -772,6 +772,25 @@ def score_placement_test(answers):
     total = len(PLACEMENT_TEST_QUESTIONS)
     percentage = round((correct_count / total) * 100) if total else 0
 
+    strengths = []
+    focus_areas = []
+    for section_score in section_scores.values():
+        section_percentage = round(
+            (section_score["correct"] / max(section_score["total"], 1)) * 100
+        )
+        section_score["percentage"] = section_percentage
+        if section_percentage >= 75:
+            section_score["status"] = "strong"
+            section_score["feedback"] = "نقطة قوة"
+            strengths.append(section_score["label"])
+        elif section_percentage >= 50:
+            section_score["status"] = "developing"
+            section_score["feedback"] = "قيد التطوير"
+        else:
+            section_score["status"] = "needs_review"
+            section_score["feedback"] = "يحتاج مراجعة"
+            focus_areas.append(section_score["label"])
+
     letters = section_scores.get("letters", {"correct": 0, "total": 1})
     letters_ratio = letters["correct"] / max(letters["total"], 1)
 
@@ -817,6 +836,8 @@ def score_placement_test(answers):
         "cta_label": meta["cta_label"],
         "cta_url": meta["cta_url"],
         "section_scores": section_scores,
+        "strengths": strengths,
+        "focus_areas": focus_areas,
     }
 
 
@@ -6176,6 +6197,35 @@ def placement_test(request):
         answers = data.get("answers")
         if not isinstance(answers, dict):
             return _json_error("answers must be an object", 400)
+
+        question_map = {
+            question["id"]: question
+            for question in PLACEMENT_TEST_QUESTIONS
+        }
+        missing_questions = [
+            question_id
+            for question_id in question_map
+            if question_id not in answers
+        ]
+        invalid_questions = [
+            question_id
+            for question_id, answer in answers.items()
+            if question_id in question_map
+            and str(answer).strip() not in question_map[question_id]["options"]
+        ]
+        unknown_questions = [
+            question_id
+            for question_id in answers
+            if question_id not in question_map
+        ]
+        if missing_questions or invalid_questions or unknown_questions:
+            return _json_error(
+                "Incomplete or invalid placement answers",
+                400,
+                missing_questions=missing_questions,
+                invalid_questions=invalid_questions,
+                unknown_questions=unknown_questions,
+            )
 
         return JsonResponse(score_placement_test(answers))
 
