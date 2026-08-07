@@ -1123,6 +1123,56 @@ class PaymentActivationReview(models.Model):
         return f"{self.payment_order.reference} ({self.reason_code})"
 
 
+class AdminAuditLogQuerySet(models.QuerySet):
+    def update(self, **kwargs):
+        raise ValidationError("Admin audit log entries are append-only.")
+
+    def delete(self):
+        raise ValidationError("Admin audit log entries are append-only.")
+
+
+class AdminAuditLog(models.Model):
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="admin_audit_events",
+    )
+    action = models.CharField(max_length=80, db_index=True)
+    target_model = models.CharField(max_length=120, db_index=True)
+    target_id = models.CharField(max_length=120, blank=True, db_index=True)
+    target_repr = models.CharField(max_length=255, blank=True)
+    before_status = models.JSONField(default=dict, blank=True)
+    after_status = models.JSONField(default=dict, blank=True)
+    note = models.TextField(blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=512, blank=True)
+    provider_event_id = models.CharField(max_length=120, blank=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    objects = AdminAuditLogQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["-created_at"]
+        permissions = [
+            ("view_operations_dashboard", "Can view the operations dashboard"),
+            ("run_payment_reconciliation", "Can run payment reconciliation"),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            raise ValidationError("Admin audit log entries are append-only.")
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError("Admin audit log entries are append-only.")
+
+    def __str__(self):
+        target = self.target_repr or f"{self.target_model}:{self.target_id}"
+        return f"{self.action} - {target}"
+
+
 class BankTransferProof(models.Model):
     class Status(models.TextChoices):
         PENDING_REVIEW = "pending_review", "Pending review"

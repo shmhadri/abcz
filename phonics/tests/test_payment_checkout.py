@@ -21,7 +21,6 @@ from django.urls import reverse
 from django.utils import timezone
 from PIL import Image
 
-from phonics.admin import PaymentOrderAdmin
 from phonics.models import (
     BankTransferProof,
     PaymentOrder,
@@ -384,46 +383,20 @@ class PaymentCheckoutTests(TestCase):
             activate_subscription_from_payment(rejected)
         self.assertEqual(UserSubscription.objects.count(), 1)
 
-    def test_admin_approve_and_reject_bank_transfer_actions(self):
+    def test_admin_payment_orders_are_view_only_without_manual_activation_actions(self):
         admin_user = User.objects.create_superuser(
             username="admin-review",
             email="admin@example.com",
             password="StrongPass123!",
         )
-        model_admin = PaymentOrderAdmin(PaymentOrder, django_admin.site)
-        model_admin.message_user = lambda *args, **kwargs: None
+        model_admin = django_admin.site._registry[PaymentOrder]
         request = RequestFactory().post("/admin/phonics/paymentorder/")
         request.user = admin_user
 
-        approved = self.create_order(
-            method=PaymentOrder.Method.BANK_TRANSFER,
-            provider=PaymentOrder.Provider.MANUAL_BANK,
-            status=PaymentOrder.Status.AWAITING_BANK_REVIEW,
-        )
-        model_admin.approve_bank_transfer(request, PaymentOrder.objects.filter(pk=approved.pk))
-        approved.refresh_from_db()
-        subscription = UserSubscription.objects.get(user=self.user, plan_code="silver")
-        first_expires_at = subscription.expires_at
-        self.assertEqual(approved.status, PaymentOrder.Status.BANK_APPROVED)
-
-        model_admin.approve_bank_transfer(request, PaymentOrder.objects.filter(pk=approved.pk))
-        subscription.refresh_from_db()
-        self.assertEqual(UserSubscription.objects.filter(user=self.user, plan_code="silver").count(), 1)
-        self.assertEqual(subscription.expires_at, first_expires_at)
-
-        rejected = self.create_order(
-            plan_code=PLAN_LEVEL_THREE,
-            plan_name="Level 3",
-            amount_halalas=1500,
-            amount_sar=Decimal("15.00"),
-            method=PaymentOrder.Method.BANK_TRANSFER,
-            provider=PaymentOrder.Provider.MANUAL_BANK,
-            status=PaymentOrder.Status.AWAITING_BANK_REVIEW,
-        )
-        model_admin.reject_bank_transfer(request, PaymentOrder.objects.filter(pk=rejected.pk))
-        rejected.refresh_from_db()
-        self.assertEqual(rejected.status, PaymentOrder.Status.BANK_REJECTED)
-        self.assertFalse(UserSubscription.objects.filter(user=self.user, plan_code=PLAN_LEVEL_THREE).exists())
+        self.assertFalse(model_admin.has_add_permission(request))
+        self.assertFalse(model_admin.has_change_permission(request))
+        self.assertFalse(model_admin.has_delete_permission(request))
+        self.assertEqual(model_admin.get_actions(request), {})
 
     def test_level_three_subscription_opens_only_level_three_features(self):
         order = self.create_order(

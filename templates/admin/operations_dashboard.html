@@ -1,0 +1,107 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .operations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .operations-card {
+        background: var(--body-bg);
+        border: 1px solid var(--hairline-color);
+        border-radius: 8px;
+        padding: 18px;
+    }
+    .operations-card strong {
+        display: block;
+        font-size: 1.7rem;
+        margin-top: 8px;
+    }
+    .operations-note {
+        background: var(--darkened-bg);
+        border-radius: 6px;
+        margin-bottom: 20px;
+        padding: 12px 16px;
+    }
+    .operations-table {
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <p class="operations-note">
+        This dashboard contains aggregate operational metrics only. Marketing attribution is
+        {% if attribution_available %}available{% else %}not available until MarketingAttribution is added{% endif %}.
+    </p>
+
+    <div class="operations-grid">
+        <div class="operations-card">Users today<strong>{{ users_today }}</strong></div>
+        <div class="operations-card">Users last 7 days<strong>{{ users_week }}</strong></div>
+        <div class="operations-card">Users this month<strong>{{ users_month }}</strong></div>
+        <div class="operations-card">New subscriptions<strong>{{ new_subscriptions }}</strong></div>
+        <div class="operations-card">Verified revenue<strong>{{ revenue_total|floatformat:2 }} SAR</strong></div>
+        <div class="operations-card">Top plan<strong>{% if top_plan %}{{ top_plan.plan_code }}{% else %}—{% endif %}</strong></div>
+        <div class="operations-card">30-day conversion<strong>{{ conversion_rate }}%</strong></div>
+    </div>
+
+    {% if can_view_sensitive_operations %}
+    <h2>Operational health</h2>
+    <div class="operations-grid">
+        <div class="operations-card">Active subscriptions<strong>{{ active_subscriptions }}</strong></div>
+        <div class="operations-card">Expired subscriptions<strong>{{ expired_subscriptions }}</strong></div>
+        <div class="operations-card">Revenue today<strong>{{ revenue_today|floatformat:2 }} SAR</strong></div>
+        <div class="operations-card">Revenue this month<strong>{{ revenue_month|floatformat:2 }} SAR</strong></div>
+        <div class="operations-card">Successful orders<strong>{{ successful_orders }}</strong></div>
+        <div class="operations-card">Failed orders<strong>{{ failed_orders }}</strong></div>
+        <div class="operations-card">Pending orders<strong>{{ pending_orders }}</strong></div>
+        <div class="operations-card">Initiated over 30 minutes<strong>{{ stale_initiated_orders }}</strong></div>
+        <div class="operations-card">Webhook failures<strong>{{ webhook_failures }}</strong></div>
+    </div>
+
+    <div class="module">
+        <h2>Latest payment orders</h2>
+        <table class="operations-table">
+            <thead><tr><th>Reference</th><th>User</th><th>Plan</th><th>Status</th><th>Amount</th><th>Created</th></tr></thead>
+            <tbody>
+            {% for order in latest_orders %}
+                <tr>
+                    <td>{{ order.reference }}</td>
+                    <td>{{ order.user.username }}</td>
+                    <td>{{ order.plan_code }}</td>
+                    <td>{{ order.status }}</td>
+                    <td>{{ order.amount_sar|floatformat:2 }} {{ order.currency }}</td>
+                    <td>{{ order.created_at }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6">No payment orders.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="module">
+        <h2>Latest users</h2>
+        <table class="operations-table">
+            <thead><tr><th>Username</th><th>Email</th><th>Joined</th><th>Active</th></tr></thead>
+            <tbody>
+            {% for account in latest_users %}
+                <tr>
+                    <td>{{ account.username }}</td>
+                    <td>{{ account.email }}</td>
+                    <td>{{ account.date_joined }}</td>
+                    <td>{{ account.is_active|yesno:"Yes,No" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4">No users.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import path, include
 
+from phonics.admin_views import operations_dashboard
+
 
 def google_site_verification(request):
     return HttpResponse(
@@ -31,6 +33,11 @@ urlpatterns = [
         'googlea532a5ae726057b6.html',
         google_site_verification,
         name='google_site_verification',
+    ),
+    path(
+        'admin/operations-dashboard/',
+        admin.site.admin_view(operations_dashboard),
+        name='admin_operations_dashboard',
     ),
     path('admin/', admin.site.urls),
     path('', include('phonics.urls')),
