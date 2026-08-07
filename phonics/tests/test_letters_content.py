@@ -3,6 +3,8 @@ from pathlib import Path
 
 from django.test import SimpleTestCase
 
+from phonics.tests import letters_asset_bundle
+
 
 BANNED_WORDS = {"pig", "zip", "zap"}
 BANNED_TEXT = {"\u062e\u0646\u0632\u064a\u0631"}
@@ -78,9 +80,9 @@ class LettersContentTests(SimpleTestCase):
                     self.assertNotIn(word.lower(), BANNED_WORDS)
 
     def test_letters_page_loads_extracted_letter_data(self):
-        html = self.letters_html.read_text(encoding="utf-8", errors="ignore")
-
-        self.assertIn('/static/js/letters/letter_data.js', html)
+        # Asserted against the resolved script list so the check holds whether the
+        # template writes the path literally or through {% static %}.
+        self.assertIn('letter_data.js', letters_asset_bundle.local_script_names())
         self.assertTrue(self.letter_data_js.exists())
 
     def test_letter_x_uses_expected_words(self):
@@ -141,8 +143,9 @@ class LettersContentTests(SimpleTestCase):
         self.assertIn('id="birdAskBtn"', partial)
         self.assertIn('id="birdLessonIntro"', partial)
         self.assertIn('id="birdVisualQuestion"', partial)
-        self.assertIn("/static/js/letters/bird_tutor_content.js", html)
-        self.assertIn("/static/js/letters/bird_tutor.js", html)
+        loaded_scripts = letters_asset_bundle.local_script_names()
+        self.assertIn("bird_tutor_content.js", loaded_scripts)
+        self.assertIn("bird_tutor.js", loaded_scripts)
         self.assertIn("window.installBirdTutor(PhonicsGameLab)", html)
         self.assertIn("lottie-web/5.12.2/lottie.min.js", html)
 
@@ -176,7 +179,7 @@ class LettersContentTests(SimpleTestCase):
         self.assertTrue(self.completion_partial.exists())
         self.assertTrue(self.letter_completion_js.exists())
         self.assertIn('{% include "letters/_completion_modal.html" %}', html)
-        self.assertIn("/static/js/letters/letter_completion.js", html)
+        self.assertIn("letter_completion.js", letters_asset_bundle.local_script_names())
         self.assertIn("window.installLetterCompletionScreen(PhonicsGameLab)", html)
         self.assertIn('id="letterCompletionModal"', partial)
         self.assertIn('role="dialog"', partial)
