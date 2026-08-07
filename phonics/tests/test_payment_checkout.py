@@ -1027,6 +1027,12 @@ class MoyasarReconciliationTests(TestCase):
     def test_profile_dashboard_lists_only_current_users_payment_orders(self):
         other = User.objects.create_user(username="profile-other", password="StrongPass123!")
         PaymentOrder.objects.create(
+            user=self.user, plan_code="basic", plan_name="Pending Basic", duration_days=30,
+            amount_halalas=900, amount_sar=Decimal("9.00"), currency="SAR",
+            status=PaymentOrder.Status.PENDING, method=PaymentOrder.Method.MOYASAR_CARD,
+            provider=PaymentOrder.Provider.MOYASAR,
+        )
+        PaymentOrder.objects.create(
             user=other, plan_code="silver", plan_name="Other secret plan", duration_days=30,
             amount_halalas=2700, amount_sar=Decimal("27.00"), currency="SAR",
             status=PaymentOrder.Status.PENDING, method=PaymentOrder.Method.MOYASAR_CARD,
@@ -1035,6 +1041,7 @@ class MoyasarReconciliationTests(TestCase):
         response = self.client.get(reverse("profile_dashboard"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Silver")
+        self.assertContains(response, "Pending Basic")
         self.assertNotContains(response, "Other secret plan")
 
 

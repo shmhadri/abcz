@@ -107,7 +107,6 @@ from .plans import (
     normalize_plan_code,
 )
 from .subscriptions import (
-    PENDING_PAYMENT_STATUSES,
     PurchaseNotAllowed,
     get_user_entitlements,
     purchase_options_for_user,
@@ -2950,7 +2949,6 @@ def profile_dashboard(request):
 
     payment_orders = list(
         PaymentOrder.objects.filter(user=request.user)
-        .exclude(status__in=PENDING_PAYMENT_STATUSES)
         .order_by("-created_at")[:20]
     )
     checkout_cutoff = timezone.now() - timedelta(
