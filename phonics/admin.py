@@ -1,18 +1,125 @@
 from django.contrib import admin
-from django.utils import timezone
+from django.contrib.auth.admin import GroupAdmin as DjangoGroupAdmin
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.models import Group, User
+
+from .admin_audit import log_admin_action
 from .models import (
     Student, StudentProfile, LetterProgress,
-    BirdTutorProgress, BirdReviewItem, ExternalGame,
-    CVCWord, CVCSentence, CVCStory, CVCProgress,
+    BirdTutorProgress, BirdReviewItem, SoundPracticeProgress, ExternalGame,
+    CVCWord, CVCSentence, CVCStory, CVCProgress, CVCReadingProgress,
     EnglishFoundationProgress, UserSubscription, PaymentOrder, PaymentWebhookEvent,
-    PaymentActivationReview,
-    BankTransferProof, activate_subscription_from_payment,
+    PaymentActivationReview, AdminAuditLog,
     TopGoalUnit, TopGoalVocabulary, TopGoalSentence, TopGoalQuiz
 )
 
 
+class ViewOnlyAdminMixin:
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_actions(self, request):
+        return {}
+
+
+class ProtectedDeleteAdminMixin:
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+admin.site.unregister(User)
+admin.site.unregister(Group)
+
+
+@admin.register(User)
+class AuditedUserAdmin(DjangoUserAdmin):
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def save_model(self, request, obj, form, change):
+        fields = ("is_active", "is_staff", "is_superuser")
+        before = User.objects.filter(pk=obj.pk).values(*fields).first() if change else {}
+        super().save_model(request, obj, form, change)
+        after = {field: getattr(obj, field) for field in fields}
+        if before != after:
+            log_admin_action(
+                request,
+                action="user_security_changed",
+                target=obj,
+                before_status=before,
+                after_status=after,
+                note="Changed account security flags through Django Admin.",
+            )
+
+    def save_related(self, request, form, formsets, change):
+        user = form.instance
+        before = {
+            "groups": sorted(user.groups.values_list("name", flat=True)),
+            "permissions": sorted(user.user_permissions.values_list("codename", flat=True)),
+        }
+        super().save_related(request, form, formsets, change)
+        after = {
+            "groups": sorted(user.groups.values_list("name", flat=True)),
+            "permissions": sorted(user.user_permissions.values_list("codename", flat=True)),
+        }
+        if before != after:
+            log_admin_action(
+                request,
+                action="user_permissions_changed",
+                target=user,
+                before_status=before,
+                after_status=after,
+                note="Changed staff groups or direct permissions through Django Admin.",
+            )
+
+
+@admin.register(Group)
+class AuditedGroupAdmin(DjangoGroupAdmin):
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def save_model(self, request, obj, form, change):
+        obj._audit_permissions_before = (
+            sorted(obj.permissions.values_list("codename", flat=True)) if obj.pk else []
+        )
+        super().save_model(request, obj, form, change)
+
+    def save_related(self, request, form, formsets, change):
+        group = form.instance
+        before = getattr(group, "_audit_permissions_before", [])
+        super().save_related(request, form, formsets, change)
+        after = sorted(group.permissions.values_list("codename", flat=True))
+        if before != after:
+            log_admin_action(
+                request,
+                action="group_permissions_changed",
+                target=group,
+                before_status={"permissions": before},
+                after_status={"permissions": after},
+                note="Changed role permissions through Django Admin.",
+            )
+
+
 @admin.register(Student)
-class StudentAdmin(admin.ModelAdmin):
+class StudentAdmin(ProtectedDeleteAdminMixin, admin.ModelAdmin):
     list_display = ['name', 'school', 'total_score', 'letters_completed', 'created_at']
     search_fields = ['name', 'school']
     list_filter = ['created_at', 'letters_completed']
@@ -20,136 +127,165 @@ class StudentAdmin(admin.ModelAdmin):
 
 
 @admin.register(StudentProfile)
-class StudentProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'display_name', 'student_name', 'city', 'parent_phone', 'is_premium', 'is_vip', 'updated_at']
+class StudentProfileAdmin(ProtectedDeleteAdminMixin, admin.ModelAdmin):
+    list_display = ['user', 'display_name', 'student_name', 'city', 'masked_parent_phone', 'is_premium', 'is_vip', 'updated_at']
     search_fields = ['user__username', 'user__email', 'display_name', 'student_name', 'city', 'parent_phone']
     list_filter = ['is_premium', 'is_vip', 'created_at']
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['user', 'is_premium', 'is_vip', 'created_at', 'updated_at']
+    list_select_related = ['user']
+
+    @admin.display(description='Parent phone')
+    def masked_parent_phone(self, obj):
+        value = str(obj.parent_phone or '')
+        return f"••••{value[-4:]}" if value else '—'
 
 
 @admin.register(BirdTutorProgress)
-class BirdTutorProgressAdmin(admin.ModelAdmin):
+class BirdTutorProgressAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
     list_display = ['user', 'xp', 'total_questions', 'correct_answers', 'wrong_answers', 'last_used_at']
     search_fields = ['user__username', 'user__email']
     readonly_fields = ['created_at', 'updated_at']
+    list_select_related = ['user']
 
 
 @admin.register(BirdReviewItem)
-class BirdReviewItemAdmin(admin.ModelAdmin):
+class BirdReviewItemAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
     list_display = ['user', 'letter', 'word', 'question_type', 'mistakes_count', 'success_count', 'mastered', 'last_reviewed_at']
     list_filter = ['letter', 'question_type', 'mastered']
     search_fields = ['user__username', 'user__email', 'word']
     readonly_fields = ['created_at', 'updated_at']
+    list_select_related = ['user']
 
 
 @admin.register(EnglishFoundationProgress)
-class EnglishFoundationProgressAdmin(admin.ModelAdmin):
+class EnglishFoundationProgressAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
     list_display = ['user', 'section', 'points', 'actions_count', 'completed', 'last_activity_type', 'last_activity_at']
     list_filter = ['section', 'completed', 'last_activity_at']
     search_fields = ['user__username', 'user__email', 'section']
     readonly_fields = ['created_at', 'updated_at']
+    list_select_related = ['user']
 
 
 @admin.register(UserSubscription)
-class UserSubscriptionAdmin(admin.ModelAdmin):
+class UserSubscriptionAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
     list_display = ['user', 'plan_code', 'status', 'starts_at', 'expires_at', 'activated_by_payment', 'updated_at']
     list_filter = ['plan_code', 'status', 'starts_at', 'expires_at']
     search_fields = ['user__username', 'user__email', 'plan_code']
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = [field.name for field in UserSubscription._meta.fields]
+    list_select_related = ['user', 'activated_by_payment']
+    date_hierarchy = 'created_at'
+    list_per_page = 50
 
 
 @admin.register(PaymentOrder)
-class PaymentOrderAdmin(admin.ModelAdmin):
+class PaymentOrderAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
     list_display = [
-        'reference', 'user', 'plan_code', 'amount_sar', 'currency', 'method',
-        'provider', 'status', 'activated_at', 'created_at'
+        'reference', 'user', 'plan_code', 'method', 'status', 'amount_sar',
+        'created_at', 'paid_at', 'activated_at', 'short_provider_payment_id'
     ]
-    list_filter = ['plan_code', 'method', 'provider', 'status', 'created_at']
-    search_fields = ['user__username', 'user__email', 'plan_code', 'provider_payment_id']
-    readonly_fields = [
-        'reference', 'amount_halalas', 'currency', 'provider_payment_id',
-        'moyasar_invoice_id', 'moyasar_payment_id', 'payment_environment',
-        'idempotency_key', 'invoice_creation_token', 'invoice_creation_started_at',
-        'checkout_url', 'metadata', 'paid_at', 'failed_at',
-        'canceled_at', 'failure_code', 'failure_message', 'activated_at',
-        'created_at', 'updated_at'
+    list_filter = ['status', 'method', 'plan_code', 'created_at', 'paid_at', 'activated_at']
+    search_fields = ['=id', 'user__username', 'user__email', 'plan_code', 'provider_payment_id']
+    readonly_fields = [field.name for field in PaymentOrder._meta.fields] + [
+        'reference', 'short_provider_payment_id'
     ]
-    actions = ['approve_bank_transfer', 'reject_bank_transfer']
+    actions = []
+    list_select_related = ['user']
+    date_hierarchy = 'created_at'
+    list_per_page = 50
 
-    @admin.action(description='Approve bank transfer and activate subscription')
-    def approve_bank_transfer(self, request, queryset):
-        approved = 0
-        skipped = 0
-        for order in queryset:
-            if order.method != PaymentOrder.Method.BANK_TRANSFER:
-                skipped += 1
-                continue
-            order.status = PaymentOrder.Status.BANK_APPROVED
-            order.provider_status = 'approved_by_admin'
-            order.save(update_fields=['status', 'provider_status', 'updated_at'])
-            order.bank_proofs.filter(status=BankTransferProof.Status.PENDING_REVIEW).update(
-                status=BankTransferProof.Status.APPROVED,
-                reviewed_by=request.user,
-                reviewed_at=timezone.now(),
-            )
-            activate_subscription_from_payment(order)
-            approved += 1
-        self.message_user(request, f'Approved {approved} bank transfer order(s). Skipped {skipped}.')
+    @admin.display(description='Provider payment ID')
+    def short_provider_payment_id(self, obj):
+        value = str(obj.provider_payment_id or obj.moyasar_payment_id or '')
+        if not value:
+            return '—'
+        return f"{value[:4]}…{value[-4:]}" if len(value) > 10 else '••••'
 
-    @admin.action(description='Reject bank transfer')
-    def reject_bank_transfer(self, request, queryset):
-        rejected = 0
-        for order in queryset.filter(method=PaymentOrder.Method.BANK_TRANSFER):
-            if order.activated_at:
-                continue
-            order.status = PaymentOrder.Status.BANK_REJECTED
-            order.provider_status = 'rejected_by_admin'
-            order.save(update_fields=['status', 'provider_status', 'updated_at'])
-            order.bank_proofs.filter(status=BankTransferProof.Status.PENDING_REVIEW).update(
-                status=BankTransferProof.Status.REJECTED,
-                reviewed_by=request.user,
-                reviewed_at=timezone.now(),
-            )
-            rejected += 1
-        self.message_user(request, f'Rejected {rejected} bank transfer order(s).')
+    def _is_support_agent(self, request):
+        return (
+            not request.user.is_superuser
+            and request.user.groups.filter(name='Support Agent').exists()
+        )
 
+    def get_list_display(self, request):
+        if self._is_support_agent(request):
+            return ['reference', 'user', 'plan_code', 'status', 'failure_code', 'created_at']
+        return super().get_list_display(request)
+
+    def get_list_filter(self, request):
+        if self._is_support_agent(request):
+            return ['status', 'plan_code', 'created_at']
+        return super().get_list_filter(request)
+
+    def get_search_fields(self, request):
+        if self._is_support_agent(request):
+            return ['=id', 'user__username', 'user__email', 'plan_code']
+        return super().get_search_fields(request)
+
+    def get_fields(self, request, obj=None):
+        if self._is_support_agent(request):
+            return [
+                'reference', 'user', 'plan_code', 'status', 'failure_code',
+                'failure_message', 'created_at', 'paid_at', 'activated_at',
+            ]
+        return super().get_fields(request, obj)
 
 @admin.register(PaymentWebhookEvent)
-class PaymentWebhookEventAdmin(admin.ModelAdmin):
+class PaymentWebhookEventAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
     list_display = [
-        'event_id', 'event_type', 'payment_environment', 'payment_order',
-        'processing_status', 'received_at', 'processed_at',
+        'provider', 'event_id', 'event_type', 'payment_reference',
+        'processing_status', 'failure_code', 'received_at', 'processed_at',
     ]
-    list_filter = ['provider', 'event_type', 'payment_environment', 'processing_status', 'received_at']
-    search_fields = ['event_id', 'payment_order__id', 'payment_order__user__username']
-    readonly_fields = [
-        'provider', 'event_id', 'event_type', 'payment_environment', 'payment_order',
-        'received_at', 'processed_at', 'processing_status', 'failure_code', 'payload_hash',
+    list_filter = ['processing_status', 'event_type', 'received_at', 'failure_code']
+    search_fields = [
+        'event_id', '=payment_order__id', 'payment_order__provider_payment_id',
+        'payment_order__user__username', 'payment_order__user__email',
     ]
+    readonly_fields = [field.name for field in PaymentWebhookEvent._meta.fields]
+    list_select_related = ['payment_order', 'payment_order__user']
+    date_hierarchy = 'received_at'
+    list_per_page = 50
+
+    @admin.display(description='Payment')
+    def payment_reference(self, obj):
+        return obj.payment_order.reference if obj.payment_order_id else '—'
 
 
 @admin.register(PaymentActivationReview)
-class PaymentActivationReviewAdmin(admin.ModelAdmin):
+class PaymentActivationReviewAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
     list_display = ['payment_order', 'reason_code', 'status', 'created_at', 'resolved_at']
     list_filter = ['reason_code', 'status', 'created_at']
     search_fields = ['payment_order__id', 'payment_order__user__username']
-    readonly_fields = ['payment_order', 'reason_code', 'created_at']
+    readonly_fields = [field.name for field in PaymentActivationReview._meta.fields]
+    list_select_related = ['payment_order', 'payment_order__user']
+    list_per_page = 50
 
 
-@admin.register(BankTransferProof)
-class BankTransferProofAdmin(admin.ModelAdmin):
-    list_display = ['payment_order', 'user', 'sender_name', 'bank_name', 'amount_sar', 'status', 'reviewed_by', 'created_at']
-    list_filter = ['status', 'bank_name', 'created_at', 'reviewed_at']
-    search_fields = ['user__username', 'user__email', 'sender_name', 'transfer_reference', 'payment_order__plan_code']
-    readonly_fields = ['created_at']
+@admin.register(SoundPracticeProgress)
+class SoundPracticeProgressAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
+    list_display = ['user', 'quiz_attempts', 'quiz_correct', 'worksheet_downloads', 'last_used_at']
+    search_fields = ['user__username', 'user__email']
+    readonly_fields = [field.name for field in SoundPracticeProgress._meta.fields]
+    list_select_related = ['user']
+    list_per_page = 50
+
+
+@admin.register(CVCReadingProgress)
+class CVCReadingProgressAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
+    list_display = ['user', 'cvc_mastery_percentage', 'stories_completed', 'fluency_score', 'updated_at']
+    search_fields = ['user__username', 'user__email']
+    readonly_fields = [field.name for field in CVCReadingProgress._meta.fields]
+    list_select_related = ['user']
+    date_hierarchy = 'updated_at'
+    list_per_page = 50
 
 
 @admin.register(LetterProgress)
-class LetterProgressAdmin(admin.ModelAdmin):
+class LetterProgressAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
     list_display = ['user', 'student', 'letter', 'total_score', 'score', 'completed', 'passed', 'attempts', 'completed_at', 'last_updated_at']
     list_filter = ['letter', 'completed', 'passed']
     search_fields = ['user__username', 'user__email', 'student__name']
     readonly_fields = ['timestamp', 'created_at', 'last_updated_at']
+    list_select_related = ['user', 'student']
 
 
 @admin.register(ExternalGame)
@@ -197,10 +333,27 @@ class CVCStoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(CVCProgress)
-class CVCProgressAdmin(admin.ModelAdmin):
+class CVCProgressAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
     list_display = ['student', 'words_completed', 'sentences_completed', 'stories_completed', 'total_score']
     search_fields = ['student__name']
     readonly_fields = ['last_activity', 'created_at']
+    list_select_related = ['student']
+
+
+@admin.register(AdminAuditLog)
+class AdminAuditLogAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
+    list_display = ['created_at', 'actor', 'action', 'target_model', 'target_id', 'short_target']
+    list_filter = ['action', 'target_model', 'created_at']
+    search_fields = ['actor__username', 'action', 'target_model', 'target_id', 'target_repr']
+    readonly_fields = [field.name for field in AdminAuditLog._meta.fields]
+    list_select_related = ['actor']
+    date_hierarchy = 'created_at'
+    list_per_page = 50
+
+    @admin.display(description='Target')
+    def short_target(self, obj):
+        value = str(obj.target_repr or '')
+        return value if len(value) <= 60 else f"{value[:57]}…"
 
 
 @admin.register(TopGoalUnit)

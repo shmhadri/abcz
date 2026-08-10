@@ -771,6 +771,25 @@ def score_placement_test(answers):
     total = len(PLACEMENT_TEST_QUESTIONS)
     percentage = round((correct_count / total) * 100) if total else 0
 
+    strengths = []
+    focus_areas = []
+    for section_score in section_scores.values():
+        section_percentage = round(
+            (section_score["correct"] / max(section_score["total"], 1)) * 100
+        )
+        section_score["percentage"] = section_percentage
+        if section_percentage >= 75:
+            section_score["status"] = "strong"
+            section_score["feedback"] = "نقطة قوة"
+            strengths.append(section_score["label"])
+        elif section_percentage >= 50:
+            section_score["status"] = "developing"
+            section_score["feedback"] = "قيد التطوير"
+        else:
+            section_score["status"] = "needs_review"
+            section_score["feedback"] = "يحتاج مراجعة"
+            focus_areas.append(section_score["label"])
+
     letters = section_scores.get("letters", {"correct": 0, "total": 1})
     letters_ratio = letters["correct"] / max(letters["total"], 1)
 
@@ -816,6 +835,8 @@ def score_placement_test(answers):
         "cta_label": meta["cta_label"],
         "cta_url": meta["cta_url"],
         "section_scores": section_scores,
+        "strengths": strengths,
+        "focus_areas": focus_areas,
     }
 
 
@@ -2926,7 +2947,10 @@ def profile_dashboard(request):
     english_foundation_points = sum(section["points"] for section in english_foundation_sections)
     english_foundation_completed = len([section for section in english_foundation_sections if section["completed"]])
 
-    payment_orders = list(PaymentOrder.objects.filter(user=request.user).order_by("-created_at")[:20])
+    payment_orders = list(
+        PaymentOrder.objects.filter(user=request.user)
+        .order_by("-created_at")[:20]
+    )
     checkout_cutoff = timezone.now() - timedelta(
         minutes=getattr(settings, "MOYASAR_ORDER_REUSE_MINUTES", 30)
     )
@@ -5078,6 +5102,198 @@ def foundation_vocabulary_total_words():
     return sum(len(category["words"]) for category in FOUNDATION_VOCABULARY_CATEGORIES)
 
 
+# --- Level 2 printable vocabulary worksheets -------------------------------
+# The worksheet page used to render "exercises" that handed the learner the
+# answer: the matching drill printed `red -> (red icon)` already paired, the
+# multiple-choice drill printed the correct translation first followed by the
+# literal words "review"/"other", and the sorting drill offered a single
+# category. These builders precompute real exercises instead.
+#
+# Everything is DETERMINISTIC on purpose: a printed worksheet must look the same
+# every time it is rendered, so a parent can re-print the same page and an
+# answer key stays valid. Offsets are derived from the item's index rather than
+# from `random`.
+
+WORKSHEET_MATCH_ITEMS = 8
+WORKSHEET_CHOICE_ITEMS = 6
+WORKSHEET_CHOICE_OPTIONS = 3
+WORKSHEET_SORT_ITEMS_PER_CATEGORY = 4
+WORKSHEET_DRILL_ITEMS = 6
+WORKSHEET_SENTENCE_ITEMS = 4
+# Reference tables longer than this are split so one printed sheet stays usable.
+WORKSHEET_TABLE_CHUNK = 12
+
+
+def _rotate(items, offset):
+    """Deterministic reordering: rotate a list without touching the original."""
+    if not items:
+        return []
+    offset %= len(items)
+    return list(items[offset:]) + list(items[:offset])
+
+
+def _chunk(items, size):
+    return [list(items[i:i + size]) for i in range(0, len(items), size)]
+
+
+def build_vocabulary_match_exercise(words):
+    """Two independent columns the learner draws lines between.
+
+    The word column keeps source order while the picture column is rotated, so
+    the pairs are genuinely scrambled instead of pre-matched.
+    """
+    selected = list(words[:WORKSHEET_MATCH_ITEMS])
+    if len(selected) < 2:
+        return {"words": [], "pictures": []}
+
+    scrambled = _rotate(selected, max(1, len(selected) // 2 + 1))
+    return {
+        "words": [
+            {"number": index + 1, "word": item["word"]}
+            for index, item in enumerate(selected)
+        ],
+        "pictures": [
+            {
+                "letter": chr(ord("A") + index),
+                "icon": item["icon"],
+                "arabic": item["arabic"],
+            }
+            for index, item in enumerate(scrambled)
+        ],
+    }
+
+
+def build_vocabulary_choice_exercise(words):
+    """Multiple choice whose distractors are real translations of other words.
+
+    The correct option's position rotates through the available slots so it is
+    not always first.
+    """
+    pool = [item for item in words if item.get("arabic")]
+    if len(pool) < 2:
+        return []
+
+    questions = []
+    for index, item in enumerate(pool[:WORKSHEET_CHOICE_ITEMS]):
+        distractors = [
+            other["arabic"]
+            for other in _rotate(pool, index + 1)
+            if other["arabic"] != item["arabic"]
+        ][: WORKSHEET_CHOICE_OPTIONS - 1]
+
+        if len(distractors) < WORKSHEET_CHOICE_OPTIONS - 1:
+            continue
+
+        options = list(distractors)
+        answer_index = index % WORKSHEET_CHOICE_OPTIONS
+        options.insert(answer_index, item["arabic"])
+
+        questions.append({
+            "number": index + 1,
+            "word": item["word"],
+            "icon": item.get("icon", ""),
+            "options": options,
+            "answer": item["arabic"],
+            "answer_letter": chr(ord("A") + answer_index),
+        })
+    return questions
+
+
+def build_vocabulary_sort_exercise(category, all_categories):
+    """A mixed word bank drawn from this category plus two neighbours.
+
+    Sorting is only a real task when more than one category is on the page.
+    """
+    others = [
+        other for other in all_categories
+        if other["worksheet"] != category["worksheet"]
+    ]
+    if not others:
+        return None
+
+    position = next(
+        (i for i, item in enumerate(all_categories)
+         if item["worksheet"] == category["worksheet"]),
+        0,
+    )
+    partners = _rotate(others, position)[:2]
+    chosen = [category] + partners
+
+    per_category = []
+    for group_index, group in enumerate(chosen):
+        per_category.append([
+            {"word": item["word"], "category": group["title_ar"]}
+            for item in _rotate(group["words"], group_index * 3)[:WORKSHEET_SORT_ITEMS_PER_CATEGORY]
+        ])
+
+    # Round-robin the categories so no two neighbouring words in the bank come
+    # from the same column; otherwise the answer is guessable from the layout.
+    interleaved = []
+    for position in range(max(len(group) for group in per_category)):
+        for group in per_category:
+            if position < len(group):
+                interleaved.append(group[position])
+
+    return {
+        "columns": [
+            {"title_ar": group["title_ar"], "title_en": group["title_en"]}
+            for group in chosen
+        ],
+        "bank": interleaved,
+    }
+
+
+def build_vocabulary_spelling_exercise(words):
+    """Hide one interior letter, using a blank per hidden letter.
+
+    Short words hide their middle letter; longer words hide two so the drill
+    does not become trivial. Words under three letters are skipped because
+    blanking them leaves nothing to read.
+    """
+    drills = []
+    for index, item in enumerate(words[:WORKSHEET_DRILL_ITEMS]):
+        word = str(item.get("word", ""))
+        if len(word) < 3:
+            continue
+        if len(word) <= 4:
+            hidden = {len(word) // 2}
+        else:
+            hidden = {1 + index % 2, len(word) - 2}
+        masked = "".join("_" if i in hidden else ch for i, ch in enumerate(word))
+        drills.append({
+            "masked": masked,
+            "arabic": item.get("arabic", ""),
+            "icon": item.get("icon", ""),
+            "answer": word,
+        })
+    return drills
+
+
+def build_vocabulary_worksheets(categories=None):
+    """Print-ready exercise data for every foundation vocabulary category."""
+    source = list(categories if categories is not None else FOUNDATION_VOCABULARY_CATEGORIES)
+    worksheets = []
+    for category in source:
+        words = list(category.get("words", []))
+        worksheets.append({
+            # The original category, so category-specific template blocks
+            # (animals, foods, ...) keep working untouched.
+            "category": category,
+            "worksheet": category["worksheet"],
+            "title_ar": category["title_ar"],
+            "title_en": category["title_en"],
+            "icon": category.get("icon", ""),
+            "word_count": len(words),
+            "table_chunks": _chunk(words, WORKSHEET_TABLE_CHUNK),
+            "match": build_vocabulary_match_exercise(words),
+            "choices": build_vocabulary_choice_exercise(words),
+            "spelling": build_vocabulary_spelling_exercise(words),
+            "sentences": words[:WORKSHEET_SENTENCE_ITEMS],
+            "sort": build_vocabulary_sort_exercise(category, source),
+        })
+    return worksheets
+
+
 def sound_pattern_total_units():
     active_groups = [group for group in SOUND_PATTERN_GROUPS if not group.get("locked")]
     active_group_ids = {group["id"] for group in active_groups}
@@ -5980,6 +6196,35 @@ def placement_test(request):
         if not isinstance(answers, dict):
             return _json_error("answers must be an object", 400)
 
+        question_map = {
+            question["id"]: question
+            for question in PLACEMENT_TEST_QUESTIONS
+        }
+        missing_questions = [
+            question_id
+            for question_id in question_map
+            if question_id not in answers
+        ]
+        invalid_questions = [
+            question_id
+            for question_id, answer in answers.items()
+            if question_id in question_map
+            and str(answer).strip() not in question_map[question_id]["options"]
+        ]
+        unknown_questions = [
+            question_id
+            for question_id in answers
+            if question_id not in question_map
+        ]
+        if missing_questions or invalid_questions or unknown_questions:
+            return _json_error(
+                "Incomplete or invalid placement answers",
+                400,
+                missing_questions=missing_questions,
+                invalid_questions=invalid_questions,
+                unknown_questions=unknown_questions,
+            )
+
         return JsonResponse(score_placement_test(answers))
 
     questions = public_placement_questions()
@@ -6151,6 +6396,10 @@ def sounds_worksheet(request):
         "sound_pattern_activities": SOUND_PATTERN_ACTIVITIES,
         "foundation_vocabulary": FOUNDATION_VOCABULARY_CATEGORIES,
         "level_two_grammar_lessons": LEVEL_TWO_GRAMMAR_LESSONS,
+        # Print-ready exercises with real distractors and scrambled matching
+        # columns. `foundation_vocabulary` stays in the context unchanged so the
+        # existing summary section keeps rendering exactly as before.
+        "vocabulary_worksheets": build_vocabulary_worksheets(),
     })
 
 

@@ -294,6 +294,22 @@
             vertical-align: middle;
         }
 
+        /* Two facing columns the learner draws matching lines between. */
+        .match-table td {
+            width: 50%;
+            text-align: right;
+            vertical-align: top;
+        }
+
+        .match-table p {
+            margin: 0 0 10px;
+        }
+
+        .match-table .pic {
+            font-size: 2.2rem;
+            vertical-align: middle;
+        }
+
         .sort-grid {
             display: grid;
             grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1191,74 +1207,115 @@
                 </div>
             </section>
 
-            {% for category in foundation_vocabulary %}
-                <section data-sheet="{{ category.worksheet }}">
-                    <h2>ورقة {{ category.title_ar }} — {{ category.title_en }}</h2>
+            {% for sheet in vocabulary_worksheets %}
+                {% with category=sheet.category %}
+                <section data-sheet="{{ sheet.worksheet }}">
+                    <h2>ورقة {{ sheet.title_ar }} — {{ sheet.title_en }}</h2>
                     <div class="questions">
                         <div class="question">
                             <strong>1. اقرأ الكلمة واكتب الترجمة.</strong>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>الرمز</th>
-                                        <th>Word</th>
-                                        <th>الترجمة</th>
-                                        <th>اكتبها</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in category.words %}
+                            {% for chunk in sheet.table_chunks %}
+                                <table>
+                                    <thead>
                                         <tr>
-                                            <td class="pic">{{ item.icon }}</td>
-                                            <td><strong>{{ item.word }}</strong></td>
-                                            <td>{{ item.arabic }}</td>
-                                            <td><div class="line"></div></td>
+                                            <th>الرمز</th>
+                                            <th>Word</th>
+                                            <th>الترجمة</th>
+                                            <th>اكتبها</th>
                                         </tr>
-                                    {% endfor %}
+                                    </thead>
+                                    <tbody>
+                                        {% for item in chunk %}
+                                            <tr>
+                                                <td class="pic">{{ item.icon }}</td>
+                                                <td><strong>{{ item.word }}</strong></td>
+                                                <td>{{ item.arabic }}</td>
+                                                <td><div class="line"></div></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% endfor %}
+                        </div>
+
+                        <div class="question">
+                            <strong>2. صل الكلمة بالصورة.</strong>
+                            <p>اكتب حرف الصورة المناسبة أمام كل كلمة.</p>
+                            <table class="match-table">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            {% for row in sheet.match.words %}
+                                                <p>{{ row.number }}. <strong>{{ row.word }}</strong> <span class="blank-line"></span></p>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for row in sheet.match.pictures %}
+                                                <p>{{ row.letter }}. <span class="pic">{{ row.icon }}</span></p>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
 
                         <div class="question">
-                            <strong>2. صل الكلمة بالصورة.</strong>
-                            <div class="options">
-                                {% for item in category.words|slice:":8" %}
-                                    <span class="option">{{ item.word }} → {{ item.icon }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <div class="question">
                             <strong>3. ضع دائرة حول الترجمة الصحيحة.</strong>
-                            {% for item in category.words|slice:":5" %}
-                                <p>{{ item.word }} = {{ item.arabic }} / مراجعة / غير ذلك</p>
+                            {% for question in sheet.choices %}
+                                <p>
+                                    {{ question.number }}. <span class="pic">{{ question.icon }}</span>
+                                    <strong>{{ question.word }}</strong> =
+                                    {% for option in question.options %}{% if not forloop.first %} / {% endif %}{{ option }}{% endfor %}
+                                </p>
                             {% endfor %}
                         </div>
 
                         <div class="question">
                             <strong>4. أكمل الكلمة.</strong>
-                            {% for item in category.words|slice:":6" %}
-                                <p>{{ item.word|slice:":1" }}__{{ item.word|slice:"2:" }} = {{ item.arabic }}</p>
+                            {% for drill in sheet.spelling %}
+                                <p><span class="pic">{{ drill.icon }}</span> {{ drill.masked }} = {{ drill.arabic }}</p>
                             {% endfor %}
                         </div>
 
                         <div class="question">
                             <strong>5. اقرأ المثال واكتب جملة قصيرة.</strong>
-                            {% for item in category.words|slice:":4" %}
+                            {% for item in sheet.sentences %}
                                 <p>{{ item.example }} — {{ item.example_ar }}</p>
                                 <p>جملتي: <span class="blank-line"></span></p>
                             {% endfor %}
                         </div>
 
-                        <div class="question">
-                            <strong>6. صنّف الكلمات.</strong>
-                            <p>التصنيف: {{ category.title_en }} / {{ category.title_ar }}</p>
-                            <div class="options">
-                                {% for item in category.words|slice:":8" %}
-                                    <span class="option">{{ item.word }}</span>
-                                {% endfor %}
+                        {% if sheet.sort %}
+                            <div class="question">
+                                <strong>6. صنّف الكلمات في العمود الصحيح.</strong>
+                                <div class="options">
+                                    {% for entry in sheet.sort.bank %}
+                                        <span class="option">{{ entry.word }}</span>
+                                    {% endfor %}
+                                </div>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            {% for column in sheet.sort.columns %}
+                                                <th>{{ column.title_ar }}<br>{{ column.title_en }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            {% for column in sheet.sort.columns %}
+                                                <td>
+                                                    <div class="line"></div>
+                                                    <div class="line"></div>
+                                                    <div class="line"></div>
+                                                    <div class="line"></div>
+                                                </td>
+                                            {% endfor %}
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
+                        {% endif %}
                         {% if category.id == "animals" %}
                             <div class="question">
                                 <strong>7. صنّف الحيوانات حسب المجموعة.</strong>
@@ -1448,6 +1505,7 @@
                         {% endif %}
                     </div>
                 </section>
+                {% endwith %}
             {% endfor %}
 
             <section data-sheet="vocabulary-foundation">

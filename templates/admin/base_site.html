@@ -1,0 +1,19 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+    <a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a>
+</div>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}
+{% if request.user.is_superuser or perms.phonics.view_operations_dashboard %}
+<a href="{% url 'admin_operations_dashboard' %}">Operations dashboard</a>
+{% endif %}
+{% endblock %}
