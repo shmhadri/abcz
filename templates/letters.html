@@ -73,6 +73,10 @@
                         </span>
                     </a>
                 </nav>
+                <a href="{% url 'placement_test' %}" class="btn btn-placement" title="اعرف مستواك الحالي في دقائق">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>اختبار تحديد المستوى</span>
+                </a>
                 <a href="{% url 'curriculum' %}" class="btn btn-secondary" style="min-height: 42px; text-decoration: none;">
                     خطة المنهج
                 </a>
@@ -4649,6 +4653,13 @@ function sendAudioToServer(blob, letter){
             <span>
                 <strong>المستوى الرابع</strong>
                 <small>التأسيس الإنجليزي</small>
+            </span>
+        </a>
+        <a href="{% url 'placement_test' %}" class="menu-item menu-item-placement" data-menu-placement-test>
+            <i class="fas fa-clipboard-check"></i>
+            <span>
+                <strong>اختبار تحديد المستوى</strong>
+                <small>لا تعرف من أين تبدأ؟ ابدأ هنا</small>
             </span>
         </a>
 
