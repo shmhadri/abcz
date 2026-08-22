@@ -12,6 +12,7 @@ from unittest.mock import Mock, patch
 from django.conf import settings
 from django.contrib import admin as django_admin
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, close_old_connections, connection, transaction
@@ -23,6 +24,7 @@ from PIL import Image
 
 from phonics.models import (
     BankTransferProof,
+    BankTransferActivationCode,
     PaymentOrder,
     PaymentActivationReview,
     PaymentWebhookEvent,
@@ -90,6 +92,27 @@ class PaymentCheckoutTests(TestCase):
         self.assertNotContains(response, "Sandbox")
         self.assertNotContains(response, "STC Pay")
         self.assertContains(response, "تحويل بنكي")
+
+    def test_checkout_payment_form_has_double_submit_guard(self):
+        response = self.client.get(reverse("checkout", args=["silver"]))
+
+        self.assertContains(response, 'id="moyasar-payment-form"')
+        self.assertContains(response, 'id="moyasar-payment-submit"')
+        self.assertContains(response, "جاري تحويلك إلى صفحة الدفع الآمن...")
+        self.assertContains(response, 'form.dataset.submitting === "true"')
+
+    def reusable_invoice_snapshot(self, order, status="initiated"):
+        return {
+            "id": order.moyasar_invoice_id,
+            "status": status,
+            "amount": order.amount_halalas,
+            "currency": order.currency,
+            "metadata": {
+                "payment_order_id": str(order.id),
+                "quote_reference": str(order.idempotency_key),
+            },
+            "payments": [],
+        }
 
     def test_level_checkout_accepts_public_hyphen_slugs(self):
         for path in ["/checkout/level-3/", "/checkout/level-4/"]:
@@ -164,6 +187,48 @@ class PaymentCheckoutTests(TestCase):
         self.assertEqual(order.provider, PaymentOrder.Provider.MANUAL_BANK)
         self.assertEqual(order.status, PaymentOrder.Status.AWAITING_BANK_REVIEW)
         self.assertIn(reverse("bank_transfer_proof", args=[order.id]), response["Location"])
+        self.assertEqual(UserSubscription.objects.count(), 0)
+
+    def test_bank_transfer_activation_code_activates_only_its_owner(self):
+        order = self.create_order(
+            method=PaymentOrder.Method.BANK_TRANSFER,
+            provider=PaymentOrder.Provider.MANUAL_BANK,
+            status=PaymentOrder.Status.BANK_APPROVED,
+        )
+        activation_code = BankTransferActivationCode.objects.create(
+            payment_order=order,
+            code_hash=make_password("BTABCDEFGHJK"),
+            expires_at=timezone.now() + timedelta(hours=24),
+        )
+
+        response = self.client.post(reverse("bank_transfer_activation"), {
+            "activation_code": "BT-ABCDEFGHJK",
+        })
+
+        self.assertRedirects(response, reverse("profile_dashboard"))
+        activation_code.refresh_from_db()
+        self.assertIsNotNone(activation_code.used_at)
+        self.assertEqual(UserSubscription.objects.count(), 1)
+
+    def test_bank_transfer_activation_code_cannot_be_used_by_another_account(self):
+        order = self.create_order(
+            method=PaymentOrder.Method.BANK_TRANSFER,
+            provider=PaymentOrder.Provider.MANUAL_BANK,
+            status=PaymentOrder.Status.BANK_APPROVED,
+        )
+        BankTransferActivationCode.objects.create(
+            payment_order=order,
+            code_hash=make_password("BTABCDEFGHJK"),
+            expires_at=timezone.now() + timedelta(hours=24),
+        )
+        other = User.objects.create_user(username="other-transfer-user", password="StrongPass123!")
+        self.client.force_login(other)
+
+        response = self.client.post(reverse("bank_transfer_activation"), {
+            "activation_code": "BT-ABCDEFGHJK",
+        })
+
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(UserSubscription.objects.count(), 0)
 
     @override_settings(BANK_TRANSFER_ENABLED=False)
@@ -520,8 +585,9 @@ class PaymentCheckoutTests(TestCase):
         MOYASAR_SECRET_KEY="sk_test_unit_only",
         MOYASAR_ENVIRONMENT="test",
     )
+    @patch("phonics.views.fetch_moyasar_invoice")
     @patch("phonics.views.create_moyasar_invoice")
-    def test_repeated_click_reuses_initiated_invoice(self, create_invoice_mock):
+    def test_repeated_click_reuses_initiated_invoice(self, create_invoice_mock, fetch_invoice_mock):
         create_invoice_mock.return_value = MoyasarInvoice(
             invoice_id="inv_reused",
             checkout_url="https://checkout.moyasar.com/invoices/inv_reused",
@@ -531,10 +597,97 @@ class PaymentCheckoutTests(TestCase):
         )
         url = reverse("create_payment_order", args=["silver", "moyasar"])
         first = self.client.post(url)
+        order = PaymentOrder.objects.get()
+        fetch_invoice_mock.return_value = self.reusable_invoice_snapshot(order)
         second = self.client.post(url)
         self.assertEqual(first["Location"], second["Location"])
         self.assertEqual(PaymentOrder.objects.count(), 1)
         self.assertEqual(create_invoice_mock.call_count, 1)
+
+    @override_settings(MOYASAR_ENABLED=True, MOYASAR_SECRET_KEY="sk_test_unit_only")
+    @patch("phonics.views.fetch_moyasar_invoice")
+    @patch("phonics.views.create_moyasar_invoice")
+    def test_initiated_valid_invoice_is_verified_then_reused(self, create_invoice_mock, fetch_invoice_mock):
+        order = self.create_order(
+            status=PaymentOrder.Status.INITIATED,
+            moyasar_invoice_id="inv_reuse_valid",
+            checkout_url="https://checkout.moyasar.com/invoices/inv_reuse_valid",
+        )
+        fetch_invoice_mock.return_value = self.reusable_invoice_snapshot(order)
+
+        response = self.client.post(reverse("create_payment_order", args=["silver", "moyasar"]))
+
+        self.assertEqual(response["Location"], order.checkout_url)
+        fetch_invoice_mock.assert_called_once_with("inv_reuse_valid")
+        create_invoice_mock.assert_not_called()
+
+    @override_settings(MOYASAR_ENABLED=True, MOYASAR_SECRET_KEY="sk_test_unit_only")
+    @patch("phonics.views.fetch_moyasar_invoice")
+    @patch("phonics.views.create_moyasar_invoice")
+    def test_initiated_expired_invoice_creates_a_new_invoice(self, create_invoice_mock, fetch_invoice_mock):
+        order = self.create_order(
+            status=PaymentOrder.Status.INITIATED,
+            moyasar_invoice_id="inv_reuse_expired",
+            checkout_url="https://checkout.moyasar.com/invoices/inv_reuse_expired",
+        )
+        fetch_invoice_mock.return_value = self.reusable_invoice_snapshot(order, status="expired")
+        create_invoice_mock.return_value = MoyasarInvoice(
+            invoice_id="inv_fresh_after_expired",
+            checkout_url="https://checkout.moyasar.com/invoices/inv_fresh_after_expired",
+            amount_halalas=2700, currency="SAR", status="initiated",
+        )
+
+        response = self.client.post(reverse("create_payment_order", args=["silver", "moyasar"]))
+
+        self.assertEqual(response["Location"], "https://checkout.moyasar.com/invoices/inv_fresh_after_expired")
+        order.refresh_from_db()
+        self.assertEqual(order.status, PaymentOrder.Status.EXPIRED)
+        self.assertEqual(create_invoice_mock.call_count, 1)
+        self.assertEqual(PaymentOrder.objects.count(), 2)
+
+    @override_settings(MOYASAR_ENABLED=True, MOYASAR_SECRET_KEY="sk_test_unit_only")
+    @patch("phonics.views.fetch_moyasar_invoice")
+    @patch("phonics.views.create_moyasar_invoice")
+    def test_initiated_failed_or_canceled_invoice_creates_a_new_invoice(self, create_invoice_mock, fetch_invoice_mock):
+        for status in ("failed", "canceled"):
+            with self.subTest(status=status):
+                PaymentOrder.objects.all().delete()
+                order = self.create_order(
+                    status=PaymentOrder.Status.INITIATED,
+                    moyasar_invoice_id=f"inv_reuse_{status}",
+                    checkout_url=f"https://checkout.moyasar.com/invoices/inv_reuse_{status}",
+                )
+                fetch_invoice_mock.return_value = self.reusable_invoice_snapshot(order, status=status)
+                create_invoice_mock.return_value = MoyasarInvoice(
+                    invoice_id=f"inv_fresh_after_{status}",
+                    checkout_url=f"https://checkout.moyasar.com/invoices/inv_fresh_after_{status}",
+                    amount_halalas=2700, currency="SAR", status="initiated",
+                )
+
+                response = self.client.post(reverse("create_payment_order", args=["silver", "moyasar"]))
+
+                self.assertIn(f"inv_fresh_after_{status}", response["Location"])
+                order.refresh_from_db()
+                self.assertIn(order.status, {PaymentOrder.Status.FAILED, PaymentOrder.Status.CANCELED})
+
+    @override_settings(MOYASAR_ENABLED=True, MOYASAR_SECRET_KEY="sk_test_unit_only")
+    @patch("phonics.views.fetch_moyasar_invoice", side_effect=MoyasarNetworkError("timeout"))
+    @patch("phonics.views.create_moyasar_invoice")
+    def test_initiated_invoice_verification_timeout_does_not_create_another_invoice(self, create_invoice_mock, fetch_invoice_mock):
+        order = self.create_order(
+            status=PaymentOrder.Status.INITIATED,
+            moyasar_invoice_id="inv_reuse_timeout",
+            checkout_url="https://checkout.moyasar.com/invoices/inv_reuse_timeout",
+        )
+
+        response = self.client.post(reverse("create_payment_order", args=["silver", "moyasar"]))
+
+        self.assertIn(reverse("payment_pending"), response["Location"])
+        fetch_invoice_mock.assert_called_once_with("inv_reuse_timeout")
+        create_invoice_mock.assert_not_called()
+        order.refresh_from_db()
+        self.assertEqual(order.status, PaymentOrder.Status.INITIATED)
+        self.assertEqual(UserSubscription.objects.count(), 0)
 
     @override_settings(MOYASAR_ENABLED=True)
     @patch("phonics.views.create_moyasar_invoice")

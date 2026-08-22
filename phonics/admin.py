@@ -2,6 +2,11 @@ from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin as DjangoGroupAdmin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import Group, User
+from django.contrib.auth.hashers import make_password
+from django.db import transaction
+from django.utils import timezone
+from datetime import timedelta
+import secrets
 
 from .admin_audit import log_admin_action
 from .models import (
@@ -9,7 +14,7 @@ from .models import (
     BirdTutorProgress, BirdReviewItem, SoundPracticeProgress, ExternalGame,
     CVCWord, CVCSentence, CVCStory, CVCProgress, CVCReadingProgress,
     EnglishFoundationProgress, UserSubscription, PaymentOrder, PaymentWebhookEvent,
-    PaymentActivationReview, AdminAuditLog,
+    PaymentActivationReview, AdminAuditLog, BankTransferActivationCode,
     TopGoalUnit, TopGoalVocabulary, TopGoalSentence, TopGoalQuiz
 )
 
@@ -228,6 +233,61 @@ class PaymentOrderAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
                 'failure_message', 'created_at', 'paid_at', 'activated_at',
             ]
         return super().get_fields(request, obj)
+
+
+@admin.register(BankTransferActivationCode)
+class BankTransferActivationCodeAdmin(admin.ModelAdmin):
+    list_display = ["payment_order", "expires_at", "issued_by", "issued_at", "used_at"]
+    list_filter = ["used_at", "expires_at"]
+    search_fields = ["=payment_order__id", "payment_order__user__username", "payment_order__user__email"]
+    autocomplete_fields = ["payment_order"]
+    readonly_fields = ["code_hash", "issued_by", "issued_at", "used_at"]
+    fields = ["payment_order", "expires_at", "code_hash", "issued_by", "issued_at", "used_at"]
+    list_select_related = ["payment_order", "payment_order__user", "issued_by"]
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_fields(self, request, obj=None):
+        if obj is None:
+            return ["payment_order", "expires_at"]
+        return super().get_fields(request, obj)
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            return super().save_model(request, obj, form, change)
+        code = "BT" + "".join(secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(10))
+        with transaction.atomic():
+            order = PaymentOrder.objects.select_for_update().get(pk=obj.payment_order_id)
+            if (
+                order.method != PaymentOrder.Method.BANK_TRANSFER
+                or order.status != PaymentOrder.Status.AWAITING_BANK_REVIEW
+            ):
+                raise ValidationError("اختر طلب تحويل بنكي قيد المراجعة فقط، وبعد تحققك من التحويل فعليًا.")
+            order.status = PaymentOrder.Status.BANK_APPROVED
+            order.provider_status = "bank_transfer_verified_activation_code_issued"
+            order.save(update_fields=["status", "provider_status", "updated_at"])
+            obj.payment_order = order
+            obj.code_hash = make_password(code)
+            obj.issued_by = request.user
+            if not obj.expires_at:
+                obj.expires_at = timezone.now() + timedelta(hours=24)
+            super().save_model(request, obj, form, change)
+        log_admin_action(
+            request,
+            action="bank_transfer_activation_code_issued",
+            target=order,
+            before_status={"status": PaymentOrder.Status.AWAITING_BANK_REVIEW},
+            after_status={"status": PaymentOrder.Status.BANK_APPROVED},
+            note="A one-time activation code was issued after bank transfer verification.",
+        )
+        self.message_user(request, f"رمز التفعيل لإرساله للعميل: {code}. لا يظهر مرة أخرى؛ صلاحيته حتى {obj.expires_at:%Y-%m-%d %H:%M}.")
 
 @admin.register(PaymentWebhookEvent)
 class PaymentWebhookEventAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):

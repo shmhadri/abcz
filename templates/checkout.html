@@ -182,6 +182,19 @@
         }
         .action.stc { background: var(--green); }
         .action.bank { background: #334155; }
+        .action[disabled] { cursor: wait; opacity: 0.72; }
+        .payment-spinner {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            margin-inline-end: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.45);
+            border-top-color: #fff;
+            border-radius: 50%;
+            vertical-align: -0.12em;
+            animation: payment-spin 0.75s linear infinite;
+        }
+        @keyframes payment-spin { to { transform: rotate(360deg); } }
         .bank-box {
             border: 1px dashed #cad5e3;
             border-radius: 8px;
@@ -259,16 +272,16 @@
                         <span class="pill ready">دفع آمن</span>
                         <span class="pill">مدى وبطاقات وApple Pay</span>
                     </div>
-                    <form method="post" action="{% url 'create_payment_order' plan.code 'moyasar' %}">
+                    <form id="moyasar-payment-form" method="post" action="{% url 'create_payment_order' plan.code 'moyasar' %}">
                         {% csrf_token %}
-                        <button class="action" type="submit">إكمال الدفع عبر مدى</button>
+                        <button id="moyasar-payment-submit" class="action" type="submit">إكمال الدفع عبر مدى</button>
                     </form>
                 </article>
 
                 {% if bank_transfer.enabled %}
                 <article class="method">
-                    <h3>تحويل بنكي</h3>
-                    <p>حوّل المبلغ ثم ارفع الإيصال للمراجعة. يتم التفعيل بعد اعتماد الإدارة فقط.</p>
+                    <h3>تحويل بنكي — أريد التفعيل عبر التحويل</h3>
+                    <p>حوّل المبلغ ثم أرسل الإيصال عبر واتساب. بعد مراجعة التحويل، يصلك رمز تفعيل خاص بحسابك.</p>
                     <div class="bank-box">
                         <div><span>اسم المستفيد:</span> {{ bank_transfer.account_name|default:"لم يتم ضبطه بعد" }}</div>
                         <div><span>البنك:</span> {{ bank_transfer.bank_name|default:"لم يتم ضبطه بعد" }}</div>
@@ -277,13 +290,37 @@
                     </div>
                     <form method="post" action="{% url 'create_payment_order' plan.code 'bank_transfer' %}">
                         {% csrf_token %}
-                        <button class="action bank" type="submit">أرفع إيصال تحويل بنكي</button>
+                        <button class="action bank" type="submit">متابعة التحويل عبر واتساب</button>
                     </form>
+                    <p class="method-meta"><a href="{% url 'bank_transfer_activation' %}">لدي رمز تفعيل للتحويل البنكي</a></p>
                 </article>
                 {% endif %}
                 {% endif %}
             </section>
         </section>
     </main>
+    <script>
+        (() => {
+            const form = document.getElementById("moyasar-payment-form");
+            const button = document.getElementById("moyasar-payment-submit");
+            if (!form || !button) return;
+            const originalLabel = button.textContent.trim();
+            const reset = () => {
+                form.dataset.submitting = "";
+                button.disabled = false;
+                button.innerHTML = originalLabel;
+            };
+            form.addEventListener("submit", (event) => {
+                if (form.dataset.submitting === "true") {
+                    event.preventDefault();
+                    return;
+                }
+                form.dataset.submitting = "true";
+                button.disabled = true;
+                button.innerHTML = '<span class="payment-spinner" aria-hidden="true"></span>جاري تحويلك إلى صفحة الدفع الآمن...';
+            });
+            window.addEventListener("pageshow", reset);
+        })();
+    </script>
 </body>
 </html>
