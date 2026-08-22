@@ -182,7 +182,7 @@
             <div class="login-options">
                 <button class="btn" id="googleLoginBtn" style="width: 100%; background: white; color: #444; border: 1px solid #ddd; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px;">
                     <i class="fas fa-sign-in-alt"></i>
-                    <span>تسجيل الدخول بحساب الموقع</span>
+                    <span>{% if google_login_enabled %}المتابعة باستخدام Google{% else %}تسجيل الدخول بحساب الموقع{% endif %}</span>
                 </button>
                 
                 <div style="display: flex; align-items: center; margin: 20px 0;">
@@ -1733,7 +1733,7 @@
 
                 document.getElementById('googleLoginBtn').addEventListener('click', () => {
                     if (!IS_AUTHENTICATED) {
-                        window.location.href = '/accounts/login/';
+                        window.location.href = '{% if google_login_enabled %}/accounts/google/login/{% else %}/accounts/login/{% endif %}';
                         return;
                     }
 

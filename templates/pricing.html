@@ -591,7 +591,7 @@
                         <li>CVC Certificate حسب الإنجاز.</li>
                     </ul>
                     {% if level_3_action.allowed %}
-                        <a class="plan-action" href="{% url 'checkout' 'level-3' %}">{{ level_3_action.label }}{% if level_3_action.amount_due %} - {{ level_3_action.amount_due }} ريال{% endif %}</a>
+                        <a class="plan-action" href="{% url 'checkout' 'level_3' %}">{{ level_3_action.label }}{% if level_3_action.amount_due %} - {{ level_3_action.amount_due }} ريال{% endif %}</a>
                     {% else %}<span class="plan-action secondary">{{ level_3_action.label }}</span>{% endif %}
                 </article>
 
@@ -612,7 +612,7 @@
                         <li>Level Four Certificate حسب الإنجاز.</li>
                     </ul>
                     {% if level_4_action.allowed %}
-                        <a class="plan-action" href="{% url 'checkout' 'level-4' %}">{{ level_4_action.label }}{% if level_4_action.amount_due %} - {{ level_4_action.amount_due }} ريال{% endif %}</a>
+                        <a class="plan-action" href="{% url 'checkout' 'level_4' %}">{{ level_4_action.label }}{% if level_4_action.amount_due %} - {{ level_4_action.amount_due }} ريال{% endif %}</a>
                     {% else %}<span class="plan-action secondary">{{ level_4_action.label }}</span>{% endif %}
                 </article>
             </div>

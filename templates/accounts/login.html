@@ -100,6 +100,36 @@
             font: inherit;
         }
 
+        .google-signin {
+            display: grid;
+            gap: 10px;
+            margin: 20px 0;
+            color: var(--muted);
+            font-size: .9rem;
+            font-weight: 750;
+            text-align: center;
+        }
+
+        .google-signin-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 48px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            color: #1f2937;
+            font-weight: 900;
+            text-decoration: none;
+        }
+
+        .google-signin-mark {
+            color: #4285f4;
+            font-size: 1.2rem;
+            font-weight: 950;
+        }
+
         @media (max-width: 840px) {
             .auth-layout {
                 grid-template-columns: 1fr;
@@ -117,6 +147,8 @@
                 <h1>ادخل لحساب المتعلم واحفظ التقدم على السيرفر.</h1>
                 <p class="lead">أدخل بيانات حسابك للوصول إلى تقدم المتعلم ومحتوى الباقة المرتبطة به.</p>
 
+                {% include "accounts/_google_signin.html" %}
+
                 <form method="post" autocomplete="on">
                     {% csrf_token %}
                     <div aria-live="polite">{{ form.non_field_errors }}</div>
@@ -129,7 +161,7 @@
                     {% endfor %}
                     <div class="auth-actions">
                         <button class="btn primary" type="submit">دخول</button>
-                        <a class="btn" href="{% url 'register' %}">إنشاء حساب جديد</a>
+                        <a class="btn" href="{% url 'register' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">إنشاء حساب جديد</a>
                     </div>
                 </form>
             </article>
