@@ -1,0 +1,10 @@
+{% load socialaccount %}
+{% if google_login_enabled %}
+<div class="google-signin">
+    <a class="google-signin-button" href="{% provider_login_url 'google' process='login' next=next_url %}">
+        <span class="google-signin-mark" aria-hidden="true">G</span>
+        المتابعة باستخدام Google
+    </a>
+    <span>أو سجّل الدخول باسم المستخدم وكلمة المرور.</span>
+</div>
+{% endif %}

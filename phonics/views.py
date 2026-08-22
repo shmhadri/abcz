@@ -723,28 +723,28 @@ def placement_level_meta(level_key):
             "track": "الحروف الإنجليزية A-Z",
             "message": "نقترح أن تبدأ من الحروف الإنجليزية وأصواتها الأساسية حتى تبني قاعدة ثابتة.",
             "cta_label": "ابدأ المستوى الأول",
-            "cta_url": reverse("index"),
+            "cta_url": reverse("checkout", kwargs={"plan_code": PLAN_BASIC}),
         },
         "level_2": {
             "title": "المستوى الثاني",
             "track": "الصوتيات والنطق",
             "message": "أنت تعرف جزءا جيدا من الحروف، والأنسب الآن تثبيت الصوتيات والنطق قبل الانتقال للقراءة.",
             "cta_label": "ابدأ المستوى الثاني",
-            "cta_url": reverse("sounds"),
+            "cta_url": reverse("checkout", kwargs={"plan_code": PLAN_SILVER}),
         },
         "level_3": {
             "title": "المستوى الثالث",
             "track": "قراءة CVC",
             "message": "أنت جاهز للانتقال إلى قراءة كلمات CVC والجمل والقصص القصيرة.",
             "cta_label": "اشترك في المستوى الثالث - 15 ريال شهريا",
-            "cta_url": reverse("pricing") + "#level-3-plan",
+            "cta_url": reverse("checkout", kwargs={"plan_code": PLAN_LEVEL_THREE}),
         },
         "level_4": {
             "title": "المستوى الرابع",
             "track": "قراءة واستماع وتحدث وكتابة",
             "message": "أنت جاهز لمسار أوسع يطور القراءة والاستماع والتحدث والكتابة والمحادثة.",
             "cta_label": "اشترك في المستوى الرابع - 15 ريال شهريا",
-            "cta_url": reverse("pricing") + "#level-4-plan",
+            "cta_url": reverse("checkout", kwargs={"plan_code": PLAN_LEVEL_FOUR}),
         },
     }
     return meta[level_key]
@@ -1823,18 +1823,32 @@ def generate_certificate(request, student_id):
 @require_http_methods(["GET", "POST"])
 @rate_limit("register", limit_setting="RATE_LIMIT_REGISTER", default=5)
 def register(request):
+    next_url = request.GET.get("next") or ""
+    safe_next_url = (
+        next_url
+        if url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=not settings.DEBUG,
+        )
+        else ""
+    )
     if request.user.is_authenticated:
-        return redirect("index")
+        return redirect(safe_next_url or "index")
 
     form = StudentRegistrationForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         with transaction.atomic():
             user = form.save()
-        auth_login(request, user)
+        auth_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         messages.success(request, "تم إنشاء الحساب وتسجيل الدخول بنجاح.")
-        return redirect("index")
+        return redirect(safe_next_url or "index")
 
-    return render(request, "accounts/register.html", {"form": form})
+    return render(request, "accounts/register.html", {
+        "form": form,
+        "next_url": safe_next_url,
+        "google_login_enabled": settings.GOOGLE_LOGIN_ENABLED,
+    })
 
 
 @sensitive_post_parameters("password")
@@ -1843,23 +1857,32 @@ def register(request):
 @rate_limit("login-ip", limit_setting="RATE_LIMIT_LOGIN", default=10)
 @rate_limit("login-account", limit_setting="RATE_LIMIT_LOGIN", default=10, identity=login_identity)
 def login_view(request):
+    next_url = request.GET.get("next") or ""
+    safe_next_url = (
+        next_url
+        if url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=not settings.DEBUG,
+        )
+        else ""
+    )
     if request.user.is_authenticated:
-        return redirect("index")
+        return redirect(safe_next_url or "index")
 
     form = SecureAuthenticationForm(request, data=request.POST or None)
     if request.method == "POST" and form.is_valid():
         auth_login(request, form.get_user())
         messages.success(request, "تم تسجيل الدخول بنجاح.")
-        next_url = request.GET.get("next") or ""
-        if url_has_allowed_host_and_scheme(
-            next_url,
-            allowed_hosts={request.get_host()},
-            require_https=not settings.DEBUG,
-        ):
-            return redirect(next_url)
+        if safe_next_url:
+            return redirect(safe_next_url)
         return redirect("index")
 
-    return render(request, "accounts/login.html", {"form": form})
+    return render(request, "accounts/login.html", {
+        "form": form,
+        "next_url": safe_next_url,
+        "google_login_enabled": settings.GOOGLE_LOGIN_ENABLED,
+    })
 
 
 @login_required

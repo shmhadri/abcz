@@ -7,7 +7,7 @@ from phonics.models import StudentProfile
 from phonics.tests.subscription_helpers import grant_active_subscription
 
 
-@override_settings(DISABLE_AUTO_SEED=True)
+@override_settings(DISABLE_AUTO_SEED=True, RATE_LIMIT_REGISTER=100)
 class AccountsFoundationTests(TestCase):
     def test_register_page_returns_success(self):
         response = self.client.get("/accounts/register/")
@@ -181,6 +181,55 @@ class AccountsFoundationTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "/profile/")
+
+    def test_checkout_requires_login_and_preserves_selected_plan(self):
+        response = self.client.get("/checkout/level_3/")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/accounts/login/?next=/checkout/level_3/")
+
+    def test_register_returns_to_selected_plan(self):
+        response = self.client.post(
+            "/accounts/register/?next=/checkout/level_4/",
+            data={
+                "username": "placement-plan-user",
+                "email": "placement-plan@example.com",
+                "student_name": "Placement Student",
+                "parent_phone": "0500000000",
+                "city": "Riyadh",
+                "password1": "StrongPass123!",
+                "password2": "StrongPass123!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/checkout/level_4/")
+
+    def test_login_to_register_link_preserves_selected_plan(self):
+        response = self.client.get("/accounts/login/?next=/checkout/silver/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "/accounts/register/?next=/checkout/silver/")
+
+    @override_settings(
+        GOOGLE_LOGIN_ENABLED=True,
+        SOCIALACCOUNT_PROVIDERS={
+            "google": {
+                "APPS": [{"client_id": "test-client", "secret": "test-secret", "key": ""}],
+            },
+        },
+    )
+    def test_google_signin_is_shown_on_login_and_registration_pages(self):
+        for path in ("/accounts/login/", "/accounts/register/"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "المتابعة باستخدام Google")
+                self.assertContains(response, "/accounts/google/login/")
+
+        response = self.client.get("/accounts/google/login/")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("accounts.google.com", response["Location"])
 
     def test_profile_api_updates_authenticated_profile(self):
         user = User.objects.create_user(username="student3", password="StrongPass123!")

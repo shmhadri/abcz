@@ -41,4 +41,5 @@ urlpatterns = [
     ),
     path('admin/', admin.site.urls),
     path('', include('phonics.urls')),
+    path('accounts/', include('allauth.urls')),
 ]

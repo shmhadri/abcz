@@ -323,7 +323,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 8px;
-    min-height: 46px;
+    min-height: 52px;
     padding: 10px 12px;
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -531,6 +531,7 @@ h1 {
 
 .placement-step-actions .btn {
     min-width: 150px;
+    min-height: 48px;
 }
 
 .placement-shortcut-hint,
@@ -714,7 +715,22 @@ h1 {
     }
 
     .placement-question-stage {
-        min-height: 520px;
+        min-height: 0;
+    }
+
+    .placement-question {
+        padding: 16px;
+    }
+
+    .question-prompt {
+        display: flex;
+        width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    .placement-step-actions .btn {
+        width: 100%;
+        min-width: 0;
     }
 
     .placement-score-ring {

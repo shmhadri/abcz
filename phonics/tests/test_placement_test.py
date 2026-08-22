@@ -146,7 +146,7 @@ class PlacementTestTests(TestCase):
         payload = response.json()
         self.assertEqual(payload["recommended_level"], "level_3")
         self.assertEqual(payload["recommended_title"], "المستوى الثالث")
-        self.assertIn("#level-3-plan", payload["cta_url"])
+        self.assertEqual(payload["cta_url"], "/checkout/level_3/")
 
     def test_strong_score_recommends_level_four(self):
         response = self.post_answers(self.correct_answers())
@@ -155,10 +155,22 @@ class PlacementTestTests(TestCase):
         payload = response.json()
         self.assertEqual(payload["recommended_level"], "level_4")
         self.assertEqual(payload["recommended_title"], "المستوى الرابع")
-        self.assertIn("#level-4-plan", payload["cta_url"])
+        self.assertEqual(payload["cta_url"], "/checkout/level_4/")
         self.assertTrue(payload["strengths"])
         self.assertEqual(payload["focus_areas"], [])
         for score in payload["section_scores"].values():
             self.assertEqual(score["percentage"], 100)
             self.assertEqual(score["status"], "strong")
             self.assertIn("feedback", score)
+
+    def test_each_recommendation_points_to_its_checkout_plan(self):
+        expected_urls = {
+            "level_1": "/checkout/basic/",
+            "level_2": "/checkout/silver/",
+            "level_3": "/checkout/level_3/",
+            "level_4": "/checkout/level_4/",
+        }
+        for level, expected_url in expected_urls.items():
+            with self.subTest(level=level):
+                from phonics.views import placement_level_meta
+                self.assertEqual(placement_level_meta(level)["cta_url"], expected_url)
