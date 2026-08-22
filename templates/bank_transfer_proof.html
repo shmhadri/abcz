@@ -125,6 +125,17 @@
             font-weight: 900;
             cursor: pointer;
         }
+        .whatsapp {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 46px;
+            margin-top: 14px;
+            border-radius: 8px;
+            padding: 0 20px;
+            background: #128c7e;
+            color: #fff;
+        }
         @media (max-width: 720px) {
             .grid, .summary { grid-template-columns: 1fr; }
             .top { align-items: flex-start; flex-direction: column; }
@@ -157,6 +168,11 @@
             </div>
 
             <div class="hint">الملفات المقبولة: JPG أو PNG أو PDF. الحد الأقصى 5MB.</div>
+
+            {% if bank_transfer_whatsapp_url %}
+                <a class="whatsapp" href="{{ bank_transfer_whatsapp_url }}" target="_blank" rel="noopener">إرسال الإيصال عبر واتساب</a>
+                <p class="lead" style="margin-top: 10px;">بعد اعتماد التحويل، أرسل لك رمز تفعيل لمرة واحدة لتدخله من <a href="{% url 'bank_transfer_activation' %}">صفحة التفعيل</a>.</p>
+            {% endif %}
 
             {% if errors %}
                 <div class="errors">

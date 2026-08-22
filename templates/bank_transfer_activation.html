@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>تفعيل اشتراك التحويل البنكي</title>
+    <style>
+        body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f6f8fc; color: #172033; font-family: Tahoma, Arial, sans-serif; }
+        main { width: min(520px, calc(100% - 32px)); background: #fff; border: 1px solid #dbe5f2; border-radius: 12px; padding: 30px; box-shadow: 0 16px 38px rgba(23,32,51,.08); }
+        h1 { margin: 0 0 10px; font-size: clamp(1.6rem, 4vw, 2.2rem); }
+        p { color: #617188; line-height: 1.8; font-weight: 700; }
+        form { display: grid; gap: 12px; margin-top: 22px; }
+        label { font-weight: 900; }
+        input { min-height: 50px; border: 1px solid #bccae0; border-radius: 8px; padding: 0 14px; font: inherit; text-transform: uppercase; }
+        button { min-height: 50px; border: 0; border-radius: 8px; background: #315eea; color: #fff; font: inherit; font-weight: 900; cursor: pointer; }
+        .error { border: 1px solid #f2b8b5; background: #fff2f1; color: #b42318; border-radius: 8px; padding: 12px; font-weight: 800; }
+        a { color: #315eea; font-weight: 900; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>تفعيل عبر التحويل البنكي</h1>
+        <p>أدخل رمز التفعيل الذي وصلك بعد مراجعة التحويل. الرمز يعمل مرة واحدة فقط، وللحساب الذي أنشأ الطلب.</p>
+        {% if error %}<div class="error">{{ error }}</div>{% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <label for="activation_code">رمز التفعيل</label>
+            <input id="activation_code" name="activation_code" autocomplete="one-time-code" maxlength="32" required autofocus>
+            <button type="submit">تفعيل الاشتراك</button>
+        </form>
+        <p><a href="{% url 'pricing' %}">العودة إلى الباقات</a></p>
+    </main>
+</body>
+</html>

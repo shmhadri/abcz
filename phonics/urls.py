@@ -9,6 +9,7 @@ urlpatterns = [
     path('placement-test/', views.placement_test, name='placement_test'),
     path('pricing/', views.pricing, name='pricing'),
     path('checkout/<int:order_id>/bank-transfer/', views.bank_transfer_proof, name='bank_transfer_proof'),
+    path('payments/bank-transfer/activation/', views.bank_transfer_activation, name='bank_transfer_activation'),
     path('checkout/<slug:plan_code>/create/<str:method_slug>/', views.create_payment_order, name='create_payment_order'),
     path('checkout/<slug:plan_code>/', views.checkout, name='checkout'),
     path('payments/success/', views.payment_success, name='payment_success'),

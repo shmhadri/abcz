@@ -1231,6 +1231,27 @@ class BankTransferProof(models.Model):
         return f"{self.payment_order.reference} - {self.sender_name} ({self.status})"
 
 
+class BankTransferActivationCode(models.Model):
+    payment_order = models.OneToOneField(
+        PaymentOrder, on_delete=models.PROTECT, related_name="bank_transfer_activation_code"
+    )
+    code_hash = models.CharField(max_length=255, editable=False)
+    expires_at = models.DateTimeField()
+    issued_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="issued_bank_transfer_activation_codes",
+    )
+    issued_at = models.DateTimeField(auto_now_add=True)
+    used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-issued_at"]
+        indexes = [models.Index(fields=["expires_at", "used_at"])]
+
+    def __str__(self):
+        return f"{self.payment_order.reference} ({'used' if self.used_at else 'active'})"
+
+
 def activate_subscription_from_payment(payment_order):
     if payment_order.status == PaymentOrder.Status.PAID_REQUIRES_REVIEW:
         return None

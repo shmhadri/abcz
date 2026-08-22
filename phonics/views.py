@@ -15,10 +15,12 @@ import math
 import re
 import uuid
 import secrets
+import time
 from functools import lru_cache
 from io import BytesIO
 from decimal import Decimal, InvalidOperation
 from datetime import datetime, timedelta
+from urllib.parse import quote
 from pathlib import Path
 from xml.sax.saxutils import escape
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -26,6 +28,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login as auth_login, logout as auth_logout
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.management import call_command
@@ -68,6 +71,7 @@ from .models import (
     PaymentOrder,
     PaymentWebhookEvent,
     BankTransferProof,
+    BankTransferActivationCode,
     activate_subscription_from_payment,
 )
 from .cache_helpers import (
@@ -83,6 +87,7 @@ from .payments.moyasar import (
     MoyasarInvalidResponseError,
     MoyasarNetworkError,
     create_invoice as create_moyasar_invoice,
+    fetch_invoice as fetch_moyasar_invoice,
     validate_checkout_url as validate_moyasar_checkout_url,
 )
 from .payments.reconciliation import reconcile_payment_order
@@ -5344,6 +5349,7 @@ PAYMENT_METHODS = {
         "title": "الدفع عبر ميسر",
     },
     "stcpay": {
+        # TODO: retained for legacy callers; this is not a distinct STC Pay provider payload yet.
         "method": PaymentOrder.Method.MOYASAR_STCPAY,
         "provider": PaymentOrder.Provider.MOYASAR,
         "status": PaymentOrder.Status.PENDING,
@@ -5371,6 +5377,11 @@ def plan_amount_halalas(plan):
 
 
 def bank_transfer_context():
+    whatsapp_number = "".join(
+        character for character in str(
+            getattr(settings, "BANK_TRANSFER_WHATSAPP_NUMBER", "")
+        ) if character.isdigit()
+    )
     return {
         "enabled": getattr(settings, "BANK_TRANSFER_ENABLED", False),
         "account_name": getattr(settings, "BANK_ACCOUNT_NAME", ""),
@@ -5378,7 +5389,22 @@ def bank_transfer_context():
         "iban": getattr(settings, "BANK_IBAN", ""),
         "account_number": getattr(settings, "BANK_ACCOUNT_NUMBER", ""),
         "instructions": getattr(settings, "BANK_TRANSFER_INSTRUCTIONS", ""),
+        "whatsapp_number": whatsapp_number,
     }
+
+
+def bank_transfer_whatsapp_url(order):
+    number = bank_transfer_context()["whatsapp_number"]
+    if not number:
+        return ""
+    message = (
+        "مرحبًا، أريد تفعيل اشتراك عبر التحويل البنكي.\n"
+        f"رقم الطلب: {order.reference}\n"
+        f"الباقة: {order.plan_name}\n"
+        f"المبلغ: {order.amount_sar} ريال\n"
+        "سأرسل إيصال التحويل هنا."
+    )
+    return f"https://wa.me/{number}?text={quote(message)}"
 
 
 def moyasar_context():
@@ -5503,7 +5529,125 @@ def _record_moyasar_failure(order_id, creation_token, exc):
     return order, outcome
 
 
-def start_moyasar_invoice_checkout(request, plan, method_slug):
+def _record_reused_invoice_terminal_status(order_id, invoice_id, invoice_status):
+    status_map = {
+        "failed": PaymentOrder.Status.FAILED,
+        "expired": PaymentOrder.Status.EXPIRED,
+        "canceled": PaymentOrder.Status.CANCELED,
+        "voided": PaymentOrder.Status.CANCELED,
+        "refunded": PaymentOrder.Status.FAILED,
+        "not_found": PaymentOrder.Status.FAILED,
+    }
+    now = timezone.now()
+    with transaction.atomic():
+        order = PaymentOrder.objects.select_for_update().get(pk=order_id)
+        if order.status != PaymentOrder.Status.INITIATED or order.moyasar_invoice_id != invoice_id:
+            return order
+        order.status = status_map[invoice_status]
+        order.provider_status = invoice_status
+        order.failure_code = f"invoice_{invoice_status}"
+        order.failure_message = "لم تكتمل عملية الدفع."
+        if order.status == PaymentOrder.Status.CANCELED:
+            order.canceled_at = now
+            update_fields = ["canceled_at"]
+        else:
+            order.failed_at = now
+            update_fields = ["failed_at"]
+        order.save(update_fields=[
+            "status", "provider_status", "failure_code", "failure_message", *update_fields,
+            "updated_at",
+        ])
+    return order
+
+
+def verify_reusable_moyasar_invoice(order):
+    """Return reuse, terminal, paid, or unknown without trusting browser data."""
+    started_at = time.monotonic()
+    invoice_id = order.moyasar_invoice_id
+    try:
+        invoice = fetch_moyasar_invoice(invoice_id)
+    except MoyasarAPIError as exc:
+        duration_ms = round((time.monotonic() - started_at) * 1000)
+        if exc.status_code == 404:
+            _record_reused_invoice_terminal_status(order.id, invoice_id, "not_found")
+            payment_logger.info(
+                "moyasar_invoice_reuse payment_order_id=%s reference=%s plan=%s method=%s invoice_id=%s "
+                "invoice_status=not_found decision=new_invoice duration_ms=%s provider_request_id=%s",
+                order.id, order.reference, order.plan_code, order.method, invoice_id, duration_ms,
+                exc.request_id or "missing",
+            )
+            return "terminal", order
+        payment_logger.info(
+            "moyasar_invoice_reuse payment_order_id=%s reference=%s plan=%s method=%s invoice_id=%s "
+            "invoice_status=unknown decision=pending duration_ms=%s provider_request_id=%s",
+            order.id, order.reference, order.plan_code, order.method, invoice_id, duration_ms,
+            exc.request_id or "missing",
+        )
+        return "unknown", order
+    except (MoyasarNetworkError, MoyasarConfigurationError, MoyasarInvalidResponseError):
+        duration_ms = round((time.monotonic() - started_at) * 1000)
+        payment_logger.info(
+            "moyasar_invoice_reuse payment_order_id=%s reference=%s plan=%s method=%s invoice_id=%s "
+            "invoice_status=unknown decision=pending duration_ms=%s provider_request_id=missing",
+            order.id, order.reference, order.plan_code, order.method, invoice_id, duration_ms,
+        )
+        return "unknown", order
+
+    duration_ms = round((time.monotonic() - started_at) * 1000)
+    metadata = invoice.get("metadata") or {}
+    status = invoice.get("status")
+    is_matching_invoice = (
+        invoice.get("id") == invoice_id
+        and invoice.get("amount") == order.amount_halalas
+        and invoice.get("currency") == order.currency
+        and metadata.get("payment_order_id") == str(order.id)
+        and metadata.get("quote_reference") == str(order.idempotency_key)
+    )
+    if not is_matching_invoice:
+        payment_logger.warning(
+            "moyasar_invoice_reuse payment_order_id=%s reference=%s plan=%s method=%s invoice_id=%s "
+            "invoice_status=%s decision=pending duration_ms=%s provider_request_id=missing",
+            order.id, order.reference, order.plan_code, order.method, invoice_id,
+            status or "invalid", duration_ms,
+        )
+        return "unknown", order
+
+    if status == "initiated":
+        payment_logger.info(
+            "moyasar_invoice_reuse payment_order_id=%s reference=%s plan=%s method=%s invoice_id=%s "
+            "invoice_status=initiated decision=reuse duration_ms=%s provider_request_id=missing",
+            order.id, order.reference, order.plan_code, order.method, invoice_id, duration_ms,
+        )
+        return "reuse", order
+    if status in {"expired", "failed", "canceled", "voided", "refunded"}:
+        _record_reused_invoice_terminal_status(order.id, invoice_id, status)
+        payment_logger.info(
+            "moyasar_invoice_reuse payment_order_id=%s reference=%s plan=%s method=%s invoice_id=%s "
+            "invoice_status=%s decision=new_invoice duration_ms=%s provider_request_id=missing",
+            order.id, order.reference, order.plan_code, order.method, invoice_id, status, duration_ms,
+        )
+        return "terminal", order
+    if status == "paid":
+        result = reconcile_payment_order(order.id)
+        order.refresh_from_db()
+        decision = "paid" if result.status in {"paid", "review"} else "pending"
+        payment_logger.info(
+            "moyasar_invoice_reuse payment_order_id=%s reference=%s plan=%s method=%s invoice_id=%s "
+            "invoice_status=paid decision=%s duration_ms=%s provider_request_id=missing",
+            order.id, order.reference, order.plan_code, order.method, invoice_id, decision, duration_ms,
+        )
+        return decision, order
+
+    payment_logger.info(
+        "moyasar_invoice_reuse payment_order_id=%s reference=%s plan=%s method=%s invoice_id=%s "
+        "invoice_status=%s decision=pending duration_ms=%s provider_request_id=missing",
+        order.id, order.reference, order.plan_code, order.method, invoice_id,
+        status or "unknown", duration_ms,
+    )
+    return "unknown", order
+
+
+def start_moyasar_invoice_checkout(request, plan, method_slug, *, skip_reuse_order_id=None):
     now = timezone.now()
     cutoff = now - timedelta(
         minutes=max(1, int(getattr(settings, "MOYASAR_ORDER_REUSE_MINUTES", 30)))
@@ -5549,6 +5693,8 @@ def start_moyasar_invoice_checkout(request, plan, method_slug):
             )
             .order_by("-created_at")
         )
+        if skip_reuse_order_id:
+            recent_orders = [order for order in recent_orders if order.id != skip_reuse_order_id]
 
         paid_order = next((o for o in recent_orders if o.status == PaymentOrder.Status.PAID), None)
         if paid_order:
@@ -5562,7 +5708,7 @@ def start_moyasar_invoice_checkout(request, plan, method_slug):
             ):
                 try:
                     validate_moyasar_checkout_url(existing.checkout_url)
-                    return existing, "redirect"
+                    return existing, "verify_reuse"
                 except MoyasarInvalidResponseError:
                     existing.status = PaymentOrder.Status.FAILED
                     existing.provider_status = "unsafe_saved_checkout_url"
@@ -5631,6 +5777,7 @@ def start_moyasar_invoice_checkout(request, plan, method_slug):
         if not getattr(settings, "MOYASAR_ENABLED", False):
             raise MoyasarConfigurationError("Moyasar payment is not enabled.")
         success_url, back_url, callback_url = _moyasar_checkout_urls(request, order, plan)
+        provider_started_at = time.monotonic()
         invoice = create_moyasar_invoice(
             payment_order_id=order.id,
             user_id=request.user.id,
@@ -5644,6 +5791,13 @@ def start_moyasar_invoice_checkout(request, plan, method_slug):
             success_url=success_url,
             back_url=back_url,
             callback_url=callback_url,
+        )
+        payment_logger.info(
+            "moyasar_invoice_created payment_order_id=%s reference=%s plan=%s method=%s invoice_id=%s "
+            "invoice_status=%s decision=new_invoice duration_ms=%s provider_request_id=%s",
+            order.id, order.reference, order.plan_code, order.method, invoice.invoice_id,
+            invoice.status or "initiated", round((time.monotonic() - provider_started_at) * 1000),
+            invoice.request_id or "missing",
         )
     except (MoyasarConfigurationError, MoyasarNetworkError, MoyasarAPIError, MoyasarInvalidResponseError, ValueError) as exc:
         return _record_moyasar_failure(order.id, creation_token, exc)
@@ -5859,6 +6013,20 @@ def create_payment_order(request, plan_code, method_slug):
         order, outcome = start_moyasar_invoice_checkout(request, plan, method_slug)
     except PurchaseNotAllowed as exc:
         raise PermissionDenied(str(exc)) from exc
+    if outcome == "verify_reuse":
+        reuse_decision, verified_order = verify_reusable_moyasar_invoice(order)
+        if reuse_decision == "reuse":
+            return redirect(verified_order.checkout_url)
+        if reuse_decision == "terminal":
+            order, outcome = start_moyasar_invoice_checkout(
+                request, plan, method_slug, skip_reuse_order_id=verified_order.id
+            )
+        elif reuse_decision == "paid":
+            outcome = "paid"
+            order = verified_order
+        else:
+            outcome = "unknown"
+            order = verified_order
     if outcome == "redirect":
         return redirect(order.checkout_url)
     if outcome == "paid":
@@ -5929,8 +6097,44 @@ def bank_transfer_proof(request, order_id):
         "order": order,
         "plan": CHECKOUT_PLANS.get(order.plan_code),
         "bank_transfer": bank_transfer_context(),
+        "bank_transfer_whatsapp_url": bank_transfer_whatsapp_url(order),
         "errors": errors,
     }, status=400 if errors else 200)
+
+
+def normalize_bank_activation_code(value):
+    return "".join(character for character in str(value or "").upper() if character.isalnum())
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+@rate_limit("bank-activation-code", limit_setting="RATE_LIMIT_PAYMENT", default=10)
+def bank_transfer_activation(request):
+    error = ""
+    if request.method == "POST":
+        entered_code = normalize_bank_activation_code(request.POST.get("activation_code"))
+        candidates = BankTransferActivationCode.objects.select_related("payment_order").filter(
+            payment_order__user=request.user,
+            used_at__isnull=True,
+        ).order_by("-issued_at")[:20]
+        for candidate in candidates:
+            if not entered_code or not check_password(entered_code, candidate.code_hash):
+                continue
+            if candidate.expires_at <= timezone.now() or candidate.payment_order.status != PaymentOrder.Status.BANK_APPROVED:
+                break
+            with transaction.atomic():
+                locked_code = BankTransferActivationCode.objects.select_for_update().select_related("payment_order").get(pk=candidate.pk)
+                if locked_code.used_at or locked_code.expires_at <= timezone.now():
+                    break
+                subscription = activate_subscription_from_payment(locked_code.payment_order)
+                locked_code.used_at = timezone.now()
+                locked_code.save(update_fields=["used_at"])
+            if subscription:
+                messages.success(request, "تم تفعيل اشتراكك بنجاح.")
+                return redirect("profile_dashboard")
+            break
+        error = "رمز التفعيل غير صحيح أو انتهت صلاحيته. تأكد من تسجيل الدخول بالحساب الذي أنشأ الطلب."
+    return render(request, "bank_transfer_activation.html", {"error": error})
 
 
 @login_required

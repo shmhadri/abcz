@@ -102,6 +102,10 @@ services:
         value: "65536"
       - key: RATE_LIMIT_PAYMENT
         value: "10"
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
       - key: BANK_TRANSFER_ENABLED
         value: "False"
       - key: BANK_ACCOUNT_NAME
