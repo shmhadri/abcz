@@ -85,8 +85,10 @@ class PaymentCheckoutTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "إكمال الاشتراك")
-        self.assertContains(response, "الدفع عبر ميسر")
-        self.assertContains(response, "STC Pay")
+        self.assertContains(response, "الدفع الآمن عبر مدى")
+        self.assertContains(response, "إكمال الدفع عبر مدى")
+        self.assertNotContains(response, "Sandbox")
+        self.assertNotContains(response, "STC Pay")
         self.assertContains(response, "تحويل بنكي")
 
     def test_level_checkout_accepts_public_hyphen_slugs(self):

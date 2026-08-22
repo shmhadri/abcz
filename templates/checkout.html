@@ -253,32 +253,15 @@
                 {% else %}
 
                 <article class="method">
-                    <h3>بطاقة / مدى / Apple Pay / Samsung Pay عبر Moyasar</h3>
-                    <p>ادفع بأمان عبر ميسر عند تفعيل Sandbox أو الإنتاج لاحقًا. الموقع لا يحفظ بيانات البطاقة أو CVV.</p>
+                    <h3>الدفع الآمن عبر مدى</h3>
+                    <p>أكمل اشتراكك بسهولة باستخدام مدى، أو Apple Pay والبطاقات المتاحة في صفحة الدفع الآمنة. موقعنا لا يحتفظ ببيانات بطاقتك.</p>
                     <div class="method-meta">
-                        {% if moyasar.enabled and moyasar.secret_key_configured %}
-                            <span class="pill ready">ميسر مهيأ</span>
-                        {% else %}
-                            <span class="pill pending">جاهز للتفعيل لاحقًا</span>
-                        {% endif %}
-                        <span class="pill">لا توجد مفاتيح داخل الكود</span>
+                        <span class="pill ready">دفع آمن</span>
+                        <span class="pill">مدى وبطاقات وApple Pay</span>
                     </div>
                     <form method="post" action="{% url 'create_payment_order' plan.code 'moyasar' %}">
                         {% csrf_token %}
-                        <button class="action" type="submit">الدفع عبر ميسر</button>
-                    </form>
-                </article>
-
-                <article class="method">
-                    <h3>STC Pay</h3>
-                    <p>يدعم مسار STC Pay عبر ميسر لاحقًا. سيتم إنشاء طلب دفع بدون تفعيل الاشتراك حتى يتم تأكيد الحالة من مزود الدفع.</p>
-                    <div class="method-meta">
-                        <span class="pill pending">STC Pay عبر Moyasar</span>
-                        <span class="pill">يتطلب تحقق حالة الدفع</span>
-                    </div>
-                    <form method="post" action="{% url 'create_payment_order' plan.code 'stcpay' %}">
-                        {% csrf_token %}
-                        <button class="action stc" type="submit">الدفع عبر STC Pay</button>
+                        <button class="action" type="submit">إكمال الدفع عبر مدى</button>
                     </form>
                 </article>
 
