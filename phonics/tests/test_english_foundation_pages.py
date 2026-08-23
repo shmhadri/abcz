@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
+from django.urls import reverse
 
 from phonics.models import EnglishFoundationProgress, StudentProfile
 from phonics.tests.subscription_helpers import grant_active_subscription
@@ -33,7 +34,7 @@ class EnglishFoundationPagesTests(TestCase):
 
     def test_layout_contains_english_foundation_buttons(self):
         self.client.logout()
-        response = self.client.get("/")
+        response = self.client.get(reverse("letters"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "learning-levels-nav")

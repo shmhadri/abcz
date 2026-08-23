@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.db import connection
 from django.test import Client, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
 from django.utils import timezone
 
 from phonics.models import StudentProfile, UserSubscription
@@ -71,7 +72,7 @@ class SubscriptionQueryCacheTests(TestCase):
         client.force_login(user)
 
         with CaptureQueriesContext(connection) as ctx:
-            response = client.get("/")
+            response = client.get(reverse("letters"))
 
         self.assertEqual(response.status_code, 200)
         self.assertLessEqual(len(ctx.captured_queries), 15)

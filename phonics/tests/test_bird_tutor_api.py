@@ -2,6 +2,7 @@ import json
 
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
+from django.urls import reverse
 
 from phonics.models import BirdReviewItem, BirdTutorProgress, StudentProfile
 from phonics.tests.subscription_helpers import grant_active_subscription
@@ -139,7 +140,7 @@ class BirdTutorApiTests(TestCase):
     def test_vip_page_shows_bird_tutor(self):
         self.login()
 
-        response = self.client.get("/")
+        response = self.client.get(reverse("letters"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="birdTutor"')
@@ -152,7 +153,7 @@ class BirdTutorApiTests(TestCase):
         StudentProfile.objects.create(user=user, student_name="Not VIP", is_vip=False)
         self.client.login(username="notvip", password="StrongPass123!")
 
-        response = self.client.get("/")
+        response = self.client.get(reverse("letters"))
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'id="birdTutorLocked"')

@@ -1,4 +1,5 @@
 from django.test import TestCase, override_settings
+from django.urls import reverse
 
 from phonics.models import LetterProgress, Student
 
@@ -106,7 +107,7 @@ class CorePagesTests(TestCase):
         self.assertContains(response, "Level 3: CVC Reading")
 
     def test_letters_page_links_to_curriculum(self):
-        response = self.client.get("/")
+        response = self.client.get(reverse("letters"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "/curriculum/")

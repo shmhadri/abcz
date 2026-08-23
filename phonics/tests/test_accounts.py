@@ -22,7 +22,7 @@ class AccountsFoundationTests(TestCase):
         self.assertNotContains(response, "جوال ولي الأمر")
 
     def test_profile_interfaces_and_privacy_describe_the_same_fields(self):
-        letters = self.client.get("/").content.decode("utf-8")
+        letters = self.client.get("/letters/").content.decode("utf-8")
         privacy = self.client.get("/privacy/").content.decode("utf-8")
 
         self.assertIn('id="profileName"', letters)
@@ -55,6 +55,7 @@ class AccountsFoundationTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/letters/")
         user = User.objects.get(username="student1")
         profile = StudentProfile.objects.get(user=user)
         self.assertEqual(profile.student_name, "Test Student")
@@ -156,6 +157,28 @@ class AccountsFoundationTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertNotIn("_auth_user_id", self.client.session)
         self.assertTrue(User.objects.filter(id=user.id).exists())
+        self.assertEqual(response["Location"], "/")
+
+    def test_login_without_next_redirects_to_letters(self):
+        User.objects.create_user(username="letters-login", password="StrongPass123!")
+
+        response = self.client.post(
+            "/accounts/login/",
+            {"username": "letters-login", "password": "StrongPass123!"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/letters/")
+
+    def test_authenticated_account_pages_without_next_redirect_to_letters(self):
+        user = User.objects.create_user(username="already-signed-in", password="StrongPass123!")
+        self.client.force_login(user)
+
+        for path in ("/accounts/login/", "/accounts/register/"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 302)
+                self.assertEqual(response["Location"], "/letters/")
 
     def test_logout_get_is_not_allowed(self):
         user = User.objects.create_user(username="logout-get", password="StrongPass123!")
@@ -171,7 +194,7 @@ class AccountsFoundationTests(TestCase):
             {"username": "redirect-user", "password": "StrongPass123!"},
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], "/")
+        self.assertEqual(response["Location"], "/letters/")
 
     def test_login_accepts_internal_next_redirect(self):
         User.objects.create_user(username="redirect-local", password="StrongPass123!")
@@ -279,7 +302,7 @@ class AccountsFoundationTests(TestCase):
             self.assertIn("no-cache", response.headers["Cache-Control"])
 
     def test_letters_menu_has_one_guest_login_link_and_no_profile_trigger(self):
-        response = self.client.get("/")
+        response = self.client.get("/letters/")
         menu_html = response.content.decode().split('id="userDropdown"', 1)[1]
 
         self.assertEqual(response.status_code, 200)
@@ -288,7 +311,7 @@ class AccountsFoundationTests(TestCase):
         self.assertNotIn("لوحة المتصدرين", menu_html)
 
     def test_letters_page_loads_account_context(self):
-        response = self.client.get("/")
+        response = self.client.get("/letters/")
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "const IS_AUTHENTICATED = false;")
@@ -304,7 +327,7 @@ class AccountsFoundationTests(TestCase):
         grant_active_subscription(user, "vip")
         self.client.login(username="vipstudent", password="StrongPass123!")
 
-        response = self.client.get("/")
+        response = self.client.get("/letters/")
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "const IS_VIP_USER = true;")
@@ -314,7 +337,7 @@ class AccountsFoundationTests(TestCase):
 
     @override_settings(DEBUG=True, DEV_UNLOCK_VIP_BIRD=True)
     def test_developer_preview_does_not_unlock_bird_in_level_one_policy(self):
-        response = self.client.get("/")
+        response = self.client.get("/letters/")
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "const IS_VIP_USER = false;")
@@ -326,7 +349,7 @@ class AccountsFoundationTests(TestCase):
 
     @override_settings(DEBUG=True, DEV_UNLOCK_VIP_BIRD=False)
     def test_developer_preview_can_be_disabled(self):
-        response = self.client.get("/")
+        response = self.client.get("/letters/")
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "const IS_VIP_USER = false;")

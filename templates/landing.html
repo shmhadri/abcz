@@ -1,0 +1,167 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Smart Learning | تعلم الإنجليزية للأطفال بطريقة تفاعلية</title>
+    <meta name="description" content="منصة تعليم الإنجليزية للأطفال بخطوات واضحة: اختبار تحديد المستوى، أنشطة تفاعلية، متابعة للتقدم، ومسار يناسب مستوى الطفل.">
+    <meta property="og:title" content="Smart Learning | تعلم الإنجليزية للأطفال بطريقة تفاعلية">
+    <meta property="og:description" content="ابدأ من المستوى الصحيح وابنِ أساس طفلك في الإنجليزية خطوة بخطوة.">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+</head>
+<body class="landing-page">
+    <header class="landing-header">
+        <div class="landing-container landing-nav-wrap">
+            <a class="landing-brand" href="{% url 'index' %}" aria-label="Smart Learning الصفحة الرئيسية">
+                <span class="landing-brand-mark">SL</span><span>Smart Learning</span>
+            </a>
+            <button class="landing-menu-toggle" type="button" aria-label="فتح القائمة" aria-expanded="false" aria-controls="landing-menu">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="landing-nav" id="landing-menu" aria-label="التنقل الرئيسي">
+                <a href="#how-it-works">كيف تعمل المنصة</a>
+                <a href="#levels">المستويات</a>
+                <a href="#features">المميزات</a>
+                <a href="{% url 'pricing' %}">الباقات</a>
+                <a href="{% url 'placement_test' %}">اختبار المستوى</a>
+                {% if request.user.is_authenticated %}
+                    <a class="landing-nav-profile" href="{% url 'profile_dashboard' %}">ملف المتعلم</a>
+                    <a class="landing-nav-cta" href="{% url 'letters' %}">ابدأ التعلم</a>
+                {% else %}
+                    <a href="{% url 'login' %}">تسجيل الدخول</a>
+                    <a class="landing-nav-cta" href="{% url 'register' %}">حساب جديد</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="landing-hero">
+            <div class="landing-container landing-hero-grid">
+                <div class="landing-hero-copy">
+                    <p class="landing-eyebrow"><span></span> تعلم تفاعلي • تحديد مستوى • متابعة تقدم</p>
+                    <h1>ابدأ من <em>المستوى الصحيح</em>، وابنِ أساس طفلك في الإنجليزية خطوة بخطوة</h1>
+                    <p class="landing-lead">منصة تعليمية تفاعلية تساعد طفلك على تعلم الحروف والأصوات والقراءة واللغة الإنجليزية، بدءًا من مستواه الحقيقي.</p>
+                    <div class="landing-actions">
+                        <a class="landing-button landing-button-primary" href="{% url 'placement_test' %}">ابدأ اختبار تحديد المستوى مجانًا <span>←</span></a>
+                        <a class="landing-button landing-button-secondary" href="{% url 'levels' %}">استعرض المستويات</a>
+                    </div>
+                    <p class="landing-microcopy">اختبار سريع • نتيجة فورية • يساعدك في معرفة نقطة البداية</p>
+                </div>
+                <div class="landing-hero-visual" aria-label="معاينة لمسار تعلم الإنجليزية" role="img">
+                    <div class="landing-orbit landing-orbit-one"></div><div class="landing-orbit landing-orbit-two"></div>
+                    <div class="landing-learning-board">
+                        <div class="landing-board-top"><span class="landing-avatar">س</span><span><b>تقدم الطفل</b><small>نموذج توضيحي</small></span><span class="landing-streak">⭐ إنجاز</span></div>
+                        <div class="landing-progress-label"><span>تقدم القراءة</span><b>75%</b></div>
+                        <div class="landing-progress"><i></i></div>
+                        <div class="landing-lesson-row">
+                            <div class="landing-letter-card"><b>A a</b><span>الحروف</span></div>
+                            <div class="landing-sound-card"><span>🔊</span><b>CAT</b><small>استمع • اقرأ</small></div>
+                        </div>
+                        <div class="landing-mini-activity"><span class="landing-mini-check">✓</span><span>تدريب اليوم مكتمل</span><b>🎮</b></div>
+                    </div>
+                    <div class="landing-float-card landing-float-card-one"><span>📖</span><div><b>قراءة مبكرة</b><small>كلمات وقصص قصيرة</small></div></div>
+                    <div class="landing-float-card landing-float-card-two"><span>🎯</span><div><b>خطوة جديدة</b><small>جاهز للدرس التالي</small></div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-trust-strip" aria-label="مزايا البداية">
+            <div class="landing-container"><span>اختبار تحديد مستوى</span><i></i><span>تعلم تدريجي</span><i></i><span>أنشطة تفاعلية</span><i></i><span>متابعة تقدم</span></div>
+        </section>
+
+        <section class="landing-section landing-problem">
+            <div class="landing-container landing-split-heading">
+                <div><p class="landing-kicker">بداية أكثر فهمًا</p><h2>هل هذه التحديات مألوفة لطفلك؟</h2></div>
+                <p>قد يبذل الطفل جهدًا كبيرًا، لكن البداية من مهارة غير مناسبة تجعل التقدم أبطأ وأقل متعة.</p>
+            </div>
+            <div class="landing-container landing-problem-grid">
+                <article><span>Aa</span><h3>يعرف الحروف ولا يقرأ الكلمات</h3><p>تحتاج المهارة إلى ربط الحرف بصوته ثم استخدامه.</p></article>
+                <article><span>🔊</span><h3>ينسى أصوات الحروف بسرعة</h3><p>التكرار الهادف والاستماع يساعدان على تثبيت الصوت.</p></article>
+                <article><span>…</span><h3>يتوقف كثيرًا أثناء القراءة</h3><p>القراءة تتقدم عندما تتدرج الكلمات والجمل بوضوح.</p></article>
+                <p class="landing-problem-transition">المشكلة ليست أن يبدأ الطفل أكثر… بل أن يبدأ من المكان الصحيح.</p>
+            </div>
+        </section>
+
+        <section class="landing-section landing-solution" id="how-it-works">
+            <div class="landing-container">
+                <div class="landing-centered-heading"><p class="landing-kicker">طريقة واضحة منذ البداية</p><h2>لهذا تبدأ Smart Learning من مستوى طفلك الحقيقي</h2><p>نحدد نقطة البداية أولًا، ثم نبني عليها مسارًا منظمًا وممارسة مستمرة.</p></div>
+                <div class="landing-solution-flow"><span>اختبار المستوى</span><i>←</i><span>نقطة البداية</span><i>←</i><span>مسار مناسب</span><i>←</i><span>تدريب</span><i>←</i><span>متابعة التقدم</span></div>
+                <div class="landing-steps">
+                    <article><span class="landing-step-number">01</span><div class="landing-step-icon">⌁</div><h3>اختبر المستوى</h3><p>ابدأ باختبار قصير وواضح.</p></article>
+                    <article><span class="landing-step-number">02</span><div class="landing-step-icon">◎</div><h3>اعرف نقطة البداية</h3><p>تعرف على المستوى المقترح.</p></article>
+                    <article><span class="landing-step-number">03</span><div class="landing-step-icon">Aa</div><h3>ابدأ المسار المناسب</h3><p>تعلم مهارة بعد مهارة.</p></article>
+                    <article><span class="landing-step-number">04</span><div class="landing-step-icon">↗</div><h3>تابع التطور</h3><p>شاهد التقدم والإنجازات.</p></article>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-section landing-levels" id="levels">
+            <div class="landing-container">
+                <div class="landing-section-head"><div><p class="landing-kicker">منهج متدرج</p><h2>أربعة مستويات تبني المهارة بهدوء</h2></div><a href="{% url 'levels' %}">عرض تفاصيل المستويات ←</a></div>
+                <div class="landing-level-grid">
+                    <article class="landing-level-card level-one"><span>المستوى 1 · A → Z</span><h3>الحروف</h3><p>تعرّف الحروف وأشكالها وأصواتها.</p><ul><li>الحروف A–Z</li><li>الكتابة والكلمات الأولى</li></ul><a href="{% url 'letters' %}">ابدأ من الحروف ←</a></article>
+                    <article class="landing-level-card level-two"><span>المستوى 2 · Sound → Word</span><h3>الصوتيات</h3><p>تمييز الأصوات والنطق والتدريب عليها.</p><ul><li>Phonics والأصوات</li><li>الاستماع والنطق</li></ul><a href="{% url 'sounds' %}">استكشف الصوتيات ←</a></article>
+                    <article class="landing-level-card level-three"><span>المستوى 3 · Word → Sentence</span><h3>القراءة</h3><p>كلمات وجمل وتمارين قراءة تدريجية.</p><ul><li>كلمات وجمل قصيرة</li><li>قصص وأنشطة قراءة</li></ul><a href="{% url 'cvc_reading' %}">ابدأ القراءة ←</a></article>
+                    <article class="landing-level-card level-four"><span>المستوى 4 · Read • Listen • Speak • Write</span><h3>اللغة المتكاملة</h3><p>القراءة والاستماع والتحدث والكتابة.</p><ul><li>محادثات وقواعد</li><li>قصص وتقييمات</li></ul><a href="{% url 'level_four' %}">استكشف المستوى ←</a></article>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-section landing-features" id="features">
+            <div class="landing-container landing-feature-layout">
+                <div><p class="landing-kicker">تعلّم يتجاوز المشاهدة</p><h2>أدوات كثيرة، ضمن تجربة واحدة مترابطة</h2><p class="landing-copy">الطفل لا يكتفي بالنظر إلى الدرس؛ بل يستمع ويجرّب ويقرأ ويلعب، بينما تبقى رحلة التقدم واضحة داخل المنصة.</p><a class="landing-text-link" href="{% url 'curriculum' %}">استعرض المنهج الحالي ←</a></div>
+                <div class="landing-feature-grid landing-feature-categories">
+                    <article><span>📚</span><div><b>اقرأ</b><small>الحروف · الكلمات · الجمل · القصص</small></div></article>
+                    <article><span>🎧</span><div><b>استمع</b><small>الأصوات · الكلمات · الجمل</small></div></article>
+                    <article><span>🗣</span><div><b>انطق</b><small>تدريب صوتي · ميكروفون</small></div></article>
+                    <article><span>✦</span><div><b>تعلّم</b><small>Vocabulary · Grammar · Conversations</small></div></article>
+                    <article><span>🎮</span><div><b>العب</b><small>ألعاب وأنشطة تفاعلية</small></div></article>
+                    <article><span>↗</span><div><b>تابع</b><small>التقدم والإنجاز</small></div></article>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-section landing-preview">
+            <div class="landing-container"><div class="landing-centered-heading"><p class="landing-kicker">معاينة من التجربة</p><h2>أنشطة قصيرة تجعل الممارسة جزءًا طبيعيًا من التعلّم</h2></div>
+                <div class="landing-preview-grid">
+                    <article class="preview-listen"><span class="landing-preview-tag">استمع</span><div class="landing-wave"><i></i><i></i><i></i><i></i><i></i></div><h3>استمع إلى الصوت</h3><p>يتعرف الطفل على الصوت قبل استخدامه.</p></article>
+                    <article class="preview-read"><span class="landing-preview-tag">اقرأ</span><div class="landing-word">C<span>a</span>t</div><h3>كوّن كلمة</h3><p>نشاط بصري بسيط يدعم القراءة المبكرة.</p></article>
+                    <article class="preview-play"><span class="landing-preview-tag">العب</span><div class="landing-game-dots"><i></i><i></i><i></i></div><h3>تعلّم بالممارسة</h3><p>ألعاب وأنشطة قصيرة لتثبيت المهارة.</p></article>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-section landing-path">
+            <div class="landing-container"><p class="landing-kicker">رحلة تعلم مترابطة</p><h2>كيف تتحول مهارة صغيرة إلى قراءة حقيقية؟</h2><div class="landing-path-track landing-learning-journey"><span>A<small>الحرف</small></span><i>↓</i><span>/a/<small>الصوت</small></span><i>↓</i><span>cat<small>الكلمة</small></span><i>↓</i><span>The cat is…<small>الجملة</small></span><i>↓</i><span>Story<small>القصة</small></span><i>↓</i><span>Communication<small>التواصل</small></span></div><p class="landing-path-copy">كل خطوة تبني على التي قبلها، بدل تعليم المهارات بشكل منفصل وعشوائي.</p></div>
+        </section>
+
+        <section class="landing-section landing-placement">
+            <div class="landing-container landing-placement-card"><div><p class="landing-kicker">لا تعرف من أين يبدأ طفلك؟</p><h2>اختبار تحديد المستوى يختصر الحيرة</h2><p>ابدأ باختبار تحديد المستوى لمعرفة نقطة البداية المناسبة بدل التخمين.</p><ul class="landing-placement-trust"><li>لا يحتاج اشتراك للبدء</li><li>نتيجة فورية</li><li>توصية بالمستوى</li></ul></div><a class="landing-button landing-button-light" href="{% url 'placement_test' %}">ابدأ الاختبار مجانًا <span>←</span></a></div>
+        </section>
+
+        <section class="landing-section landing-dashboard">
+            <div class="landing-container landing-dashboard-grid"><div><p class="landing-kicker">متابعة تساعد على الاستمرار</p><h2>صورة مبسطة للتقدم، في كل مرحلة</h2><p class="landing-copy">يتابع ولي الأمر ما أنجزه الطفل داخل المنصة، ويعرف أين يواصل التدريب. الأرقام التالية نموذج توضيحي وليست بيانات مستخدم حقيقية.</p><a class="landing-text-link" href="{% url 'profile_dashboard' %}">عرض ملف المتعلم ←</a></div><div class="landing-dashboard-card" aria-label="معاينة توضيحية للوحة تقدم"><div class="landing-dashboard-top"><span>لوحة التقدم</span><small>نموذج توضيحي</small></div><div class="landing-dashboard-score"><b>75%</b><span>تقدم القراءة</span></div><div class="landing-dashboard-line"><i></i></div><div class="landing-dashboard-metrics"><span><b>32</b>الكلمات المتقنة</span><span><b>18</b>الأنشطة المكتملة</span><span><b>CVC Reading</b>آخر مهارة</span></div></div></div>
+        </section>
+
+        <section class="landing-section landing-pricing" id="pricing"><div class="landing-container landing-pricing-card"><div><p class="landing-kicker">خطط مرنة</p><h2>اختر المسار المناسب لطفلك</h2><p>باقات مرنة حسب المستوى والاحتياج. ابدأ أولًا باختبار تحديد المستوى إن لم تكن متأكدًا من نقطة البداية.</p></div><div class="landing-actions"><a class="landing-button landing-button-primary" href="{% url 'pricing' %}">عرض الباقات والأسعار <span>←</span></a><a class="landing-button landing-button-secondary" href="{% url 'placement_test' %}">ابدأ بالاختبار</a></div></div></section>
+
+        <section class="landing-section landing-faq"><div class="landing-container landing-faq-grid"><div><p class="landing-kicker">أسئلة شائعة</p><h2>كل ما تحتاج معرفته قبل البدء</h2><p>ابدأ باختبار تحديد المستوى إن لم تكن متأكدًا من نقطة البداية.</p></div><div class="landing-accordion">
+            <article><button aria-expanded="false"><span>من أين يبدأ طفلي؟</span><b aria-hidden="true">+</b></button><div><p>ابدأ باختبار تحديد المستوى المجاني للحصول على اقتراح مناسب لنقطة البداية.</p></div></article>
+            <article><button aria-expanded="false"><span>هل يحتاج أن يعرف الحروف مسبقًا؟</span><b aria-hidden="true">+</b></button><div><p>لا، يحتوي المستوى الأول على مسار يبدأ من الحروف الإنجليزية ويقدم الأنشطة بشكل تدريجي.</p></div></article>
+            <article><button aria-expanded="false"><span>هل تعمل المنصة على الجوال؟</span><b aria-hidden="true">+</b></button><div><p>نعم، صفحات المنصة مصممة لتتكيف مع شاشات الجوال والأجهزة المختلفة.</p></div></article>
+            <article><button aria-expanded="false"><span>كيف أعرف المستوى المناسب؟</span><b aria-hidden="true">+</b></button><div><p>يوفر اختبار تحديد المستوى نتيجة فورية وتوصية بمستوى البداية.</p></div></article>
+            <article><button aria-expanded="false"><span>هل يمكنني متابعة تقدم الطفل؟</span><b aria-hidden="true">+</b></button><div><p>يوفر ملف المتعلم ملخصًا للإنجازات والتقدم المسجل داخل الأنشطة.</p></div></article>
+            <article><button aria-expanded="false"><span>ماذا يحدث بعد الاشتراك؟</span><b aria-hidden="true">+</b></button><div><p>يصل المتعلم إلى محتوى الباقة المرتبط بمستواه، ويواصل التعلم عبر المسار المتاح في حسابه.</p></div></article>
+        </div></div></section>
+
+        <section class="landing-final"><div class="landing-container"><p>ابدأ بخطوة بسيطة اليوم</p><h2>كل رحلة تعلم ناجحة تبدأ من نقطة البداية الصحيحة</h2><p class="landing-final-copy">اعرف مستوى طفلك وابدأ معه المسار المناسب خطوة بخطوة.</p><div class="landing-actions"><a class="landing-button landing-button-light" href="{% url 'placement_test' %}">ابدأ اختبار المستوى</a><a class="landing-button landing-button-ghost" href="{% url 'pricing' %}">عرض الباقات</a></div></div></section>
+    </main>
+
+    <footer class="landing-footer"><div class="landing-container landing-footer-inner"><div><a class="landing-brand" href="{% url 'index' %}"><span class="landing-brand-mark">SL</span><span>Smart Learning</span></a><p>تجربة تعليم إنجليزي متدرجة للأطفال.</p></div><div class="landing-footer-links"><a href="{% url 'privacy' %}">سياسة الخصوصية</a><a href="{% url 'terms' %}">الشروط والأحكام</a><a href="{% url 'about' %}">من نحن</a></div></div></footer>
+    <a class="landing-mobile-cta" href="{% url 'placement_test' %}">اختبار المستوى مجانًا <span>←</span></a>
+    <script src="{% static 'js/landing.js' %}" defer></script>
+</body>
+</html>
