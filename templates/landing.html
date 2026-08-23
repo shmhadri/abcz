@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{% static 'css/landing.css' %}">
 </head>
 <body class="landing-page">
+    <a class="landing-skip-link" href="#landing-content">تجاوز إلى المحتوى</a>
     <header class="landing-header">
         <div class="landing-container landing-nav-wrap">
             <a class="landing-brand" href="{% url 'index' %}" aria-label="Smart Learning الصفحة الرئيسية">
@@ -37,7 +38,7 @@
         </div>
     </header>
 
-    <main>
+    <main id="landing-content" tabindex="-1">
         <section class="landing-hero">
             <div class="landing-container landing-hero-grid">
                 <div class="landing-hero-copy">
@@ -45,7 +46,7 @@
                     <h1>ابدأ من <em>المستوى الصحيح</em>، وابنِ أساس طفلك في الإنجليزية خطوة بخطوة</h1>
                     <p class="landing-lead">منصة تعليمية تفاعلية تساعد طفلك على تعلم الحروف والأصوات والقراءة واللغة الإنجليزية، بدءًا من مستواه الحقيقي.</p>
                     <div class="landing-actions">
-                        <a class="landing-button landing-button-primary" href="{% url 'placement_test' %}">ابدأ اختبار تحديد المستوى مجانًا <span>←</span></a>
+                        <a class="landing-button landing-button-primary" href="{% url 'placement_test' %}">ابدأ اختبار تحديد المستوى مجانًا <span class="landing-button-arrow" aria-hidden="true"></span></a>
                         <a class="landing-button landing-button-secondary" href="{% url 'levels' %}">استعرض المستويات</a>
                     </div>
                     <p class="landing-microcopy">اختبار سريع • نتيجة فورية • يساعدك في معرفة نقطة البداية</p>
@@ -139,14 +140,14 @@
         </section>
 
         <section class="landing-section landing-placement">
-            <div class="landing-container landing-placement-card"><div><p class="landing-kicker">لا تعرف من أين يبدأ طفلك؟</p><h2>اختبار تحديد المستوى يختصر الحيرة</h2><p>ابدأ باختبار تحديد المستوى لمعرفة نقطة البداية المناسبة بدل التخمين.</p><ul class="landing-placement-trust"><li>لا يحتاج اشتراك للبدء</li><li>نتيجة فورية</li><li>توصية بالمستوى</li></ul></div><a class="landing-button landing-button-light" href="{% url 'placement_test' %}">ابدأ الاختبار مجانًا <span>←</span></a></div>
+            <div class="landing-container landing-placement-card"><div><p class="landing-kicker">لا تعرف من أين يبدأ طفلك؟</p><h2>اختبار تحديد المستوى يختصر الحيرة</h2><p>ابدأ باختبار تحديد المستوى لمعرفة نقطة البداية المناسبة بدل التخمين.</p><ul class="landing-placement-trust"><li>لا يحتاج اشتراك للبدء</li><li>نتيجة فورية</li><li>توصية بالمستوى</li></ul></div><a class="landing-button landing-button-light" href="{% url 'placement_test' %}">ابدأ الاختبار مجانًا <span class="landing-button-arrow" aria-hidden="true"></span></a></div>
         </section>
 
         <section class="landing-section landing-dashboard">
             <div class="landing-container landing-dashboard-grid"><div><p class="landing-kicker">متابعة تساعد على الاستمرار</p><h2>صورة مبسطة للتقدم، في كل مرحلة</h2><p class="landing-copy">يتابع ولي الأمر ما أنجزه الطفل داخل المنصة، ويعرف أين يواصل التدريب. الأرقام التالية نموذج توضيحي وليست بيانات مستخدم حقيقية.</p><a class="landing-text-link" href="{% url 'profile_dashboard' %}">عرض ملف المتعلم ←</a></div><div class="landing-dashboard-card" aria-label="معاينة توضيحية للوحة تقدم"><div class="landing-dashboard-top"><span>لوحة التقدم</span><small>نموذج توضيحي</small></div><div class="landing-dashboard-score"><b>75%</b><span>تقدم القراءة</span></div><div class="landing-dashboard-line"><i></i></div><div class="landing-dashboard-metrics"><span><b>32</b>الكلمات المتقنة</span><span><b>18</b>الأنشطة المكتملة</span><span><b>CVC Reading</b>آخر مهارة</span></div></div></div>
         </section>
 
-        <section class="landing-section landing-pricing" id="pricing"><div class="landing-container landing-pricing-card"><div><p class="landing-kicker">خطط مرنة</p><h2>اختر المسار المناسب لطفلك</h2><p>باقات مرنة حسب المستوى والاحتياج. ابدأ أولًا باختبار تحديد المستوى إن لم تكن متأكدًا من نقطة البداية.</p></div><div class="landing-actions"><a class="landing-button landing-button-primary" href="{% url 'pricing' %}">عرض الباقات والأسعار <span>←</span></a><a class="landing-button landing-button-secondary" href="{% url 'placement_test' %}">ابدأ بالاختبار</a></div></div></section>
+        <section class="landing-section landing-pricing" id="pricing"><div class="landing-container landing-pricing-card"><div><p class="landing-kicker">خطط مرنة</p><h2>اختر المسار المناسب لطفلك</h2><p>باقات مرنة حسب المستوى والاحتياج. ابدأ أولًا باختبار تحديد المستوى إن لم تكن متأكدًا من نقطة البداية.</p></div><div class="landing-actions"><a class="landing-button landing-button-primary" href="{% url 'pricing' %}">عرض الباقات والأسعار <span class="landing-button-arrow" aria-hidden="true"></span></a><a class="landing-button landing-button-secondary" href="{% url 'placement_test' %}">ابدأ بالاختبار</a></div></div></section>
 
         <section class="landing-section landing-faq"><div class="landing-container landing-faq-grid"><div><p class="landing-kicker">أسئلة شائعة</p><h2>كل ما تحتاج معرفته قبل البدء</h2><p>ابدأ باختبار تحديد المستوى إن لم تكن متأكدًا من نقطة البداية.</p></div><div class="landing-accordion">
             <article><button aria-expanded="false"><span>من أين يبدأ طفلي؟</span><b aria-hidden="true">+</b></button><div><p>ابدأ باختبار تحديد المستوى المجاني للحصول على اقتراح مناسب لنقطة البداية.</p></div></article>
@@ -161,7 +162,7 @@
     </main>
 
     <footer class="landing-footer"><div class="landing-container landing-footer-inner"><div><a class="landing-brand" href="{% url 'index' %}"><span class="landing-brand-mark">SL</span><span>Smart Learning</span></a><p>تجربة تعليم إنجليزي متدرجة للأطفال.</p></div><div class="landing-footer-links"><a href="{% url 'privacy' %}">سياسة الخصوصية</a><a href="{% url 'terms' %}">الشروط والأحكام</a><a href="{% url 'about' %}">من نحن</a></div></div></footer>
-    <a class="landing-mobile-cta" href="{% url 'placement_test' %}">اختبار المستوى مجانًا <span>←</span></a>
+    <a class="landing-mobile-cta" href="{% url 'placement_test' %}">اختبار المستوى مجانًا <span class="landing-button-arrow" aria-hidden="true"></span></a>
     <script src="{% static 'js/landing.js' %}" defer></script>
 </body>
 </html>
