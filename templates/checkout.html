@@ -100,6 +100,9 @@
             font-size: 2.4rem;
             line-height: 1;
         }
+        .campaign-price-summary { margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 12px; display: grid; gap: 8px; font-size: 14px; }
+        .campaign-price-summary div { display: flex; justify-content: space-between; gap: 12px; color: #52627f; }
+        .campaign-price-summary b, .campaign-price-summary strong { color: #172554; }
         .features {
             list-style: none;
             padding: 0;
@@ -243,6 +246,14 @@
                 <h2>{{ plan.name_ar }}</h2>
                 <p class="lead">{{ plan.description }}</p>
                 <div class="price"><strong>{% if purchase_option.allowed %}{{ purchase_option.amount_due|floatformat:0 }}{% else %}{{ plan.price_sar|floatformat:0 }}{% endif %}</strong><span>ريال</span></div>
+                {% if campaign.campaign_active %}
+                <div class="campaign-price-summary">
+                    <div><span>السعر الأصلي</span><s>{{ campaign.original_price|floatformat:0 }} ريال</s></div>
+                    <div><span>خصم العودة للمدارس</span><b>{{ campaign.discount_percent }}%</b></div>
+                    <div><span>السعر بعد العرض</span><b>{{ campaign.final_price|floatformat:0 }} ريال</b></div>
+                    <div><span>الإجمالي للدفع</span><strong>{% if purchase_option.allowed %}{{ purchase_option.amount_due|floatformat:0 }}{% else %}{{ campaign.final_price|floatformat:0 }}{% endif %} ريال</strong></div>
+                </div>
+                {% endif %}
                 {% if purchase_option.allowed %}
                     <div class="notice">نوع العملية: {{ purchase_option.label }}</div>
                 {% endif %}

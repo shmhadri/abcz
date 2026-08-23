@@ -381,6 +381,10 @@
             font-size: 2.2rem;
             line-height: 1;
         }
+        .price .original-price { display: block; color: var(--muted); font-size: 0.92rem; font-weight: 800; text-decoration: line-through; }
+        .price .campaign-price { display: inline-block; margin-top: 2px; }
+        .campaign-badge { display: inline-block; margin-top: 8px; padding: 3px 9px; border-radius: 999px; background: #dcf8eb; color: #13724c; font-size: 0.78rem; font-weight: 900; }
+        .campaign-label { margin: 6px 0 0; color: #3563b9; font-size: 0.78rem; font-weight: 800; }
 
         .features {
             list-style: none;
@@ -581,7 +585,7 @@
                         <h2>المستوى الثالث</h2>
                         <p class="description">يناسب من أتقن الحروف والصوتيات ويريد قراءة كلمات CVC، عائلات الكلمات، الجمل، والقصص القصيرة.</p>
                     </div>
-                    <div class="price"><strong>15</strong><span>ريال شهريًا</span></div>
+                    <div class="price">{% if campaign.level_3.campaign_active %}<strong class="original-price">{{ campaign.level_3.original_price|floatformat:0 }} ريال</strong><strong class="campaign-price">{{ campaign.level_3.final_price|floatformat:0 }}</strong><span>ريال شهريًا</span><span class="campaign-badge">خصم {{ campaign.level_3.discount_percent }}%</span><p class="campaign-label">عرض العودة للمدارس</p>{% else %}<strong>15</strong><span>ريال شهريًا</span>{% endif %}</div>
                     <ul class="features">
                         <li>CVC Words.</li>
                         <li>Word Families.</li>
@@ -602,7 +606,7 @@
                         <h2>المستوى الرابع</h2>
                         <p class="description">يناسب من يريد تطوير القراءة والاستماع والتحدث والكتابة والجمل الشائعة والمحادثات.</p>
                     </div>
-                    <div class="price"><strong>15</strong><span>ريال شهريًا</span></div>
+                    <div class="price">{% if campaign.level_4.campaign_active %}<strong class="original-price">{{ campaign.level_4.original_price|floatformat:0 }} ريال</strong><strong class="campaign-price">{{ campaign.level_4.final_price|floatformat:0 }}</strong><span>ريال شهريًا</span><span class="campaign-badge">خصم {{ campaign.level_4.discount_percent }}%</span><p class="campaign-label">عرض العودة للمدارس</p>{% else %}<strong>15</strong><span>ريال شهريًا</span>{% endif %}</div>
                     <ul class="features">
                         <li>Reading.</li>
                         <li>Listening.</li>
@@ -646,7 +650,7 @@
                     <div class="plan-label">لإتقان الحروف</div>
                     <h2>Basic</h2>
                 </div>
-                <div class="price"><strong>19</strong><span>ريال شهريًا</span></div>
+                <div class="price">{% if campaign.basic.campaign_active %}<strong class="original-price">{{ campaign.basic.original_price|floatformat:0 }} ريال</strong><strong class="campaign-price">{{ campaign.basic.final_price|floatformat:0 }}</strong><span>ريال شهريًا</span><span class="campaign-badge">خصم {{ campaign.basic.discount_percent }}%</span><p class="campaign-label">عرض العودة للمدارس</p>{% else %}<strong>19</strong><span>ريال شهريًا</span>{% endif %}</div>
                 <ul class="features">
                     <li>المستوى الأول: الحروف الإنجليزية A-Z.</li>
                     <li>ألعاب الموقع الداخلية.</li>
@@ -666,7 +670,7 @@
                     <h2>Silver</h2>
                     <p class="description">مناسب للمتعلم الذي يحتاج الحروف والصوتيات مع أوراق عمل قابلة للطباعة والتحميل.</p>
                 </div>
-                <div class="price"><strong>27</strong><span>ريال شهريًا</span></div>
+                <div class="price">{% if campaign.silver.campaign_active %}<strong class="original-price">{{ campaign.silver.original_price|floatformat:0 }} ريال</strong><strong class="campaign-price">{{ campaign.silver.final_price|floatformat:0 }}</strong><span>ريال شهريًا</span><span class="campaign-badge">خصم {{ campaign.silver.discount_percent }}%</span><p class="campaign-label">عرض العودة للمدارس</p>{% else %}<strong>27</strong><span>ريال شهريًا</span>{% endif %}</div>
                 <ul class="features">
                     <li>كل مزايا Basic.</li>
                     <li>المستوى الأول: الحروف الإنجليزية A-Z.</li>
@@ -691,7 +695,7 @@
                     <h2>VIP</h2>
                     <p class="description">مناسبة للطفل الذي يحتاج تجربة أقوى في الحروف والصوتيات مع العصفور الذكي وWordwall والكتاب الكامل والتقارير والشهادة الذهبية.</p>
                 </div>
-                <div class="price"><strong>39</strong><span>ريال شهريًا</span></div>
+                <div class="price">{% if campaign.vip.campaign_active %}<strong class="original-price">{{ campaign.vip.original_price|floatformat:0 }} ريال</strong><strong class="campaign-price">{{ campaign.vip.final_price|floatformat:0 }}</strong><span>ريال شهريًا</span><span class="campaign-badge">خصم {{ campaign.vip.discount_percent }}%</span><p class="campaign-label">عرض العودة للمدارس</p>{% else %}<strong>39</strong><span>ريال شهريًا</span>{% endif %}</div>
                 <ul class="features">
                     <li>كل مزايا Silver.</li>
                     <li>كامل ميزات الحروف.</li>
@@ -727,7 +731,7 @@
                     <h2>الماسي</h2>
                     <p class="description">اشتراك واحد يفتح كل الموقع: الحروف، الصوتيات، أوراق العمل، الكتاب، Wordwall، العصفور الذكي، CVC، المستوى الرابع، التقارير، الألعاب، والشهادات.</p>
                 </div>
-                <div class="price"><strong>50</strong><span>ريال شهريًا</span></div>
+                <div class="price">{% if campaign.diamond.campaign_active %}<strong class="original-price">{{ campaign.diamond.original_price|floatformat:0 }} ريال</strong><strong class="campaign-price">{{ campaign.diamond.final_price|floatformat:0 }}</strong><span>ريال شهريًا</span><span class="campaign-badge">خصم {{ campaign.diamond.discount_percent }}%</span><p class="campaign-label">عرض العودة للمدارس</p>{% else %}<strong>50</strong><span>ريال شهريًا</span>{% endif %}</div>
                 <ul class="features">
                     <li>كل مزايا VIP.</li>
                     <li>كل مستويات الموقع.</li>

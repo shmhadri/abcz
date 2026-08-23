@@ -119,6 +119,7 @@ from .subscriptions import (
     subscription_dashboard_context,
     synchronize_user_subscription_compatibility,
 )
+from .campaigns import campaign_context_for_plan
 
 
 PUBLIC_PAGE_CACHE_TIMEOUT = getattr(settings, "PUBLIC_PAGE_CACHE_TIMEOUT", 600)
@@ -512,7 +513,7 @@ def deny_current_plan_without_feature(request, feature_key, message, *, plans=No
 
 def level_one_disabled_features(user):
     return {
-        "wordwall": not has_feature(user, "wordwall_level1"),
+        "wordwall": not has_feature(user, "word_games"),
         "letterWorksheets": not has_feature(user, "worksheets_level1"),
         "worksheetBook": not has_feature(user, "book_download_level1"),
         "leaderboard": not has_feature(user, "leaderboard"),
@@ -2715,7 +2716,7 @@ def letters_worksheets_book_word(request):
 @ensure_csrf_cookie
 @require_GET
 def games_view(request):
-    blocked = require_feature(request, "internal_games", "ألعاب الموقع الداخلية متاحة في Basic أو باقة أعلى.")
+    blocked = require_feature(request, "word_games", "ألعاب الكلمات متاحة لجميع المشتركين الفعالين.")
     if blocked:
         return blocked
 
@@ -3059,7 +3060,9 @@ def profile_dashboard(request):
 @require_GET
 def landing(request):
     """Render the public marketing homepage without loading learning assets."""
-    return render(request, "landing.html")
+    return render(request, "landing.html", {
+        "campaign": campaign_context_for_plan(PLAN_CATALOG[PLAN_BASIC]),
+    })
 
 
 @ensure_csrf_cookie
@@ -5949,6 +5952,7 @@ def pricing(request):
         "level_3_action": options[PLAN_LEVEL_THREE],
         "level_4_action": options[PLAN_LEVEL_FOUR],
         "moyasar": moyasar_context(),
+        "campaign": {code: campaign_context_for_plan(definition) for code, definition in PLAN_CATALOG.items() if code != PLAN_FREE},
     })
 
 
@@ -5984,6 +5988,7 @@ def checkout(request, plan_code):
         "moyasar": moyasar_context(),
         "bank_transfer": bank_transfer_context(),
         "payment_methods": PAYMENT_METHODS,
+        "campaign": campaign_context_for_plan(PLAN_CATALOG[plan["code"]]),
     })
 
 
@@ -7096,7 +7101,7 @@ def letter_data_api(request, letter):
 
 @require_GET
 def external_games_by_letter(request, letter):
-    blocked = require_feature(request, "wordwall_level1", UPGRADE_VIP_OR_FULL_MESSAGE)
+    blocked = require_feature(request, "word_games", "ألعاب الكلمات متاحة لجميع المشتركين الفعالين.")
     if blocked:
         return blocked
 
