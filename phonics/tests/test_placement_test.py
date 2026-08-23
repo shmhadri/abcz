@@ -35,8 +35,8 @@ class PlacementTestTests(TestCase):
         self.assertContains(response, "/levels/")
         self.assertContains(response, "/placement-test/")
 
-    def test_home_page_offers_placement_test_in_header_and_menu(self):
-        response = self.client.get("/")
+    def test_letters_page_offers_placement_test_in_header_and_menu(self):
+        response = self.client.get("/letters/")
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "/placement-test/")

@@ -507,7 +507,7 @@ class LettersPageRenderTests(TestCase):
     """The page must actually render, for both guest and authenticated users."""
 
     def test_page_renders_for_anonymous_visitor(self):
-        response = self.client.get("/")
+        response = self.client.get("/letters/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "letters.html")
 
@@ -520,12 +520,12 @@ class LettersPageRenderTests(TestCase):
         )
         self.client.login(username="letters-contract-user", password="contract-pass-123")
 
-        response = self.client.get("/")
+        response = self.client.get("/letters/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "letters.html")
 
     def test_rendered_page_carries_the_javascript_bootstrap_data(self):
-        response = self.client.get("/")
+        response = self.client.get("/letters/")
         html = response.content.decode("utf-8")
 
         # Django template tags must be fully resolved, never shipped raw.
@@ -537,7 +537,7 @@ class LettersPageRenderTests(TestCase):
                 self.assertIn(global_name, html)
 
     def test_rendered_page_loads_every_local_script(self):
-        response = self.client.get("/")
+        response = self.client.get("/letters/")
         html = response.content.decode("utf-8")
 
         for name in bundle.local_script_names():
@@ -545,13 +545,13 @@ class LettersPageRenderTests(TestCase):
                 self.assertIn(name, html)
 
     def test_guest_sees_login_entry_points_and_no_logout(self):
-        response = self.client.get("/")
+        response = self.client.get("/letters/")
         html = response.content.decode("utf-8")
         self.assertIn("/accounts/login/", html)
         self.assertNotIn('action="/accounts/logout/"', html)
 
     def test_key_interactive_elements_are_present(self):
-        response = self.client.get("/")
+        response = self.client.get("/letters/")
         html = response.content.decode("utf-8")
 
         for element_id in [

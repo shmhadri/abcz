@@ -1839,7 +1839,7 @@ def register(request):
         else ""
     )
     if request.user.is_authenticated:
-        return redirect(safe_next_url or "index")
+        return redirect(safe_next_url or "letters")
 
     form = StudentRegistrationForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -1847,7 +1847,7 @@ def register(request):
             user = form.save()
         auth_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         messages.success(request, "تم إنشاء الحساب وتسجيل الدخول بنجاح.")
-        return redirect(safe_next_url or "index")
+        return redirect(safe_next_url or "letters")
 
     return render(request, "accounts/register.html", {
         "form": form,
@@ -1873,7 +1873,7 @@ def login_view(request):
         else ""
     )
     if request.user.is_authenticated:
-        return redirect(safe_next_url or "index")
+        return redirect(safe_next_url or "letters")
 
     form = SecureAuthenticationForm(request, data=request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -1881,7 +1881,7 @@ def login_view(request):
         messages.success(request, "تم تسجيل الدخول بنجاح.")
         if safe_next_url:
             return redirect(safe_next_url)
-        return redirect("index")
+        return redirect("letters")
 
     return render(request, "accounts/login.html", {
         "form": form,
@@ -3054,6 +3054,12 @@ def profile_dashboard(request):
         "payment_orders": payment_orders,
         "subscription_summary": subscription_summary,
     })
+
+
+@require_GET
+def landing(request):
+    """Render the public marketing homepage without loading learning assets."""
+    return render(request, "landing.html")
 
 
 @ensure_csrf_cookie
@@ -6378,7 +6384,7 @@ def levels(request):
             "description": "مناسب لمن يبدأ من الحروف أو يحتاج مراجعة الحروف والأصوات الأساسية.",
             "price": "بداية مجانية حسب الخطة الحالية",
             "button": "ابدأ المستوى الأول",
-            "url": reverse("index"),
+            "url": reverse("letters"),
         },
         {
             "id": "level-2",
