@@ -5,6 +5,7 @@ from zipfile import ZipFile
 import fitz
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
+from django.urls import reverse
 from pypdf import PdfReader
 
 from phonics.models import StudentProfile
@@ -21,7 +22,7 @@ class LettersWorksheetsBookTests(TestCase):
         return user
 
     def test_letters_page_exposes_level_one_disabled_worksheet_policy(self):
-        response = self.client.get("/")
+        response = self.client.get(reverse("letters"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "window.LEVEL_ONE_DISABLED_FEATURES")

@@ -15,6 +15,7 @@ import tempfile
 from pathlib import Path
 
 from django.test import TestCase, override_settings
+from django.urls import reverse
 
 from phonics.tests import letters_asset_bundle as bundle
 
@@ -55,7 +56,7 @@ class LettersJavaScriptSyntaxTests(TestCase):
         self.assertEqual(failures, [])
 
     def test_rendered_inline_scripts_parse(self):
-        response = self.client.get("/")
+        response = self.client.get(reverse("letters"))
         self.assertEqual(response.status_code, 200)
         html = response.content.decode("utf-8")
 
@@ -74,7 +75,7 @@ class LettersJavaScriptSyntaxTests(TestCase):
         self.assertEqual(failures, [])
 
     def test_rendered_page_has_no_unresolved_template_syntax(self):
-        response = self.client.get("/")
+        response = self.client.get(reverse("letters"))
         html = response.content.decode("utf-8")
         self.assertNotIn("{%", html)
         self.assertNotIn("{{", html)

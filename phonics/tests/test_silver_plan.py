@@ -2,6 +2,7 @@ import json
 
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
+from django.urls import reverse
 
 from phonics.models import StudentProfile
 from phonics.views import SILVER_FEATURE_KEYS
@@ -72,13 +73,13 @@ class SilverPlanTests(TestCase):
         self.assertContains(response, "مشترك حاليًا")
 
     def test_silver_opens_level_one_level_two_and_worksheets(self):
-        for path in ["/", "/sounds/", "/sounds/worksheet/", "/letters/worksheet/"]:
+        for path in [reverse("letters"), "/sounds/", "/sounds/worksheet/", "/letters/worksheet/"]:
             with self.subTest(path=path):
                 response = self.client.get(path)
                 self.assertEqual(response.status_code, 200)
 
     def test_silver_page_flags_allow_worksheets_and_keep_locked_features(self):
-        response = self.client.get("/")
+        response = self.client.get(reverse("letters"))
         html = response.content.decode("utf-8")
 
         self.assertEqual(response.status_code, 200)

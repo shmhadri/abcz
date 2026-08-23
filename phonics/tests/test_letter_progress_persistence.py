@@ -2,6 +2,7 @@ import json
 
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.urls import reverse
 
 from phonics.models import LetterProgress, StudentProfile
 
@@ -108,13 +109,13 @@ class LetterProgressPersistenceTests(TestCase):
         self.assertContains(response, "ابدأ بإكمال أول حرف لتظهر إحصائيات التقدم هنا.")
 
     def test_letters_page_still_renders(self):
-        response = self.client.get("/")
+        response = self.client.get(reverse("letters"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="finishLetter"')
 
     def test_games_remain_optional_in_letters_page(self):
-        response = self.client.get("/")
+        response = self.client.get(reverse("letters"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "الألعاب اختيارية للتدريب ولا تمنع فتح الحرف التالي.")
