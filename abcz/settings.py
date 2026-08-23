@@ -33,6 +33,10 @@ IS_PRODUCTION = ENVIRONMENT == "production" or env_bool("RENDER", "False")
 DEBUG = env_bool("DEBUG", "False")
 TESTING = "test" in sys.argv
 
+# Temporary campaign switch. Set BACK_TO_SCHOOL_ENABLED=False to restore catalog prices.
+BACK_TO_SCHOOL_ENABLED = env_bool("BACK_TO_SCHOOL_ENABLED", "False" if TESTING else "True")
+BACK_TO_SCHOOL_DISCOUNT_PERCENT = 20
+
 SECRET_KEY = os.getenv("SECRET_KEY", "").strip()
 if not SECRET_KEY:
     if IS_PRODUCTION:

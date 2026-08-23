@@ -89,13 +89,12 @@ class SilverPlanTests(TestCase):
         self.assertNotIn('id="letterWorksheetBtn" type="button" hidden', html)
         self.assertIn("certificate: false", html)
         self.assertIn("worksheetBook: true", html)
-        self.assertIn("wordwall: true", html)
+        self.assertIn("wordwall: false", html)
         self.assertIn("smartBird: true", html)
 
-    def test_silver_cannot_open_book_wordwall_bird_cvc_or_level_four(self):
+    def test_silver_cannot_open_book_bird_cvc_or_level_four(self):
         blocked_get_paths = [
             "/letters/worksheets-book/",
-            "/letters/A/external-games/",
             "/cvc-reading/",
             "/level-four/",
         ]
@@ -105,6 +104,8 @@ class SilverPlanTests(TestCase):
                 response = self.client.get(path)
                 self.assertEqual(response.status_code, 403)
                 self.assertContains(response, "هذه الميزة", status_code=403)
+
+        self.assertEqual(self.client.get("/letters/A/external-games/").status_code, 200)
 
         response = self.client.post(
             "/api/bird-tutor/progress/",

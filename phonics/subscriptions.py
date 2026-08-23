@@ -8,6 +8,7 @@ from django.contrib.auth.models import Group
 from django.db.models import Q
 from django.utils import timezone
 
+from .campaigns import campaign_price
 from .plans import (
     ADDON_PLAN_CODES,
     PAID_MAIN_PLAN_CODES,
@@ -163,6 +164,10 @@ def get_user_entitlements(user, *, now=None, synchronize=True) -> EntitlementSna
     for addon in addons:
         plan_codes.add(addon.plan_code)
         entitlements.update(PLAN_CATALOG[addon.plan_code]["features"])
+    # Word games are a separate commercial entitlement: any active paid plan
+    # (including standalone level subscriptions) can access them.
+    if any(subscription.plan_code in (set(PAID_MAIN_PLAN_CODES) | set(ADDON_PLAN_CODES)) for subscription in subscriptions):
+        entitlements.add("word_games")
     snapshot = EntitlementSnapshot(
         main_subscription,
         addons,
@@ -176,6 +181,10 @@ def get_user_entitlements(user, *, now=None, synchronize=True) -> EntitlementSna
 
 def user_has_entitlement(user, entitlement_code: str) -> bool:
     return entitlement_code in get_user_entitlements(user).entitlements
+
+
+def can_access_word_games(user) -> bool:
+    return user_has_entitlement(user, "word_games")
 
 
 def quote_plan_purchase(user, target_plan_code: str, *, now=None, lock=False) -> PurchaseQuote:
@@ -203,7 +212,8 @@ def quote_plan_purchase(user, target_plan_code: str, *, now=None, lock=False) ->
         status__in=PENDING_PAYMENT_STATUSES,
     ).exists()
 
-    target_price = Decimal(target["price"])
+    target_original_price = Decimal(target["price"])
+    target_price = campaign_price(target_original_price).final_price
     if target["category"] == "addon":
         if current_main and current_main.plan_code == PLAN_DIAMOND:
             raise PurchaseNotAllowed("included_in_diamond", "هذه الإضافة مشمولة في باقتك الحالية.")
@@ -240,6 +250,7 @@ def quote_plan_purchase(user, target_plan_code: str, *, now=None, lock=False) ->
     if current_main:
         current_code = current_main.plan_code
         current_plan = PLAN_CATALOG[current_code]
+        current_price = campaign_price(Decimal(current_plan["price"])).final_price
         if target_code == current_code:
             raise PurchaseNotAllowed(
                 "active_subscription",
@@ -247,14 +258,14 @@ def quote_plan_purchase(user, target_plan_code: str, *, now=None, lock=False) ->
             )
         if int(target["rank"]) < int(current_plan["rank"]):
             raise PurchaseNotAllowed("lower_main_plan", "لا يمكن شراء باقة أقل من باقتك الحالية.")
-        amount_due = target_price - Decimal(current_plan["price"])
+        amount_due = target_price - current_price
         if amount_due <= Decimal("0.00"):
             raise PurchaseNotAllowed("invalid_upgrade_amount", "تعذر حساب مبلغ الترقية.")
         return PurchaseQuote(
             target_code,
             "upgrade",
             current_code,
-            Decimal(current_plan["price"]),
+            current_price,
             target_price,
             amount_due,
             current_main.expires_at,
