@@ -25,6 +25,7 @@ from PIL import Image
 from phonics.models import (
     BankTransferProof,
     BankTransferActivationCode,
+    AdminAuditLog,
     PaymentOrder,
     PaymentActivationReview,
     PaymentWebhookEvent,
@@ -98,8 +99,10 @@ class PaymentCheckoutTests(TestCase):
 
         self.assertContains(response, 'id="moyasar-payment-form"')
         self.assertContains(response, 'id="moyasar-payment-submit"')
-        self.assertContains(response, "جاري تحويلك إلى صفحة الدفع الآمن...")
+        self.assertContains(response, "جاري تجهيز صفحة الدفع الآمن...")
         self.assertContains(response, 'form.dataset.submitting === "true"')
+        self.assertContains(response, 'rel="preconnect" href="https://checkout.moyasar.com" crossorigin')
+        self.assertContains(response, "إذا فتحت صفحة Moyasar ولم تظهر خانات البطاقة مباشرة")
 
     def reusable_invoice_snapshot(self, order, status="initiated"):
         return {
@@ -188,6 +191,14 @@ class PaymentCheckoutTests(TestCase):
         self.assertEqual(order.status, PaymentOrder.Status.AWAITING_BANK_REVIEW)
         self.assertIn(reverse("bank_transfer_proof", args=[order.id]), response["Location"])
         self.assertEqual(UserSubscription.objects.count(), 0)
+
+    def test_bank_transfer_confirmation_shows_reference_and_pending_status(self):
+        response = self.client.post(reverse("create_payment_order", args=["silver", "bank_transfer"]))
+        order = PaymentOrder.objects.get()
+        page = self.client.get(response["Location"])
+
+        self.assertContains(page, order.reference)
+        self.assertContains(page, "بانتظار التحقق من التحويل")
 
     def test_bank_transfer_activation_code_activates_only_its_owner(self):
         order = self.create_order(
@@ -450,7 +461,7 @@ class PaymentCheckoutTests(TestCase):
             activate_subscription_from_payment(rejected)
         self.assertEqual(UserSubscription.objects.count(), 1)
 
-    def test_admin_payment_orders_are_view_only_without_manual_activation_actions(self):
+    def test_admin_payment_orders_are_view_only_except_superuser_bank_actions(self):
         admin_user = User.objects.create_superuser(
             username="admin-review",
             email="admin@example.com",
@@ -463,7 +474,44 @@ class PaymentCheckoutTests(TestCase):
         self.assertFalse(model_admin.has_add_permission(request))
         self.assertFalse(model_admin.has_change_permission(request))
         self.assertFalse(model_admin.has_delete_permission(request))
-        self.assertEqual(model_admin.get_actions(request), {})
+        self.assertIn("approve_bank_transfers_and_activate", model_admin.get_actions(request))
+        self.assertIn("reject_bank_transfers", model_admin.get_actions(request))
+
+        staff_user = User.objects.create_user(
+            username="staff-review", email="staff@example.com", password="StrongPass123!", is_staff=True,
+        )
+        staff_request = RequestFactory().post("/admin/phonics/paymentorder/")
+        staff_request.user = staff_user
+        self.assertEqual(model_admin.get_actions(staff_request), {})
+
+    def test_superuser_bank_approval_activates_once_and_creates_audit_log(self):
+        order = self.create_order(
+            method=PaymentOrder.Method.BANK_TRANSFER,
+            provider=PaymentOrder.Provider.MANUAL_BANK,
+            status=PaymentOrder.Status.AWAITING_BANK_REVIEW,
+        )
+        admin_user = User.objects.create_superuser(
+            username="payment-admin", email="payment-admin@example.com", password="StrongPass123!",
+        )
+        request = RequestFactory().post("/admin/phonics/paymentorder/")
+        request.user = admin_user
+        model_admin = django_admin.site._registry[PaymentOrder]
+
+        with patch.object(model_admin, "message_user"):
+            model_admin.approve_bank_transfers_and_activate(request, PaymentOrder.objects.filter(pk=order.pk))
+            model_admin.approve_bank_transfers_and_activate(request, PaymentOrder.objects.filter(pk=order.pk))
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, PaymentOrder.Status.BANK_APPROVED)
+        self.assertIsNotNone(order.paid_at)
+        self.assertIsNotNone(order.activated_at)
+        self.assertEqual(UserSubscription.objects.count(), 1)
+        self.assertEqual(
+            AdminAuditLog.objects.filter(
+                action="bank_transfer_approved_and_activated", target_id=str(order.pk), actor=admin_user,
+            ).count(),
+            1,
+        )
 
     def test_level_three_subscription_opens_only_level_three_features(self):
         order = self.create_order(

@@ -4,47 +4,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="اختبار قصير يساعدك على اختيار مسار تعلم الإنجليزية المناسب في Phonics Game Lab.">
-    <title>اختبار تحديد المستوى - Phonics Game Lab</title>
+    {% include "includes/site_icons.html" %}
+    <meta name="description" content="اختبار تحديد مستوى اللغة الإنجليزية للأطفال لتحديد المسار المناسب بين الحروف والصوتيات والقراءة.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.smartlearningksa.com/placement-test/">
+    <title>اختبار تحديد مستوى اللغة الإنجليزية للأطفال | Smart Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{% static 'css/site_public.css' %}">
+    <link rel="stylesheet" href="{% static 'css/placement_test.css' %}">
 </head>
 <body>
     <main class="site-shell">
         {% include "includes/public_nav.html" %}
 
-        <section class="hero placement-hero">
-            <p class="eyebrow">Placement Test</p>
-            <h1>اختبار تحديد المستوى</h1>
-            <p class="lead">أجب عن 20 سؤالًا قصيرًا في الحروف والأصوات والصوتيات وقراءة CVC والجمل. ستحصل على مسار مقترح وتقرير مبسط عن نقاط القوة وما يحتاج إلى مراجعة.</p>
-            <div class="placement-summary" aria-label="ملخص الاختبار">
-                <span>20 سؤالًا</span>
-                <span>5 دقائق تقريبًا</span>
-                <span>نتيجة فورية</span>
-                <span>حفظ تلقائي للتقدم</span>
+        <!-- Hero Intro Section -->
+        <section class="placement-hero-modern">
+            <div class="placement-hero-badge">
+                <span class="badge-dot"></span>
+                <span>تقييم تفاعلي فوري • 4 مستويات مهارية</span>
+            </div>
+            <h1>اختبار تحديد المستوى التفاعلي</h1>
+            <p class="lead">
+                أجب عن 20 سؤالاً تفاعلياً قصيراً يقيس الحروف، الأصوات، الصوتيات Phonics، قراءة CVC، والجمل الأساسية. ستحصل فوراً على تحليل دقيق لنقاط القوة وتوصية مباشرة بنقطة الانطلاق الأنسب لطفلك.
+            </p>
+            <div class="placement-summary-pills" aria-label="ملخص الاختبار">
+                <span>📝 20 سؤالاً تدريجياً</span>
+                <span>⏱️ 3 - 5 دقائق تقريباً</span>
+                <span>⚡ نتيجة فورية ومجانية</span>
+                <span>💾 حفظ تلقائي للتقدم</span>
             </div>
         </section>
 
         <noscript>
-            <div class="placement-notice">يلزم تفعيل JavaScript لعرض النتيجة والتنقل بين أسئلة الاختبار.</div>
+            <div class="placement-notice">يلزم تفعيل JavaScript لعرض النتيجة والتنقل بين أسئلة الاختبار التفاعلي.</div>
         </noscript>
 
+        <!-- Main Form Stage -->
         <form class="placement-form" data-placement-form data-endpoint="{% url 'placement_test' %}" novalidate>
             {% csrf_token %}
 
+            <!-- Sticky Progress Bar & Tracker -->
             <div class="placement-progress-panel" data-placement-progress-panel>
                 <div class="placement-progress-copy">
                     <strong data-progress-title>السؤال 1 من 20</strong>
-                    <span data-progress-section>الحروف الإنجليزية</span>
+                    <span class="placement-section-badge" data-progress-section data-section-type="letters">الحروف الإنجليزية</span>
                 </div>
                 <div class="placement-progress-track" role="progressbar" aria-label="نسبة إكمال الاختبار" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-progress-track>
                     <span data-progress-bar></span>
                 </div>
                 <div class="placement-progress-meta">
                     <span data-answered-count>تمت الإجابة عن 0 من 20</span>
-                    <button class="placement-reset" type="button" data-reset-test>بدء من جديد</button>
+                    <button class="placement-reset" type="button" data-reset-test title="حذف الإجابات والبدء من جديد">🔄 بدء من جديد</button>
                 </div>
             </div>
 
+            <!-- Question Cards Stage -->
             <div class="placement-question-stage" data-question-stage>
                 {% for question in questions %}
                     <fieldset class="placement-question" data-section="{{ question.section }}" data-question-index="{{ forloop.counter0 }}">
@@ -53,32 +68,50 @@
                             {{ question.section_label }}
                         </legend>
                         <h2>{{ question.question }}</h2>
-                        <p class="question-prompt" dir="auto">{{ question.prompt }}</p>
+
+                        <div class="placement-prompt-wrap">
+                            <p class="question-prompt" dir="auto">{{ question.prompt }}</p>
+                            <button type="button" class="prompt-audio-btn" data-speak-prompt="{{ question.prompt }}" title="استمع لنطق السؤال">
+                                <span class="audio-icon">🔊</span>
+                                <span>استمع للنطق</span>
+                            </button>
+                        </div>
+
                         <div class="placement-options">
                             {% for option in question.options %}
                                 <label class="option-row">
                                     <input type="radio" name="{{ question.id }}" value="{{ option }}">
                                     <span dir="auto">{{ option }}</span>
+                                    <span class="option-key-hint">{{ forloop.counter }}</span>
                                 </label>
                             {% endfor %}
                         </div>
-                        <p class="placement-question-error" data-question-error hidden>اختر إجابة للمتابعة.</p>
+                        <p class="placement-question-error" data-question-error hidden>يرجى اختيار إجابة للمتابعة.</p>
                     </fieldset>
                 {% endfor %}
             </div>
 
+            <!-- Step Navigation Actions -->
             <div class="placement-actions placement-step-actions">
-                <button class="btn" type="button" data-previous-question disabled>السؤال السابق</button>
-                <button class="btn primary" type="button" data-next-question>السؤال التالي</button>
-                <button class="btn primary" type="submit" data-submit-test hidden>عرض النتيجة</button>
+                <button class="btn" type="button" data-previous-question disabled>
+                    <span>← السؤال السابق</span>
+                </button>
+                <button class="btn primary" type="button" data-next-question>
+                    <span>السؤال التالي →</span>
+                </button>
+                <button class="btn primary" type="submit" data-submit-test hidden>
+                    <span>عرض النتيجة والتحليل 🎯</span>
+                </button>
             </div>
-            <p class="placement-shortcut-hint">يمكنك اختيار الإجابة بلوحة المفاتيح ثم الضغط على Enter للمتابعة.</p>
+            <p class="placement-shortcut-hint">💡 يمكنك استخدام الأرقام 1-4 للاختيار السريع، ثم الضغط على Enter للانتقال للسؤال التالي.</p>
         </form>
 
+        <!-- Diagnostic Report / Result Card -->
         <section class="result-card placement-result-card" data-placement-result hidden aria-live="polite" tabindex="-1"></section>
 
+        <!-- Secondary Bypass Action -->
         <div class="placement-secondary-action">
-            <a class="btn" href="{% url 'levels' %}">عرض جميع المستويات بدون اختبار</a>
+            <a class="btn" href="{% url 'levels' %}">تخطي الاختبار واستعراض جميع المستويات مباشرة</a>
         </div>
     </main>
 

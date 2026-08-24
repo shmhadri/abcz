@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% include "includes/site_icons.html" %}
+    <title>{{ page.title }}</title>
+    <meta name="description" content="{{ page.description }}">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ canonical_url }}">
+    <meta property="og:title" content="{{ page.title }}">
+    <meta property="og:description" content="{{ page.description }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ page.title }}">
+    <meta name="twitter:description" content="{{ page.description }}">
+    <link rel="stylesheet" href="{% static 'css/site_public.css' %}">
+</head>
+<body>
+    <main class="site-shell">
+        {% include "includes/public_nav.html" %}
+
+        <nav class="footer-links" aria-label="مسار التنقل" style="margin-bottom: 16px;">
+            <a href="{% url 'index' %}">الرئيسية</a>
+            <span aria-hidden="true">/</span>
+            <span>{{ page.eyebrow }}</span>
+        </nav>
+
+        <section class="hero">
+            <p class="eyebrow">{{ page.eyebrow }}</p>
+            <h1>{{ page.heading }}</h1>
+            <p class="lead">{{ page.intro }}</p>
+            <div class="hero-actions">
+                <a class="btn primary" href="{% url 'placement_test' %}">ابدأ اختبار تحديد المستوى</a>
+                <a class="btn" href="{% url 'pricing' %}">عرض الباقات</a>
+            </div>
+        </section>
+
+        <section class="grid two-col" aria-label="تفاصيل المسار">
+            <article class="panel">
+                <h2>ماذا سيتعلم الطفل؟</h2>
+                <ul class="clean-list">
+                    {% for skill in page.skills %}
+                    <li>{{ skill }}</li>
+                    {% endfor %}
+                </ul>
+            </article>
+            <article class="panel">
+                <h2>لمن يناسب هذا المسار؟</h2>
+                <p>{{ page.audience }}</p>
+                <h3>{{ page.example_title }}</h3>
+                <p>{{ page.example }}</p>
+            </article>
+        </section>
+
+        <section class="panel" style="margin-top: 16px;">
+            <h2>التعلّم داخل Smart Learning</h2>
+            <p>يوفّر المسار الكامل تدريبات وأنشطة مناسبة للمستوى. تعرّف على المستوى المناسب أولًا، ثم سجّل أو اختر الباقة التي تفتح المحتوى الملائم لطفلك.</p>
+            <div class="hero-actions">
+                <a class="btn primary" href="{% url page.protected_url_name %}">{{ page.protected_label }}</a>
+                <a class="btn" href="{% url 'register' %}">إنشاء حساب</a>
+            </div>
+        </section>
+
+        <section class="panel" style="margin-top: 16px;">
+            <h2>مسارات تعليمية ذات صلة</h2>
+            <ul class="clean-list">
+                {% for related in related_pages %}
+                <li><a href="{% url related.route_name %}">{{ related.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <footer class="footer">
+            <span>Smart Learning</span>
+            <div class="footer-links">
+                <a href="{% url 'curriculum' %}">المنهج</a>
+                <a href="{% url 'guide' %}">دليل الاستخدام</a>
+                <a href="{% url 'privacy' %}">سياسة الخصوصية</a>
+                <a href="{% url 'terms' %}">الشروط والأحكام</a>
+            </div>
+        </footer>
+    </main>
+</body>
+</html>

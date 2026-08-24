@@ -151,13 +151,14 @@
         </div>
 
         <section class="panel">
-            <h1>رفع إيصال التحويل البنكي</h1>
-            <p class="lead">اكتب رقم الطلب في ملاحظات التحويل إن أمكن. سيتم تفعيل الاشتراك بعد مراجعة الإيصال واعتماده.</p>
+            <h1>تأكيد طلب التحويل البنكي</h1>
+            <p class="lead">طلبك بانتظار التحقق من التحويل. تواصل معنا عبر واتساب للحصول على بيانات الحساب، ثم ارفع الإيصال هنا إن توفر لديك.</p>
 
             <div class="summary">
                 <div><span>رقم الطلب</span>{{ order.reference }}</div>
                 <div><span>الاشتراك</span>{{ order.plan_name }}</div>
                 <div><span>المبلغ</span>{{ order.amount_sar|floatformat:0 }} ريال</div>
+                <div><span>الحالة</span>بانتظار التحقق من التحويل</div>
             </div>
 
             <div class="bank-info">

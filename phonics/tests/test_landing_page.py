@@ -10,7 +10,8 @@ class LandingPageTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "landing.html")
-        self.assertContains(response, "ابدأ من المستوى الصحيح")
+        self.assertContains(response, "<title>Smart Learning | تأسيس اللغة الإنجليزية للأطفال</title>")
+        self.assertContains(response, 'rel="canonical" href="https://www.smartlearningksa.com/"')
         self.assertContains(response, "static/css/landing.css")
         self.assertContains(response, "static/js/landing.js")
         self.assertNotContains(response, "letters/letters.css")

@@ -3,10 +3,12 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>منصة ألعاب الحروف الإنجليزية - Phonics Game Lab</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' fill='%234361ee' rx='6'/><text x='16' y='22' fill='white' font-size='18' font-weight='bold' text-anchor='middle' font-family='Arial'>A</text></svg>">
+    {% include "includes/site_icons.html" %}
+    <meta name="description" content="تعلّم الحروف الإنجليزية للأطفال من A إلى Z عبر النطق والكتابة والكلمات والتمارين التفاعلية.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.smartlearningksa.com/letters/">
+    <title>تعليم الحروف الإنجليزية للأطفال A-Z | Smart Learning</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
@@ -29,8 +31,8 @@
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
-            <!-- Mobile Hamburger Menu (Moved here for positioning) -->
-            <button class="hamburger-btn" id="mobileMenuBtn">
+            <!-- Primary navigation menu on every screen size. -->
+            <button class="hamburger-btn" id="mobileMenuBtn" type="button" aria-label="فتح القائمة الرئيسية" aria-controls="userDropdown" aria-expanded="false">
                 <i class="fas fa-bars"></i>
             </button>
 
@@ -696,7 +698,7 @@
                     <small>Z</small>
                 </div>
                 <div class="certificate-stars" aria-hidden="true">★★★★★</div>
-                <h1 class="certificate-title">شهادة إنجاز</h1>
+                <h2 class="certificate-title">شهادة إنجاز</h2>
                 <p class="certificate-subtitle">Certificate of Achievement</p>
             </div>
             <div class="certificate-body">
@@ -1622,6 +1624,7 @@
                     this.mobileMenuBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         this.userDropdown.classList.add('show');
+                        this.mobileMenuBtn.setAttribute('aria-expanded', 'true');
                         const overlay = document.getElementById('menuOverlay');
                         if (overlay) overlay.classList.add('active');
                     });
@@ -1630,6 +1633,7 @@
                 if (this.closeMenuBtn) {
                     this.closeMenuBtn.addEventListener('click', () => {
                         this.userDropdown.classList.remove('show');
+                        if (this.mobileMenuBtn) this.mobileMenuBtn.setAttribute('aria-expanded', 'false');
                         const overlay = document.getElementById('menuOverlay');
                         if (overlay) overlay.classList.remove('active');
                     });
@@ -1640,6 +1644,7 @@
                 if (menuOverlay) {
                     menuOverlay.addEventListener('click', () => {
                         this.userDropdown.classList.remove('show');
+                        if (this.mobileMenuBtn) this.mobileMenuBtn.setAttribute('aria-expanded', 'false');
                         menuOverlay.classList.remove('active');
                     });
                 }
@@ -1649,6 +1654,7 @@
                     this.viewInstructionsBtn.addEventListener('click', () => {
                         if (this.instructionsModal) this.instructionsModal.style.display = 'flex';
                         this.userDropdown.classList.remove('show');
+                        if (this.mobileMenuBtn) this.mobileMenuBtn.setAttribute('aria-expanded', 'false');
                         if (menuOverlay) menuOverlay.classList.remove('active');
                     });
                 }
@@ -1671,6 +1677,7 @@
                 document.addEventListener('click', (e) => {
                     if (this.userDropdown && this.userDropdown.classList.contains('show') && !this.userMenuBtn.contains(e.target)) {
                         this.userDropdown.classList.remove('show');
+                        if (this.mobileMenuBtn) this.mobileMenuBtn.setAttribute('aria-expanded', 'false');
                     }
                 });
                 
@@ -4577,7 +4584,7 @@ function sendAudioToServer(blob, letter){
         <!-- Floating Button -->
         <button id="ai-btn" class="ai-float-btn">
             <!-- New colorful robot image -->
-            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="AI" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="أيقونة المساعد الذكي" width="64" height="64" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
             <span class="pulse-ring"></span>
         </button>
 
@@ -4586,7 +4593,7 @@ function sendAudioToServer(blob, letter){
             <div class="ai-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div style="width: 35px; height: 35px; background: white; border-radius: 50%; overflow: hidden; padding: 2px;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="" width="35" height="35" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <span>المساعد الذكي</span>
                 </div>

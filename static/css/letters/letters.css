@@ -4931,6 +4931,25 @@ body {
     }
 }
 
+/* Use one clear navigation trigger on desktop and mobile.  The previous
+   Guest/account pill remains in the DOM for the existing menu controller,
+   but is not presented as a competing navigation control. */
+.hamburger-btn {
+    display: grid;
+    margin: 0;
+}
+
+.user-menu-container {
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .hamburger-btn {
+        align-self: center;
+        order: 0;
+    }
+}
+
 .ai-footer {
     padding: 10px;
     background: white;
