@@ -1,3 +1,8 @@
+/**
+ * Smart Learning - Modern Placement Test Interactive Script
+ * Features: Speech synthesis audio player, keyboard navigation, smooth progress transitions, and state management
+ */
+
 (function () {
     "use strict";
 
@@ -25,6 +30,25 @@
     const storageKey = "pgl-placement-test-v2";
     let currentIndex = 0;
     let isSubmitting = false;
+
+    // Speech synthesis helper for english phonics & prompts
+    function speakText(text) {
+        if (!('speechSynthesis' in window) || !text) return;
+        window.speechSynthesis.cancel();
+        const cleanText = text.replace(/[\/_\-]/g, ' ').trim();
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.82;
+        utterance.pitch = 1.05;
+
+        const voices = window.speechSynthesis.getVoices();
+        const enVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha')));
+        if (enVoice) {
+            utterance.voice = enVoice;
+        }
+
+        window.speechSynthesis.speak(utterance);
+    }
 
     function escapeHtml(value) {
         return String(value ?? "")
@@ -94,11 +118,22 @@
             : 0;
         const question = questions[currentIndex];
 
-        progressTitle.textContent = `السؤال ${currentIndex + 1} من ${questions.length}`;
-        progressSection.textContent = question?.section_label || "";
-        answeredCount.textContent = `تمت الإجابة عن ${answeredTotal} من ${questions.length}`;
-        progressBar.style.width = `${completion}%`;
-        progressTrack.setAttribute("aria-valuenow", String(completion));
+        if (progressTitle) {
+            progressTitle.textContent = `السؤال ${currentIndex + 1} من ${questions.length}`;
+        }
+        if (progressSection) {
+            progressSection.textContent = question?.section_label || "";
+            progressSection.setAttribute("data-section-type", question?.section || "letters");
+        }
+        if (answeredCount) {
+            answeredCount.textContent = `تمت الإجابة عن ${answeredTotal} من ${questions.length}`;
+        }
+        if (progressBar) {
+            progressBar.style.width = `${completion}%`;
+        }
+        if (progressTrack) {
+            progressTrack.setAttribute("aria-valuenow", String(completion));
+        }
     }
 
     function showQuestion(index, options = {}) {
@@ -107,16 +142,23 @@
             field.hidden = fieldIndex !== currentIndex;
         });
 
-        previousButton.disabled = currentIndex === 0;
+        if (previousButton) {
+            previousButton.disabled = currentIndex === 0;
+        }
         const isLastQuestion = currentIndex === questionFields.length - 1;
-        nextButton.hidden = isLastQuestion;
-        submitButton.hidden = !isLastQuestion;
+        if (nextButton) {
+            nextButton.hidden = isLastQuestion;
+        }
+        if (submitButton) {
+            submitButton.hidden = !isLastQuestion;
+        }
         updateProgress();
         saveProgress();
 
         if (options.focus) {
-            questionFields[currentIndex]?.querySelector("input")?.focus({ preventScroll: true });
-            questionFields[currentIndex]?.scrollIntoView({ behavior: "smooth", block: "center" });
+            const currentField = questionFields[currentIndex];
+            currentField?.querySelector("input")?.focus({ preventScroll: true });
+            currentField?.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
     }
 
@@ -209,26 +251,26 @@
         form.hidden = true;
         clearSavedProgress();
         showResult(`
-            <span class="route-badge">نتيجتك وخطتك المقترحة</span>
+            <span class="route-badge">🎯 نتيجتك وخطتك المقترحة</span>
             <div class="placement-result-heading">
                 <div class="placement-score-ring" style="--score: ${Number(result.percentage) || 0}">
                     <strong>${escapeHtml(result.percentage)}%</strong>
-                    <span>${escapeHtml(result.score)} من ${escapeHtml(result.total)}</span>
+                    <span>${escapeHtml(result.score)} من ${escapeHtml(result.total)} إجابة صحيحة</span>
                 </div>
                 <div>
                     <h2>${escapeHtml(result.recommended_title)}</h2>
                     <p class="result-track">${escapeHtml(result.recommended_track)}</p>
-                    <p>${escapeHtml(result.message)}</p>
+                    <p style="color: #475569; font-size: 15px; line-height: 1.7;">${escapeHtml(result.message)}</p>
                 </div>
             </div>
             <p class="placement-reason">${escapeHtml(result.reason)}</p>
             <div class="placement-insights">
-                ${renderInsight("نقاط قوتك", result.strengths, "is-strength")}
-                ${renderInsight("ابدأ بمراجعة", result.focus_areas, "is-focus")}
+                ${renderInsight("✨ نقاط قوتك", result.strengths, "is-strength")}
+                ${renderInsight("💡 نوصي بالتركيز على", result.focus_areas, "is-focus")}
             </div>
-            <h3 class="placement-report-title">تفصيل المهارات</h3>
+            <h3 class="placement-report-title">📊 تفصيل مستوى المهارات</h3>
             <ul class="clean-list result-sections">${renderSectionScores(result.section_scores)}</ul>
-            <div class="hero-actions placement-result-actions">
+            <div class="placement-result-actions">
                 <a class="btn primary" href="${escapeHtml(result.cta_url)}">${escapeHtml(result.cta_label)}</a>
                 <button class="btn" type="button" data-restart-result>إعادة الاختبار</button>
             </div>
@@ -254,6 +296,16 @@
         });
     }
 
+    // Initialize audio speak triggers for prompt buttons
+    document.querySelectorAll("[data-speak-prompt]").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const text = btn.getAttribute("data-speak-prompt") || "";
+            speakText(text);
+        });
+    });
+
     form.classList.add("is-enhanced");
     restoreProgress();
     showQuestion(currentIndex);
@@ -272,17 +324,33 @@
         saveProgress();
     });
 
-    nextButton.addEventListener("click", () => {
+    nextButton?.addEventListener("click", () => {
         if (validateQuestion(currentIndex)) {
             showQuestion(currentIndex + 1, { focus: true });
         }
     });
 
-    previousButton.addEventListener("click", () => {
+    previousButton?.addEventListener("click", () => {
         showQuestion(currentIndex - 1, { focus: true });
     });
 
-    resetButton.addEventListener("click", () => resetTest(true));
+    resetButton?.addEventListener("click", () => resetTest(true));
+
+    // Keyboard Shortcuts: Enter for next, digits 1-4 for option selection
+    window.addEventListener("keydown", (event) => {
+        if (form.hidden) return;
+
+        // Number keys 1-4 for selecting options
+        if (['1', '2', '3', '4'].includes(event.key) && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+            const currentField = questionFields[currentIndex];
+            const options = currentField?.querySelectorAll('input[type="radio"]');
+            const idx = parseInt(event.key, 10) - 1;
+            if (options && options[idx]) {
+                options[idx].checked = true;
+                options[idx].dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+    });
 
     form.addEventListener("keydown", (event) => {
         if (event.key !== "Enter" || event.target.tagName === "BUTTON") {
@@ -292,7 +360,7 @@
         if (currentIndex === questionFields.length - 1) {
             form.requestSubmit();
         } else {
-            nextButton.click();
+            nextButton?.click();
         }
     });
 
@@ -312,8 +380,10 @@
         }
 
         isSubmitting = true;
-        submitButton.disabled = true;
-        submitButton.textContent = "جاري تحليل النتيجة...";
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = "جاري تحليل النتيجة...";
+        }
 
         try {
             const response = await fetch(endpoint, {
@@ -333,8 +403,10 @@
             showSubmissionError(error.message || "تحقق من اتصال الإنترنت ثم حاول مرة أخرى.");
         } finally {
             isSubmitting = false;
-            submitButton.disabled = false;
-            submitButton.textContent = "عرض النتيجة";
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = "عرض النتيجة";
+            }
         }
     });
 }());

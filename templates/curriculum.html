@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>خطة المنهج - ABCZ</title>
+    {% include "includes/site_icons.html" %}
+    <meta name="description" content="منهج Smart Learning لتأسيس اللغة الإنجليزية للأطفال من الحروف والصوتيات إلى القراءة والتواصل.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.smartlearningksa.com/curriculum/">
+    <title>منهج تأسيس اللغة الإنجليزية للأطفال | Smart Learning</title>
     <style>
         :root {
             --primary: #2357d9;
@@ -542,6 +546,27 @@
                     <span class="path-step">{{ step }}</span>
                 {% endfor %}
             </div>
+        </section>
+
+        <section class="grid" aria-label="أدلة تعليمية للوالدين" style="margin-top: 24px;">
+            <article class="stage-card available">
+                <div class="stage-title">
+                    <h2>دليل أصوات الحروف</h2>
+                    <p>فهم العلاقة بين الحرف وصوته قبل الانتقال إلى قراءة الكلمات.</p>
+                </div>
+                <div class="stage-actions">
+                    <a class="btn primary" href="{% url 'seo_phonics' %}">اقرأ دليل الصوتيات</a>
+                </div>
+            </article>
+            <article class="stage-card available">
+                <div class="stage-title">
+                    <h2>دليل القراءة للوالدين</h2>
+                    <p>تسلسل عملي من الحروف والأصوات إلى كلمات CVC والجمل والقصص.</p>
+                </div>
+                <div class="stage-actions">
+                    <a class="btn primary" href="{% url 'seo_reading_learning_guide' %}">اقرأ دليل القراءة</a>
+                </div>
+            </article>
         </section>
 
         <div class="section-heading" id="curriculum-stages">

@@ -53,6 +53,8 @@ from reportlab.pdfgen import canvas
 from xhtml2pdf import pisa
 
 from .forms import SecureAuthenticationForm, StudentProfileForm, StudentRegistrationForm
+from .seo_pages import SEO_LANDING_PAGES
+from .seo_content_guides import SEO_CONTENT_GUIDES
 from .models import (
     Student,
     StudentProfile,
@@ -6541,6 +6543,46 @@ def build_curriculum_context():
 @require_GET
 def curriculum(request):
     return render(request, "curriculum.html", build_curriculum_context())
+
+
+@cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
+@require_GET
+def seo_learning_landing(request, slug):
+    page = SEO_LANDING_PAGES.get(slug)
+    if page is None:
+        raise Http404("Learning path not found")
+
+    route_names = {
+        "phonics": "seo_phonics",
+        "cvc-reading-guide": "seo_cvc_reading_guide",
+        "english-reading-for-kids": "seo_english_reading",
+        "english-vocabulary-for-kids": "seo_english_vocabulary",
+        "english-grammar-for-kids": "seo_english_grammar",
+        "english-worksheets-for-kids": "seo_english_worksheets",
+    }
+    related_pages = [
+        {"title": candidate["heading"], "route_name": route_names[candidate_slug]}
+        for candidate_slug, candidate in SEO_LANDING_PAGES.items()
+        if candidate_slug != slug
+    ]
+    return render(request, "seo_learning_landing.html", {
+        "page": page,
+        "canonical_url": f"https://www.smartlearningksa.com/{slug}/",
+        "related_pages": related_pages,
+    })
+
+
+@cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)
+@require_GET
+def seo_content_guide(request, slug):
+    guide = SEO_CONTENT_GUIDES.get(slug)
+    if guide is None:
+        raise Http404("Learning guide not found")
+
+    return render(request, "seo_content_guide.html", {
+        "guide": guide,
+        "canonical_url": f"https://www.smartlearningksa.com/{slug}/",
+    })
 
 
 @cache_page(PUBLIC_PAGE_CACHE_TIMEOUT)

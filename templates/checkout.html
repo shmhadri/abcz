@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>إكمال الاشتراك - {{ plan.name_ar }}</title>
+    <link rel="dns-prefetch" href="//checkout.moyasar.com">
+    <link rel="preconnect" href="https://checkout.moyasar.com" crossorigin>
     <style>
         :root {
             color-scheme: light;
@@ -212,6 +214,16 @@
             color: var(--muted);
             font-weight: 800;
         }
+        .payment-note {
+            margin-top: 14px;
+            border-inline-start: 4px solid var(--amber);
+            background: #fffaf0;
+            color: #6b4a11;
+            border-radius: 6px;
+            padding: 11px 13px;
+            font-weight: 700;
+            line-height: 1.7;
+        }
         @media (max-width: 820px) {
             .layout { grid-template-columns: 1fr; }
             .topbar { align-items: flex-start; flex-direction: column; }
@@ -287,6 +299,7 @@
                         {% csrf_token %}
                         <button id="moyasar-payment-submit" class="action" type="submit">إكمال الدفع عبر مدى</button>
                     </form>
+                    <p class="payment-note"><strong>ملاحظة عند الدفع:</strong> إذا فتحت صفحة Moyasar ولم تظهر خانات البطاقة مباشرة، انتظر عدة ثوانٍ ثم حدّث الصفحة مرة واحدة.</p>
                 </article>
 
                 {% if bank_transfer.enabled %}
@@ -328,7 +341,7 @@
                 }
                 form.dataset.submitting = "true";
                 button.disabled = true;
-                button.innerHTML = '<span class="payment-spinner" aria-hidden="true"></span>جاري تحويلك إلى صفحة الدفع الآمن...';
+                button.innerHTML = '<span class="payment-spinner" aria-hidden="true"></span>جاري تجهيز صفحة الدفع الآمن...';
             });
             window.addEventListener("pageshow", reset);
         })();

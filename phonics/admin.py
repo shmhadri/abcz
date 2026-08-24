@@ -3,6 +3,7 @@ from django.contrib.auth.admin import GroupAdmin as DjangoGroupAdmin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.hashers import make_password
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
@@ -14,7 +15,8 @@ from .models import (
     BirdTutorProgress, BirdReviewItem, SoundPracticeProgress, ExternalGame,
     CVCWord, CVCSentence, CVCStory, CVCProgress, CVCReadingProgress,
     EnglishFoundationProgress, UserSubscription, PaymentOrder, PaymentWebhookEvent,
-    PaymentActivationReview, AdminAuditLog, BankTransferActivationCode,
+    PaymentActivationReview, AdminAuditLog, BankTransferActivationCode, BankTransferProof,
+    activate_subscription_from_payment,
     TopGoalUnit, TopGoalVocabulary, TopGoalSentence, TopGoalQuiz
 )
 
@@ -185,15 +187,15 @@ class UserSubscriptionAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
 @admin.register(PaymentOrder)
 class PaymentOrderAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
     list_display = [
-        'reference', 'user', 'plan_code', 'method', 'status', 'amount_sar',
-        'created_at', 'paid_at', 'activated_at', 'short_provider_payment_id'
+        'reference', 'user', 'user_email', 'plan_code', 'method', 'status', 'amount_sar',
+        'created_at', 'approved_at', 'activated_at', 'short_provider_payment_id'
     ]
     list_filter = ['status', 'method', 'plan_code', 'created_at', 'paid_at', 'activated_at']
     search_fields = ['=id', 'user__username', 'user__email', 'plan_code', 'provider_payment_id']
     readonly_fields = [field.name for field in PaymentOrder._meta.fields] + [
         'reference', 'short_provider_payment_id'
     ]
-    actions = []
+    actions = ['approve_bank_transfers_and_activate', 'reject_bank_transfers']
     list_select_related = ['user']
     date_hierarchy = 'created_at'
     list_per_page = 50
@@ -204,6 +206,14 @@ class PaymentOrderAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
         if not value:
             return '—'
         return f"{value[:4]}…{value[-4:]}" if len(value) > 10 else '••••'
+
+    @admin.display(description='Email', ordering='user__email')
+    def user_email(self, obj):
+        return obj.user.email or '—'
+
+    @admin.display(description='Approved at', ordering='paid_at')
+    def approved_at(self, obj):
+        return obj.paid_at or '—'
 
     def _is_support_agent(self, request):
         return (
@@ -233,6 +243,114 @@ class PaymentOrderAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
                 'failure_message', 'created_at', 'paid_at', 'activated_at',
             ]
         return super().get_fields(request, obj)
+
+    def get_actions(self, request):
+        if not request.user.is_superuser:
+            return {}
+        return admin.ModelAdmin.get_actions(self, request)
+
+    @admin.action(description='اعتماد التحويل البنكي وتفعيل الاشتراك', permissions=['view'])
+    def approve_bank_transfers_and_activate(self, request, queryset):
+        if not request.user.is_superuser:
+            raise PermissionDenied
+
+        approved = 0
+        skipped = 0
+        for selected_order in queryset:
+            with transaction.atomic():
+                order = PaymentOrder.objects.select_for_update().select_related('user').get(pk=selected_order.pk)
+                if (
+                    order.method != PaymentOrder.Method.BANK_TRANSFER
+                    or order.status != PaymentOrder.Status.AWAITING_BANK_REVIEW
+                    or not order.user_id
+                ):
+                    skipped += 1
+                    continue
+
+                approved_at = timezone.now()
+                before_status = {'status': order.status}
+                order.status = PaymentOrder.Status.BANK_APPROVED
+                order.provider_status = 'bank_transfer_verified_and_activated'
+                order.paid_at = approved_at
+                order.save(update_fields=['status', 'provider_status', 'paid_at', 'updated_at'])
+                BankTransferProof.objects.filter(
+                    payment_order=order,
+                    status=BankTransferProof.Status.PENDING_REVIEW,
+                ).update(
+                    status=BankTransferProof.Status.APPROVED,
+                    reviewed_by=request.user,
+                    reviewed_at=approved_at,
+                )
+
+                subscription = activate_subscription_from_payment(order)
+                order.refresh_from_db(fields=['status', 'paid_at', 'activated_at'])
+                log_admin_action(
+                    request,
+                    action='bank_transfer_approved_and_activated',
+                    target=order,
+                    before_status=before_status,
+                    after_status={
+                        'status': order.status,
+                        'subscription_id': subscription.id if subscription else None,
+                        'activated_at': order.activated_at.isoformat() if order.activated_at else None,
+                    },
+                    note='Bank transfer was manually verified and the subscription was activated.',
+                )
+                approved += 1
+
+        if approved:
+            self.message_user(request, f'تم اعتماد وتفعيل {approved} طلب/طلبات تحويل بنكي.')
+        if skipped:
+            self.message_user(request, f'تم تجاوز {skipped} طلب/طلبات غير مؤهلة للاعتماد.', level='warning')
+
+    @admin.action(description='رفض طلبات التحويل البنكي', permissions=['view'])
+    def reject_bank_transfers(self, request, queryset):
+        if not request.user.is_superuser:
+            raise PermissionDenied
+
+        rejected = 0
+        skipped = 0
+        for selected_order in queryset:
+            with transaction.atomic():
+                order = PaymentOrder.objects.select_for_update().get(pk=selected_order.pk)
+                if (
+                    order.method != PaymentOrder.Method.BANK_TRANSFER
+                    or order.status != PaymentOrder.Status.AWAITING_BANK_REVIEW
+                ):
+                    skipped += 1
+                    continue
+
+                rejected_at = timezone.now()
+                before_status = {'status': order.status}
+                order.status = PaymentOrder.Status.BANK_REJECTED
+                order.provider_status = 'bank_transfer_rejected'
+                order.failure_code = 'bank_transfer_rejected'
+                order.failed_at = rejected_at
+                order.save(update_fields=[
+                    'status', 'provider_status', 'failure_code', 'failed_at', 'updated_at',
+                ])
+                BankTransferProof.objects.filter(
+                    payment_order=order,
+                    status=BankTransferProof.Status.PENDING_REVIEW,
+                ).update(
+                    status=BankTransferProof.Status.REJECTED,
+                    reviewed_by=request.user,
+                    reviewed_at=rejected_at,
+                )
+                log_admin_action(
+                    request,
+                    action='bank_transfer_rejected',
+                    target=order,
+                    before_status=before_status,
+                    after_status={'status': order.status},
+                    note='Bank transfer was manually rejected. The payment order was retained for review.',
+                )
+                rejected += 1
+
+        if rejected:
+            self.message_user(request, f'تم رفض {rejected} طلب/طلبات تحويل بنكي.')
+        if skipped:
+            self.message_user(request, f'تم تجاوز {skipped} طلب/طلبات غير قابلة للرفض.', level='warning')
 
 
 @admin.register(BankTransferActivationCode)

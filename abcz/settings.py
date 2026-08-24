@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    "django.contrib.sitemaps",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -396,7 +397,7 @@ if MOYASAR_ENVIRONMENT == "live":
             "MOYASAR_WEBHOOK_URL must use HTTPS on an official application host from ALLOWED_HOSTS."
         )
 
-BANK_TRANSFER_ENABLED = env_bool("BANK_TRANSFER_ENABLED", "False")
+BANK_TRANSFER_ENABLED = env_bool("BANK_TRANSFER_ENABLED", "True")
 BANK_ACCOUNT_NAME = os.getenv("BANK_ACCOUNT_NAME", "").strip()
 BANK_NAME = os.getenv("BANK_NAME", "").strip()
 BANK_IBAN = os.getenv("BANK_IBAN", "").strip()
