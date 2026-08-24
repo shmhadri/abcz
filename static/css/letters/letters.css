@@ -1903,6 +1903,28 @@ body {
     background: rgba(30, 41, 59, 0.98);
 }
 
+.letter-video-btn {
+    align-items: center;
+    gap: 8px;
+}
+
+.letter-video-modal-content {
+    max-width: 720px;
+}
+
+.letter-video-modal video {
+    display: block;
+    width: 100%;
+    max-height: 68vh;
+    border-radius: var(--radius-md);
+    background: #0f172a;
+    outline: none;
+}
+
+.night-mode .letter-video-modal video {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
 .modal-close {
     position: absolute;
     top: 15px;
