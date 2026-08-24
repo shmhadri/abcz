@@ -246,6 +246,10 @@
                         <button class="btn btn-secondary" id="letterInfo">
                             <span>ℹ️</span> معلومات الحرف
                         </button>
+                        <button class="btn btn-secondary letter-video-btn" id="letterVideoBtn" type="button" hidden aria-haspopup="dialog" aria-controls="letterVideoModal">
+                            <i class="fas fa-pen-nib" aria-hidden="true"></i>
+                            <span>طريقة الكتابة</span>
+                        </button>
                         <a class="btn btn-success external-games-btn" id="externalGamesLink" href="/letters/A/external-games/" target="_blank" rel="noopener noreferrer" hidden>
                             <span>&#127918;</span> &#1571;&#1604;&#1593;&#1575;&#1576; &#1573;&#1590;&#1575;&#1601;&#1610;&#1577;
                         </a>
@@ -397,6 +401,19 @@
     </div>
 
     {% include "letters/_completion_modal.html" %}
+
+    <!-- Letter A writing video: source is assigned only after an explicit user action. -->
+    <div class="modal letter-video-modal" id="letterVideoModal" role="dialog" aria-modal="true" aria-labelledby="letterVideoTitle" aria-hidden="true">
+        <div class="modal-content letter-video-modal-content" role="document">
+            <button class="modal-close" id="closeLetterVideoModal" type="button" aria-label="إغلاق فيديو طريقة الكتابة">×</button>
+            <div class="modal-header">
+                <div class="modal-badge">درس مرئي</div>
+                <h2 class="modal-title" id="letterVideoTitle">طريقة كتابة حرف A</h2>
+                <p class="modal-subtitle">شاهد خطوات كتابة الحرف ثم طبّقها في مساحة التدريب.</p>
+            </div>
+            <video id="letterVideoPlayer" controls playsinline preload="none" aria-describedby="letterVideoTitle"></video>
+        </div>
+    </div>
 
     <!-- Free Letter Gate Modal -->
     <div class="modal" id="letterPaywallModal">
@@ -821,6 +838,7 @@
     <script src="{% static 'js/letters/celebrations.js' %}"></script>
     <script src="{% static 'js/letters/worksheet.js' %}"></script>
     <script src="{% static 'js/letters/parent_report.js' %}"></script>
+    <script src="{% static 'js/letters/video_lessons.js' %}"></script>
 
     <script>
         // بيانات التطبيق
