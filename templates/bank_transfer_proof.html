@@ -67,6 +67,16 @@
             gap: 8px;
             margin: 18px 0;
         }
+        .bank-contact {
+            border: 1px solid #bde7d7;
+            border-radius: 8px;
+            padding: 13px 14px;
+            margin: 18px 0;
+            background: #ecfdf5;
+            color: #087356;
+            font-weight: 800;
+            line-height: 1.8;
+        }
         form {
             display: grid;
             gap: 14px;
@@ -161,18 +171,22 @@
                 <div><span>الحالة</span>بانتظار التحقق من التحويل</div>
             </div>
 
-            <div class="bank-info">
-                <div><span>اسم المستفيد</span>{{ bank_transfer.account_name|default:"لم يتم ضبطه بعد" }}</div>
-                <div><span>البنك</span>{{ bank_transfer.bank_name|default:"لم يتم ضبطه بعد" }}</div>
-                <div><span>IBAN</span>{{ bank_transfer.iban|default:"لم يتم ضبطه بعد" }}</div>
-                <div><span>رقم الحساب</span>{{ bank_transfer.account_number|default:"اختياري" }}</div>
-            </div>
+            {% if bank_transfer.account_name and bank_transfer.bank_name and bank_transfer.iban %}
+                <div class="bank-info">
+                    <div><span>اسم المستفيد</span>{{ bank_transfer.account_name }}</div>
+                    <div><span>البنك</span>{{ bank_transfer.bank_name }}</div>
+                    <div><span>IBAN</span>{{ bank_transfer.iban }}</div>
+                    {% if bank_transfer.account_number %}<div><span>رقم الحساب</span>{{ bank_transfer.account_number }}</div>{% endif %}
+                </div>
+            {% else %}
+                <div class="bank-contact">تواصل معنا عبر واتساب للحصول على بيانات الحساب البنكي وإكمال التحويل.</div>
+            {% endif %}
 
             <div class="hint">الملفات المقبولة: JPG أو PNG أو PDF. الحد الأقصى 5MB.</div>
 
             {% if bank_transfer_whatsapp_url %}
-                <a class="whatsapp" href="{{ bank_transfer_whatsapp_url }}" target="_blank" rel="noopener">إرسال الإيصال عبر واتساب</a>
-                <p class="lead" style="margin-top: 10px;">بعد اعتماد التحويل، أرسل لك رمز تفعيل لمرة واحدة لتدخله من <a href="{% url 'bank_transfer_activation' %}">صفحة التفعيل</a>.</p>
+                <a class="whatsapp" href="{{ bank_transfer_whatsapp_url }}" target="_blank" rel="noopener">الحصول على بيانات التحويل عبر واتساب</a>
+                <p class="lead" style="margin-top: 10px;">بعد التحقق من التحويل واعتماده، سيتم تفعيل اشتراكك مباشرة.</p>
             {% endif %}
 
             {% if errors %}

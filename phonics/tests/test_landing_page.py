@@ -40,6 +40,7 @@ class LandingPageTests(TestCase):
         self.assertContains(response, 'href="https://wa.me/966530637886"')
         self.assertContains(response, 'rel="noopener noreferrer"')
         self.assertContains(response, 'class="landing-whatsapp-contact"')
+        self.assertNotContains(response, '0530 637 886')
 
     def test_landing_does_not_expose_test_answers_or_sensitive_payment_content(self):
         html = self.client.get(reverse("index")).content.decode("utf-8").lower()

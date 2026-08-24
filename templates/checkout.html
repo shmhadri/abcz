@@ -214,6 +214,15 @@
             color: var(--muted);
             font-weight: 800;
         }
+        .bank-contact {
+            border: 1px solid #bde7d7;
+            border-radius: 8px;
+            padding: 12px 14px;
+            background: #ecfdf5;
+            color: #087356;
+            font-weight: 800;
+            line-height: 1.8;
+        }
         .payment-note {
             margin-top: 14px;
             border-inline-start: 4px solid var(--amber);
@@ -305,13 +314,17 @@
                 {% if bank_transfer.enabled %}
                 <article class="method">
                     <h3>تحويل بنكي — أريد التفعيل عبر التحويل</h3>
-                    <p>حوّل المبلغ ثم أرسل الإيصال عبر واتساب. بعد مراجعة التحويل، يصلك رمز تفعيل خاص بحسابك.</p>
+                    <p>حوّل المبلغ ثم أرسل الإيصال عبر واتساب. يتم تفعيل الاشتراك بعد التحقق من وصول الحوالة واعتمادها.</p>
+                    {% if bank_transfer.account_name and bank_transfer.bank_name and bank_transfer.iban %}
                     <div class="bank-box">
-                        <div><span>اسم المستفيد:</span> {{ bank_transfer.account_name|default:"لم يتم ضبطه بعد" }}</div>
-                        <div><span>البنك:</span> {{ bank_transfer.bank_name|default:"لم يتم ضبطه بعد" }}</div>
-                        <div><span>IBAN:</span> {{ bank_transfer.iban|default:"لم يتم ضبطه بعد" }}</div>
-                        <div><span>رقم الحساب:</span> {{ bank_transfer.account_number|default:"اختياري" }}</div>
+                        <div><span>اسم المستفيد:</span> {{ bank_transfer.account_name }}</div>
+                        <div><span>البنك:</span> {{ bank_transfer.bank_name }}</div>
+                        <div><span>IBAN:</span> {{ bank_transfer.iban }}</div>
+                        {% if bank_transfer.account_number %}<div><span>رقم الحساب:</span> {{ bank_transfer.account_number }}</div>{% endif %}
                     </div>
+                    {% else %}
+                    <div class="bank-contact">تواصل معنا عبر واتساب للحصول على بيانات الحساب البنكي وإكمال التحويل.</div>
+                    {% endif %}
                     <form method="post" action="{% url 'create_payment_order' plan.code 'bank_transfer' %}">
                         {% csrf_token %}
                         <button class="action bank" type="submit">متابعة التحويل عبر واتساب</button>

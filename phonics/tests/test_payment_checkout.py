@@ -199,6 +199,27 @@ class PaymentCheckoutTests(TestCase):
 
         self.assertContains(page, order.reference)
         self.assertContains(page, "بانتظار التحقق من التحويل")
+        self.assertContains(page, "تواصل معنا عبر واتساب للحصول على بيانات الحساب البنكي وإكمال التحويل")
+        self.assertContains(page, "الحصول على بيانات التحويل عبر واتساب")
+        self.assertContains(page, "بعد التحقق من التحويل واعتماده، سيتم تفعيل اشتراكك مباشرة")
+        self.assertNotContains(page, "لم يتم ضبطه بعد")
+        self.assertNotContains(page, "رمز تفعيل لمرة واحدة")
+
+    @override_settings(
+        BANK_ACCOUNT_NAME="Smart Learning",
+        BANK_NAME="Test Bank",
+        BANK_IBAN="SA001234567890",
+        BANK_ACCOUNT_NUMBER="12345678",
+    )
+    def test_bank_transfer_confirmation_shows_configured_bank_details_only(self):
+        response = self.client.post(reverse("create_payment_order", args=["silver", "bank_transfer"]))
+        page = self.client.get(response["Location"])
+
+        self.assertContains(page, "Smart Learning")
+        self.assertContains(page, "Test Bank")
+        self.assertContains(page, "SA001234567890")
+        self.assertContains(page, "12345678")
+        self.assertNotContains(page, "لم يتم ضبطه بعد")
 
     def test_bank_transfer_activation_code_activates_only_its_owner(self):
         order = self.create_order(
