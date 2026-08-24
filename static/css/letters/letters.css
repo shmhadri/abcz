@@ -1906,6 +1906,28 @@ body {
 .letter-video-btn {
     align-items: center;
     gap: 8px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #4f46e5 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 10px 22px rgba(99, 102, 241, 0.24);
+}
+
+.letter-video-btn[hidden] {
+    display: none !important;
+}
+
+.letter-info-btn {
+    background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.2);
+}
+
+.letter-reset-btn {
+    background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 10px 22px rgba(234, 88, 12, 0.18);
 }
 
 .letter-video-modal-content {

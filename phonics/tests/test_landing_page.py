@@ -33,6 +33,13 @@ class LandingPageTests(TestCase):
             with self.subTest(route_name=route_name):
                 self.assertContains(response, reverse(route_name))
 
+    def test_landing_has_the_existing_letters_whatsapp_contact_link(self):
+        response = self.client.get(reverse("index"))
+
+        self.assertContains(response, 'href="https://wa.me/966530637886"')
+        self.assertContains(response, 'rel="noopener noreferrer"')
+        self.assertContains(response, 'class="landing-whatsapp-contact"')
+
     def test_landing_does_not_expose_test_answers_or_sensitive_payment_content(self):
         html = self.client.get(reverse("index")).content.decode("utf-8").lower()
 

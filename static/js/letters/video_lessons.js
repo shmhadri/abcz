@@ -1,7 +1,20 @@
 (function () {
     "use strict";
 
-    const LETTER_A_VIDEO_URL = "https://res.cloudinary.com/djkftm2cn/video/upload/v1787567647/Aa_zbifxy.mp4";
+    const VIDEO_LESSONS = Object.freeze({
+        A: {
+            title: "طريقة كتابة حرف A",
+            url: "https://res.cloudinary.com/djkftm2cn/video/upload/v1787567647/Aa_zbifxy.mp4",
+        },
+        B: {
+            title: "طريقة كتابة حرف B",
+            url: "https://res.cloudinary.com/djkftm2cn/video/upload/v1787567647/Bb_keapwq.mp4",
+        },
+        C: {
+            title: "طريقة كتابة حرف C",
+            url: "https://res.cloudinary.com/djkftm2cn/video/upload/v1787568258/doc_2026-08-24_12-27-45_f9b45o.mp4",
+        },
+    });
 
     function initializeLetterVideoLesson() {
         const button = document.getElementById("letterVideoBtn");
@@ -9,19 +22,21 @@
         const closeButton = document.getElementById("closeLetterVideoModal");
         const player = document.getElementById("letterVideoPlayer");
         const currentLetter = document.getElementById("currentLetter");
+        const title = document.getElementById("letterVideoTitle");
 
-        if (!button || !modal || !closeButton || !player || !currentLetter) {
+        if (!button || !modal || !closeButton || !player || !currentLetter || !title) {
             return;
         }
 
         let previouslyFocusedElement = null;
 
-        function isLetterA() {
-            return currentLetter.textContent.trim().toUpperCase() === "A";
+        function currentVideoLesson() {
+            const letter = currentLetter.textContent.trim().toUpperCase();
+            return VIDEO_LESSONS[letter] || null;
         }
 
         function updateButtonVisibility() {
-            button.hidden = !isLetterA();
+            button.hidden = !currentVideoLesson();
         }
 
         function closeModal() {
@@ -41,12 +56,14 @@
         }
 
         function openModal() {
-            if (!isLetterA()) {
+            const lesson = currentVideoLesson();
+            if (!lesson) {
                 return;
             }
 
             previouslyFocusedElement = document.activeElement;
-            player.src = LETTER_A_VIDEO_URL;
+            title.textContent = lesson.title;
+            player.src = lesson.url;
             modal.style.display = "flex";
             modal.setAttribute("aria-hidden", "false");
             closeButton.focus();
