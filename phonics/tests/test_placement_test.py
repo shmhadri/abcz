@@ -80,6 +80,9 @@ class PlacementTestTests(TestCase):
         self.assertContains(response, "data-next-question", html=False)
         self.assertContains(response, "data-submit-test", html=False)
         self.assertContains(response, "data-reset-test", html=False)
+        self.assertContains(response, 'class="button-icon"', count=3, html=False)
+        self.assertContains(response, 'aria-hidden="true"', count=3, html=False)
+        self.assertContains(response, "/static/js/placement_test.js?v=20260825", html=False)
 
     def test_incomplete_answers_are_rejected_without_leaking_answer_key(self):
         response = self.post_answers({})

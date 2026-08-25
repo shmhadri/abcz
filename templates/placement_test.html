@@ -11,8 +11,9 @@
     <title>اختبار تحديد مستوى اللغة الإنجليزية للأطفال | Smart Learning</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap">
     <link rel="stylesheet" href="{% static 'css/site_public.css' %}">
-    <link rel="stylesheet" href="{% static 'css/placement_test.css' %}">
+    <link rel="stylesheet" href="{% static 'css/placement_test.css' %}?v=20260825">
 </head>
 <body>
     <main class="site-shell">
@@ -94,13 +95,22 @@
             <!-- Step Navigation Actions -->
             <div class="placement-actions placement-step-actions">
                 <button class="btn" type="button" data-previous-question disabled>
-                    <span>← السؤال السابق</span>
+                    <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
+                    <span>السابق</span>
                 </button>
                 <button class="btn primary" type="button" data-next-question>
-                    <span>السؤال التالي →</span>
+                    <span>التالي</span>
+                    <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="m15 18-6-6 6-6" />
+                    </svg>
                 </button>
                 <button class="btn primary" type="submit" data-submit-test hidden>
-                    <span>عرض النتيجة والتحليل 🎯</span>
+                    <span>عرض النتيجة والتحليل</span>
+                    <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="m5 12 4 4L19 6" />
+                    </svg>
                 </button>
             </div>
             <p class="placement-shortcut-hint">💡 يمكنك استخدام الأرقام 1-4 للاختيار السريع، ثم الضغط على Enter للانتقال للسؤال التالي.</p>
@@ -116,6 +126,6 @@
     </main>
 
     <script id="placementQuestions" type="application/json">{{ questions_json|safe }}</script>
-    <script src="{% static 'js/placement_test.js' %}"></script>
+    <script src="{% static 'js/placement_test.js' %}?v=20260825" defer></script>
 </body>
 </html>

@@ -3,8 +3,6 @@
    Ultra-modern, Responsive, Glassmorphic, and Interactive Design
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
-
 :root {
   --pt-navy-950: #081028;
   --pt-navy-900: #0c1838;
@@ -54,9 +52,12 @@
 
 body {
   font-family: var(--pt-font-arabic);
-  background-color: var(--pt-bg-page);
+  background:
+    radial-gradient(circle at 90% 0%, rgba(37, 99, 235, 0.08), transparent 32rem),
+    var(--pt-bg-page);
   color: var(--pt-text-main);
   min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .site-shell {
@@ -268,7 +269,7 @@ body {
    Question Card & Interactive Stage
    ========================================================================== */
 .placement-question-stage {
-  min-height: 420px;
+  min-height: 390px;
   margin-bottom: 24px;
 }
 
@@ -489,7 +490,8 @@ body {
    Navigation Actions (Buttons)
    ========================================================================== */
 .placement-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(132px, 160px) minmax(160px, 200px);
   align-items: center;
   justify-content: space-between;
   gap: 14px;
@@ -502,7 +504,7 @@ body {
   justify-content: center;
   gap: 10px;
   min-height: 52px;
-  min-width: 150px;
+  min-width: 0;
   padding: 12px 24px;
   border-radius: var(--pt-radius-md);
   font-family: inherit;
@@ -514,6 +516,28 @@ body {
   color: var(--pt-navy-800);
   box-shadow: var(--pt-shadow-sm);
   transition: all 0.22s var(--ease-spring);
+}
+
+.placement-actions .btn:nth-child(2),
+.placement-actions .btn:nth-child(3) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.placement-actions .btn[hidden] {
+  display: none !important;
+}
+
+.placement-actions .button-icon {
+  display: block;
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .placement-actions .btn:hover:not(:disabled) {
@@ -538,6 +562,14 @@ body {
   opacity: 0.45;
   cursor: not-allowed;
   transform: none;
+}
+
+.placement-actions .btn:focus-visible,
+.option-row:focus-within,
+.prompt-audio-btn:focus-visible,
+.placement-reset:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 3px;
 }
 
 .placement-shortcut-hint {
@@ -829,12 +861,167 @@ body {
    Responsive Mobile Adjustments
    ========================================================================== */
 @media (max-width: 680px) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+
   .site-shell {
-    padding: 16px 0 48px;
+    width: min(calc(100% - 24px), 960px);
+    padding: 12px 0 calc(32px + env(safe-area-inset-bottom));
+  }
+
+  .site-nav {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .site-nav .brand {
+    justify-self: center;
+  }
+
+  .site-nav .site-links {
+    display: none;
+  }
+
+  .site-nav .auth-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 8px;
+  }
+
+  .site-nav .auth-links .btn {
+    min-width: 0;
+    min-height: 40px;
+    padding: 7px 10px;
+    font-size: 12.5px;
+  }
+
+  .placement-hero-modern {
+    padding: 20px 18px;
+    margin-bottom: 14px;
+    border-radius: 20px;
+  }
+
+  .placement-hero-badge {
+    max-width: 100%;
+    padding: 5px 10px;
+    font-size: 11.5px;
+  }
+
+  .placement-hero-modern h1 {
+    font-size: clamp(22px, 7vw, 28px);
+  }
+
+  .placement-hero-modern .lead {
+    margin-bottom: 16px;
+    font-size: 13.5px;
+    line-height: 1.8;
+  }
+
+  .placement-summary-pills {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .placement-summary-pills span {
+    min-width: 0;
+    padding: 7px 9px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    box-shadow: none;
+  }
+
+  .placement-progress-panel {
+    top: 8px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .placement-progress-copy strong {
+    font-size: 13.5px;
+  }
+
+  .placement-section-badge {
+    max-width: 55%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+
+  .placement-progress-track {
+    height: 8px;
+  }
+
+  .placement-progress-meta,
+  .placement-reset {
+    font-size: 11px;
+  }
+
+  .placement-question-stage {
+    min-height: 0;
+    margin-bottom: -60px;
+    padding-bottom: 72px;
+  }
+
+  .placement-question {
+    padding: 20px 16px;
+    border-radius: 20px;
+  }
+
+  .placement-question legend {
+    margin-bottom: 12px;
+    font-size: 12.5px;
+  }
+
+  .placement-question h2 {
+    margin-bottom: 14px;
+    font-size: 18px;
+  }
+
+  .placement-prompt-wrap {
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .question-prompt {
+    min-height: 48px;
+    max-width: 100%;
+    padding: 9px 14px;
+    font-size: clamp(18px, 6vw, 23px);
+    overflow-wrap: anywhere;
+  }
+
+  .prompt-audio-btn {
+    min-height: 44px;
+    padding: 8px 12px;
   }
 
   .placement-options {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .option-row {
+    min-height: 56px;
+    padding: 11px 14px;
+    gap: 11px;
+    border-radius: 14px;
+    font-size: 16px;
+    box-shadow: none;
+  }
+
+  .option-row:hover {
+    transform: none;
   }
 
   .placement-result-heading {
@@ -848,12 +1035,39 @@ body {
   }
 
   .placement-actions {
-    flex-direction: column;
-    align-items: stretch;
+    position: sticky;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 45;
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    justify-content: stretch;
+    gap: 8px;
+    margin: 8px -4px 0;
+    padding: 8px;
+    border: 1px solid rgba(203, 213, 225, 0.82);
+    border-radius: 16px;
+    background: rgba(248, 250, 252, 0.94);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
   .placement-actions .btn {
     width: 100%;
+    min-height: 48px;
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    box-shadow: none;
+  }
+
+  .placement-actions .button-icon {
+    width: 17px;
+    height: 17px;
+    flex-basis: 17px;
+  }
+
+  .placement-shortcut-hint {
+    display: none;
   }
 
   .placement-result-actions {
@@ -864,5 +1078,48 @@ body {
   .placement-result-actions .btn {
     width: 100%;
     text-align: center;
+  }
+
+  .placement-secondary-action {
+    margin-top: 18px;
+  }
+
+  .placement-secondary-action .btn {
+    width: 100%;
+    font-size: 12.5px;
+  }
+}
+
+@media (max-width: 380px) {
+  .site-shell {
+    width: min(calc(100% - 16px), 960px);
+  }
+
+  .placement-summary-pills {
+    grid-template-columns: 1fr;
+  }
+
+  .placement-progress-copy,
+  .placement-progress-meta {
+    gap: 6px;
+  }
+
+  .placement-actions .btn {
+    padding-inline: 9px;
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .placement-form.is-enhanced .placement-question,
+  .placement-result-card {
+    animation: none;
+  }
+
+  .placement-progress-track > span,
+  .placement-question,
+  .option-row,
+  .placement-actions .btn {
+    transition: none;
   }
 }
