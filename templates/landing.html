@@ -64,6 +64,7 @@
                     <li><a href="#how-it-works">كيف تعمل المنصة</a></li>
                     <li><a href="#levels">المستويات التعليمية</a></li>
                     <li><a href="#features">المميزات</a></li>
+                    <li><a href="#special-offer">العرض الخاص</a></li>
                     <li><a href="{% url 'pricing' %}">الباقات</a></li>
                     <li><a href="{% url 'placement_test' %}">اختبار المستوى</a></li>
                     <li><a href="#faq">الأسئلة الشائعة</a></li>
@@ -705,6 +706,79 @@
                                 <span>المهارة الحالية</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Teacher-led September Special Offer -->
+        <section class="landing-section landing-special-offer" id="special-offer" aria-labelledby="special-offer-title">
+            <div class="landing-container">
+                <div class="landing-offer-shell">
+                    <div class="landing-offer-details">
+                        <span class="landing-offer-badge">عرض خاص • المقاعد محدودة</span>
+                        <p class="landing-offer-eyebrow">برنامج تأسيس مباشر للأطفال</p>
+                        <h2 id="special-offer-title">تأسيس الحروف الإنجليزية مع معلّم</h2>
+                        <p class="landing-offer-intro">تعلّم مباشر وتفاعلي يساعد طفلك على بناء أساس قوي، مع إمكانية التدريب على المنصة طوال مدة البرنامج.</p>
+
+                        <ul class="landing-offer-features">
+                            <li><span aria-hidden="true">✓</span> حصص مباشرة عبر زوم</li>
+                            <li><span aria-hidden="true">✓</span> ثلاثة أيام في الأسبوع</li>
+                            <li><span aria-hidden="true">✓</span> حساب على المنصة لمدة شهر</li>
+                            <li><span aria-hidden="true">✓</span> بداية البرنامج في 5 سبتمبر</li>
+                        </ul>
+
+                        <div class="landing-offer-price" aria-label="السعر 159 ريالًا بدلًا من 200 ريال">
+                            <div>
+                                <span class="landing-offer-price-label">سعر العرض</span>
+                                <strong><bdi>159</bdi> <small>ريالًا</small></strong>
+                            </div>
+                            <span class="landing-offer-old-price">بدلًا من <s><bdi>200</bdi> ريال</s></span>
+                        </div>
+
+                        <p class="landing-offer-limited"><span aria-hidden="true">⏳</span> العدد محدود، سجّل الآن لحجز مقعد طفلك.</p>
+                    </div>
+
+                    <div class="landing-offer-form-card">
+                        <div class="landing-offer-form-heading">
+                            <span aria-hidden="true">💬</span>
+                            <div>
+                                <h3>التسجيل عبر واتساب</h3>
+                                <p>أدخل بيانات الطفل، ثم أرسل طلب التسجيل مباشرة.</p>
+                            </div>
+                        </div>
+
+                        <form class="landing-offer-form" id="special-offer-form" data-whatsapp-number="966530637886" novalidate>
+                            <div class="landing-offer-field landing-offer-field-wide">
+                                <label for="offer-name">الاسم الكامل</label>
+                                <input id="offer-name" name="name" type="text" autocomplete="name" minlength="2" maxlength="80" placeholder="اكتب اسم الطفل" required>
+                            </div>
+
+                            <div class="landing-offer-field">
+                                <label for="offer-age">العمر</label>
+                                <input id="offer-age" name="age" type="number" inputmode="numeric" min="3" max="18" placeholder="مثال: 7" required>
+                            </div>
+
+                            <div class="landing-offer-field">
+                                <label for="offer-phone">رقم الجوال</label>
+                                <input id="offer-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" minlength="8" maxlength="20" placeholder="05xxxxxxxx" required>
+                            </div>
+
+                            <div class="landing-offer-field landing-offer-field-wide">
+                                <label for="offer-email">البريد الإلكتروني</label>
+                                <input id="offer-email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" placeholder="name@example.com" dir="ltr" required>
+                            </div>
+
+                            <p class="landing-offer-form-error" id="special-offer-error" role="alert" aria-live="polite"></p>
+
+                            <button class="landing-offer-submit" type="submit">
+                                <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                                    <path fill="currentColor" d="M16.02 3.2a12.7 12.7 0 0 0-10.88 19.25L3.5 28.8l6.5-1.7A12.8 12.8 0 1 0 16.02 3.2Zm0 23.25a10.45 10.45 0 0 1-5.33-1.46l-.38-.23-3.86 1.01 1.03-3.76-.25-.39a10.45 10.45 0 1 1 8.79 4.83Zm5.73-7.84c-.31-.16-1.82-.9-2.1-1-.28-.1-.49-.16-.69.16s-.8 1-.98 1.2c-.18.21-.36.23-.67.08-.31-.16-1.3-.48-2.47-1.53-.92-.82-1.54-1.84-1.72-2.15-.18-.31-.02-.48.14-.63.14-.14.31-.36.47-.54.16-.18.21-.31.31-.51.1-.21.05-.39-.03-.55-.08-.16-.69-1.66-.95-2.27-.25-.6-.51-.52-.69-.53h-.59c-.21 0-.54.08-.83.39-.28.31-1.08 1.06-1.08 2.59s1.11 3 1.26 3.21c.16.21 2.18 3.33 5.28 4.67.74.32 1.32.51 1.77.65.74.24 1.41.2 1.95.12.6-.09 1.82-.74 2.08-1.46.26-.72.26-1.34.18-1.46-.08-.13-.28-.21-.59-.36Z"/>
+                                </svg>
+                                <span>إرسال طلب التسجيل عبر واتساب</span>
+                            </button>
+                            <p class="landing-offer-privacy">بالضغط على الزر ستُفتح محادثة واتساب تحتوي على البيانات المدخلة لمراجعتها قبل الإرسال.</p>
+                        </form>
                     </div>
                 </div>
             </div>
