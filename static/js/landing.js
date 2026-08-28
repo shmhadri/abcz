@@ -175,4 +175,47 @@
     });
   }
 
+  // 7. Special-offer registration via WhatsApp
+  const offerForm = document.getElementById('special-offer-form');
+  if (offerForm) {
+    const errorMessage = document.getElementById('special-offer-error');
+
+    offerForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (errorMessage) errorMessage.textContent = '';
+
+      if (!offerForm.checkValidity()) {
+        if (errorMessage) errorMessage.textContent = 'يرجى تعبئة جميع البيانات المطلوبة بشكل صحيح.';
+        offerForm.reportValidity();
+        return;
+      }
+
+      const formData = new FormData(offerForm);
+      const phone = String(formData.get('phone') || '').trim();
+      const phoneDigits = phone.replace(/\D/g, '');
+      if (phoneDigits.length < 8 || phoneDigits.length > 15) {
+        if (errorMessage) errorMessage.textContent = 'يرجى إدخال رقم جوال صحيح.';
+        document.getElementById('offer-phone').focus();
+        return;
+      }
+
+      const message = [
+        'السلام عليكم، أرغب في تسجيل طفلي في عرض تأسيس الحروف الإنجليزية.',
+        '',
+        'الاسم: ' + String(formData.get('name') || '').trim(),
+        'العمر: ' + String(formData.get('age') || '').trim(),
+        'البريد الإلكتروني: ' + String(formData.get('email') || '').trim(),
+        'رقم الجوال: ' + phone,
+        '',
+        'العرض: حصص مع معلّم عبر زوم 3 أيام أسبوعيًا + حساب على المنصة لمدة شهر.',
+        'السعر: 159 ريالًا بدلًا من 200 ريال.',
+        'موعد البداية: 5 سبتمبر.'
+      ].join('\n');
+
+      const whatsappNumber = offerForm.dataset.whatsappNumber;
+      const whatsappUrl = 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(message);
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    });
+  }
+
 })();
