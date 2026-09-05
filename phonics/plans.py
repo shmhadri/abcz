@@ -11,10 +11,11 @@ PLAN_DIAMOND = "diamond"
 PLAN_FULL_ACCESS = "full_access"
 PLAN_LEVEL_THREE = "level_3"
 PLAN_LEVEL_FOUR = "level_4"
+PLAN_ENGLISH_JOURNEY = "english_journey"
 
 MAIN_PLAN_CODES = (PLAN_FREE, PLAN_BASIC, PLAN_SILVER, PLAN_VIP, PLAN_DIAMOND)
 PAID_MAIN_PLAN_CODES = (PLAN_BASIC, PLAN_SILVER, PLAN_VIP, PLAN_DIAMOND)
-ADDON_PLAN_CODES = (PLAN_LEVEL_THREE, PLAN_LEVEL_FOUR)
+ADDON_PLAN_CODES = (PLAN_LEVEL_THREE, PLAN_LEVEL_FOUR, PLAN_ENGLISH_JOURNEY)
 
 BASIC_FEATURE_KEYS = frozenset({
     "letters_full",
@@ -76,6 +77,8 @@ LEVEL_FOUR_FEATURE_KEYS = frozenset({
     "level_four_full",
     "level4_foundation",
 })
+
+ENGLISH_JOURNEY_FEATURE_KEYS = frozenset({"english_journey_a1_a2"})
 
 FULL_ACCESS_ONLY_FEATURE_KEYS = LEVEL_THREE_FEATURE_KEYS | LEVEL_FOUR_FEATURE_KEYS | {
     "full_access",
@@ -153,6 +156,17 @@ PLAN_CATALOG = {
         "duration_days": 30,
         "included_addons": (),
         "features": LEVEL_FOUR_FEATURE_KEYS,
+    },
+    PLAN_ENGLISH_JOURNEY: {
+        "code": PLAN_ENGLISH_JOURNEY,
+        "name": "English Journey A1–A2",
+        "category": "addon",
+        "rank": None,
+        "price": Decimal("39.00"),
+        "duration_days": 30,
+        "included_addons": (),
+        "features": ENGLISH_JOURNEY_FEATURE_KEYS,
+        "campaign_eligible": False,
     },
 }
 

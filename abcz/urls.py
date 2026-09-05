@@ -88,6 +88,7 @@ urlpatterns = [
         name='admin_operations_dashboard',
     ),
     path('admin/', admin.site.urls),
+    path('english/', include(('english_path.urls', 'english_path'), namespace='english_path')),
     path('', include('phonics.urls')),
     path('accounts/', include('allauth.urls')),
 ]

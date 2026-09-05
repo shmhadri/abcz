@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "phonics.apps.PhonicsConfig",
+    "english_path.apps.EnglishPathConfig",
 ]
 
 MIDDLEWARE = [
@@ -246,6 +247,10 @@ CSP_REPORT_ONLY = os.getenv(
     "CSP_REPORT_ONLY",
     "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
 ).strip()
+
+# The new A1/A2 journey remains independently deployable while its content is
+# being completed. Enable with ENGLISH_PATH_ENABLED=True.
+ENGLISH_PATH_ENABLED = env_bool("ENGLISH_PATH_ENABLED", "False")
 
 if not DEBUG:
     SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "31536000"))

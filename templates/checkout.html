@@ -267,6 +267,7 @@
                 <h2>{{ plan.name_ar }}</h2>
                 <p class="lead">{{ plan.description }}</p>
                 <div class="price"><strong>{% if purchase_option.allowed %}{{ purchase_option.amount_due|floatformat:0 }}{% else %}{{ plan.price_sar|floatformat:0 }}{% endif %}</strong><span>ريال</span></div>
+                <p class="lead">مدة الاشتراك: {{ plan.duration_days }} يومًا</p>
                 {% if campaign.campaign_active %}
                 <div class="campaign-price-summary">
                     <div><span>السعر الأصلي</span><s>{{ campaign.original_price|floatformat:0 }} ريال</s></div>

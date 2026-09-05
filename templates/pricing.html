@@ -275,6 +275,17 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
+        .journey-subscription {
+            order: 4;
+            margin-bottom: 46px;
+        }
+
+        .journey-plans {
+            max-width: 960px;
+            margin: 0 auto;
+            grid-template-columns: minmax(0, 1fr);
+        }
+
         .plan {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -558,6 +569,35 @@
                 <a class="hero-action" href="{% url 'levels' %}">أعرف مستواي - اختر المستوى</a>
             </div>
         </section>
+
+        {% if english_journey_enabled %}
+        <section class="level-subscriptions journey-subscription" aria-labelledby="english-journey-title">
+            <h2 id="english-journey-title">English Journey A1–A2</h2>
+            <p>A1.1 مجانية للتجربة، ثم أكمل رحلة A1 وA2 كاملة ضمن اشتراك واحد.</p>
+            <div class="plans journey-plans">
+                <article class="plan" id="english-journey-plan">
+                    <span class="plan-badge">A1 + A2</span>
+                    <div>
+                        <div class="plan-label">20 Units · 30 يومًا</div>
+                        <h2>{{ english_journey_plan.name }}</h2>
+                        <p class="description">مسار متدرج يفتح المحتوى حسب الاشتراك والإتقان.</p>
+                    </div>
+                    <div class="price"><strong>{{ english_journey_plan.price_sar|floatformat:0 }}</strong><span>ريال / 30 يومًا</span></div>
+                    <ul class="features">
+                        <li>Vocabulary وGrammar.</li>
+                        <li>Listening وSpeaking.</li>
+                        <li>Reading وWriting.</li>
+                        <li>Interactive Games.</li>
+                        <li>Smart Review.</li>
+                        <li>Final Challenges.</li>
+                    </ul>
+                    {% if english_journey_action.allowed %}
+                        <a class="plan-action" href="{% url 'checkout' 'english_journey' %}">ابدأ الرحلة الكاملة{% if english_journey_action.amount_due %} - {{ english_journey_action.amount_due }} ريال{% endif %}</a>
+                    {% else %}<span class="plan-action secondary">{{ english_journey_action.label }}</span>{% endif %}
+                </article>
+            </div>
+        </section>
+        {% endif %}
 
         <section class="level-roadmap" aria-label="مستويات التعلم">
             <div class="level-pill">

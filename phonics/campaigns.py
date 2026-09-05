@@ -44,6 +44,16 @@ def campaign_price(original_price: Decimal) -> CampaignPrice:
 
 
 def campaign_context_for_plan(plan) -> dict:
+    if isinstance(plan, dict) and not plan.get("campaign_eligible", True):
+        original = Decimal(plan["price"]).quantize(Decimal("0.01"))
+        return {
+            "original_price": original,
+            "final_price": original,
+            "discount_percent": 0,
+            "campaign_active": False,
+            "name": "",
+            "arabic_name": "",
+        }
     price = campaign_price(plan["price"] if isinstance(plan, dict) else plan)
     return {
         "original_price": price.original_price,

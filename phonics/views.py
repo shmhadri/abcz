@@ -103,6 +103,7 @@ from .plans import (
     PLAN_BASIC,
     PLAN_CATALOG,
     PLAN_DIAMOND,
+    PLAN_ENGLISH_JOURNEY,
     PLAN_FREE,
     PLAN_FULL_ACCESS,
     PLAN_LEVEL_FOUR,
@@ -397,6 +398,20 @@ CHECKOUT_PLANS = {
             "Level Four Certificate حسب الإنجاز.",
         ],
         "start_url": "/level-four/",
+    },
+    PLAN_ENGLISH_JOURNEY: {
+        "code": PLAN_ENGLISH_JOURNEY,
+        "name": "English Journey A1–A2",
+        "name_ar": "رحلة الإنجليزية A1–A2",
+        "price_sar": PLAN_CATALOG[PLAN_ENGLISH_JOURNEY]["price"],
+        "duration_days": PLAN_CATALOG[PLAN_ENGLISH_JOURNEY]["duration_days"],
+        "description": "مسار واحد متكامل يفتح A1 وA2 مع التحديات النهائية والمراجعة الذكية.",
+        "features": [
+            "A1.2 إلى A2.10.",
+            "A1 Final Challenge وA2 Final Challenge.",
+            "Daily Mission وMy Mistakes ضمن محتوى الاشتراك.",
+        ],
+        "start_url": "/english/dashboard/",
     },
 }
 
@@ -5377,6 +5392,8 @@ PAYMENT_METHODS = {
 
 def get_checkout_plan_or_404(plan_code):
     normalized_code = normalize_plan_code(plan_code)
+    if normalized_code == PLAN_ENGLISH_JOURNEY and not getattr(settings, "ENGLISH_PATH_ENABLED", False):
+        raise Http404("Subscription plan not available yet.")
     plan = CHECKOUT_PLANS.get(normalized_code)
     if not plan:
         raise Http404("Subscription plan not found.")
@@ -5932,6 +5949,7 @@ def payment_status_payload(order, status_type, title, message):
 
 @require_GET
 def pricing(request):
+    english_journey_enabled = getattr(settings, "ENGLISH_PATH_ENABLED", False)
     if request.user.is_authenticated:
         options = purchase_options_for_user(request.user)
         snapshot = get_user_entitlements(request.user)
@@ -5953,6 +5971,9 @@ def pricing(request):
         "diamond_action": options[PLAN_DIAMOND],
         "level_3_action": options[PLAN_LEVEL_THREE],
         "level_4_action": options[PLAN_LEVEL_FOUR],
+        "english_journey_enabled": english_journey_enabled,
+        "english_journey_plan": CHECKOUT_PLANS[PLAN_ENGLISH_JOURNEY] if english_journey_enabled else None,
+        "english_journey_action": options[PLAN_ENGLISH_JOURNEY] if english_journey_enabled else None,
         "moyasar": moyasar_context(),
         "campaign": {code: campaign_context_for_plan(definition) for code, definition in PLAN_CATALOG.items() if code != PLAN_FREE},
     })

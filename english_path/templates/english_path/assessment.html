@@ -1,0 +1,6 @@
+{% extends "english_path/base.html" %}
+{% block title %}تقييم المهارات{% endblock %}
+{% block content %}<header class="page-heading"><div><p class="journey-kicker">Diagnostic Test</p><h1>تقييم المهارات الست</h1><p>النتيجة ترشد خطتك ولا تختصر مستواك في رقم واحد.</p></div>{% if latest %}<div class="score-pill">آخر نتيجة: {{ latest.score }}% · {{ latest.level }}</div>{% endif %}</header>
+{% if latest %}<section class="skill-bars journey-card">{% for skill, score in latest.skill_scores.items %}<div><span>{{ skill|title }}</span><i><b style="width: {{ score }}%"></b></i><strong>{{ score }}%</strong></div>{% endfor %}</section>{% endif %}
+<form class="assessment-form" method="post" action="{% url 'english_path:submit_assessment' %}">{% csrf_token %}{% for question in questions %}<fieldset class="journey-card"><legend><small>{{ question.skill|title }}</small><b>{{ forloop.counter }}. {{ question.question }}</b></legend>{% for choice in question.choices %}<label><input type="radio" name="{{ question.id }}" value="{{ choice }}" required> <span>{{ choice }}</span></label>{% endfor %}</fieldset>{% endfor %}<button class="journey-button primary wide" type="submit">اعرض تقرير مهاراتي</button></form>
+{% endblock %}
