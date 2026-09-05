@@ -23,7 +23,9 @@ from english_path.services.access import (
     accessible_review_codes,
     can_access_unit,
     decorate_subscription_access,
+    has_journey_access,
     has_journey_subscription,
+    is_developer_preview_user,
     journey_plan,
 )
 from english_path.services.curriculum import ASSESSMENT_QUESTIONS, LEVELS, SKILLS, get_unit
@@ -46,9 +48,12 @@ def feature_enabled(view):
 
 def _plan_context(user):
     subscribed = has_journey_subscription(user)
+    preview_access = is_developer_preview_user(user)
     plan = journey_plan()
     return {
         "journey_subscribed": subscribed,
+        "preview_access": preview_access,
+        "journey_access": subscribed or preview_access,
         "journey_plan": plan,
         "journey_checkout_url": reverse("checkout", kwargs={"plan_code": plan["code"]}),
     }
@@ -73,7 +78,7 @@ def overview(request):
 def dashboard(request):
     plan_context = _plan_context(request.user)
     summary = journey_summary(request.user)
-    review_codes = accessible_review_codes(request.user, subscribed=plan_context["journey_subscribed"])
+    review_codes = accessible_review_codes(request.user, access_granted=plan_context["journey_access"])
     due_reviews = ReviewItem.objects.filter(user=request.user, active=True, next_review_at__lte=timezone.now(), unit_code__in=review_codes).count()
     mission = build_daily_mission(request.user)
     return render(request, "english_path/dashboard.html", {"summary": summary, "due_reviews": due_reviews, "current_unit": mission["current_unit"], "daily_mission": mission, **plan_context})
@@ -86,7 +91,7 @@ def level_detail(request, level_slug):
     if not level:
         raise Http404("Unknown level")
     plan_context = _plan_context(request.user)
-    units = decorate_subscription_access(decorated_units(request.user, level_slug.lower()), subscribed=plan_context["journey_subscribed"])
+    units = decorate_subscription_access(decorated_units(request.user, level_slug.lower()), access_granted=plan_context["journey_access"])
     final_unlocked = (level_slug.lower() == "a1" and a1_course_complete(request.user)) or (level_slug.lower() == "a2" and a2_course_complete(request.user))
     return render(request, "english_path/level.html", {"level": level, "units": units, "final_unlocked": final_unlocked, **plan_context})
 
@@ -264,7 +269,7 @@ def submit_assessment(request):
 @feature_enabled
 @login_required
 def a1_final_challenge(request):
-    if not has_journey_subscription(request.user):
+    if not has_journey_access(request.user):
         return redirect("english_path:level", level_slug="a1")
     if not a1_course_complete(request.user):
         return redirect("english_path:level", level_slug="a1")
@@ -278,7 +283,7 @@ def a1_final_challenge(request):
 @require_POST
 @rate_limit("english-a1-final", limit_setting="RATE_LIMIT_WRITE", default=60)
 def submit_a1_final(request):
-    if not has_journey_subscription(request.user):
+    if not has_journey_access(request.user):
         return _subscription_error()
     if not a1_course_complete(request.user):
         return JsonResponse({"error": "a1_units_incomplete"}, status=403)
@@ -302,7 +307,7 @@ def _a2_final_passed(user):
 @feature_enabled
 @login_required
 def a2_final_challenge(request):
-    if not has_journey_subscription(request.user):
+    if not has_journey_access(request.user):
         return redirect("english_path:level", level_slug="a2")
     if not a2_course_complete(request.user):
         return redirect("english_path:level", level_slug="a2")
@@ -316,7 +321,7 @@ def a2_final_challenge(request):
 @require_POST
 @rate_limit("english-a2-final", limit_setting="RATE_LIMIT_WRITE", default=60)
 def submit_a2_final(request):
-    if not has_journey_subscription(request.user):
+    if not has_journey_access(request.user):
         return _subscription_error()
     if not a2_course_complete(request.user):
         return JsonResponse({"error": "a2_units_incomplete"}, status=403)
@@ -334,7 +339,7 @@ def submit_a2_final(request):
 @feature_enabled
 @login_required
 def journey_completion(request):
-    if not has_journey_subscription(request.user):
+    if not has_journey_access(request.user):
         return redirect("english_path:level", level_slug="a2")
     if not _a2_final_passed(request.user):
         return redirect("english_path:level", level_slug="a2")

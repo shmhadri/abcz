@@ -1,12 +1,12 @@
-from english_path.services.access import accessible_review_codes, can_access_unit, has_journey_subscription
+from english_path.services.access import accessible_review_codes, can_access_unit, has_journey_access
 from english_path.services.curriculum import LEVELS
 from english_path.services.progress import decorated_units, journey_summary, select_due_review_items
 
 
 def build_daily_mission(user):
     """Build tasks only from content the learner currently owns."""
-    subscribed = has_journey_subscription(user)
-    review_codes = accessible_review_codes(user, subscribed=subscribed)
+    access_granted = has_journey_access(user)
+    review_codes = accessible_review_codes(user, access_granted=access_granted)
     due_items = select_due_review_items(user, limit=5, unit_codes=review_codes)
     due = [{"id": item.id, "skill": item.skill, "subskill": item.subskill} for item in due_items]
     summary = journey_summary(user)
@@ -17,7 +17,7 @@ def build_daily_mission(user):
         for unit in decorated_units(user, slug)
         if not unit["locked"]
         and unit["score"] < 80
-        and can_access_unit(user, unit["code"], subscribed=subscribed)
+        and can_access_unit(user, unit["code"], access_granted=access_granted)
     ), None)
     tasks = [{"kind": "review", "label": f"مراجعة {len(due)} عناصر", "count": len(due)}] if due else []
     if current:
@@ -33,5 +33,5 @@ def build_daily_mission(user):
         "weakest_skill": weakest,
         "current_unit": current,
         "tasks": tasks[:5],
-        "subscription_required": not subscribed and current is None,
+        "subscription_required": not access_granted and current is None,
     }

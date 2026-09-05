@@ -3,13 +3,14 @@ from datetime import timedelta
 from decimal import Decimal
 from unittest.mock import patch
 
+from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
 from english_path.models import ReviewItem, UnitProgress
-from english_path.services.access import ENTITLEMENT, has_journey_subscription, journey_plan
+from english_path.services.access import ENTITLEMENT, has_journey_access, has_journey_subscription, journey_plan
 from english_path.services.daily_mission import build_daily_mission
 from phonics.models import PaymentOrder, UserSubscription, activate_subscription_from_payment
 from phonics.payments.moyasar import MoyasarInvoice
@@ -52,6 +53,63 @@ class EnglishJourneyPlanTests(TestCase):
         response = self.client.post(reverse("english_path:submit_unit_quiz", args=("a1-2",)), data=json.dumps({"answers": {}}), content_type="application/json")
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.json()["error"], "english_journey_subscription_required")
+
+    def test_developer_preview_group_bypasses_subscription_but_not_mastery(self):
+        developer = get_user_model().objects.create_user(
+            username="journey-developer",
+            email="preview-user@example.com",
+            password="safe-test-password",
+        )
+        preview_group = Group.objects.create(name="English Journey Preview")
+        developer.groups.add(preview_group)
+        self.client.force_login(developer)
+
+        self.assertTrue(has_journey_access(developer))
+        self.assertFalse(has_journey_subscription(developer))
+        self.assertFalse(UserSubscription.objects.filter(user=developer).exists())
+        self.assertNotIn(ENTITLEMENT, get_user_entitlements(developer, synchronize=False).entitlements)
+        self.assertNotIn("word_games", get_user_entitlements(developer, synchronize=False).entitlements)
+        overview = self.client.get(reverse("english_path:overview"))
+        self.assertTrue(overview.context["preview_access"])
+        self.assertTrue(overview.context["journey_access"])
+        self.assertFalse(overview.context["journey_subscribed"])
+        self.assertRedirects(
+            self.client.get(reverse("english_path:unit", args=("a1-2",))),
+            reverse("english_path:level", args=("a1",)),
+        )
+
+        UnitProgress.objects.create(user=developer, unit_code="A1.1", score=80, status="mastered")
+        self.assertEqual(self.client.get(reverse("english_path:unit", args=("a1-2",))).status_code, 200)
+
+        developer.groups.remove(preview_group)
+        self.assertFalse(has_journey_access(developer))
+        self.assertRedirects(
+            self.client.get(reverse("english_path:unit", args=("a1-2",))),
+            reverse("english_path:level", args=("a1",)),
+        )
+
+    def test_normal_user_cannot_enable_preview_through_request_or_url(self):
+        self.assertFalse(has_journey_subscription(self.user))
+        response = self.client.get(
+            reverse("english_path:unit", args=("a1-2",)),
+            {"preview_access": "true", "group": "English Journey Preview"},
+        )
+        self.assertRedirects(response, reverse("english_path:level", args=("a1",)))
+        response = self.client.post(
+            reverse("english_path:submit_unit_quiz", args=("a1-2",)),
+            data=json.dumps({"answers": {}, "preview_access": True, "group": "English Journey Preview"}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()["error"], "english_journey_subscription_required")
+        self.assertFalse(self.user.groups.exists())
+
+    def test_preview_group_does_not_bypass_feature_flag(self):
+        preview_user = get_user_model().objects.create_user(username="flag-preview", password="safe-test-password")
+        preview_user.groups.create(name="English Journey Preview")
+        self.client.force_login(preview_user)
+        with override_settings(ENGLISH_PATH_ENABLED=False):
+            self.assertEqual(self.client.get(reverse("english_path:overview")).status_code, 404)
 
     def test_subscription_and_mastery_are_independent_locks(self):
         grant_active_subscription(self.user, PLAN_ENGLISH_JOURNEY)
