@@ -1,7 +1,7 @@
 {% extends "english_path/base.html" %}
 {% block title %}رحلة تعلم الإنجليزية{% endblock %}
 {% block content %}
-<section class="journey-card next-card"><div><p class="journey-kicker">{{ journey_plan.name }}</p><h2>Full Journey: {{ journey_plan.price_sar|floatformat:0 }} SAR</h2><p>A1.1 مجانية. الباقة الكاملة تشمل A1 + A2 · 20 Units · Vocabulary · Grammar · Listening · Speaking · Reading · Writing · Games · Smart Review · Final Challenges.</p></div>{% if journey_subscribed %}<a class="journey-button primary" href="{% url 'english_path:dashboard' %}">تابع رحلتك</a>{% elif user.is_authenticated %}<a class="journey-button primary" href="{{ journey_checkout_url }}">ابدأ الرحلة الكاملة</a>{% else %}<a class="journey-button primary" href="{% url 'login' %}?next={{ journey_checkout_url|urlencode }}">سجل الدخول لبدء الرحلة الكاملة</a>{% endif %}</section>
+<section class="journey-card next-card"><div><p class="journey-kicker">{{ journey_plan.name }}</p><h2>Full Journey: {{ journey_plan.price_sar|floatformat:0 }} SAR</h2><p>A1.1 مجانية. الباقة الكاملة تشمل A1 + A2 · 20 Units · Vocabulary · Grammar · Listening · Speaking · Reading · Writing · Games · Smart Review · Final Challenges.</p></div>{% if journey_access %}<a class="journey-button primary" href="{% url 'english_path:dashboard' %}">تابع رحلتك</a>{% elif user.is_authenticated %}<a class="journey-button primary" href="{{ journey_checkout_url }}">ابدأ الرحلة الكاملة</a>{% else %}<a class="journey-button primary" href="{% url 'login' %}?next={{ journey_checkout_url|urlencode }}">سجل الدخول لبدء الرحلة الكاملة</a>{% endif %}</section>
 <section class="journey-hero">
   <div>
     <span class="journey-kicker">CEFR-Based Learning Path</span>
