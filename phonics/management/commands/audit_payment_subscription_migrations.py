@@ -4,7 +4,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from phonics.models import PaymentOrder, UserSubscription
-from phonics.plans import ADDON_PLAN_CODES, PAID_MAIN_PLAN_CODES, PLAN_DIAMOND
+from phonics.plans import PAID_MAIN_PLAN_CODES, PLAN_CATALOG, PLAN_DIAMOND
 
 
 class Command(BaseCommand):
@@ -72,7 +72,10 @@ class Command(BaseCommand):
         add("overlapping_active_main", active.filter(user_id__in=overlapping_user_ids, plan_code__in=PAID_MAIN_PLAN_CODES))
 
         diamond_user_ids = active.filter(plan_code=PLAN_DIAMOND).values_list("user_id", flat=True)
-        add("diamond_with_active_addon", active.filter(user_id__in=diamond_user_ids, plan_code__in=ADDON_PLAN_CODES))
+        add("diamond_with_active_addon", active.filter(
+            user_id__in=diamond_user_ids,
+            plan_code__in=PLAN_CATALOG[PLAN_DIAMOND]["included_addons"],
+        ))
 
         add(
             "paid_without_activation",

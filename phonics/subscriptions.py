@@ -15,6 +15,7 @@ from .plans import (
     PLAN_BASIC,
     PLAN_CATALOG,
     PLAN_DIAMOND,
+    PLAN_ENGLISH_JOURNEY,
     PLAN_FREE,
     PLAN_VIP,
     get_plan_definition,
@@ -166,7 +167,8 @@ def get_user_entitlements(user, *, now=None, synchronize=True) -> EntitlementSna
         entitlements.update(PLAN_CATALOG[addon.plan_code]["features"])
     # Word games are a separate commercial entitlement: any active paid plan
     # (including standalone level subscriptions) can access them.
-    if any(subscription.plan_code in (set(PAID_MAIN_PLAN_CODES) | set(ADDON_PLAN_CODES)) for subscription in subscriptions):
+    word_games_plans = set(PAID_MAIN_PLAN_CODES) | (set(ADDON_PLAN_CODES) - {PLAN_ENGLISH_JOURNEY})
+    if any(subscription.plan_code in word_games_plans for subscription in subscriptions):
         entitlements.add("word_games")
     snapshot = EntitlementSnapshot(
         main_subscription,
@@ -213,9 +215,13 @@ def quote_plan_purchase(user, target_plan_code: str, *, now=None, lock=False) ->
     ).exists()
 
     target_original_price = Decimal(target["price"])
-    target_price = campaign_price(target_original_price).final_price
+    target_price = (
+        campaign_price(target_original_price).final_price
+        if target.get("campaign_eligible", True)
+        else target_original_price
+    )
     if target["category"] == "addon":
-        if current_main and current_main.plan_code == PLAN_DIAMOND:
+        if current_main and target_code in PLAN_CATALOG[current_main.plan_code]["included_addons"]:
             raise PurchaseNotAllowed("included_in_diamond", "هذه الإضافة مشمولة في باقتك الحالية.")
         current_addon = active_addons.get(target_code)
         if current_addon:
@@ -384,6 +390,9 @@ def subscription_dashboard_context(user, *, now=None) -> dict:
         content_labels.append("المستوى الثالث: قراءة CVC")
     if "level_four" in entitlement_set:
         content_labels.append("المستوى الرابع")
+
+    if "english_journey_a1_a2" in entitlement_set:
+        content_labels.append("English Journey A1–A2")
 
     renew_plan_code = ""
     if (

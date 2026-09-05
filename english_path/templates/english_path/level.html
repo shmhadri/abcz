@@ -1,0 +1,16 @@
+{% extends "english_path/base.html" %}
+{% block title %}{{ level.title }}{% endblock %}
+{% block content %}
+<header class="page-heading"><div><p class="journey-kicker">{{ level.code }} · CEFR-Based Path</p><h1>{{ level.icon }} {{ level.title }}</h1><p>كل وحدة: اكتشف ← تعلّم ← طبّق ← استمع ← تكلّم ← نفّذ المهمة.</p></div></header>
+{% if not journey_subscribed %}<section class="journey-card next-card"><div><p class="journey-kicker">{{ journey_plan.name }}</p><h2>Full Journey: {{ journey_plan.price_sar|floatformat:0 }} SAR</h2><p>A1.1 مجانية. الباقة الكاملة تشمل A1 + A2 · 20 Units · Vocabulary · Grammar · Listening · Speaking · Reading · Writing · Games · Smart Review · Final Challenges.</p></div><a class="journey-button primary" href="{{ journey_checkout_url }}">ابدأ الرحلة الكاملة</a></section>{% endif %}
+<section class="unit-path">
+{% for unit in units %}
+  <article class="unit-node {% if unit.subscription_locked or unit.locked %}locked{% elif unit.score >= 80 %}done{% endif %}">
+    <div class="node-number">{% if unit.score >= 80 %}✓{% else %}{{ forloop.counter }}{% endif %}</div>
+    <div><span class="journey-kicker">{{ unit.code }} {% if unit.code == 'A1.1' %}· تجربة مجانية{% endif %}{% if unit.progress %} · {{ unit.score }}%{% endif %}</span><h2>{{ unit.title }}</h2><p>{{ unit.topic }} · <b>{{ unit.grammar }}</b></p><small>🎯 {{ unit.mission }}</small></div>
+    {% if unit.subscription_locked %}<span class="lock-label">🔒 يتطلب الاشتراك</span>{% elif unit.locked %}<span class="lock-label">🔒 أكمل شرط الإتقان السابق</span>{% else %}<a class="journey-button {% if unit.score < 80 %}primary{% endif %}" href="{% url 'english_path:unit' unit.slug %}">{% if unit.progress %}تابع التدريب{% else %}ابدأ الوحدة{% endif %}</a>{% endif %}
+  </article>
+{% endfor %}
+</section>
+{% if level.code == 'A1' %}<section class="journey-card next-card"><div><p class="journey-kicker">A1 Final Challenge</p><h2>اختبار مستقل للمهارات الست</h2><p>يتطلب اشتراكًا نشطًا وإتقان وحدات A1.</p></div>{% if not journey_subscribed %}<span class="lock-label">🔒 يتطلب الاشتراك</span>{% elif final_unlocked %}<a class="journey-button primary" href="{% url 'english_path:a1_final' %}">ابدأ التحدي النهائي</a>{% else %}<span class="lock-label">🔒 أتقن A1.10 أولًا</span>{% endif %}</section>{% else %}<section class="journey-card next-card"><div><p class="journey-kicker">A2 Final Challenge</p><h2>تحدٍّ متكامل قبل تقرير الرحلة</h2><p>يتطلب اشتراكًا نشطًا وإتقان وحدات A2.</p></div>{% if not journey_subscribed %}<span class="lock-label">🔒 يتطلب الاشتراك</span>{% elif final_unlocked %}<a class="journey-button primary" href="{% url 'english_path:a2_final' %}">ابدأ تحدي A2</a>{% else %}<span class="lock-label">🔒 أتقن A2.10 أولًا</span>{% endif %}</section>{% endif %}
+{% endblock %}

@@ -1272,7 +1272,7 @@ def activate_subscription_from_payment(payment_order):
         if not locked_order.can_activate():
             raise ValidationError("Payment order is not paid or approved.")
 
-        from .plans import ADDON_PLAN_CODES, PAID_MAIN_PLAN_CODES, PLAN_DIAMOND
+        from .plans import PAID_MAIN_PLAN_CODES, PLAN_CATALOG, PLAN_DIAMOND
         from .subscriptions import synchronize_user_subscription_compatibility
 
         now = timezone.now()
@@ -1353,8 +1353,9 @@ def activate_subscription_from_payment(payment_order):
         )
 
         if target_plan_code == PLAN_DIAMOND:
+            included_addons = set(PLAN_CATALOG[PLAN_DIAMOND]["included_addons"])
             for item in subscriptions:
-                if item.plan_code in ADDON_PLAN_CODES and item.status == UserSubscription.Status.ACTIVE:
+                if item.plan_code in included_addons and item.status == UserSubscription.Status.ACTIVE:
                     item.status = UserSubscription.Status.CANCELED
                     item.save(update_fields=["status", "updated_at"])
 

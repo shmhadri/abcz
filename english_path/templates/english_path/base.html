@@ -1,0 +1,31 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include "includes/site_icons.html" %}
+  <title>{% block title %}Smart English Journey{% endblock %} | ABCZ</title>
+  <link rel="stylesheet" href="{% static 'css/site_public.css' %}">
+  <link rel="stylesheet" href="{% static 'english_path/journey.css' %}">
+  <link rel="stylesheet" href="{% static 'english_path/accessibility.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="journey-body">
+  <main class="journey-shell">
+    {% include "includes/public_nav.html" %}
+    <nav class="journey-nav" aria-label="مسار الإنجليزية">
+      <a href="{% url 'english_path:overview' %}">الرحلة</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'english_path:dashboard' %}">مهمتي اليوم</a>
+        <a href="{% url 'english_path:level' 'a1' %}">A1</a>
+        <a href="{% url 'english_path:level' 'a2' %}">A2</a>
+        <a href="{% url 'english_path:review' %}">مراجعتي</a>
+      {% endif %}
+    </nav>
+    {% block content %}{% endblock %}
+  </main>
+  <script src="{% static 'english_path/journey.js' %}" defer></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
