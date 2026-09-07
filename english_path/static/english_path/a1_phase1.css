@@ -1,0 +1,216 @@
+/* Focused A1 quality fixes. Kept separate so the established visual design remains intact. */
+:root {
+  --j-cyan: #087f78;
+}
+
+[lang="en"],
+[dir="ltr"],
+.english-content {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
+.unit-node.locked {
+  opacity: 1;
+  background: #f3f6fa;
+  border-color: #c7d4e2;
+}
+
+.unit-node.locked .node-number {
+  background: #dfe7f0;
+  color: #52677c;
+}
+
+.unit-node.locked p,
+.unit-node.locked .lock-label,
+.save-word {
+  color: #52677c;
+}
+
+.journey-nav a,
+.journey-button,
+.site-nav .nav-link,
+.site-nav .btn,
+.site-nav .brand,
+.rich-word > button:first-child,
+.arabic-toggle,
+.save-word,
+.shadow-list button,
+.shadow-list label,
+.writing-checklist label,
+.mission-steps label,
+.game-tabs button,
+.match-board button,
+.token-bank button,
+.built-sentence button,
+.listen-inline,
+.transcript summary,
+.rich-panel details summary {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.rich-word > button:first-child,
+.shadow-list button {
+  min-width: 44px;
+  display: inline-grid;
+  place-items: center;
+}
+
+.rich-steps {
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.rich-steps button {
+  scroll-snap-align: center;
+}
+
+.unit-hero-heading > div:first-child,
+.objective-card > div,
+.rich-panel {
+  min-width: 0;
+}
+
+.rich-panel[data-rich-panel="grammar"] h2,
+.rich-panel[data-rich-panel="grammar"] .question-forms,
+.rich-panel[data-rich-panel="grammar"] .micro-lab p,
+.rich-panel[data-rich-panel="listen"] .activity-question p:first-child,
+.rich-panel[data-rich-panel="read"] h2,
+.rich-panel[data-rich-panel="read"] .activity-question p:first-child,
+.rich-panel[data-rich-panel="write"] h2,
+.rich-panel[data-rich-panel="mission"] > p,
+.rich-panel[data-rich-panel="mission"] label,
+.unit-quiz legend b,
+.quiz-options span,
+.game-tabs b,
+.game-tabs small,
+.skill-game > h3,
+.skill-game > p,
+.similar-question .choice-row {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
+.writing-checklist label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.token-bank,
+.built-sentence {
+  flex-wrap: wrap;
+}
+
+.quiz-options label,
+.choice-row button,
+.game-tabs button,
+.match-board button,
+.token-bank button,
+.built-sentence button {
+  overflow-wrap: anywhere;
+}
+
+.journey-button:focus-visible,
+.rich-steps button:focus-visible,
+.choice-row button:focus-visible,
+.quiz-options label:has(input:focus-visible),
+.rich-word button:focus-visible,
+.shadow-list button:focus-visible,
+.game-tabs button:focus-visible,
+.match-board button:focus-visible,
+.token-bank button:focus-visible,
+.built-sentence button:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #c78300;
+  outline-offset: 3px;
+}
+
+@media (max-width: 800px) {
+  .journey-shell {
+    width: min(100% - 18px, 1160px);
+  }
+
+  .page-heading,
+  .next-card {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .unit-node {
+    grid-template-columns: 52px minmax(0, 1fr);
+  }
+
+  .unit-node .journey-button,
+  .lock-label {
+    grid-column: 1 / -1;
+  }
+
+  .objective-card,
+  .objective-card ul,
+  .writing-frames {
+    grid-template-columns: 1fr;
+  }
+
+  .rich-word-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .question-forms,
+  .activity-questions,
+  .game-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .shadow-list article {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .shadow-list label {
+    grid-column: 1 / -1;
+  }
+
+  .rich-steps {
+    top: 68px;
+  }
+
+  .match-board {
+    gap: 10px;
+  }
+
+  .rich-panel {
+    padding: clamp(20px, 5vw, 36px);
+  }
+}
+
+@media (max-width: 430px) {
+  .rich-word-grid,
+  .match-board {
+    grid-template-columns: 1fr;
+  }
+
+  .scene-card {
+    height: 160px;
+    gap: 10px;
+  }
+
+  .scene-avatar {
+    font-size: 3.5rem;
+  }
+
+  .speech-bubble {
+    padding: 14px 20px;
+    font-size: 1.5rem;
+  }
+
+  .rich-panel {
+    border-radius: 20px;
+    padding: 20px 16px;
+  }
+}

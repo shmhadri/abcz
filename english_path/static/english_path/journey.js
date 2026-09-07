@@ -17,7 +17,12 @@
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(button.dataset.speak);
-    utterance.lang = 'en-US';
+    const isA1 = Boolean(document.querySelector('.a1-local-state'));
+    utterance.lang = isA1 ? 'en-GB' : 'en-US';
+    if (isA1) {
+      const voices = window.speechSynthesis.getVoices();
+      utterance.voice = voices.find((voice) => voice.lang.toLowerCase() === 'en-gb') || voices.find((voice) => voice.lang.toLowerCase().startsWith('en')) || null;
+    }
     window.speechSynthesis.speak(utterance);
   }));
   const configNode = document.querySelector('#unit-config');

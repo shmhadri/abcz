@@ -8,6 +8,7 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.crypto import salted_hmac
 from django.views.decorators.http import require_POST
 from phonics.security import rate_limit
 
@@ -15,6 +16,7 @@ from english_path.models import AssessmentResult, ReviewItem, ReviewSession
 from english_path.services.a1_final import RUBRICS as A1_FINAL_RUBRICS
 from english_path.services.a1_final import grade as grade_a1_final
 from english_path.services.a1_final import public_questions as public_a1_final_questions
+from english_path.services.a1_phase3 import A1_READINESS_REVIEW
 from english_path.services.a2_final import RUBRICS as A2_FINAL_RUBRICS
 from english_path.services.a2_final import TASKS as A2_FINAL_TASKS
 from english_path.services.a2_final import grade as grade_a2_final
@@ -68,6 +70,41 @@ def _educationally_locked(user, unit):
     return next(item for item in decorated_units(user, level_slug) if item["code"] == unit["code"])["locked"]
 
 
+def _local_state_scope(user):
+    """Return an opaque, user-specific namespace for non-sensitive browser state."""
+    return salted_hmac("english_path.a1_local_state", str(user.pk)).hexdigest()[:20]
+
+
+def _available_a1_units(user):
+    plan_context = _plan_context(user)
+    return decorate_subscription_access(
+        decorated_units(user, "a1"), access_granted=plan_context["journey_access"]
+    )
+
+
+def _a1_neighbors(user, unit_code):
+    units = _available_a1_units(user)
+    index = next((position for position, item in enumerate(units) if item["code"] == unit_code), None)
+    if index is None:
+        return None, None
+
+    def available(position):
+        if not 0 <= position < len(units):
+            return None
+        candidate = units[position]
+        return None if candidate["locked"] or candidate["subscription_locked"] else candidate
+
+    return available(index - 1), available(index + 1)
+
+
+def _a1_continue_unit(units):
+    available = [item for item in units if not item["locked"] and not item["subscription_locked"]]
+    in_progress = [item for item in available if item["progress"] and item["score"] < 80]
+    if in_progress:
+        return max(in_progress, key=lambda item: item["progress"].last_activity_at)
+    return next((item for item in available if item["score"] < 80), available[-1] if available else None)
+
+
 @feature_enabled
 def overview(request):
     return render(request, "english_path/overview.html", {"levels": LEVELS.values(), **_plan_context(request.user)})
@@ -93,7 +130,10 @@ def level_detail(request, level_slug):
     plan_context = _plan_context(request.user)
     units = decorate_subscription_access(decorated_units(request.user, level_slug.lower()), access_granted=plan_context["journey_access"])
     final_unlocked = (level_slug.lower() == "a1" and a1_course_complete(request.user)) or (level_slug.lower() == "a2" and a2_course_complete(request.user))
-    return render(request, "english_path/level.html", {"level": level, "units": units, "final_unlocked": final_unlocked, **plan_context})
+    a1_context = {}
+    if level_slug.lower() == "a1":
+        a1_context = {"continue_unit": _a1_continue_unit(units), "local_state_scope": _local_state_scope(request.user), "readiness_review": A1_READINESS_REVIEW}
+    return render(request, "english_path/level.html", {"level": level, "units": units, "final_unlocked": final_unlocked, **a1_context, **plan_context})
 
 
 @feature_enabled
@@ -114,7 +154,16 @@ def unit_detail(request, unit_slug):
         return render(request, "english_path/unit.html", {"unit": selected, "level": LEVELS[level_slug], "content": selected, "sentence_tokens": ()})
     safe_content = public_unit(content)
     sentence_tokens = tuple(reversed(content["grammar"]["examples"][0].split()))
-    return render(request, "english_path/unit.html", {"unit": selected, "level": LEVELS[level_slug], "content": safe_content, "sentence_tokens": sentence_tokens})
+    a1_context = {}
+    if content["level"] == "A1":
+        previous_unit, next_unit = _a1_neighbors(request.user, unit["code"])
+        a1_context = {
+            "previous_unit": previous_unit,
+            "next_unit": next_unit,
+            "has_later_unit": content["order"] < len(LEVELS["a1"]["units"]),
+            "local_state_scope": _local_state_scope(request.user),
+        }
+    return render(request, "english_path/unit.html", {"unit": selected, "level": LEVELS[level_slug], "content": safe_content, "sentence_tokens": sentence_tokens, **a1_context})
 
 
 def _payload(request):
@@ -174,7 +223,15 @@ def submit_unit_quiz(request, unit_slug):
     except ValueError:
         return JsonResponse({"error": "invalid_answers"}, status=400)
     progress = record_unit_result(request.user, unit["code"], result["score"], result["skills"], result.pop("mistakes"))
-    return JsonResponse({"ok": True, **result, "best_score": progress.score})
+    response = {"ok": True, **result, "best_score": progress.score}
+    if content["level"] == "A1" and result["mastered"]:
+        _, next_unit = _a1_neighbors(request.user, unit["code"])
+        if next_unit:
+            response["next_unit"] = {
+                "title": next_unit["title"],
+                "url": reverse("english_path:unit", args=(next_unit["slug"],)),
+            }
+    return JsonResponse(response)
 
 
 @feature_enabled

@@ -12,19 +12,23 @@ def grade_quiz(unit, answers):
         if selected and selected not in question["choices"]:
             raise ValueError("invalid answer choice")
         correct = selected == question["answer"]
-        totals[question["skill"]][0] += int(correct)
-        totals[question["skill"]][1] += 1
+        if question.get("productive_score", True):
+            totals[question["skill"]][0] += int(correct)
+            totals[question["skill"]][1] += 1
         item = {"id": question["id"], "correct": correct, "selected": selected, "correct_answer": question["answer"], "why": question["why_correct"], "clue": question["clue"]}
         if not correct:
             item["why_wrong"] = question["why_each_wrong"].get(selected, "لم تختر إجابة. اقرأ الدليل ثم حاول مرة أخرى.")
             similar = question["similar_question"]
             item["similar"] = {"id": question["id"], "prompt": similar["prompt"], "choices": similar["choices"]}
+            if similar.get("spoken"):
+                item["similar"]["spoken"] = similar["spoken"]
             mistakes.append({"key": f"{unit['code']}-{question['id']}", "skill": question["skill"], "subskill": question["subskill"], "difficulty": question["difficulty"], "prompt": question["prompt"], "answer": question["answer"]})
         feedback.append(item)
     correct_count = sum(item["correct"] for item in feedback)
     score = round(correct_count / len(feedback) * 100)
     skills = {skill: round(got / count * 100) if count else 0 for skill, (got, count) in totals.items()}
-    return {"score": score, "mastered": score >= 80, "skills": skills, "feedback": feedback, "mistakes": mistakes}
+    productive_practice = [skill for skill in ("speaking", "writing") if any(question["skill"] == skill and not question.get("productive_score", True) for question in unit["quiz"])]
+    return {"score": score, "mastered": score >= 80, "skills": skills, "productive_practice": productive_practice, "feedback": feedback, "mistakes": mistakes}
 
 
 def grade_similar(unit, question_id, selected):

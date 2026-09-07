@@ -1,0 +1,144 @@
+.unit-route-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.unit-route-nav .journey-button {
+  flex: 1 1 180px;
+  gap: 5px;
+  text-align: center;
+}
+
+.unit-route-nav .disabled-nav {
+  color: #52677c;
+  background: #edf1f5;
+  border-color: #c7d4e2;
+}
+
+.section-progress {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--j-line);
+  border-radius: 16px;
+}
+
+.section-progress > div:first-child,
+.section-controls,
+.continue-learning {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.section-progress-track {
+  height: 10px;
+  overflow: hidden;
+  background: #dce7f5;
+  border-radius: 999px;
+}
+
+.section-progress-track i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: #087f78;
+  border-radius: inherit;
+  transition: width .2s ease;
+}
+
+.section-controls .journey-button {
+  min-width: 150px;
+}
+
+.section-controls button:disabled {
+  cursor: not-allowed;
+  color: #52677c;
+  background: #edf1f5;
+  border-color: #c7d4e2;
+}
+
+.rich-steps button.visited::after {
+  content: " •";
+  font-weight: 900;
+}
+
+.rich-steps button.completed::after {
+  content: " ✓";
+}
+
+.rich-steps button.completed {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.continue-learning {
+  margin-bottom: 22px;
+  border-inline-start: 5px solid #087f78;
+}
+
+.continue-learning h2,
+.continue-learning p {
+  margin: 5px 0;
+}
+
+.draft-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: -8px 0 16px;
+  color: #52677c;
+  font-size: .9rem;
+}
+
+.request-error {
+  padding: 12px 14px;
+  color: #812b28;
+  background: #fff0ef;
+  border: 1px solid #d96c68;
+  border-radius: 12px;
+}
+
+.completion-next {
+  margin-top: 18px;
+  color: #17324d;
+}
+
+@media (max-width: 430px) {
+  .unit-route-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .unit-route-nav .journey-button,
+  .section-controls .journey-button {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .section-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 350px) {
+  .unit-route-nav {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-progress-track i {
+    transition: none;
+  }
+}
