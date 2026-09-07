@@ -39,6 +39,12 @@ def validate_unit(source):
         raise UnitSchemaError(f"{unit['code']}: incomplete reading activity")
     if len(unit["games"]) < 3 or len(unit["quiz"]) != 10:
         raise UnitSchemaError(f"{unit['code']}: exactly 10 quiz questions and at least 3 games are required")
+    for game in unit["games"]:
+        if game.get("type") != "missing_word":
+            continue
+        choices = tuple(game.get("choices", ()))
+        if "___" not in game.get("prompt", "") or len(choices) != len(set(choices)) or choices.count(game.get("answer")) != 1:
+            raise UnitSchemaError(f"{unit['code']}: missing word needs one unambiguous answer")
     question_ids = set()
     quiz_skills = set()
     for question in unit["quiz"]:
@@ -55,10 +61,68 @@ def validate_unit(source):
         similar = question["similar_question"]
         if similar.get("answer") not in similar.get("choices", ()):
             raise UnitSchemaError(f"{unit['code']}: invalid similar question")
+        if unit["level"] == "A1" and question["skill"] == "listening":
+            if not question.get("spoken") or not similar.get("spoken"):
+                raise UnitSchemaError(f"{unit['code']}: listening quiz audio is required")
         question_ids.add(question["id"])
         quiz_skills.add(question["skill"])
     if len(quiz_skills) < 4:
         raise UnitSchemaError(f"{unit['code']}: quiz must assess at least four skills")
+    if unit.get("phase3_version"):
+        if unit["level"] != "A1":
+            raise UnitSchemaError(f"{unit['code']}: phase 3 enrichment is A1-only")
+        if not 3 <= len(unit["can_do_statements"]) <= 4 or any(not goal.startswith("I can ") for goal in unit["can_do_statements"]):
+            raise UnitSchemaError(f"{unit['code']}: phase 3 needs 3-4 consistent Can-Do goals")
+        if len(unit.get("useful_expressions", ())) < 3 or any(not {"expression", "arabic", "example"}.issubset(item) for item in unit.get("useful_expressions", ())):
+            raise UnitSchemaError(f"{unit['code']}: useful expressions are incomplete")
+        if any(item.get("group") != "core" for item in unit["vocabulary"]):
+            raise UnitSchemaError(f"{unit['code']}: core vocabulary grouping is required")
+        if any(item.get("audio", {}).get("lang") != "en-GB" for item in unit["vocabulary"]):
+            raise UnitSchemaError(f"{unit['code']}: British English vocabulary audio metadata is required")
+        vocabulary_words = [item["word"].strip().casefold() for item in unit["vocabulary"]]
+        if len(vocabulary_words) != len(set(vocabulary_words)):
+            raise UnitSchemaError(f"{unit['code']}: duplicate core vocabulary")
+        expected_earlier = {f"A1.{number}" for number in range(1, unit["order"])}
+        if not set(unit.get("review_from", ())).issubset(expected_earlier):
+            raise UnitSchemaError(f"{unit['code']}: spiral review must only reference earlier A1 units")
+        review_items = unit.get("spiral_review", {}).get("items", ())
+        if unit["order"] > 1 and (not unit.get("review_from") or len(review_items) != 2):
+            raise UnitSchemaError(f"{unit['code']}: phase 3 needs a focused 80/20 spiral review")
+        for item in review_items:
+            choices = tuple(item.get("choices", ()))
+            if len(choices) != len(set(choices)) or choices.count(item.get("answer")) != 1:
+                raise UnitSchemaError(f"{unit['code']}: invalid spiral review answer")
+        practice = unit["grammar"].get("practice", ())
+        required_stages = {"Choose", "Complete", "Build sentence", "Correct mistake", "Use it in context"}
+        if {item.get("stage") for item in practice} != required_stages:
+            raise UnitSchemaError(f"{unit['code']}: incomplete grammar practice sequence")
+        if len(unit["listening"].get("stages", ())) != 3 or not unit["listening"].get("gist_question"):
+            raise UnitSchemaError(f"{unit['code']}: three-stage listening is required")
+        gist = unit["listening"]["gist_question"]
+        if tuple(gist.get("choices", ())).count(gist.get("answer")) != 1:
+            raise UnitSchemaError(f"{unit['code']}: invalid listening gist answer")
+        for activity in (*unit["listening"]["questions"], *unit["reading"]["questions"]):
+            choices = tuple(activity.get("choices", ()))
+            if len(choices) != len(set(choices)) or choices.count(activity.get("answer")) != 1:
+                raise UnitSchemaError(f"{unit['code']}: lesson activity must have one unique answer")
+        speaking = unit["speaking"]
+        if not speaking.get("answer_question") or not speaking.get("mini_challenge") or len(speaking.get("rubric", ())) != 4 or not speaking.get("pronunciation_focus"):
+            raise UnitSchemaError(f"{unit['code']}: productive speaking sequence is incomplete")
+        allowed_reading_types = {"True / False", "Choose", "Match", "Who?", "Which?", "Where?", "What?", "When?", "Why?", "How?", "How many?", "Whose?", "Sequence", "Find information"}
+        if any(item.get("question_type") not in allowed_reading_types for item in unit["reading"]["questions"]):
+            raise UnitSchemaError(f"{unit['code']}: reading question type is missing")
+        writing = unit["writing"]
+        if not writing.get("guided") or not writing.get("semi_guided") or not writing.get("independent") or not writing.get("productive_practice"):
+            raise UnitSchemaError(f"{unit['code']}: three-stage writing is incomplete")
+        for game in unit["games"]:
+            if game.get("choices"):
+                choices = tuple(game["choices"])
+                if len(choices) != len(set(choices)) or choices.count(game.get("answer")) != 1:
+                    raise UnitSchemaError(f"{unit['code']}: game must have one unique answer")
+        if any(question.get("productive_score") is not (question["skill"] not in {"speaking", "writing"}) for question in unit["quiz"]):
+            raise UnitSchemaError(f"{unit['code']}: productive practice cannot receive an automatic skill score")
+        if unit["code"] == "A1.10" and not unit["grammar"].get("functional_chunks"):
+            raise UnitSchemaError("A1.10: did-question chunks must be taught before use")
     if unit["level"] == "A2":
         for field in ("review_from", "arabic_support"):
             if not unit.get(field):

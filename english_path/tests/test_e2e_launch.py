@@ -485,7 +485,7 @@ class EnglishJourneyLaunchE2ETests(TestCase):
         pricing = self.client.get(reverse("pricing"))
         for text in (
             "English Journey A1–A2",
-            "20 Units",
+            "30 وحدة إجمالًا",
             "30 يومًا",
             "Vocabulary",
             "Grammar",
@@ -508,7 +508,7 @@ class EnglishJourneyLaunchE2ETests(TestCase):
             "English Journey A1",
             "A1.1",
             "39",
-            "20 Units",
+            "إجمالي الرحلة 30 وحدة",
             "Vocabulary",
             "Grammar",
             "Listening",

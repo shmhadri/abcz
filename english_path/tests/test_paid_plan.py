@@ -148,7 +148,7 @@ class EnglishJourneyPlanTests(TestCase):
         self.assertNotContains(response, "PAID PROMPT")
 
     def test_final_challenges_require_both_subscription_and_mastery(self):
-        for order in range(1, 11):
+        for order in range(1, 21):
             UnitProgress.objects.create(user=self.user, unit_code=f"A1.{order}", score=100, status="excellent")
         self.assertRedirects(self.client.get(reverse("english_path:a1_final")), reverse("english_path:level", args=("a1",)))
         response = self.client.post(reverse("english_path:submit_a1_final"), data={})

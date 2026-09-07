@@ -22,7 +22,7 @@ class A2JourneyTests(TestCase):
         grant_active_subscription(self.user, "english_journey")
 
     def pass_a1(self):
-        for order in range(1, 11):
+        for order in range(1, 21):
             UnitProgress.objects.create(user=self.user, unit_code=f"A1.{order}", score=100, status="excellent")
         AssessmentResult.objects.create(user=self.user, assessment_type="a1_final", level="A1 Master", score=100, skill_scores={skill: 100 for skill in ("vocabulary", "grammar", "reading", "listening", "speaking", "writing")})
 
@@ -126,7 +126,7 @@ class A2JourneyTests(TestCase):
         self.assertIn("/accounts/login/", self.client.get(reverse("english_path:journey_completion")).url)
 
     def test_a1_content_remains_registered(self):
-        self.assertEqual(len(all_a1_units()), 10)
+        self.assertEqual(len(all_a1_units()), 20)
         self.assertEqual(get_unit_content("a1-1")["code"], "A1.1")
 
 

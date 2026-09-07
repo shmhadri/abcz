@@ -1,0 +1,5 @@
+<section class="journey-card readiness-review">
+  <div class="section-title"><div><p class="journey-kicker" lang="en" dir="ltr">A1 Readiness Review</p><h2>مراجعة متوازنة قبل التحدي النهائي</h2></div><a class="journey-button" href="{% url 'english_path:review' %}">🎯 راجع أخطائي</a></div>
+  <p>راجع المهارات الست باختصار. التحدث والكتابة ممارسة ذاتية ولا يحصلان على درجة آلية.</p>
+  <div class="readiness-grid">{% for item in readiness_review %}<details><summary><span>{{ item.icon }}</span> <b lang="en" dir="ltr">{{ item.skill }}</b></summary><p lang="en" dir="ltr">{{ item.task }}</p><small>{{ item.mode }}</small></details>{% endfor %}</div>
+</section>

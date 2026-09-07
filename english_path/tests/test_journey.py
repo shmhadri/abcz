@@ -10,8 +10,9 @@ from english_path.models import AssessmentResult, ReviewItem, ReviewSession, Uni
 from english_path.services.a1_unit_1 import QUIZ
 from english_path.services.a1_final import QUESTIONS as FINAL_QUESTIONS
 from english_path.services.daily_mission import build_daily_mission
+from english_path.services.grading import grade_quiz
 from english_path.services.unit_schema import UnitSchemaError, public_unit, validate_unit
-from english_path.services.units import all_a1_units, get_unit_content
+from english_path.services.units import all_a1_units, all_a2_units, get_unit_content
 from phonics.tests.subscription_helpers import grant_active_subscription
 
 
@@ -121,8 +122,51 @@ class JourneyAccessTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["score"], 100)
         self.assertTrue(response.json()["mastered"])
+        self.assertEqual(response.json()["next_unit"]["url"], reverse("english_path:unit", args=("a1-2",)))
         self.assertEqual(UnitProgress.objects.get(user=self.user, unit_code="A1.1").score, 100)
         self.assertEqual(self.client.get(reverse("english_path:unit", args=("a1-2",))).status_code, 200)
+
+    def test_a1_unit_navigation_uses_safe_named_routes(self):
+        self.client.force_login(self.user)
+        UnitProgress.objects.create(user=self.user, unit_code="A1.1", score=85, status="mastered")
+        response = self.client.get(reverse("english_path:unit", args=("a1-2",)))
+        self.assertContains(response, f'href="{reverse("index")}"')
+        self.assertContains(response, f'href="{reverse("english_path:level", args=("a1",))}"')
+        self.assertContains(response, f'href="{reverse("english_path:unit", args=("a1-1",))}"')
+        self.assertNotContains(response, f'href="{reverse("english_path:unit", args=("a1-3",))}"')
+
+    def test_a1_level_has_continue_learning_with_safe_server_fallback(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("english_path:level", args=("a1",)))
+        self.assertContains(response, "Continue Learning")
+        self.assertContains(response, f'data-continue-link href="{reverse("english_path:unit", args=("a1-1",))}"')
+        self.assertContains(response, "data-storage-scope")
+
+    def test_phase_two_controls_and_storage_are_a1_only(self):
+        self.client.force_login(self.user)
+        a1 = self.client.get(reverse("english_path:unit", args=("a1-1",)))
+        self.assertContains(a1, "data-section-count")
+        self.assertContains(a1, "data-clear-draft")
+        self.assertContains(a1, "a1_phase2.css")
+        a2_level = self.client.get(reverse("english_path:level", args=("a2",)))
+        self.assertNotContains(a2_level, "Continue Learning")
+        self.assertNotContains(a2_level, "a1_phase2.css")
+
+    def test_completion_cta_never_bypasses_subscription_access(self):
+        free_user = get_user_model().objects.create_user(username="free-phase-two", password="safe-test-password")
+        self.client.force_login(free_user)
+        answers = {question["id"]: question["answer"] for question in QUIZ}
+        response = self.client.post(
+            reverse("english_path:submit_unit_quiz", args=("a1-1",)),
+            data=json.dumps({"answers": answers}),
+            content_type="application/json",
+        )
+        self.assertTrue(response.json()["mastered"])
+        self.assertNotIn("next_unit", response.json())
+        self.assertRedirects(
+            self.client.get(reverse("english_path:unit", args=("a1-2",))),
+            reverse("english_path:level", args=("a1",)),
+        )
 
     def test_score_spoof_does_not_unlock_next_unit(self):
         self.client.force_login(self.user)
@@ -169,6 +213,139 @@ class JourneyAccessTests(TestCase):
             response = self.client.get(reverse("english_path:unit", args=(unit["code"].lower().replace(".", "-"),)))
             self.assertEqual(response.status_code, 200, unit["code"])
             self.assertContains(response, escape(unit["title"]))
+
+    def test_phase_three_curriculum_contract_for_every_a1_unit(self):
+        for unit in all_a1_units():
+            self.assertEqual(unit["phase3_version"], 1, unit["code"])
+            self.assertEqual(len(unit["can_do_statements"]), 4, unit["code"])
+            self.assertTrue(all(goal.startswith("I can ") for goal in unit["can_do_statements"]), unit["code"])
+            self.assertGreaterEqual(len(unit["useful_expressions"]), 3, unit["code"])
+            self.assertTrue(all(item["group"] == "core" for item in unit["vocabulary"]), unit["code"])
+            self.assertTrue(all(item.get("audio", {}).get("lang") == "en-GB" for item in unit["vocabulary"]), unit["code"])
+            self.assertEqual(
+                [item["stage"] for item in unit["grammar"]["practice"]],
+                ["Choose", "Complete", "Build sentence", "Correct mistake", "Use it in context"],
+                unit["code"],
+            )
+            self.assertEqual(len(unit["listening"]["stages"]), 3, unit["code"])
+            self.assertEqual(len(unit["speaking"]["rubric"]), 4, unit["code"])
+            self.assertTrue(unit["writing"]["guided"] and unit["writing"]["semi_guided"] and unit["writing"]["independent"], unit["code"])
+            self.assertGreaterEqual(len(unit["games"]), 4, unit["code"])
+            self.assertTrue(
+                {"speaking", "listening", "vocabulary", "grammar"}.issubset(
+                    set(unit["mission"]["integrated_skills"])
+                )
+            )
+
+    def test_spiral_review_only_uses_earlier_a1_units_and_stays_focused(self):
+        for unit in all_a1_units():
+            earlier = {f"A1.{order}" for order in range(1, unit["order"])}
+            self.assertTrue(set(unit["review_from"]).issubset(earlier), unit["code"])
+            expected_count = 0 if unit["order"] == 1 else 2
+            self.assertEqual(len(unit["spiral_review"]["items"]), expected_count, unit["code"])
+            if expected_count:
+                self.assertEqual(unit["spiral_review"]["ratio"], "80/20", unit["code"])
+
+    def test_phase_three_choice_activities_have_one_unique_answer(self):
+        for unit in all_a1_units():
+            activities = [unit["listening"]["gist_question"], *unit["spiral_review"]["items"]]
+            activities.extend(item for item in unit["grammar"]["practice"] if item.get("choices"))
+            activities.extend(game for game in unit["games"] if game.get("choices"))
+            for activity in activities:
+                self.assertEqual(len(activity["choices"]), len(set(activity["choices"])), unit["code"])
+                self.assertEqual(activity["choices"].count(activity["answer"]), 1, unit["code"])
+
+    def test_productive_practice_is_not_reported_as_automatic_skill_score(self):
+        unit = get_unit_content("a1-1")
+        answers = {question["id"]: question["answer"] for question in unit["quiz"]}
+        result = grade_quiz(unit, answers)
+        self.assertEqual(result["score"], 100)
+        self.assertEqual(result["skills"]["speaking"], 0)
+        self.assertEqual(result["skills"]["writing"], 0)
+        self.assertEqual(result["productive_practice"], ["speaking", "writing"])
+        for question in unit["quiz"]:
+            if question["skill"] in {"speaking", "writing"}:
+                self.assertFalse(question["productive_score"])
+
+    def test_phase_three_corrects_identified_language_defects(self):
+        serialised = {unit["code"]: json.dumps(unit, ensure_ascii=False) for unit in all_a1_units()}
+        self.assertNotIn("They takes are", serialised["A1.5"])
+        self.assertIn("Would you like some juice?", serialised["A1.6"])
+        self.assertNotIn("Two windows is plural", serialised["A1.7"])
+        self.assertIn("swim and ride a bike", serialised["A1.9"])
+        self.assertIn("Use did + base verb", serialised["A1.10"])
+
+    def test_phase_four_removes_ungrammatical_explanation_phrases(self):
+        serialised = json.dumps(all_a1_units(), ensure_ascii=False)
+        banned = (
+            "I takes am", "You takes are", "She takes is", "He takes is",
+            "She takes doesn’t", "He takes doesn’t", "He takes Does",
+            "Two windows is plural", "Three chairs is plural",
+            "Plural two beds takes", "One table takes there is",
+            "question takes there", "Those takes are", "they takes were",
+            "We takes were", "I takes was", "She takes was",
+            "takes base verb",
+        )
+        for phrase in banned:
+            self.assertNotIn(phrase, serialised, phrase)
+
+    def test_phase_four_removes_ambiguous_or_culturally_specific_distractors(self):
+        food = get_unit_content("a1-6")
+        self.assertIn("eat rather than drink", next(item for item in food["quiz"] if item["id"] == "v1")["similar_question"]["prompt"])
+        self.assertNotIn("Would you like any", json.dumps(food, ensure_ascii=False))
+        home = get_unit_content("a1-7")
+        sleep_choices = next(item for item in home["quiz"] if item["id"] == "v2")["similar_question"]["choices"]
+        self.assertEqual(sleep_choices, ("bed", "table", "window"))
+        self.assertNotIn("between desk and bed", json.dumps(home, ensure_ascii=False))
+        weekend = get_unit_content("a1-10")
+        prompt = next(item for item in weekend["quiz"] if item["id"] == "v1")["similar_question"]["prompt"]
+        self.assertNotIn("Saturday and Sunday", prompt)
+        self.assertIn("تجاوز الحديقة سيرًا", json.dumps(get_unit_content("a1-8"), ensure_ascii=False))
+
+    def test_phase_three_ui_and_readiness_review_are_a1_only(self):
+        self.client.force_login(self.user)
+        a1 = self.client.get(reverse("english_path:unit", args=("a1-1",)))
+        for marker in ("a1_phase3.css", "Listen for gist", "data-transcript-locked", "speaking-rubric", "Guided Writing", "Auto-scored language choice"):
+            self.assertContains(a1, marker)
+        level = self.client.get(reverse("english_path:level", args=("a1",)))
+        self.assertContains(level, "A1 Readiness Review")
+        self.assertContains(level, reverse("english_path:review"))
+        self.assertTrue(all("phase3_version" not in unit for unit in all_a2_units()))
+        a2_level = self.client.get(reverse("english_path:level", args=("a2",)))
+        self.assertNotContains(a2_level, "a1_phase3.css")
+        self.assertNotContains(a2_level, "A1 Readiness Review")
+
+    def test_every_a1_listening_quiz_has_primary_and_follow_up_audio(self):
+        for unit in all_a1_units():
+            listening_questions = [question for question in unit["quiz"] if question["skill"] == "listening"]
+            self.assertTrue(listening_questions, unit["code"])
+            for question in listening_questions:
+                self.assertTrue(question.get("spoken"), f"{unit['code']} {question['id']} primary audio")
+                self.assertTrue(question["similar_question"].get("spoken"), f"{unit['code']} {question['id']} follow-up audio")
+                self.assertNotIn(question["spoken"], question["prompt"])
+
+    def test_every_a1_missing_word_game_has_one_explicit_answer(self):
+        for unit in all_a1_units():
+            games = [game for game in unit["games"] if game["type"] == "missing_word"]
+            self.assertEqual(len(games), 1, unit["code"])
+            game = games[0]
+            self.assertIn("___", game["prompt"])
+            self.assertEqual(game["choices"].count(game["answer"]), 1)
+            self.assertEqual(len(game["choices"]), len(set(game["choices"])))
+
+    def test_wrong_listening_answer_returns_audio_for_similar_question(self):
+        self.client.force_login(self.user)
+        UnitProgress.objects.create(user=self.user, unit_code="A1.1", score=85, status="mastered")
+        content = get_unit_content("a1-2")
+        answers = {question["id"]: question["answer"] for question in content["quiz"]}
+        answers["l1"] = "doctor"
+        response = self.client.post(
+            reverse("english_path:submit_unit_quiz", args=("a1-2",)),
+            data=json.dumps({"answers": answers}),
+            content_type="application/json",
+        )
+        feedback = next(item for item in response.json()["feedback"] if item["id"] == "l1")
+        self.assertEqual(feedback["similar"]["spoken"], "Her mother is a doctor.")
 
     def test_public_unit_never_contains_quiz_answer_keys(self):
         safe = public_unit(get_unit_content("a1-4"))
@@ -221,7 +398,7 @@ class JourneyAccessTests(TestCase):
 
     def test_a1_final_is_independent_and_unlocks_a2_server_side(self):
         self.client.force_login(self.user)
-        for order in range(1, 11):
+        for order in range(1, 21):
             UnitProgress.objects.create(user=self.user, unit_code=f"A1.{order}", score=100, status="excellent")
         answers = {item["id"]: item["answer"] for item in FINAL_QUESTIONS}
         data = {**answers, "speaking": ["0", "1", "2", "3"], "writing": ["0", "1", "2", "3"]}
@@ -240,7 +417,7 @@ class JourneyAccessTests(TestCase):
 
     def test_failed_a1_final_creates_targeted_remediation_and_keeps_a2_locked(self):
         self.client.force_login(self.user)
-        for order in range(1, 11):
+        for order in range(1, 21):
             UnitProgress.objects.create(user=self.user, unit_code=f"A1.{order}", score=100, status="excellent")
         response = self.client.post(reverse("english_path:submit_a1_final"), data={})
         self.assertRedirects(response, reverse("english_path:a1_final"))
