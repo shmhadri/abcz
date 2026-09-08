@@ -101,14 +101,14 @@ class LettersContentTests(SimpleTestCase):
         self.assertIn('/letters/A/external-games/', html)
         self.assertIn('/letters/${letter}/external-games/', html)
 
-    def test_letters_layout_uses_four_learning_levels(self):
+    def test_letters_layout_uses_five_learning_levels(self):
         html = self.letters_html.read_text(encoding="utf-8", errors="ignore")
         css = self.letters_css.read_text(encoding="utf-8", errors="ignore")
 
         self.assertIn('class="learning-levels-nav"', html)
-        self.assertEqual(html.count('class="learning-level-link'), 4)
-        self.assertEqual(html.count("data-learning-level="), 4)
-        self.assertEqual(html.count("data-menu-learning-level="), 4)
+        self.assertEqual(html.count('class="learning-level-link'), 5)
+        self.assertEqual(html.count("data-learning-level="), 5)
+        self.assertEqual(html.count("data-menu-learning-level="), 5)
         self.assertIn("المستوى الأول", html)
         self.assertIn("الحروف الإنجليزية", html)
         self.assertIn("المستوى الثاني", html)
@@ -117,9 +117,12 @@ class LettersContentTests(SimpleTestCase):
         self.assertIn("قراءة CVC", html)
         self.assertIn("المستوى الرابع", html)
         self.assertIn("التأسيس الإنجليزي", html)
+        self.assertIn("المستوى الخامس", html)
+        self.assertIn("English Journey A1–A2", html)
         self.assertIn("{% url 'sounds' %}", html)
         self.assertIn("{% url 'cvc_reading' %}", html)
         self.assertIn("{% url 'level_four' %}", html)
+        self.assertIn("{% url 'english_path:overview' %}", html)
         self.assertIn('class="menu-item learning-menu-item is-active"', html)
         self.assertIn("learning-level-link", css)
         self.assertIn("learning-menu-item.is-active", css)

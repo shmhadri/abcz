@@ -63,6 +63,7 @@
                 <ul class="landing-nav-links">
                     <li><a href="#how-it-works">كيف تعمل المنصة</a></li>
                     <li><a href="#levels">المستويات التعليمية</a></li>
+                    <li><a href="{% url 'english_path:overview' %}">المستوى الخامس</a></li>
                     <li><a href="#features">المميزات</a></li>
                     <li><a href="#special-offer">العرض الخاص</a></li>
                     <li><a href="{% url 'pricing' %}">الباقات</a></li>
@@ -340,13 +341,13 @@
             </div>
         </section>
 
-        <!-- 4-Level Curriculum Cards -->
+        <!-- 5-Level Curriculum Cards -->
         <section class="landing-section" id="levels">
             <div class="landing-container">
                 <div class="landing-split-header">
                     <div class="landing-section-header">
                         <span class="landing-kicker">المنهج الدراسي المتكامل</span>
-                        <h2 class="landing-section-title">أربعة مستويات متدرجة تصنع فارقاً حقيقياً</h2>
+                        <h2 class="landing-section-title">خمسة مستويات متدرجة تصنع فارقاً حقيقياً</h2>
                     </div>
                     <a class="landing-split-link" href="{% url 'levels' %}">
                         <span>استعراض كافة تفاصيل المستويات</span>
@@ -439,6 +440,28 @@
                         </ul>
                         <a class="landing-level-cta" href="{% url 'level_four' %}">
                             <span>استكشف المستوى المتقدم</span>
+                            <span aria-hidden="true">←</span>
+                        </a>
+                    </article>
+
+                    <!-- Level 5 -->
+                    <article class="landing-level-card level-5">
+                        <div class="landing-level-accent"></div>
+                        <span class="landing-level-tag">المستوى 5 • A1 + A2</span>
+                        <h3 lang="en" dir="ltr">English Journey A1–A2</h3>
+                        <p class="landing-level-desc">رحلة متدرجة من 20 وحدة A1 إلى 10 وحدات A2، تجمع المفردات والقواعد والاستماع والتحدث والقراءة والكتابة.</p>
+                        <ul class="landing-level-list">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                <span>A1.1 مجانية للتجربة</span>
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                <span>30 وحدة مع مراجعة واختبارات إتقان</span>
+                            </li>
+                        </ul>
+                        <a class="landing-level-cta" href="{% url 'english_path:overview' %}">
+                            <span>ابدأ المستوى الخامس</span>
                             <span aria-hidden="true">←</span>
                         </a>
                     </article>

@@ -1244,7 +1244,7 @@ button {
    ========================================================================== */
 .landing-levels-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 22px;
 }
 
@@ -1278,6 +1278,7 @@ button {
 .level-2 .landing-level-accent { background: linear-gradient(90deg, #10b981, #34d399); }
 .level-3 .landing-level-accent { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .level-4 .landing-level-accent { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+.level-5 .landing-level-accent { background: linear-gradient(90deg, #0f766e, #22d3ee); }
 
 .landing-level-tag {
   display: inline-flex;
@@ -1294,6 +1295,7 @@ button {
 .level-2 .landing-level-tag { background: #ecfdf5; color: #047857; }
 .level-3 .landing-level-tag { background: #fffbeb; color: #b45309; }
 .level-4 .landing-level-tag { background: #f5f3ff; color: #6d28d9; }
+.level-5 .landing-level-tag { background: #ecfeff; color: #0f766e; }
 
 .landing-level-card h3 {
   font-size: 22px;
@@ -1338,6 +1340,7 @@ button {
 .level-2 .landing-level-list li svg { color: #059669; }
 .level-3 .landing-level-list li svg { color: #d97706; }
 .level-4 .landing-level-list li svg { color: #7c3aed; }
+.level-5 .landing-level-list li svg { color: #0f766e; }
 
 .landing-level-cta {
   margin-top: auto;
@@ -1362,6 +1365,8 @@ button {
 
 .level-4 .landing-level-cta { background: #f5f3ff; color: #6d28d9; }
 .level-4 .landing-level-cta:hover { background: #7c3aed; color: #ffffff; }
+.level-5 .landing-level-cta { background: #ecfeff; color: #0f766e; }
+.level-5 .landing-level-cta:hover { background: #0f766e; color: #ffffff; }
 
 /* ==========================================================================
    Section: Interactive Features Grid

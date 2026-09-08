@@ -164,7 +164,7 @@
 
         .level-roadmap {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: 12px;
             margin: 0 0 46px;
             order: 3;
@@ -572,11 +572,11 @@
 
         {% if english_journey_enabled %}
         <section class="level-subscriptions journey-subscription" aria-labelledby="english-journey-title">
-            <h2 id="english-journey-title">English Journey A1–A2</h2>
+            <h2 id="english-journey-title">المستوى الخامس: English Journey A1–A2</h2>
             <p>A1.1 مجانية للتجربة، ثم أكمل رحلة A1 وA2 كاملة ضمن اشتراك واحد.</p>
             <div class="plans journey-plans">
                 <article class="plan" id="english-journey-plan">
-                    <span class="plan-badge">A1 + A2</span>
+                    <span class="plan-badge">المستوى الخامس · A1 + A2</span>
                     <div>
                         <div class="plan-label">30 وحدة إجمالًا: 20 A1 + 10 A2 · 30 يومًا</div>
                         <h2>{{ english_journey_plan.name }}</h2>
@@ -591,6 +591,7 @@
                         <li>Smart Review.</li>
                         <li>Final Challenges.</li>
                     </ul>
+                    <a class="plan-action secondary" href="{% url 'english_path:overview' %}">استكشف المستوى الخامس</a>
                     {% if english_journey_action.allowed %}
                         <a class="plan-action" href="{% url 'checkout' 'english_journey' %}">ابدأ الرحلة الكاملة{% if english_journey_action.amount_due %} - {{ english_journey_action.amount_due }} ريال{% endif %}</a>
                     {% else %}<span class="plan-action secondary">{{ english_journey_action.label }}</span>{% endif %}
@@ -616,6 +617,12 @@
                 <strong>المستوى الرابع</strong>
                 <span>قراءة واستماع وتحدث وكتابة</span>
             </div>
+            {% if english_journey_enabled %}
+            <div class="level-pill">
+                <strong>المستوى الخامس</strong>
+                <span>English Journey A1–A2</span>
+            </div>
+            {% endif %}
         </section>
 
         <section class="level-subscriptions" aria-label="اشتراكات المستويات">

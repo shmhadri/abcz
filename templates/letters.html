@@ -74,6 +74,13 @@
                             <small>التأسيس الإنجليزي</small>
                         </span>
                     </a>
+                    <a href="{% url 'english_path:overview' %}" class="learning-level-link" data-learning-level="5">
+                        <i class="fas fa-route"></i>
+                        <span class="learning-level-text">
+                            <strong>المستوى الخامس</strong>
+                            <small lang="en" dir="ltr">A1–A2 Journey</small>
+                        </span>
+                    </a>
                 </nav>
                 <a href="{% url 'placement_test' %}" class="btn btn-placement" title="اعرف مستواك الحالي في دقائق">
                     <i class="fas fa-clipboard-check"></i>
@@ -4678,6 +4685,13 @@ function sendAudioToServer(blob, letter){
             <span>
                 <strong>المستوى الرابع</strong>
                 <small>التأسيس الإنجليزي</small>
+            </span>
+        </a>
+        <a href="{% url 'english_path:overview' %}" class="menu-item learning-menu-item" data-menu-learning-level="5">
+            <i class="fas fa-route"></i>
+            <span>
+                <strong>المستوى الخامس</strong>
+                <small lang="en" dir="ltr">English Journey A1–A2</small>
             </span>
         </a>
         <a href="{% url 'placement_test' %}" class="menu-item menu-item-placement" data-menu-placement-test>
