@@ -271,7 +271,7 @@
                 {% if campaign.campaign_active %}
                 <div class="campaign-price-summary">
                     <div><span>السعر الأصلي</span><s>{{ campaign.original_price|floatformat:0 }} ريال</s></div>
-                    <div><span>خصم العودة للمدارس</span><b>{{ campaign.discount_percent }}%</b></div>
+                    <div><span>{{ campaign.arabic_name }}</span><b>{{ campaign.discount_percent }}%</b></div>
                     <div><span>السعر بعد العرض</span><b>{{ campaign.final_price|floatformat:0 }} ريال</b></div>
                     <div><span>الإجمالي للدفع</span><strong>{% if purchase_option.allowed %}{{ purchase_option.amount_due|floatformat:0 }}{% else %}{{ campaign.final_price|floatformat:0 }}{% endif %} ريال</strong></div>
                 </div>

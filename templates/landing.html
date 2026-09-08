@@ -93,13 +93,13 @@
     <main id="landing-content" tabindex="-1">
         <!-- Campaign Announcement Banner -->
         {% if campaign.campaign_active %}
-        <section class="landing-campaign" aria-label="عرض العودة للمدارس">
+        <section class="landing-campaign" aria-label="{{ campaign.arabic_name }}">
             <div class="landing-container landing-campaign-inner">
                 <div class="landing-campaign-content">
                     <span class="landing-campaign-badge">خصم {{ campaign.discount_percent }}%</span>
                     <div class="landing-campaign-text">
-                        <strong>🎒 عرض العودة للمدارس لفترة محدودة</strong>
-                        <p>ابدأ العام الدراسي بخطوة أقوى في الإنجليزية • ألعاب الكلمات متاحة لجميع المشتركين</p>
+                        <strong>🇸🇦 {{ campaign.arabic_name }} لفترة محدودة</strong>
+                        <p>احتفل باليوم الوطني بخطوة أقوى في الإنجليزية • ألعاب الكلمات متاحة لجميع المشتركين</p>
                     </div>
                 </div>
                 <a class="landing-button landing-button-primary" href="{% url 'pricing' %}">
