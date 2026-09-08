@@ -44,10 +44,12 @@ class BackToSchoolCampaignTests(TestCase):
 
     def test_pricing_and_checkout_show_whole_sar_campaign_details(self):
         pricing = self.client.get(reverse("pricing"))
-        self.assertContains(pricing, "عرض العودة للمدارس")
+        self.assertContains(pricing, "عرض اليوم الوطني")
+        self.assertNotContains(pricing, "عرض العودة للمدارس")
         self.assertContains(pricing, "خصم 20%")
         self.client.force_login(self.user)
         checkout = self.client.get(reverse("checkout", args=["vip"]))
+        self.assertContains(checkout, "عرض اليوم الوطني")
         self.assertContains(checkout, "السعر الأصلي")
         self.assertContains(checkout, "39 ريال")
         self.assertContains(checkout, "31 ريال")
