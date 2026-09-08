@@ -6441,6 +6441,15 @@ def levels(request):
             "button": "اشترك في المستوى الرابع",
             "url": reverse("pricing") + "#level-4-plan",
         },
+        {
+            "id": "level-5",
+            "title": "المستوى الخامس",
+            "subtitle": "English Journey A1–A2",
+            "description": "مسار CEFR متدرج يضم 20 وحدة A1 و10 وحدات A2 تغطي المهارات الست.",
+            "price": "A1.1 مجانية، والرحلة الكاملة 39 ريال لمدة 30 يومًا",
+            "button": "ابدأ المستوى الخامس",
+            "url": reverse("english_path:overview"),
+        },
     ]
     return render(request, "levels.html", {"level_cards": level_cards})
 
@@ -6553,10 +6562,24 @@ def build_curriculum_context():
             "link": "/level-four/",
             "button_text": "افتح المستوى الرابع",
         },
+        {
+            "order": 5,
+            "status": "available",
+            "title_en": "Level 5: English Journey A1–A2",
+            "title_ar": "المستوى الخامس: رحلة A1–A2",
+            "description_ar": "مسار CEFR متدرج من A1 إلى A2 يشمل المفردات والقواعد والاستماع والتحدث والقراءة والكتابة والألعاب والمراجعة.",
+            "unlock_condition": "A1.1 مجانية، وبقية الرحلة ضمن اشتراك English Journey.",
+            "mastery_goal": "إتقان كل وحدة بنسبة 80% قبل الانتقال التدريجي حتى التقييم النهائي.",
+            "certificate": "تقرير إكمال بعد إنهاء رحلة A1–A2.",
+            "lessons": ["Vocabulary", "Grammar", "Listening", "Speaking", "Reading", "Writing", "Games", "Review"],
+            "examples": ["A1 everyday communication", "A2 real-life communication"],
+            "link": "/english/",
+            "button_text": "افتح المستوى الخامس",
+        },
     ]
     return {
         "stages": stages,
-        "progress_steps": ["الحروف", "الصوتيات", "قراءة CVC", "التأسيس الإنجليزي"],
+        "progress_steps": ["الحروف", "الصوتيات", "قراءة CVC", "التأسيس الإنجليزي", "A1–A2"],
     }
 
 

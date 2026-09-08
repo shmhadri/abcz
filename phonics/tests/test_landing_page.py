@@ -30,9 +30,32 @@ class LandingPageTests(TestCase):
         for route_name in (
             "placement_test", "levels", "pricing", "login", "register", "letters",
             "sounds", "cvc_reading", "level_four", "curriculum", "privacy", "terms",
+            "english_path:overview",
         ):
             with self.subTest(route_name=route_name):
                 self.assertContains(response, reverse(route_name))
+
+    def test_landing_presents_english_journey_as_level_five(self):
+        response = self.client.get(reverse("index"))
+
+        self.assertContains(response, "المستوى 5 • A1 + A2")
+        self.assertContains(response, "ابدأ المستوى الخامس")
+        self.assertContains(response, reverse("english_path:overview"))
+
+    def test_levels_page_presents_english_journey_as_level_five(self):
+        response = self.client.get(reverse("levels"))
+
+        self.assertContains(response, "المستوى الخامس")
+        self.assertContains(response, "English Journey A1–A2")
+        self.assertContains(response, reverse("english_path:overview"))
+
+    @override_settings(ENGLISH_PATH_ENABLED=True)
+    def test_pricing_presents_english_journey_as_level_five(self):
+        response = self.client.get(reverse("pricing"))
+
+        self.assertContains(response, "المستوى الخامس: English Journey A1–A2")
+        self.assertContains(response, "استكشف المستوى الخامس")
+        self.assertContains(response, reverse("english_path:overview"))
 
     def test_landing_has_the_existing_letters_whatsapp_contact_link(self):
         response = self.client.get(reverse("index"))
