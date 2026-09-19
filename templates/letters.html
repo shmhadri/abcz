@@ -13,6 +13,7 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <link rel="stylesheet" href="{% static 'css/letters/letters.css' %}">
+    {% include "includes/tiktok_analytics.html" %}
 </head>
 <body data-phonics-user-id="{{ phonics_user_id|default:'' }}" data-phonics-user-email="{{ phonics_user_email|default:'' }}">
     <script>

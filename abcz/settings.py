@@ -33,9 +33,10 @@ IS_PRODUCTION = ENVIRONMENT == "production" or env_bool("RENDER", "False")
 DEBUG = env_bool("DEBUG", "False")
 TESTING = "test" in sys.argv
 
-# Temporary campaign switch. Set BACK_TO_SCHOOL_ENABLED=False to restore catalog prices.
+# Temporary National Day campaign switch. The legacy environment key remains
+# unchanged so production deployments keep their existing configuration.
 BACK_TO_SCHOOL_ENABLED = env_bool("BACK_TO_SCHOOL_ENABLED", "False" if TESTING else "True")
-BACK_TO_SCHOOL_DISCOUNT_PERCENT = 20
+BACK_TO_SCHOOL_DISCOUNT_PERCENT = int(os.getenv("BACK_TO_SCHOOL_DISCOUNT_PERCENT", "25"))
 
 SECRET_KEY = os.getenv("SECRET_KEY", "").strip()
 if not SECRET_KEY:
@@ -237,6 +238,7 @@ SECURE_PROXY_SSL_HEADER = None if DEBUG else ("HTTP_X_FORWARDED_PROTO", "https")
 
 RATE_LIMIT_LOGIN = int(os.getenv("RATE_LIMIT_LOGIN", "10"))
 RATE_LIMIT_REGISTER = int(os.getenv("RATE_LIMIT_REGISTER", "5"))
+RATE_LIMIT_PASSWORD_RESET = int(os.getenv("RATE_LIMIT_PASSWORD_RESET", "5"))
 RATE_LIMIT_WRITE = int(os.getenv("RATE_LIMIT_WRITE", "60"))
 RATE_LIMIT_UPLOAD = int(os.getenv("RATE_LIMIT_UPLOAD", "10"))
 RATE_LIMIT_PUBLIC_API = int(os.getenv("RATE_LIMIT_PUBLIC_API", "30"))
@@ -245,8 +247,12 @@ RATE_LIMIT_PAYMENT = int(os.getenv("RATE_LIMIT_PAYMENT", "10"))
 # Start in reporting mode; enforce only after production violation reports are reviewed.
 CSP_REPORT_ONLY = os.getenv(
     "CSP_REPORT_ONLY",
-    "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+    "default-src 'self'; script-src 'self' https://analytics.tiktok.com; "
+    "connect-src 'self' https://analytics.tiktok.com; object-src 'none'; "
+    "base-uri 'self'; frame-ancestors 'none'",
 ).strip()
+
+TIKTOK_PIXEL_ID = os.getenv("TIKTOK_PIXEL_ID", "").strip()
 
 # The new A1/A2 journey remains independently deployable while its content is
 # being completed. Enable with ENGLISH_PATH_ENABLED=True.
@@ -266,6 +272,26 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
+
+# Password-reset mail is printed only in local development. Production uses SMTP
+# and obtains every credential from the environment.
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    (
+        "django.core.mail.backends.smtp.EmailBackend"
+        if IS_PRODUCTION
+        else "django.core.mail.backends.console.EmailBackend"
+    ),
+).strip()
+EMAIL_HOST = os.getenv("EMAIL_HOST", "localhost").strip()
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "").strip()
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", "True")
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", "False")
+EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "10"))
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@smartlearningksa.com").strip()
+PASSWORD_RESET_TIMEOUT = int(os.getenv("PASSWORD_RESET_TIMEOUT", "3600"))
 
 
 DISABLE_AUTO_SEED = env_bool("DISABLE_AUTO_SEED", "False")

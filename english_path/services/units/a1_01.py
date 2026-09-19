@@ -6,12 +6,20 @@ from english_path.services.unit_schema import validate_unit
 
 def _question(item, number):
     similar = item["similar"]
+    similar_audio = {
+        "listening-name": "Hi, I’m Lina.",
+        "listening-country": "I’m from Oman.",
+    }
     return {
         "id": item["id"], "skill": item["skill"], "subskill": "greetings" if item["skill"] == "vocabulary" else "be" if item["skill"] == "grammar" else "personal-information",
         "difficulty": min(4, 1 + number // 3), "prompt": item["prompt"], "choices": item["choices"], "answer": item["answer"],
         "explanation_ar": item["why"], "why_correct": item["why"], "clue": item["why"],
         "why_each_wrong": {choice: item["wrong"].get(choice, f"{choice} لا يحقق معنى الجملة.") for choice in item["choices"] if choice != item["answer"]},
-        "similar_question": {"prompt": similar["prompt"], "choices": similar["choices"], "answer": similar["answer"], "why": similar["why"]},
+        "similar_question": {
+            "prompt": similar["prompt"], "choices": similar["choices"],
+            "answer": similar["answer"], "why": similar["why"],
+            **({"spoken": similar_audio[item["id"]]} if item["id"] in similar_audio else {}),
+        },
         **({"spoken": item["spoken"]} if item.get("spoken") else {}),
     }
 
@@ -35,7 +43,7 @@ UNIT = validate_unit({
     "games": (
         {**_lesson["games"][0], "type": "word_match"},
         {**_lesson["games"][1], "type": "sentence_builder"},
-        {**_lesson["games"][2], "type": "missing_word", "prompt": "Choose the correct sentence.", "choices": ("I am Sara.", "I is Sara.", "I are Sara."), "answer": "I am Sara."},
+        {**_lesson["games"][2], "type": "missing_word", "prompt": "I ___ Sara.", "choices": ("am", "is", "are"), "answer": "am"},
     ), "mission": {**_lesson["mission"], "real_world_task": _lesson["mission"]["brief"], "success_criteria": (_lesson["mission"]["success"],)},
     "quiz": tuple(_question(item, index) for index, item in enumerate(LEGACY_QUIZ, 1)),
 })

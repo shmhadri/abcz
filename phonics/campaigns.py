@@ -16,8 +16,8 @@ class CampaignPrice:
     final_price: Decimal
     discount_percent: int
     campaign_active: bool
-    name: str = "Back to School Offer"
-    arabic_name: str = "عرض العودة للمدارس"
+    name: str = "Saudi National Day Offer"
+    arabic_name: str = "عرض اليوم الوطني"
 
 
 def back_to_school_is_active() -> bool:
@@ -25,7 +25,7 @@ def back_to_school_is_active() -> bool:
 
 
 def back_to_school_discount_percent() -> int:
-    value = int(getattr(settings, "BACK_TO_SCHOOL_DISCOUNT_PERCENT", 20))
+    value = int(getattr(settings, "BACK_TO_SCHOOL_DISCOUNT_PERCENT", 25))
     return max(0, min(value, 100))
 
 

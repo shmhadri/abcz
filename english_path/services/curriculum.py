@@ -11,6 +11,16 @@ A1_UNITS = (
     ("A1.8", "Around Town", "Places and simple directions", "prepositions", "Help a visitor find a place"),
     ("A1.9", "I Can!", "Abilities and polite requests", "can/can't", "Ask for help and offer help"),
     ("A1.10", "Yesterday", "Finished events and level review", "basic Past Simple", "Tell a short story about yesterday"),
+    ("A1.11", "Numbers, Days & Dates", "Calendar information and important dates", "on/in · When is...?", "Plan a class event"),
+    ("A1.12", "Clothes & Colours", "Clothes, colours and getting ready", "be wearing · adjective + noun", "Describe and prepare an outfit"),
+    ("A1.13", "Weather & Seasons", "Weather reports, seasons and activities", "What's the weather like?", "Give today's weather report"),
+    ("A1.14", "Hobbies & Free Time", "Hobbies, preferences and invitations", "like/love + -ing", "Plan a free afternoon"),
+    ("A1.15", "Shopping", "Prices, sizes and polite purchases", "How much is/are...?", "Buy an outfit"),
+    ("A1.16", "School Life", "Subjects, timetables and school possessions", "have got / has got", "Build an ideal school day"),
+    ("A1.17", "People & Jobs", "Jobs, workplaces and simple descriptions", "be + a/an job", "Introduce a community helper"),
+    ("A1.18", "Countries & Nationalities", "Countries, nationalities and languages", "be from · be nationality", "Join an international club"),
+    ("A1.19", "Everyday English", "Help, clarification and messages", "polite requests", "Solve everyday communication problems"),
+    ("A1.20", "A1 Real-Life Challenge", "Integrated familiar A1 situations", "integrated A1 review", "Complete a community-day challenge"),
 )
 
 A2_UNITS = (

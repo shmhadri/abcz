@@ -12,11 +12,12 @@ from phonics.views import CHECKOUT_PLANS, create_payment_order_for_plan
 
 
 @override_settings(DISABLE_AUTO_SEED=True, BACK_TO_SCHOOL_ENABLED=True)
-class BackToSchoolCampaignTests(TestCase):
+class NationalDayCampaignTests(TestCase):
     expected_prices = {
-        "basic": ("19.00", "15"), "silver": ("27.00", "21"),
-        "vip": ("39.00", "31"), "diamond": ("50.00", "40"),
-        "level_3": ("15.00", "12"), "level_4": ("15.00", "12"),
+        "basic": ("19.00", "14"), "silver": ("27.00", "20"),
+        "vip": ("39.00", "29"), "diamond": ("50.00", "37"),
+        "level_3": ("15.00", "11"), "level_4": ("15.00", "11"),
+        "english_journey": ("39.00", "29"),
     }
 
     def setUp(self):
@@ -42,18 +43,22 @@ class BackToSchoolCampaignTests(TestCase):
                 order = create_payment_order_for_plan(self.user, CHECKOUT_PLANS[code], "moyasar", quote=quote)
                 self.assertEqual(order.amount_halalas, int(final) * 100)
 
-    def test_pricing_and_checkout_show_whole_sar_campaign_details(self):
+    def test_national_day_discount_is_shown_in_pricing_and_checkout(self):
         pricing = self.client.get(reverse("pricing"))
-        self.assertContains(pricing, "عرض العودة للمدارس")
-        self.assertContains(pricing, "خصم 20%")
+        self.assertContains(pricing, "عرض اليوم الوطني")
+        self.assertContains(pricing, "خصم 25%")
         self.client.force_login(self.user)
         checkout = self.client.get(reverse("checkout", args=["vip"]))
         self.assertContains(checkout, "السعر الأصلي")
-        self.assertContains(checkout, "39 ريال")
-        self.assertContains(checkout, "31 ريال")
+        self.assertContains(checkout, "عرض اليوم الوطني")
+        self.assertContains(checkout, "خصم 25%")
+        self.assertContains(checkout, "السعر بعد الخصم")
+        self.assertContains(checkout, "29 ريال")
 
     def test_word_games_are_available_to_every_active_paid_subscription(self):
         for code in self.expected_prices:
+            if code == "english_journey":
+                continue
             with self.subTest(code=code):
                 user = User.objects.create_user(username=f"word-{code}", password="StrongPass123!")
                 grant_active_subscription(user, code)

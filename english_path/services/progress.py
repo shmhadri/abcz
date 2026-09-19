@@ -20,7 +20,8 @@ def status_for(score):
 
 def a1_course_complete(user):
     mastered_codes = set(UnitProgress.objects.filter(user=user, unit_code__startswith="A1.", score__gte=80).values_list("unit_code", flat=True))
-    return all(f"A1.{order}" in mastered_codes for order in range(1, 11))
+    required_codes = {row[0] for row in LEVELS["a1"]["units"]}
+    return required_codes.issubset(mastered_codes)
 
 
 def a2_course_complete(user):

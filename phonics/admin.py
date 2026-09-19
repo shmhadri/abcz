@@ -5,8 +5,13 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from django.http import FileResponse, Http404
+from django.urls import path, reverse
+from django.utils.html import format_html
 from django.utils import timezone
 from datetime import timedelta
+import mimetypes
+import os
 import secrets
 
 from .admin_audit import log_admin_action
@@ -46,6 +51,15 @@ admin.site.unregister(Group)
 
 @admin.register(User)
 class AuditedUserAdmin(DjangoUserAdmin):
+    list_display = [
+        'username', 'email', 'first_name', 'last_name',
+        'is_active', 'is_staff', 'is_superuser',
+    ]
+    search_fields = ['username', 'email', 'first_name', 'last_name']
+    list_filter = ['is_active', 'is_staff', 'is_superuser', 'groups']
+    ordering = ['username']
+    list_per_page = 50
+
     def has_add_permission(self, request):
         return request.user.is_superuser
 
@@ -351,6 +365,62 @@ class PaymentOrderAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
             self.message_user(request, f'تم رفض {rejected} طلب/طلبات تحويل بنكي.')
         if skipped:
             self.message_user(request, f'تم تجاوز {skipped} طلب/طلبات غير قابلة للرفض.', level='warning')
+
+
+@admin.register(BankTransferProof)
+class BankTransferProofAdmin(ViewOnlyAdminMixin, admin.ModelAdmin):
+    list_display = [
+        'payment_order', 'user', 'amount_sar', 'bank_name', 'status',
+        'transferred_at', 'created_at', 'receipt_link',
+    ]
+    list_filter = ['status', 'bank_name', 'transferred_at', 'created_at']
+    search_fields = [
+        '=payment_order__id', 'payment_order__user__username',
+        'payment_order__user__email', 'sender_name', 'transfer_reference',
+    ]
+    readonly_fields = [field.name for field in BankTransferProof._meta.fields] + ['receipt_link']
+    list_select_related = ['payment_order', 'payment_order__user', 'user', 'reviewed_by']
+    date_hierarchy = 'created_at'
+    list_per_page = 50
+
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def get_urls(self):
+        return [
+            path(
+                '<path:object_id>/receipt/',
+                self.admin_site.admin_view(self.receipt_view),
+                name='phonics_banktransferproof_receipt',
+            ),
+        ] + super().get_urls()
+
+    @admin.display(description='Receipt')
+    def receipt_link(self, obj):
+        if not obj or not obj.pk or not obj.receipt_file:
+            return '—'
+        url = reverse('admin:phonics_banktransferproof_receipt', args=[obj.pk])
+        return format_html('<a href="{}" rel="noopener">عرض الإيصال بأمان</a>', url)
+
+    def receipt_view(self, request, object_id):
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        try:
+            proof = BankTransferProof.objects.get(pk=object_id)
+            receipt = proof.receipt_file
+            receipt.open('rb')
+        except (BankTransferProof.DoesNotExist, FileNotFoundError, OSError, ValueError):
+            raise Http404('Receipt not found')
+
+        filename = os.path.basename(receipt.name)
+        content_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+        response = FileResponse(receipt, content_type=content_type, filename=filename)
+        response['Cache-Control'] = 'private, no-store'
+        response['X-Content-Type-Options'] = 'nosniff'
+        return response
 
 
 @admin.register(BankTransferActivationCode)

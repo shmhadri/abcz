@@ -129,7 +129,7 @@ class EnglishJourneyLaunchE2ETests(TestCase):
         self.assertRedirects(locked, reverse("english_path:level", args=("a1",)))
         self.assertNotContains(locked, paid_content["reading"]["passage"])
         self.assertNotContains(locked, secret_answer)
-        self.assertContains(locked, "English Journey A1")
+        self.assertContains(locked, "A1–A2")
         self.assertContains(locked, "39")
         blocked_api = self.client.post(
             reverse("english_path:submit_unit_quiz", args=("a1-2",)),
@@ -479,13 +479,13 @@ class EnglishJourneyLaunchE2ETests(TestCase):
         self.assertEqual(UserSubscription.objects.filter(user=user, plan_code=PLAN_ENGLISH_JOURNEY).count(), 1)
         self.assertFalse(has_journey_subscription(other))
 
-    def test_paywall_and_checkout_show_one_product_without_campaign_or_old_price(self):
+    def test_paywall_and_checkout_show_one_product_with_campaign_price(self):
         user = self.create_user("paywall-ux")
         self.client.force_login(user)
         pricing = self.client.get(reverse("pricing"))
         for text in (
-            "English Journey A1–A2",
-            "20 Units",
+            "A1–A2",
+            "30 وحدة إجمالًا",
             "30 يومًا",
             "Vocabulary",
             "Grammar",
@@ -505,10 +505,10 @@ class EnglishJourneyLaunchE2ETests(TestCase):
         )
         level = self.client.get(reverse("english_path:level", args=("a1",)))
         for text in (
-            "English Journey A1",
+            "A1–A2",
             "A1.1",
             "39",
-            "20 Units",
+            "إجمالي الرحلة 30 وحدة",
             "Vocabulary",
             "Grammar",
             "Listening",
@@ -530,8 +530,8 @@ class EnglishJourneyLaunchE2ETests(TestCase):
         self.assertContains(checkout, "A1–A2")
         self.assertContains(checkout, "39")
         self.assertContains(checkout, "30")
-        self.assertNotContains(checkout, "90%")
-        self.assertFalse(checkout.context["campaign"]["campaign_active"])
+        self.assertContains(checkout, "90%")
+        self.assertTrue(checkout.context["campaign"]["campaign_active"])
         self.assertIn("@media (max-width: 820px)", checkout.content.decode())
 
     def test_subscription_query_count_does_not_scale_with_units_or_reviews(self):
@@ -568,4 +568,4 @@ class EnglishJourneyLaunchE2ETests(TestCase):
         with override_settings(ENGLISH_PATH_ENABLED=False):
             self.assertEqual(self.client.get(reverse("english_path:overview")).status_code, 404)
             self.assertEqual(self.client.get(reverse("checkout", args=(PLAN_ENGLISH_JOURNEY,))).status_code, 404)
-            self.assertNotContains(self.client.get(reverse("pricing")), "English Journey A1–A2")
+            self.assertNotContains(self.client.get(reverse("pricing")), "A1–A2")

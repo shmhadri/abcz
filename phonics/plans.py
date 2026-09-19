@@ -159,14 +159,13 @@ PLAN_CATALOG = {
     },
     PLAN_ENGLISH_JOURNEY: {
         "code": PLAN_ENGLISH_JOURNEY,
-        "name": "English Journey A1–A2",
+        "name": "A1–A2",
         "category": "addon",
         "rank": None,
         "price": Decimal("39.00"),
         "duration_days": 30,
         "included_addons": (),
         "features": ENGLISH_JOURNEY_FEATURE_KEYS,
-        "campaign_eligible": False,
     },
 }
 

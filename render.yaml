@@ -54,6 +54,10 @@ services:
         value: "10"
       - key: RATE_LIMIT_REGISTER
         value: "5"
+      - key: RATE_LIMIT_PASSWORD_RESET
+        value: "5"
+      - key: TIKTOK_PIXEL_ID
+        sync: false
       - key: RATE_LIMIT_WRITE
         value: "60"
       - key: RATE_LIMIT_UPLOAD
@@ -106,6 +110,24 @@ services:
         sync: false
       - key: GOOGLE_OAUTH_CLIENT_SECRET
         sync: false
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: EMAIL_USE_SSL
+        value: "False"
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+      - key: PASSWORD_RESET_TIMEOUT
+        value: "3600"
       - key: BANK_TRANSFER_ENABLED
         value: "False"
       - key: BANK_ACCOUNT_NAME

@@ -1,0 +1,9 @@
+{% if content.spiral_review.items %}
+<details class="phase3-disclosure spiral-review">
+  <summary>🌀 مراجعة ذكية من {{ content.review_from|join:" + " }} <small>20% مراجعة · 80% هدف الوحدة</small></summary>
+  <p>استرجع نقطتين فقط من الوحدات السابقة قبل بدء محتوى اليوم.</p>
+  <div class="activity-questions">
+    {% for item in content.spiral_review.items %}<article class="activity-question mini-check" data-answer="{{ item.answer }}"><p lang="en" dir="ltr">{{ item.prompt }}</p><div class="choice-row">{% for choice in item.choices %}<button type="button" lang="en" dir="ltr">{{ choice }}</button>{% endfor %}</div><p class="activity-feedback" aria-live="polite"></p></article>{% endfor %}
+  </div>
+</details>
+{% endif %}

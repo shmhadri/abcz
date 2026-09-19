@@ -21,6 +21,7 @@ from django.http import FileResponse, Http404, HttpResponse
 from django.urls import path, include
 
 from phonics.admin_views import operations_dashboard
+from phonics import password_reset as password_reset_views
 from phonics.sitemaps import sitemaps
 
 
@@ -90,5 +91,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('english/', include(('english_path.urls', 'english_path'), namespace='english_path')),
     path('', include('phonics.urls')),
+    path('accounts/password-reset/', password_reset_views.password_reset, name='password_reset'),
+    path('accounts/password-reset/done/', password_reset_views.password_reset_done, name='password_reset_done'),
+    path(
+        'accounts/password-reset/confirm/<uidb64>/<token>/',
+        password_reset_views.password_reset_confirm,
+        name='password_reset_confirm',
+    ),
+    path('accounts/password-reset/complete/', password_reset_views.password_reset_complete, name='password_reset_complete'),
     path('accounts/', include('allauth.urls')),
 ]

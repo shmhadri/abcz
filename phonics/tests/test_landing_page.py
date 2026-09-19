@@ -42,22 +42,18 @@ class LandingPageTests(TestCase):
         self.assertContains(response, 'class="landing-whatsapp-contact"')
         self.assertNotContains(response, '0530 637 886')
 
-    def test_landing_has_teacher_led_special_offer_registration(self):
+    def test_landing_has_responsive_national_day_offer_banner(self):
         response = self.client.get(reverse("index"))
 
         self.assertContains(response, 'id="special-offer"')
-        self.assertContains(response, "تأسيس الحروف الإنجليزية مع معلّم")
-        self.assertContains(response, "ثلاثة أيام في الأسبوع")
-        self.assertContains(response, "حساب على المنصة لمدة شهر")
-        self.assertContains(response, "بداية البرنامج في 5 سبتمبر")
-        self.assertContains(response, '<bdi>159</bdi>')
-        self.assertContains(response, '<bdi>200</bdi>')
-        self.assertContains(response, 'id="special-offer-form"')
-        self.assertContains(response, 'data-whatsapp-number="966530637886"')
-
-        for field_name in ("name", "age", "email", "phone"):
-            with self.subTest(field_name=field_name):
-                self.assertContains(response, f'name="{field_name}"')
+        self.assertContains(response, "🇸🇦 عرض اليوم الوطني لفترة محدودة")
+        self.assertContains(response, "احتفل باليوم الوطني بخطوة أقوى في الإنجليزية")
+        self.assertContains(response, "ألعاب الكلمات متاحة لجميع المشتركين")
+        self.assertContains(response, "static/images/special-offer-green.png")
+        self.assertContains(response, 'class="landing-campaign-action" href="/pricing/"')
+        self.assertNotContains(response, "تأسيس الحروف الإنجليزية مع معلّم")
+        self.assertNotContains(response, "159")
+        self.assertNotContains(response, 'id="special-offer-form"')
 
     def test_landing_does_not_expose_test_answers_or_sensitive_payment_content(self):
         html = self.client.get(reverse("index")).content.decode("utf-8").lower()
