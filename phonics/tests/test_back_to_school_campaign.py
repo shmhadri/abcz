@@ -49,6 +49,7 @@ class NationalDayCampaignTests(TestCase):
         self.assertContains(pricing, "خصم 25%")
         self.client.force_login(self.user)
         checkout = self.client.get(reverse("checkout", args=["vip"]))
+        self.assertContains(checkout, "عرض اليوم الوطني")
         self.assertContains(checkout, "السعر الأصلي")
         self.assertContains(checkout, "عرض اليوم الوطني")
         self.assertContains(checkout, "خصم 25%")
