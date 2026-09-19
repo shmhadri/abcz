@@ -123,6 +123,12 @@ from .subscriptions import (
     synchronize_user_subscription_compatibility,
 )
 from .campaigns import campaign_context_for_plan
+from .tiktok import (
+    REGISTRATION_SESSION_KEY,
+    event as tiktok_event,
+    product_payload as tiktok_product_payload,
+    template_context as tiktok_template_context,
+)
 
 
 PUBLIC_PAGE_CACHE_TIMEOUT = getattr(settings, "PUBLIC_PAGE_CACHE_TIMEOUT", 600)
@@ -401,8 +407,8 @@ CHECKOUT_PLANS = {
     },
     PLAN_ENGLISH_JOURNEY: {
         "code": PLAN_ENGLISH_JOURNEY,
-        "name": "English Journey A1–A2",
-        "name_ar": "رحلة الإنجليزية A1–A2",
+        "name": "A1–A2",
+        "name_ar": "A1–A2",
         "price_sar": PLAN_CATALOG[PLAN_ENGLISH_JOURNEY]["price"],
         "duration_days": PLAN_CATALOG[PLAN_ENGLISH_JOURNEY]["duration_days"],
         "description": "مسار واحد متكامل يفتح A1 وA2 مع التحديات النهائية والمراجعة الذكية.",
@@ -1864,14 +1870,17 @@ def register(request):
         with transaction.atomic():
             user = form.save()
         auth_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        request.session[REGISTRATION_SESSION_KEY] = True
         messages.success(request, "تم إنشاء الحساب وتسجيل الدخول بنجاح.")
         return redirect(safe_next_url or "letters")
 
-    return render(request, "accounts/register.html", {
+    context = {
         "form": form,
         "next_url": safe_next_url,
         "google_login_enabled": settings.GOOGLE_LOGIN_ENABLED,
-    })
+    }
+    context.update(tiktok_template_context(request))
+    return render(request, "accounts/register.html", context)
 
 
 @sensitive_post_parameters("password")
@@ -3077,9 +3086,11 @@ def profile_dashboard(request):
 @require_GET
 def landing(request):
     """Render the public marketing homepage without loading learning assets."""
-    return render(request, "landing.html", {
+    context = {
         "campaign": campaign_context_for_plan(PLAN_CATALOG[PLAN_BASIC]),
-    })
+    }
+    context.update(tiktok_template_context(request))
+    return render(request, "landing.html", context)
 
 
 @ensure_csrf_cookie
@@ -3091,7 +3102,7 @@ def index(request):
     is_vip_user = has_feature(request.user, "bird_tutor")
     level_one_plan = get_subscription_plan(request.user)
 
-    return render(request, "letters.html", {
+    context = {
         "is_authenticated": request.user.is_authenticated,
         "is_premium_user": has_feature(request.user, "letters_full"),
         "is_vip_user": is_vip_user,
@@ -3102,7 +3113,9 @@ def index(request):
         "phonics_user_email": request.user.email if request.user.is_authenticated else "",
         "student_profile_json": json.dumps(profile_payload, ensure_ascii=False),
         "bird_lottie_files_json": json.dumps(get_existing_bird_lottie_files(), ensure_ascii=False),
-    })
+    }
+    context.update(tiktok_template_context(request))
+    return render(request, "letters.html", context)
 
 
 SOUND_SYLLABLE_ROWS = [
@@ -5963,7 +5976,32 @@ def pricing(request):
             for code in CHECKOUT_PLANS
         }
         current_main_plan = None
-    return render(request, "pricing.html", {
+    contents = []
+    total_value = Decimal("0.00")
+    for code, plan in CHECKOUT_PLANS.items():
+        if code == PLAN_ENGLISH_JOURNEY and not english_journey_enabled:
+            continue
+        option = options[code]
+        if not option.get("allowed", False):
+            continue
+        amount = option.get("amount_due")
+        if amount is None:
+            amount = campaign_context_for_plan(PLAN_CATALOG[code])["final_price"]
+        contents.append({
+            "content_id": plan["code"],
+            "content_type": "product",
+            "content_name": plan["name"],
+        })
+        total_value += amount
+    analytics_events = []
+    if contents:
+        analytics_events.append(tiktok_event("ViewContent", {
+            "contents": contents,
+            "value": float(total_value),
+            "currency": "SAR",
+        }))
+
+    context = {
         "current_main_plan": current_main_plan,
         "basic_action": options[PLAN_BASIC],
         "silver_action": options[PLAN_SILVER],
@@ -5976,7 +6014,9 @@ def pricing(request):
         "english_journey_action": options[PLAN_ENGLISH_JOURNEY] if english_journey_enabled else None,
         "moyasar": moyasar_context(),
         "campaign": {code: campaign_context_for_plan(definition) for code, definition in PLAN_CATALOG.items() if code != PLAN_FREE},
-    })
+    }
+    context.update(tiktok_template_context(request, analytics_events))
+    return render(request, "pricing.html", context)
 
 
 @login_required
@@ -6005,14 +6045,27 @@ def checkout(request, plan_code):
             "label": label,
             "message": str(exc),
         }
-    return render(request, "checkout.html", {
+    analytics_events = []
+    if purchase_option["allowed"]:
+        payload = tiktok_product_payload(
+            plan_code=plan["code"],
+            plan_name=plan["name"],
+            value=purchase_option["amount_due"],
+        )
+        analytics_events = [
+            tiktok_event("ViewContent", payload),
+            tiktok_event("InitiateCheckout", payload),
+        ]
+    context = {
         "plan": plan,
         "purchase_option": purchase_option,
         "moyasar": moyasar_context(),
         "bank_transfer": bank_transfer_context(),
         "payment_methods": PAYMENT_METHODS,
         "campaign": campaign_context_for_plan(PLAN_CATALOG[plan["code"]]),
-    })
+    }
+    context.update(tiktok_template_context(request, analytics_events))
+    return render(request, "checkout.html", context)
 
 
 @login_required
@@ -6172,17 +6225,70 @@ def bank_transfer_activation(request):
 
 
 @login_required
+@ensure_csrf_cookie
 @require_GET
 def payment_success(request):
     order = None
     if (request.GET.get("order") or "").isdigit():
         order = get_owned_payment_order_or_404(request, request.GET["order"])
-    return render(request, "payment_status.html", payment_status_payload(
+    context = payment_status_payload(
         order,
         "success",
         "تم الدفع بنجاح",
         "تم تفعيل الاشتراك إذا كانت حالة الدفع مؤكدة من مزود الدفع.",
+    )
+    purchase_url = ""
+    if (
+        order
+        and order.provider == PaymentOrder.Provider.MOYASAR
+        and order.status == PaymentOrder.Status.PAID
+        and order.activated_at
+        and order.moyasar_payment_id
+        and not order.tiktok_purchase_claimed_at
+    ):
+        purchase_url = reverse("tiktok_purchase", args=[order.pk])
+    context.update(tiktok_template_context(
+        request,
+        purchase_url=purchase_url,
     ))
+    return render(request, "payment_status.html", context)
+
+
+@login_required
+@require_POST
+@rate_limit("tiktok-purchase", limit_setting="RATE_LIMIT_PAYMENT", default=10)
+def tiktok_purchase(request, order_id):
+    if (
+        not getattr(settings, "TIKTOK_PIXEL_ID", "")
+        or request.headers.get("X-Analytics-Marketing-Consent") != "granted"
+    ):
+        return HttpResponse(status=204)
+
+    claimed_at = timezone.now()
+    updated = (
+        PaymentOrder.objects.filter(
+            pk=order_id,
+            user=request.user,
+            provider=PaymentOrder.Provider.MOYASAR,
+            status=PaymentOrder.Status.PAID,
+            activated_at__isnull=False,
+            tiktok_purchase_claimed_at__isnull=True,
+        )
+        .exclude(moyasar_payment_id__isnull=True)
+        .exclude(moyasar_payment_id="")
+        .update(tiktok_purchase_claimed_at=claimed_at)
+    )
+    if not updated:
+        return HttpResponse(status=204)
+
+    order = PaymentOrder.objects.get(pk=order_id)
+    return JsonResponse({
+        "event": tiktok_event("Purchase", tiktok_product_payload(
+            plan_code=order.to_plan_code or order.plan_code,
+            plan_name=order.plan_name,
+            value=order.amount_sar,
+        )),
+    })
 
 
 @login_required
@@ -6191,12 +6297,14 @@ def payment_failed(request):
     order = None
     if (request.GET.get("order") or "").isdigit():
         order = get_owned_payment_order_or_404(request, request.GET["order"])
-    return render(request, "payment_status.html", payment_status_payload(
+    context = payment_status_payload(
         order,
         "failed",
         "لم تكتمل عملية الدفع",
         "يمكنك المحاولة مرة أخرى أو اختيار طريقة دفع أخرى.",
-    ))
+    )
+    context.update(tiktok_template_context(request))
+    return render(request, "payment_status.html", context)
 
 
 @login_required
@@ -6210,12 +6318,14 @@ def payment_pending(request):
         message = "تم رفع الإيصال والطلب قيد المراجعة. سيتم تفعيل الاشتراك بعد الاعتماد الإداري."
     elif order and order.status == PaymentOrder.Status.PAID_REQUIRES_REVIEW:
         message = "تم استلام الدفع ويجري التحقق من الترقية. لن تُمنح صلاحيات جديدة حتى تكتمل المراجعة."
-    return render(request, "payment_status.html", payment_status_payload(
+    context = payment_status_payload(
         order,
         "pending",
         "الدفع قيد المعالجة",
         message,
-    ))
+    )
+    context.update(tiktok_template_context(request))
+    return render(request, "payment_status.html", context)
 
 
 @login_required
@@ -6239,12 +6349,14 @@ def moyasar_callback(request):
             getattr(request, "request_id", "missing"),
             masked_invoice,
         )
-        return render(request, "payment_status.html", payment_status_payload(
+        context = payment_status_payload(
             None,
             "pending",
             "الدفع قيد التحقق",
             "تم استلام نتيجة الدفع، وجارٍ التحقق من العملية. لم يتم منح أي صلاحية حتى يكتمل التحقق.",
-        ), status=202)
+        )
+        context.update(tiktok_template_context(request))
+        return render(request, "payment_status.html", context, status=202)
 
     # Browser query values are deliberately ignored. Reconciliation uses only the
     # locally stored invoice ID and the server-to-server Moyasar response.
@@ -6443,11 +6555,11 @@ def levels(request):
         },
         {
             "id": "level-5",
-            "title": "المستوى الخامس",
-            "subtitle": "English Journey A1–A2",
+            "title": "A1–A2",
+            "subtitle": "مسار A1–A2",
             "description": "مسار CEFR متدرج يضم 20 وحدة A1 و10 وحدات A2 تغطي المهارات الست.",
             "price": "A1.1 مجانية، والرحلة الكاملة 39 ريال لمدة 30 يومًا",
-            "button": "ابدأ المستوى الخامس",
+            "button": "ابدأ A1–A2",
             "url": reverse("english_path:overview"),
         },
     ]
@@ -6498,10 +6610,12 @@ def placement_test(request):
         return JsonResponse(score_placement_test(answers))
 
     questions = public_placement_questions()
-    return render(request, "placement_test.html", {
+    context = {
         "questions": questions,
         "questions_json": json.dumps(questions, ensure_ascii=False),
-    })
+    }
+    context.update(tiktok_template_context(request))
+    return render(request, "placement_test.html", context)
 
 
 def build_curriculum_context():
@@ -6565,8 +6679,8 @@ def build_curriculum_context():
         {
             "order": 5,
             "status": "available",
-            "title_en": "Level 5: English Journey A1–A2",
-            "title_ar": "المستوى الخامس: رحلة A1–A2",
+            "title_en": "A1–A2",
+            "title_ar": "A1–A2",
             "description_ar": "مسار CEFR متدرج من A1 إلى A2 يشمل المفردات والقواعد والاستماع والتحدث والقراءة والكتابة والألعاب والمراجعة.",
             "unlock_condition": "A1.1 مجانية، وبقية الرحلة ضمن اشتراك English Journey.",
             "mastery_goal": "إتقان كل وحدة بنسبة 80% قبل الانتقال التدريجي حتى التقييم النهائي.",
@@ -6574,7 +6688,7 @@ def build_curriculum_context():
             "lessons": ["Vocabulary", "Grammar", "Listening", "Speaking", "Reading", "Writing", "Games", "Review"],
             "examples": ["A1 everyday communication", "A2 real-life communication"],
             "link": "/english/",
-            "button_text": "افتح المستوى الخامس",
+            "button_text": "افتح A1–A2",
         },
     ]
     return {

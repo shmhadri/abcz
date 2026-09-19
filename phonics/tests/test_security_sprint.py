@@ -88,5 +88,7 @@ class SecuritySprintTests(TestCase):
         response = self.client.get("/health/")
         self.assertEqual(
             response["Content-Security-Policy-Report-Only"],
-            "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+            "default-src 'self'; script-src 'self' https://analytics.tiktok.com; "
+            "connect-src 'self' https://analytics.tiktok.com; object-src 'none'; "
+            "base-uri 'self'; frame-ancestors 'none'",
         )

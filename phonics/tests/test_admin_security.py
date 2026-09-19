@@ -1,5 +1,6 @@
 from decimal import Decimal
 from io import StringIO
+from django.core.files.uploadedfile import SimpleUploadedFile
 from types import SimpleNamespace
 
 from django.contrib import admin
@@ -12,6 +13,7 @@ from django.urls import reverse
 from phonics.admin_audit import log_admin_action
 from phonics.models import (
     AdminAuditLog,
+    BankTransferProof,
     PaymentOrder,
     PaymentWebhookEvent,
     UserSubscription,
@@ -205,6 +207,38 @@ class AdminSecuritySprintTests(TestCase):
             model_admin = admin.site._registry[model]
             self.assertFalse(model_admin.has_delete_permission(request, instance))
             self.assertFalse(model_admin.has_change_permission(request, instance))
+
+    @override_settings(STORAGES={
+        'default': {'BACKEND': 'django.core.files.storage.memory.InMemoryStorage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    })
+    def test_bank_receipt_is_view_only_and_superuser_protected(self):
+        proof = BankTransferProof.objects.create(
+            payment_order=self.order,
+            user=self.customer,
+            bank_name='Test Bank',
+            sender_name='Test Sender',
+            transferred_at='2026-08-31',
+            amount_sar=Decimal('27.00'),
+            receipt_file=SimpleUploadedFile('receipt.pdf', b'%PDF-1.4 test', 'application/pdf'),
+        )
+        receipt_url = reverse('admin:phonics_banktransferproof_receipt', args=[proof.pk])
+
+        self.client.force_login(self.payment_manager)
+        self.assertEqual(self.client.get(receipt_url).status_code, 403)
+
+        self.client.force_login(self.superuser)
+        response = self.client.get(receipt_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('private', response['Cache-Control'])
+        self.assertIn('no-store', response['Cache-Control'])
+        self.assertEqual(response['X-Content-Type-Options'], 'nosniff')
+
+        request = RequestFactory().get('/admin/phonics/banktransferproof/')
+        request.user = self.superuser
+        model_admin = admin.site._registry[BankTransferProof]
+        self.assertFalse(model_admin.has_change_permission(request, proof))
+        self.assertFalse(model_admin.has_delete_permission(request, proof))
 
     def test_sensitive_user_change_creates_append_only_audit_entry(self):
         request = RequestFactory().post("/admin/auth/user/")

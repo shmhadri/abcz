@@ -162,6 +162,7 @@
                     <div class="auth-actions">
                         <button class="btn primary" type="submit">دخول</button>
                         <a class="btn" href="{% url 'register' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">إنشاء حساب جديد</a>
+                        <a class="btn" href="{% url 'password_reset' %}">نسيت كلمة المرور؟</a>
                     </div>
                 </form>
             </article>

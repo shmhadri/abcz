@@ -986,6 +986,7 @@ class PaymentOrder(models.Model):
     checkout_url = models.URLField(blank=True)
     metadata = models.JSONField(default=dict, blank=True)
     activated_at = models.DateTimeField(null=True, blank=True)
+    tiktok_purchase_claimed_at = models.DateTimeField(null=True, blank=True)
     paid_at = models.DateTimeField(null=True, blank=True)
     failed_at = models.DateTimeField(null=True, blank=True)
     canceled_at = models.DateTimeField(null=True, blank=True)

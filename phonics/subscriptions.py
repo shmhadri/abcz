@@ -392,7 +392,7 @@ def subscription_dashboard_context(user, *, now=None) -> dict:
         content_labels.append("المستوى الرابع")
 
     if "english_journey_a1_a2" in entitlement_set:
-        content_labels.append("English Journey A1–A2")
+        content_labels.append("A1–A2")
 
     renew_plan_code = ""
     if (

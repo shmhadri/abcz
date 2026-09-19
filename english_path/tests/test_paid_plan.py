@@ -42,10 +42,10 @@ class EnglishJourneyPlanTests(TestCase):
         self.assertEqual(quote.amount_due, Decimal("39.00"))
         self.assertEqual(quote.operation_type, PaymentOrder.OperationType.PURCHASE)
         with self.settings(BACK_TO_SCHOOL_ENABLED=True, BACK_TO_SCHOOL_DISCOUNT_PERCENT=90):
-            self.assertEqual(quote_plan_purchase(self.user, PLAN_ENGLISH_JOURNEY).amount_due, Decimal("39.00"))
+            self.assertEqual(quote_plan_purchase(self.user, PLAN_ENGLISH_JOURNEY).amount_due, Decimal("3.00"))
             checkout = self.client.get(reverse("checkout", args=(PLAN_ENGLISH_JOURNEY,)))
-            self.assertEqual(checkout.context["campaign"]["final_price"], Decimal("39.00"))
-            self.assertFalse(checkout.context["campaign"]["campaign_active"])
+            self.assertEqual(checkout.context["campaign"]["final_price"], Decimal("3.00"))
+            self.assertTrue(checkout.context["campaign"]["campaign_active"])
 
     def test_a1_1_is_free_but_a1_2_and_its_api_require_subscription(self):
         self.assertEqual(self.client.get(reverse("english_path:unit", args=("a1-1",))).status_code, 200)

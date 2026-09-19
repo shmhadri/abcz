@@ -9,6 +9,7 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.smartlearningksa.com/pricing/">
     <title>باقات تعلّم اللغة الإنجليزية للأطفال | Smart Learning</title>
+    {% include "includes/tiktok_analytics.html" %}
     <style>
         :root {
             --primary: #3b5ccc;
@@ -572,17 +573,17 @@
 
         {% if english_journey_enabled %}
         <section class="level-subscriptions journey-subscription" aria-labelledby="english-journey-title">
-            <h2 id="english-journey-title">المستوى الخامس: English Journey A1–A2</h2>
+            <h2 id="english-journey-title">A1–A2</h2>
             <p>A1.1 مجانية للتجربة، ثم أكمل رحلة A1 وA2 كاملة ضمن اشتراك واحد.</p>
             <div class="plans journey-plans">
                 <article class="plan" id="english-journey-plan">
-                    <span class="plan-badge">المستوى الخامس · A1 + A2</span>
+                    <span class="plan-badge">A1–A2</span>
                     <div>
                         <div class="plan-label">30 وحدة إجمالًا: 20 A1 + 10 A2 · 30 يومًا</div>
                         <h2>{{ english_journey_plan.name }}</h2>
                         <p class="description">مسار متدرج يفتح المحتوى حسب الاشتراك والإتقان.</p>
                     </div>
-                    <div class="price"><strong>{{ english_journey_plan.price_sar|floatformat:0 }}</strong><span>ريال / 30 يومًا</span></div>
+                    <div class="price">{% if campaign.english_journey.campaign_active %}<strong class="original-price">{{ campaign.english_journey.original_price|floatformat:0 }} ريال</strong><strong class="campaign-price">{{ campaign.english_journey.final_price|floatformat:0 }}</strong><span>ريال / 30 يومًا</span><span class="campaign-badge">خصم {{ campaign.english_journey.discount_percent }}%</span><p class="campaign-label">{{ campaign.english_journey.arabic_name }}</p>{% else %}<strong>{{ english_journey_plan.price_sar|floatformat:0 }}</strong><span>ريال / 30 يومًا</span>{% endif %}</div>
                     <ul class="features">
                         <li>Vocabulary وGrammar.</li>
                         <li>Listening وSpeaking.</li>
@@ -591,7 +592,7 @@
                         <li>Smart Review.</li>
                         <li>Final Challenges.</li>
                     </ul>
-                    <a class="plan-action secondary" href="{% url 'english_path:overview' %}">استكشف المستوى الخامس</a>
+                    <a class="plan-action secondary" href="{% url 'english_path:overview' %}">استكشف A1–A2</a>
                     {% if english_journey_action.allowed %}
                         <a class="plan-action" href="{% url 'checkout' 'english_journey' %}">ابدأ الرحلة الكاملة{% if english_journey_action.amount_due %} - {{ english_journey_action.amount_due }} ريال{% endif %}</a>
                     {% else %}<span class="plan-action secondary">{{ english_journey_action.label }}</span>{% endif %}
@@ -619,8 +620,8 @@
             </div>
             {% if english_journey_enabled %}
             <div class="level-pill">
-                <strong>المستوى الخامس</strong>
-                <span>English Journey A1–A2</span>
+                <strong>A1–A2</strong>
+                <span>مسار A1 وA2</span>
             </div>
             {% endif %}
         </section>

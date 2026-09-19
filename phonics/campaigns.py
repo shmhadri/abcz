@@ -25,7 +25,7 @@ def back_to_school_is_active() -> bool:
 
 
 def back_to_school_discount_percent() -> int:
-    value = int(getattr(settings, "BACK_TO_SCHOOL_DISCOUNT_PERCENT", 20))
+    value = int(getattr(settings, "BACK_TO_SCHOOL_DISCOUNT_PERCENT", 25))
     return max(0, min(value, 100))
 
 

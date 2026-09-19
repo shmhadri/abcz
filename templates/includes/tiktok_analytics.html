@@ -1,0 +1,24 @@
+{% load static %}
+{% if tiktok_pixel_id %}
+    <!-- TikTok Pixel Code Start -->
+    {{ tiktok_pixel_id|json_script:"tiktok-pixel-config" }}
+    {{ tiktok_events|json_script:"tiktok-event-data" }}
+    {{ tiktok_purchase_url|json_script:"tiktok-purchase-url" }}
+    <link rel="stylesheet" href="{% static 'css/tiktok-consent.css' %}">
+    <script defer src="{% static 'js/tiktok-pixel.js' %}"></script>
+    <script defer src="{% static 'js/tiktok-events.js' %}"></script>
+    <script defer src="{% static 'js/tiktok-consent.js' %}"></script>
+    <section id="tiktok-consent-banner" class="analytics-marketing-consent" role="dialog" aria-modal="false" aria-labelledby="analytics-marketing-consent-title" hidden>
+        <div>
+            <strong id="analytics-marketing-consent-title">ملفات ارتباط التحليلات والإعلانات</strong>
+            <p>نستخدم TikTok Pixel بعد موافقتك فقط لقياس أداء الصفحات والتسجيل والدفع. يمكنك الرفض أو تغيير اختيارك لاحقًا.</p>
+            <a href="{% url 'privacy' %}">اقرأ سياسة الخصوصية</a>
+        </div>
+        <div class="analytics-marketing-consent__actions">
+            <button type="button" data-analytics-marketing-reject>رفض</button>
+            <button type="button" data-analytics-marketing-accept>موافقة</button>
+        </div>
+    </section>
+    <button id="analytics-marketing-consent-settings" class="analytics-marketing-consent-settings" type="button">إعدادات الخصوصية</button>
+    <!-- TikTok Pixel Code End -->
+{% endif %}

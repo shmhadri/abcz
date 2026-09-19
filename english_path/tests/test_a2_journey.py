@@ -118,7 +118,7 @@ class A2JourneyTests(TestCase):
         self.assertRedirects(self.client.get(reverse("english_path:journey_completion")), reverse("english_path:level", args=("a2",)))
         AssessmentResult.objects.create(user=self.user, assessment_type="a2_final", level="A2 Master", score=100, skill_scores={skill: 100 for skill in ("vocabulary", "grammar", "reading", "listening", "speaking", "writing")})
         response = self.client.get(reverse("english_path:journey_completion"))
-        self.assertContains(response, "You completed the Smart English Journey A1–A2.")
+        self.assertContains(response, "You completed A1–A2.")
         self.assertNotContains(response, "Official CEFR Certificate")
 
     def test_anonymous_final_and_report_redirect_to_login(self):

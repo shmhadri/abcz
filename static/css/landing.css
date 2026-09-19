@@ -410,11 +410,14 @@ button {
    Campaign Banner
    ========================================================================== */
 .landing-campaign {
-  background: linear-gradient(90deg, #ecf4ff, #e8faf2 50%, #fff7ea);
-  border-bottom: 1px solid rgba(44, 90, 233, 0.12);
-  padding: 12px 0;
+  background:
+    radial-gradient(circle at 12% 50%, rgba(134, 239, 172, 0.2), transparent 28%),
+    linear-gradient(118deg, #052e2b 0%, #075c42 54%, #0b7a4e 100%);
+  border-block: 1px solid rgba(187, 247, 208, 0.24);
+  padding: 6px 0;
   position: relative;
   overflow: hidden;
+  color: #ffffff;
 }
 
 .landing-campaign::before {
@@ -423,58 +426,100 @@ button {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--sl-blue-500), var(--sl-mint-500), var(--sl-amber-500));
+  height: 3px;
+  background: linear-gradient(90deg, #fbbf24, #86efac, #fbbf24);
 }
 
 .landing-campaign-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 8px 0;
+  gap: 12px;
+  min-height: 64px;
+  padding: 2px 0;
 }
 
-.landing-campaign-content {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
+.landing-campaign-image {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 11px;
+  object-fit: cover;
+  box-shadow: 0 6px 16px rgba(1, 31, 25, 0.3);
+  animation: landing-offer-float 3.4s ease-in-out infinite;
 }
 
-.landing-campaign-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: var(--radius-pill);
-  background: #ffffff;
-  color: var(--sl-mint-600);
-  font-size: 13px;
-  font-weight: 800;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
-  border: 1px solid var(--sl-mint-100);
+.landing-campaign-marquee {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.landing-campaign-track {
+  display: inline-block;
+  min-width: max-content;
+  will-change: transform;
+  animation: landing-campaign-ticker 16s linear infinite;
 }
 
 .landing-campaign-text strong {
-  color: var(--sl-navy-900);
-  font-size: 15px;
-  font-weight: 800;
+  display: block;
+  color: #ffffff;
+  font-size: clamp(14px, 1.35vw, 18px);
+  font-weight: 900;
+  line-height: 1.35;
 }
 
-.landing-campaign-text p {
-  color: var(--sl-text-muted);
-  font-size: 13px;
-  font-weight: 600;
-  display: inline;
-  margin-inline-start: 8px;
+.landing-campaign-text span {
+  display: block;
+  margin-top: 2px;
+  color: #d1fae5;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
-.landing-campaign .landing-button {
-  min-height: 40px;
-  padding: 8px 18px;
-  font-size: 14px;
-  border-radius: var(--radius-sm);
+.landing-campaign-action {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 8px 13px;
+  color: #064e3b;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(1, 31, 25, 0.25);
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.landing-campaign-action:hover {
+  color: #052e2b;
+  background: #f0fdf4;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(1, 31, 25, 0.32);
+}
+
+.landing-campaign-action:focus-visible {
+  outline: 3px solid #fef08a;
+  outline-offset: 3px;
+}
+
+@keyframes landing-offer-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-3px) rotate(1deg); }
+}
+
+@keyframes landing-campaign-ticker {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-100%); }
 }
 
 /* ==========================================================================
@@ -2412,6 +2457,39 @@ button {
 }
 
 @media (max-width: 768px) {
+  .landing-campaign {
+    padding: 5px 0;
+  }
+
+  .landing-campaign-inner {
+    display: flex;
+    gap: 8px;
+    min-height: 54px;
+  }
+
+  .landing-campaign-image {
+    flex-basis: 42px;
+    width: 42px;
+    height: 42px;
+    border-radius: 9px;
+  }
+
+  .landing-campaign-action {
+    width: auto;
+    min-height: 36px;
+    padding: 7px 9px;
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
+
+  .landing-campaign-text strong {
+    font-size: 13px;
+  }
+
+  .landing-campaign-text span {
+    font-size: 10.5px;
+  }
+
   .landing-offer-shell {
     gap: 32px;
     padding: 24px;
@@ -2521,6 +2599,15 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .landing-campaign-image,
+  .landing-campaign-track {
+    animation: none;
+  }
+
+  .landing-campaign-marquee {
+    white-space: normal;
+  }
+
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

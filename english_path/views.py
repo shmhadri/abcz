@@ -43,7 +43,7 @@ def feature_enabled(view):
     @wraps(view)
     def wrapped(request, *args, **kwargs):
         if not getattr(settings, "ENGLISH_PATH_ENABLED", False):
-            raise Http404("English Journey is not available yet.")
+            raise Http404("A1–A2 is not available yet.")
         return view(request, *args, **kwargs)
     return wrapped
 

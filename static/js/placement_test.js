@@ -30,6 +30,32 @@
     const storageKey = "pgl-placement-test-v2";
     let currentIndex = 0;
     let isSubmitting = false;
+    let analyticsStarted = false;
+    let analyticsCompleted = false;
+
+    // StartTest and CompleteTest are intentional custom events, not claimed as
+    // TikTok standard events.
+    function trackTestStart() {
+        if (analyticsStarted) return;
+        analyticsStarted = Boolean(window.trackTikTokEvent?.("StartTest", {
+            content_id: "placement_test",
+            content_type: "product",
+            content_name: "Placement Test",
+            question_count: questions.length,
+        }));
+        if (analyticsStarted) saveProgress();
+    }
+
+    function trackTestComplete(result) {
+        if (analyticsCompleted) return;
+        analyticsCompleted = Boolean(window.trackTikTokEvent?.("CompleteTest", {
+            content_id: "placement_test",
+            content_type: "product",
+            content_name: "Placement Test",
+            score: Number(result.score) || 0,
+            percentage: Number(result.percentage) || 0,
+        }));
+    }
 
     // Speech synthesis helper for english phonics & prompts
     function speakText(text) {
@@ -79,6 +105,7 @@
             window.sessionStorage.setItem(storageKey, JSON.stringify({
                 answers: getAnswers(),
                 currentIndex,
+                analyticsStarted,
                 savedAt: Date.now(),
             }));
         } catch (error) {}
@@ -107,6 +134,7 @@
                     Math.max(questions.length - 1, 0)
                 );
             }
+            analyticsStarted = saved.analyticsStarted === true;
         } catch (error) {}
     }
 
@@ -197,6 +225,8 @@
         resultCard.hidden = true;
         resultCard.innerHTML = "";
         form.hidden = false;
+        analyticsStarted = false;
+        analyticsCompleted = false;
         clearSavedProgress();
         showQuestion(0, { focus: true });
     }
@@ -322,6 +352,7 @@
         }
         updateProgress();
         saveProgress();
+        trackTestStart();
     });
 
     nextButton?.addEventListener("click", () => {
@@ -380,6 +411,7 @@
         }
 
         isSubmitting = true;
+        trackTestStart();
         if (submitButton) {
             submitButton.disabled = true;
             submitButton.textContent = "جاري تحليل النتيجة...";
@@ -399,6 +431,7 @@
                 throw new Error("تعذر التحقق من الإجابات. راجع إجاباتك وحاول مرة أخرى.");
             }
             renderResult(result);
+            trackTestComplete(result);
         } catch (error) {
             showSubmissionError(error.message || "تحقق من اتصال الإنترنت ثم حاول مرة أخرى.");
         } finally {

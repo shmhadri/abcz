@@ -14,6 +14,7 @@ urlpatterns = [
     path('checkout/<slug:plan_code>/create/<str:method_slug>/', views.create_payment_order, name='create_payment_order'),
     path('checkout/<slug:plan_code>/', views.checkout, name='checkout'),
     path('payments/success/', views.payment_success, name='payment_success'),
+    path('analytics/tiktok/purchase/<int:order_id>/', views.tiktok_purchase, name='tiktok_purchase'),
     path('payments/failed/', views.payment_failed, name='payment_failed'),
     path('payments/pending/', views.payment_pending, name='payment_pending'),
     path('payments/moyasar/callback/', views.moyasar_callback, name='moyasar_callback'),
